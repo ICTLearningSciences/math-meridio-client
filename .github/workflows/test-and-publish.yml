@@ -1,0 +1,22 @@
+name: test and publish
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: "18.13"
+      - name: Install
+        run:  npm ci
+      - name: Run format test
+        run: npm run test:format
+      - name: Run license test
+        run: npm run test:license
+      - name: Client - Install
+        run: cd client && npm ci
+      # - name: Client - Run lint test
+      #   run: cd client && npm run test:lint
+      # - name: Client - Run types test
+      #   run: cd client && npm run test:types

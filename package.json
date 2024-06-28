@@ -1,0 +1,19 @@
+{
+  "name": "mathmeridio",
+  "version": "1.0.0",
+  "private": true,
+  "devDependencies": {
+    "license-check-and-add": "^4.0.2",
+    "prettier": "^2.3.0"
+  },
+  "scripts": {
+    "license:fix": "license-check-and-add remove -f license-config.json && license-check-and-add add -f license-config.json",
+    "license:deploy": "license-check-and-add remove -f license-config.json && license-check-and-add add -f $LICENSE_CONFIG",
+    "test:license": "license-check-and-add check -f license-config.json",
+    "format": "prettier --write '**/*.{js,jsx,json,ts,tsx}'",
+    "test:format": "prettier --check '**/*.{js,jsx,json,ts,tsx}'"
+  },
+  "dependencies": {
+    "use-indexeddb": "^2.0.2"
+  }
+}

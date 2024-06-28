@@ -1,0 +1,13 @@
+# Ignore everything...
+*
+
+# Except these folders
+!src/*
+!cypress/*
+
+# But ignore these, if inside those folders ^
+node_modules
+build
+Dockerfile
+*.png
+*.css
