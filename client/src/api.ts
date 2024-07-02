@@ -4,11 +4,47 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import axios from "axios";
 
-const GRAPHQL_ENDPOINT = process.env.GRAPHQL_ENDPOINT;
+import { AiServicesJobStatusResponseTypes } from "./ai-services/ai-service-types";
+import { execHttp } from "./api-helpers";
+import { GenericLlmRequest } from "./types";
+import { CancelToken } from "axios";
 
-interface GraphQLResponse<T> {
-  errors?: { message: string }[];
-  data?: T;
+type OpenAiJobId = string;
+export const LLM_API_ENDPOINT = process.env.GATSBY_LLM_API_ENDPOINT || "/docs";
+export async function asyncLlmRequest(
+  llmRequest: GenericLlmRequest,
+  cancelToken?: CancelToken
+): Promise<OpenAiJobId> {
+  const res = await execHttp<OpenAiJobId>(
+    "POST",
+    `${LLM_API_ENDPOINT}/generic_llm_request/`,
+    {
+      dataPath: ["response", "jobId"],
+      axiosConfig: {
+        data: {
+          llmRequest,
+        },
+        cancelToken: cancelToken,
+      },
+    }
+  );
+  return res;
+}
+
+export async function asyncLlmRequestStatus(
+  jobId: string,
+  cancelToken?: CancelToken
+): Promise<AiServicesJobStatusResponseTypes> {
+  const res = await execHttp<AiServicesJobStatusResponseTypes>(
+    "POST",
+    `${LLM_API_ENDPOINT}/generic_llm_request_status/?jobId=${jobId}`,
+    {
+      dataPath: ["response"],
+      axiosConfig: {
+        cancelToken: cancelToken,
+      },
+    }
+  );
+  return res;
 }

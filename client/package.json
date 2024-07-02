@@ -9,18 +9,21 @@
   ],
   "scripts": {
     "develop": "gatsby develop",
-    "start": "gatsby develop",
+    "start": "gatsby develop -p 80",
     "build": "gatsby build",
     "serve": "gatsby serve",
     "clean": "gatsby clean",
     "test:types": "tsc --noEmit"
   },
   "dependencies": {
+    "@azure/openai": "^1.0.0-beta.12",
     "@emotion/styled": "^11.11.5",
+    "@google/generative-ai": "^0.14.1",
     "@mui/icons-material": "^5.15.20",
     "@mui/material": "^5.15.20",
     "@reduxjs/toolkit": "^2.2.5",
     "gatsby": "^5.13.5",
+    "jsonschema": "^1.4.1",
     "phaser": "^3.80.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

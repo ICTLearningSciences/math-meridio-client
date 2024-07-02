@@ -9,6 +9,7 @@ import { Grid } from "@mui/material";
 import { PhaserGame } from "../game/PhaserGame";
 import { ChatThread } from "./ChatThread";
 import ChatForm from "./ChatForm";
+import { GameStateHandlerTester } from "./test-components/game-state-handler-tester";
 
 export default function App(): JSX.Element {
   // The sprite can only be moved in the MainMenu Scene
@@ -33,6 +34,7 @@ export default function App(): JSX.Element {
         </Grid>
       </Grid>
       <ChatForm />
+      {/* <GameStateHandlerTester /> */}
     </div>
   );
 }
