@@ -3,10 +3,10 @@ version: 0.2
 env:
   variables:
     STAGE: 'qa'
-    GRAPHQL_ENDPOINT: "https://api-qa.mathmeridioido.org/graphql/graphql"
+    GRAPHQL_ENDPOINT: "https://api-qa.meridiomath.org/graphql/graphql"
   parameter-store:
-    S3_DEPLOY_BUCKET_DEV: "/mathmeridio/qa/s3-websites/NAME"
-    CDN_ID_DEV: "/mathmeridio/qa/CLOUDFRONT_DISTRIBUTION_ID"
+    S3_DEPLOY_BUCKET_QA: "/mathm/qa/s3-websites/NAME"
+    CDN_ID_QA: "/mathm/qa/CLOUDFRONT_DISTRIBUTION_ID"
 
 phases:
   install:

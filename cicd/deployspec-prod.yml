@@ -3,10 +3,10 @@ version: 0.2
 env:
   variables:
     STAGE: 'prod'
-    GRAPHQL_ENDPOINT: "https://api.mathmeridio.org/graphql/graphql"
+    GRAPHQL_ENDPOINT: "https://api-prod.meridiomath.org/graphql/graphql"
   parameter-store:
-    S3_DEPLOY_BUCKET_DEV: "/mathmeridio/prod/s3-websites/NAME"
-    CDN_ID_DEV: "/mathmeridio/prod/CLOUDFRONT_DISTRIBUTION_ID"
+    S3_DEPLOY_BUCKET_PROD: "/mathm/prod/s3-websites/NAME"
+    CDN_ID_PROD: "/mathm/prod/CLOUDFRONT_DISTRIBUTION_ID"
 
 phases:
   install:
