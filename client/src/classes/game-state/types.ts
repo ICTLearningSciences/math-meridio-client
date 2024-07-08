@@ -17,6 +17,16 @@ export const OpenAiServiceModel: TargetAiModelServiceType = {
   model: "gpt-3.5-turbo-16k",
 };
 
+export const AzureServiceModel: TargetAiModelServiceType = {
+  serviceName: "AZURE_OPEN_AI",
+  model: "ABE-GPT-3_5_turbo_16k",
+};
+
+export const GeminiServiceModel: TargetAiModelServiceType = {
+  serviceName: "GEMINI",
+  model: "gemini-pro",
+};
+
 export interface IRemoveItem {
   clientId: string;
 }
