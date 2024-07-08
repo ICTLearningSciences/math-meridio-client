@@ -5,6 +5,9 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import { Scene } from "phaser";
+import football from "./assets/sports_balls/american-football.png";
+import baseball from "./assets/sports_balls/base-ball.png";
+import basketball from "./assets/sports_balls/basket-ball.png";
 
 export class Preloader extends Scene {
   constructor() {
@@ -22,7 +25,7 @@ export class Preloader extends Scene {
     const bar = this.add.rectangle(512 - 230, 384, 4, 28, 0xffffff);
 
     //  Use the 'progress' event emitted by the LoaderPlugin to update the loading bar
-    this.load.on("progress", (progress) => {
+    this.load.on("progress", (progress: number) => {
       //  Update the progress bar (our bar is 464px wide, so 100% = 464px)
       bar.width = 4 + 460 * progress;
     });
@@ -30,10 +33,9 @@ export class Preloader extends Scene {
 
   preload() {
     //  Load the assets for the game - Replace with your own assets
-    this.load.setPath("assets");
-
-    this.load.image("logo", "logo.png");
-    this.load.image("star", "star.png");
+    this.load.image("football", football);
+    this.load.image("baseball", baseball);
+    this.load.image("basketball", basketball);
   }
 
   create() {

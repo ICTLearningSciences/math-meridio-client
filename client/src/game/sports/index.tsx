@@ -4,25 +4,20 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import "regenerator-runtime/runtime";
+import Phaser from "phaser";
 
-import type { HeadFC, PageProps } from "gatsby";
-import * as React from "react";
-import { Provider } from "react-redux";
-import App from "../components/App";
-import { store } from "../store";
+import { Boot } from "./Boot";
+import { Game } from "./Game";
+import { GameOver } from "./GameOver";
+import { MainMenu } from "./MainMenu";
+import { Preloader } from "./Preloader";
 
-import "../styles/layout.css";
-import "../styles/chat.css";
-
-const IndexPage: React.FC<PageProps> = () => {
-  return (
-    <Provider store={store}>
-      <App />
-    </Provider>
-  );
+// Find out more information about the Game Config at:
+// https://newdocs.phaser.io/docs/3.70.0/Phaser.Types.Core.GameConfig
+const config: Phaser.Types.Core.GameConfig = {
+  type: Phaser.CANVAS,
+  backgroundColor: "#028af8",
+  scene: [Boot, Preloader, MainMenu, Game, GameOver],
 };
 
-export default IndexPage;
-
-export const Head: HeadFC = () => <title>Math Meridio</title>;
+export default config;

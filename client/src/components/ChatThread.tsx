@@ -14,10 +14,8 @@ const useStyles = makeStyles()(() => ({
   chatThread: {
     display: "flex",
     flexDirection: "column",
-    flex: 1,
+    flexGrow: 1,
     overflowY: "auto",
-    backgroundColor: "#eee",
-    height: "100%",
   },
   chatItem: {
     position: "relative",
@@ -56,16 +54,13 @@ const useStyles = makeStyles()(() => ({
   },
 }));
 
-export function ChatThread(): JSX.Element {
+export default function ChatThread(): JSX.Element {
   const { classes } = useStyles();
   const { userId } = useAppSelector((state) => state.userData);
   const { messages } = useAppSelector((state) => state.gameData);
 
   return (
-    <div
-      className={classes.chatThread}
-      style={{ maxHeight: window.innerHeight }}
-    >
+    <div className={classes.chatThread}>
       {messages.map((msg, idx) => {
         const msgStyles: Record<string, number> = {};
         if (idx > 0) {
@@ -80,7 +75,6 @@ export function ChatThread(): JSX.Element {
         return (
           <ListItem
             key={`chat-msg-${idx}`}
-            data-cy={`chat-msg-${idx}`}
             className={`${classes.chatItem} ${
               msg.senderId === userId ? "me" : "them"
             }`}

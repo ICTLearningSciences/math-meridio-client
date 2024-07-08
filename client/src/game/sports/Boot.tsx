@@ -4,25 +4,21 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import "regenerator-runtime/runtime";
+import { Scene } from "phaser";
+import background from "./assets/other_sports_pack/Sports.png";
 
-import type { HeadFC, PageProps } from "gatsby";
-import * as React from "react";
-import { Provider } from "react-redux";
-import App from "../components/App";
-import { store } from "../store";
+export class Boot extends Scene {
+  constructor() {
+    super("Boot");
+  }
 
-import "../styles/layout.css";
-import "../styles/chat.css";
+  preload() {
+    //  The Boot Scene is typically used to load in any assets you require for your Preloader, such as a game logo or background.
+    //  The smaller the file size of the assets, the better, as the Boot Scene itself has no preloader.
+    this.load.image("background", background);
+  }
 
-const IndexPage: React.FC<PageProps> = () => {
-  return (
-    <Provider store={store}>
-      <App />
-    </Provider>
-  );
-};
-
-export default IndexPage;
-
-export const Head: HeadFC = () => <title>Math Meridio</title>;
+  create() {
+    this.scene.start("Preloader");
+  }
+}

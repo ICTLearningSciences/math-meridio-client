@@ -4,7 +4,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { Send } from "@mui/icons-material";
+import { Mic, MicOutlined, Send } from "@mui/icons-material";
 import {
   FormControl,
   IconButton,
@@ -13,43 +13,93 @@ import {
   OutlinedInput,
 } from "@mui/material";
 import React from "react";
+import SpeechRecognition, {
+  useSpeechRecognition,
+} from "react-speech-recognition";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { sendChatMessage } from "../store/slices/gameData";
+import EventSystem from "../game/event-system";
 
 export default function ChatForm(): JSX.Element {
   const dispatch = useAppDispatch();
-  const { gameRoom } = useAppSelector((state) => state.gameData);
   const { userId, username } = useAppSelector((state) => state.userData);
   const [input, setInput] = React.useState<string>("");
+  const {
+    transcript,
+    listening,
+    browserSupportsSpeechRecognition,
+    resetTranscript,
+  } = useSpeechRecognition();
 
-  function sendMessage(): void {
+  React.useEffect(() => {
+    if (listening) {
+      setInput(transcript);
+    }
+  }, [transcript]);
+
+  function onSend(): void {
     setInput("");
     dispatch(
       sendChatMessage({
         senderId: userId,
         senderName: username,
         message: input,
-        gameRoom: gameRoom,
       })
     );
+    EventSystem.emit("addBall", input);
+  }
+
+  function onKeyPress(
+    e: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>
+  ): void {
+    if (e.key === "Enter") {
+      onSend();
+      e.preventDefault();
+    }
+  }
+
+  function onToggleSTT() {
+    if (listening) {
+      SpeechRecognition.stopListening();
+      resetTranscript();
+    } else {
+      resetTranscript();
+      SpeechRecognition.startListening();
+    }
   }
 
   return (
-    <FormControl sx={{ m: 1, width: "100%" }} variant="outlined">
+    <FormControl variant="outlined" style={{ width: "100%", marginTop: 5 }}>
       <InputLabel>Chat:</InputLabel>
       <OutlinedInput
         label="Chat:"
         type="text"
         fullWidth
         value={input}
+        disabled={listening}
         onChange={(e) => setInput(e.target.value)}
+        onKeyDown={(e) => onKeyPress(e)}
         endAdornment={
           <InputAdornment position="end">
+            <InputAdornment position="start">
+              <IconButton
+                color="primary"
+                edge="end"
+                onClick={onToggleSTT}
+                disabled={!browserSupportsSpeechRecognition}
+              >
+                {listening ? (
+                  <Mic color="primary" />
+                ) : (
+                  <MicOutlined style={{ color: "gray" }} />
+                )}
+              </IconButton>
+            </InputAdornment>
             <IconButton
               type="submit"
               color="primary"
               edge="end"
-              onClick={sendMessage}
+              onClick={onSend}
             >
               <Send />
             </IconButton>

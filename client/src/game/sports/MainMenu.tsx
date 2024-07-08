@@ -4,8 +4,35 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import Phaser from "phaser";
+import { Scene } from "phaser";
 
-// Used to emit events between React components and Phaser scenes
-// https://newdocs.phaser.io/docs/3.70.0/Phaser.Events.EventEmitter
-export const EventBus = new Phaser.Events.EventEmitter();
+export class MainMenu extends Scene {
+  logo: Phaser.GameObjects.Text | undefined;
+
+  constructor() {
+    super("MainMenu");
+  }
+
+  create() {
+    this.add.image(512, 384, "background");
+    this.logo = this.add
+      .text(512, 460, "Main Menu", {
+        fontFamily: "Arial Black",
+        fontSize: 38,
+        color: "#ffffff",
+        stroke: "#000000",
+        strokeThickness: 8,
+        align: "center",
+      })
+      .setDepth(100)
+      .setOrigin(0.5);
+    this.logo.setInteractive();
+    this.logo.on(
+      "pointerdown",
+      () => {
+        this.scene.start("Game");
+      },
+      this
+    );
+  }
+}

@@ -44,11 +44,10 @@ export const sendChatMessage = createAsyncThunk(
       senderId: string;
       senderName: string;
       message: string;
-      gameRoom: string;
     },
     thunkAPI
   ): Promise<ChatMessage> => {
-    // use api
+    // TODO: use api
     return {
       senderId: args.senderId,
       senderName: args.senderName,

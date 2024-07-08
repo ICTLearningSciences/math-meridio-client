@@ -4,36 +4,25 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React, { useRef, useState } from "react";
+import React from "react";
 import { Grid } from "@mui/material";
-import { PhaserGame } from "../game/PhaserGame";
-import { ChatThread } from "./ChatThread";
+import ChatThread from "./ChatThread";
 import ChatForm from "./ChatForm";
+import PhaserGame from "./PhaserGame";
 import { GameStateHandlerTester } from "./test-components/game-state-handler-tester";
 
 export default function App(): JSX.Element {
-  // The sprite can only be moved in the MainMenu Scene
-  const [canMoveSprite, setCanMoveSprite] = useState(true);
-
-  //  References to the PhaserGame component (game and scene are exposed)
-  const phaserRef = useRef();
-
-  // Event emitted from the PhaserGame component
-  const currentScene = (scene) => {
-    setCanMoveSprite(scene.scene.key !== "MainMenu");
-  };
-
   return (
-    <div id="app" className="root">
+    <div className="root">
       <Grid container xs={true} flexDirection="row">
         <Grid item xs={9}>
-          <PhaserGame ref={phaserRef} currentActiveScene={currentScene} />
+          <PhaserGame />
         </Grid>
-        <Grid item xs={3}>
+        <Grid item xs={3} display="flex" flexDirection="column">
           <ChatThread />
+          <ChatForm />
         </Grid>
       </Grid>
-      <ChatForm />
       {/* <GameStateHandlerTester /> */}
     </div>
   );

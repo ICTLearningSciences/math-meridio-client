@@ -4,35 +4,27 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { EventBus } from "../EventBus";
+import { EventSystem } from "../event-system";
 import { Scene } from "phaser";
 
-export class GameOver extends Scene {
+export class Game extends Scene {
   constructor() {
-    super("GameOver");
+    super("Game");
   }
 
   create() {
-    this.cameras.main.setBackgroundColor(0xff0000);
-
+    this.cameras.main.setBackgroundColor(0x00ff00);
     this.add.image(512, 384, "background").setAlpha(0.5);
-
-    this.add
-      .text(512, 384, "Game Over", {
-        fontFamily: "Arial Black",
-        fontSize: 64,
-        color: "#ffffff",
-        stroke: "#000000",
-        strokeThickness: 8,
-        align: "center",
-      })
-      .setOrigin(0.5)
-      .setDepth(100);
-
-    EventBus.emit("current-scene-ready", this);
+    EventSystem.on("addBall", this.addBall, this);
+    // EventSystem.emit("current-scene-ready", this);
   }
 
-  changeScene() {
-    this.scene.start("MainMenu");
+  addBall(ball: string) {
+    const image = this.add.image(
+      Math.random() * 100,
+      Math.random() * 100,
+      ball
+    );
+    image.scale = 0.1;
   }
 }

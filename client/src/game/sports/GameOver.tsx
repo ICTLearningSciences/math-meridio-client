@@ -4,26 +4,35 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { Boot } from "./scenes/Boot";
-import { Game } from "./scenes/Game";
-import { GameOver } from "./scenes/GameOver";
-import { MainMenu } from "./scenes/MainMenu";
-import Phaser from "phaser";
-import { Preloader } from "./scenes/Preloader";
+import { EventSystem } from "../event-system";
+import { Scene } from "phaser";
 
-// Find out more information about the Game Config at:
-// https://newdocs.phaser.io/docs/3.70.0/Phaser.Types.Core.GameConfig
-const config = {
-  type: Phaser.AUTO,
-  width: 1024,
-  height: 768,
-  parent: "game-container",
-  backgroundColor: "#028af8",
-  scene: [Boot, Preloader, MainMenu, Game, GameOver],
-};
+export class GameOver extends Scene {
+  constructor() {
+    super("GameOver");
+  }
 
-const StartGame = (parent) => {
-  return new Phaser.Game({ ...config, parent });
-};
+  create() {
+    this.cameras.main.setBackgroundColor(0xff0000);
 
-export default StartGame;
+    this.add.image(512, 384, "background").setAlpha(0.5);
+
+    this.add
+      .text(512, 384, "Game Over", {
+        fontFamily: "Arial Black",
+        fontSize: 64,
+        color: "#ffffff",
+        stroke: "#000000",
+        strokeThickness: 8,
+        align: "center",
+      })
+      .setOrigin(0.5)
+      .setDepth(100);
+
+    EventSystem.emit("current-scene-ready", this);
+  }
+
+  changeScene() {
+    this.scene.start("MainMenu");
+  }
+}
