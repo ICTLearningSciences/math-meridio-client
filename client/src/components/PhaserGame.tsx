@@ -5,17 +5,25 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import React from "react";
-import SportsGame from "../game/sports";
+import SportsGame, { BasketballStateHandler } from "../game/basketball";
+import { GameStateHandler } from "../classes/game-state/game-state-handler";
+import { useAppDispatch } from "../store/hooks";
+import { startGame } from "../store/slices/gameData";
+import EventSystem from "../game/event-system";
 
 export default function PhaserGame(): JSX.Element {
+  const dispatch = useAppDispatch();
   const gameContainerRef = React.useRef<HTMLDivElement | null>(null);
   const [game, setGame] =
     React.useState<Phaser.Types.Core.GameConfig>(SportsGame);
+  const [gameController, setGameController] = React.useState<GameStateHandler>(
+    new BasketballStateHandler()
+  );
   const [phaserGame, setPhaserGame] = React.useState<Phaser.Game>();
 
   // Create the game inside a useLayoutEffect hook to avoid the game being created outside the DOM
   React.useLayoutEffect(() => {
-    if (game && gameContainerRef && !phaserGame) {
+    if (gameContainerRef && !phaserGame) {
       const config = {
         ...game,
         scale: {
@@ -26,7 +34,8 @@ export default function PhaserGame(): JSX.Element {
         parent: gameContainerRef.current as HTMLElement,
       };
       const pg = new Phaser.Game(config);
-      pg.scene.start("Boot");
+      pg.scene.start("Preloader");
+      dispatch(startGame(gameController));
       setPhaserGame(pg);
     }
     return () => {
@@ -40,7 +49,7 @@ export default function PhaserGame(): JSX.Element {
         );
       }
     };
-  }, [game, gameContainerRef]);
+  }, [gameContainerRef]);
 
   return (
     <div
@@ -48,7 +57,7 @@ export default function PhaserGame(): JSX.Element {
       ref={gameContainerRef}
       style={{
         height: window.innerHeight,
-        width: window.innerWidth * (9 / 12),
+        width: window.innerWidth * (9 / 12) - 15,
         backgroundColor: "pink,",
       }}
     />

@@ -16,13 +16,12 @@ import React from "react";
 import SpeechRecognition, {
   useSpeechRecognition,
 } from "react-speech-recognition";
-import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { useAppDispatch } from "../store/hooks";
 import { sendChatMessage } from "../store/slices/gameData";
-import EventSystem from "../game/event-system";
+import { PromptRoles } from "../types";
 
 export default function ChatForm(): JSX.Element {
   const dispatch = useAppDispatch();
-  const { userId, username } = useAppSelector((state) => state.userData);
   const [input, setInput] = React.useState<string>("");
   const {
     transcript,
@@ -41,12 +40,10 @@ export default function ChatForm(): JSX.Element {
     setInput("");
     dispatch(
       sendChatMessage({
-        senderId: userId,
-        senderName: username,
+        sender: PromptRoles.USER,
         message: input,
       })
     );
-    EventSystem.emit("addBall", input);
   }
 
   function onKeyPress(
