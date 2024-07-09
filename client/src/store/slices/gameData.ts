@@ -5,12 +5,13 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import { v4 as uuid } from "uuid";
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { UserData } from "./userData";
+import { GameStateHandler } from "../../classes/game-state/game-state-handler";
+import { RootState } from "..";
 
 export interface ChatMessage {
-  senderId: string;
-  senderName: string;
+  sender: string;
   message: string;
 }
 
@@ -18,6 +19,8 @@ export interface GameData {
   gameRoom: string;
   players: UserData[];
   messages: ChatMessage[];
+
+  gameState?: GameStateHandler;
 }
 
 const initialState: GameData = {
@@ -27,33 +30,19 @@ const initialState: GameData = {
 };
 
 /** Actions */
-export const createGameRoom = createAsyncThunk(
-  "gameData/createGameRoom",
-  async (args, thunkAPI): Promise<void> => {}
-);
-
-export const deleteGameRoom = createAsyncThunk(
-  "gameData/deleteGameRoom",
-  async (args, thunkAPI): Promise<void> => {}
+export const startGame = createAsyncThunk(
+  "gameData/startGame",
+  async (args: GameStateHandler, thunkAPI): Promise<ChatMessage[]> => {
+    return await args.start();
+  }
 );
 
 export const sendChatMessage = createAsyncThunk(
   "gameData/sendChatMessage",
-  async (
-    args: {
-      senderId: string;
-      senderName: string;
-      message: string;
-      gameRoom: string;
-    },
-    thunkAPI
-  ): Promise<ChatMessage> => {
-    // use api
-    return {
-      senderId: args.senderId,
-      senderName: args.senderName,
-      message: args.message,
-    };
+  async (args: ChatMessage, thunkAPI): Promise<ChatMessage[]> => {
+    const state = thunkAPI.getState() as RootState;
+    const msg = (await state.gameData.gameState?.respond(args)) || [];
+    return [args, ...msg];
   }
 );
 
@@ -62,13 +51,15 @@ export const dataSlice = createSlice({
   initialState: initialState,
   reducers: {},
   extraReducers: (builder) => {
-    builder.addCase(sendChatMessage.fulfilled, (state, action) => {
-      // todo: return all from api instead
-      state.messages.push(action.payload);
-    });
+    builder
+      .addCase(startGame.fulfilled, (state, action) => {
+        state.gameState = action.meta.arg;
+        state.messages.push(...action.payload);
+      })
+      .addCase(sendChatMessage.fulfilled, (state, action) => {
+        state.messages.push(...action.payload);
+      });
   },
 });
-
-export const {} = dataSlice.actions;
 
 export default dataSlice.reducer;

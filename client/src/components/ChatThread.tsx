@@ -9,15 +9,14 @@ import { makeStyles } from "tss-react/mui";
 import { useAppSelector } from "../store/hooks";
 import { ListItem, Typography } from "@mui/material";
 import { Person } from "@mui/icons-material";
+import { PromptRoles } from "../types";
 
 const useStyles = makeStyles()(() => ({
   chatThread: {
     display: "flex",
     flexDirection: "column",
-    flex: 1,
+    flexGrow: 1,
     overflowY: "auto",
-    backgroundColor: "#eee",
-    height: "100%",
   },
   chatItem: {
     position: "relative",
@@ -31,12 +30,12 @@ const useStyles = makeStyles()(() => ({
     fontFamily: "Helvetica, Arial, sans-serif",
     maxWidth: "80%",
     textAlign: "left",
-    "&.me": {
+    "&.user": {
       alignSelf: "flex-end",
       backgroundColor: "#0084ff",
       borderBottomRightRadius: 5,
     },
-    "&.them": {
+    "&.system": {
       alignSelf: "flex-start",
       backgroundColor: "#e6e6e6",
       borderBottomLeftRadius: 5,
@@ -56,22 +55,21 @@ const useStyles = makeStyles()(() => ({
   },
 }));
 
-export function ChatThread(): JSX.Element {
+export default function ChatThread(): JSX.Element {
   const { classes } = useStyles();
-  const { userId } = useAppSelector((state) => state.userData);
   const { messages } = useAppSelector((state) => state.gameData);
 
   return (
     <div
       className={classes.chatThread}
-      style={{ maxHeight: window.innerHeight }}
+      style={{ maxHeight: window.innerHeight - 80 }}
     >
       {messages.map((msg, idx) => {
         const msgStyles: Record<string, number> = {};
         if (idx > 0) {
-          if (msg.senderId !== messages[idx - 1].senderId) {
+          if (msg.sender !== messages[idx - 1].sender) {
             msgStyles.marginTop = 10;
-          } else if (msg.senderId === userId) {
+          } else if (msg.sender === PromptRoles.USER) {
             msgStyles.borderTopRightRadius = 5;
           } else {
             msgStyles.borderTopLeftRadius = 5;
@@ -80,15 +78,13 @@ export function ChatThread(): JSX.Element {
         return (
           <ListItem
             key={`chat-msg-${idx}`}
-            data-cy={`chat-msg-${idx}`}
-            className={`${classes.chatItem} ${
-              msg.senderId === userId ? "me" : "them"
-            }`}
+            className={`${classes.chatItem} ${msg.sender}
+              }`}
             style={msgStyles}
           >
             <Typography
               style={{
-                color: msg.senderId === userId ? "white" : "black",
+                color: msg.sender === PromptRoles.USER ? "white" : "black",
               }}
             >
               {msg.message}

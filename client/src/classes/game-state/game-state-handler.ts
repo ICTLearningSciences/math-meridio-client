@@ -19,6 +19,7 @@ import {
   IRemoveItem,
   removeItemSchema,
 } from "./types";
+import { ChatMessage } from "../../store/slices/gameData";
 
 export class GameStateHandler {
   objects: GameObjects[];
@@ -38,6 +39,14 @@ export class GameStateHandler {
     this.testAiRemoveItems = this.testAiRemoveItems.bind(this);
   }
 
+  async start(): Promise<ChatMessage[]> {
+    return [];
+  }
+
+  async respond(msg: ChatMessage): Promise<ChatMessage[]> {
+    return [];
+  }
+
   async testAiRemoveItems() {
     const request: GenericLlmRequest = {
       prompts: [
@@ -54,13 +63,13 @@ export class GameStateHandler {
       targetAiServiceModel: OpenAiServiceModel,
       outputDataType: PromptOutputTypes.JSON,
       responseFormat: `
-            Please only respond in JSON.
-            Validate that your response is in valid JSON.
-            Respond in this format:
-            {
-                "clientId": "string" // the clientId of the object to remove
-            }
-            `,
+        Please only respond in JSON.
+        Validate that your response is in valid JSON.
+        Respond in this format:
+        {
+            "clientId": "string" // the clientId of the object to remove
+        }
+      `,
     };
     const res = await jsonLlmRequest<IRemoveItem>(request, removeItemSchema);
     this.objects = this.objects.filter((obj) => obj.clientId !== res.clientId);
