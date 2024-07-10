@@ -48,12 +48,12 @@ export async function asyncLlmRequestStatus(
   return res;
 }
 
-export async function fetchPlayer(clientId: string): Promise<Player> {
+export async function fetchPlayer(id: string): Promise<Player> {
   const data = await execGql<Player>(
     {
       query: `
       query FetchPlayer($id: String!) {
-        player(id: $id) {
+        fetchPlayer(id: $id) {
           clientId
           name
           avatar
@@ -61,7 +61,7 @@ export async function fetchPlayer(clientId: string): Promise<Player> {
         }
       }`,
       variables: {
-        clientId,
+        id,
       },
     },
     {
