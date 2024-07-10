@@ -8,13 +8,13 @@ import { v4 as uuid } from "uuid";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { GameStateHandler } from "../../classes/game-state/game-state-handler";
 import { RootState } from "..";
-import { ChatMessage, GameRoom, Player } from "../../types";
+import { ChatMessage, Room, Player } from "../../types";
 
 export interface GameData {
   currentGameId: string;
   players: Player[];
   chat: ChatMessage[];
-  room?: GameRoom;
+  room?: Room;
   gameState?: GameStateHandler;
 }
 

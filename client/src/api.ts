@@ -56,12 +56,8 @@ export async function fetchPlayer(clientId: string): Promise<Player> {
         player(id: $id) {
           clientId
           name
+          avatar
           description
-          avatar {
-            type
-            id
-            traits
-          }
         }
       }`,
       variables: {
@@ -83,12 +79,8 @@ export async function updatePlayer(player: Player): Promise<Player> {
         updatePlayer(player: $player) {
           clientId
           name
+          avatar
           description
-          avatar {
-            type
-            id
-            traits
-          }
         }
       }`,
       variables: {

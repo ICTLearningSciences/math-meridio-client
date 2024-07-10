@@ -40,8 +40,8 @@ export enum JobStatus {
   FAILED = "FAILED",
 }
 
-export interface AvatarItem {
-  type: "head" | "brows" | "eyes" | "mouth" | "nose";
+export interface Avatar {
+  type: string;
   id: string;
   traits: string[];
 }
@@ -49,7 +49,7 @@ export interface AvatarItem {
 export interface Player {
   clientId: string;
   name: string;
-  avatar: AvatarItem[];
+  avatar: string;
   description: string;
 }
 
@@ -60,7 +60,7 @@ export interface ChatMessage {
   message: string;
 }
 
-export interface GameRoom {
+export interface Room {
   clientId: string;
   name: string;
   createdAt: string;
