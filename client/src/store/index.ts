@@ -6,12 +6,12 @@ The full terms of this copyright and license should always be found in the root 
 */
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import gameData from "./slices/gameData";
-import userData from "./slices/userData";
+import playerData from "./slices/playerData";
 
 export const store = configureStore({
   reducer: combineReducers({
     gameData,
-    userData,
+    playerData,
   }),
 });
 

@@ -17,7 +17,7 @@ import SpeechRecognition, {
   useSpeechRecognition,
 } from "react-speech-recognition";
 import { useAppDispatch } from "../store/hooks";
-import { sendChatMessage } from "../store/slices/gameData";
+import { sendMessage } from "../store/slices/gameData";
 import { PromptRoles } from "../types";
 
 export default function ChatForm(): JSX.Element {
@@ -39,7 +39,7 @@ export default function ChatForm(): JSX.Element {
   function onSend(): void {
     setInput("");
     dispatch(
-      sendChatMessage({
+      sendMessage({
         sender: PromptRoles.USER,
         message: input,
       })

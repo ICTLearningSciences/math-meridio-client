@@ -57,7 +57,7 @@ const useStyles = makeStyles()(() => ({
 
 export default function ChatThread(): JSX.Element {
   const { classes } = useStyles();
-  const { messages } = useAppSelector((state) => state.gameData);
+  const { chat: messages } = useAppSelector((state) => state.gameData);
 
   return (
     <div

@@ -4,54 +4,47 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { Anchor, addBackground, addImage, addText } from "../phaser-helpers";
-import { MenuScene } from "../../classes/game-state/menu-scene";
-import { GameStateHandler } from "../../classes/game-state/game-state-handler";
+import { Scene } from "phaser";
+import { GameStateHandler } from "./game-state-handler";
+import EventSystem from "../../game/event-system";
 
-import bg_front from "./assets/court_front.jpg";
+import button from "../../game/assets/wordui/buttons/long_buttons/blue_button_complete.png";
 
-export class BasketballMenu extends MenuScene {
-  constructor() {
-    super();
+/**
+ * Abstract class defining a standard phaser menu
+ * Menu scene always goes in front of a game scene
+ */
+export abstract class MenuScene extends Scene {
+  bg: Phaser.GameObjects.Image | undefined;
+  gameStateHandler?: GameStateHandler;
+
+  constructor(name?: string) {
+    super(name || "MainMenu");
   }
 
   preload() {
-    super.preload();
-    //  Load the assets for the game - Replace with your own assets
-    this.load.image("bg_front", bg_front);
+    // Load the assets for the game - Replace with your own assets
+
+    // Load the assets for the player avatars
+
+    // Load the assets for the UI
+    this.load.image("button", button);
   }
 
   create(handler: GameStateHandler) {
-    super.create(handler);
+    this.gameStateHandler = handler;
+    this.createMenu();
   }
 
   createMenu() {
-    super.createMenu();
-    const bg = addBackground(this, "bg_front");
-    const btnStart = addImage(this, "button", undefined, {
-      bg,
-      width: 300,
-      yAnchor: Anchor.end,
-      xAnchor: Anchor.center,
-    });
-    addText(this, "Start", {
-      bg: btnStart,
-      heightRel: 0.5,
-    });
-    btnStart.setInteractive();
-    btnStart.on(
-      "pointerdown",
-      () => {
-        this.startGame();
-      },
-      this
-    );
-    this.bg = bg;
+    // implemented in game
   }
 
   startGame() {
-    super.startGame();
+    // implemented in game
+    EventSystem.emit("sceneStarted", "Game");
+    this.scene.start("Game");
   }
 }
 
-export default BasketballMenu;
+export default MenuScene;

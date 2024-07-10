@@ -5,11 +5,11 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import React from "react";
-import SportsGame, { BasketballStateHandler } from "../game/basketball";
+import SportsGame from "../game/basketball";
+import { BasketballStateHandler } from "../game/basketball/game-state-handler";
 import { GameStateHandler } from "../classes/game-state/game-state-handler";
 import { useAppDispatch } from "../store/hooks";
 import { startGame } from "../store/slices/gameData";
-import EventSystem from "../game/event-system";
 
 export default function PhaserGame(): JSX.Element {
   const dispatch = useAppDispatch();

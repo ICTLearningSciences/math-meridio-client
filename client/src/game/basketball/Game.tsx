@@ -4,27 +4,80 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
+import { GameScene } from "../../classes/game-state/game-scene";
+import { GameStateHandler } from "../../classes/game-state/game-state-handler";
 import { EventSystem } from "../event-system";
-import { Scene } from "phaser";
+import { Anchor, addBackground, addImage } from "../phaser-helpers";
+import { BasketballPlayer } from ".";
 
-export class Game extends Scene {
+import bg_front from "./assets/court_front.jpg";
+import bg_hoop from "./assets/court_hoop.jpg";
+import bg_side from "./assets/court_side.jpg";
+import basketball from "./assets/basketball.png";
+import player1 from "./assets/player_1.png";
+import player2 from "./assets/player_2.png";
+import player3 from "./assets/player_3.png";
+import player4 from "./assets/player_4.png";
+import player5 from "./assets/player_5.png";
+
+export class BasketballGame extends GameScene {
+  bbPlayer: Phaser.GameObjects.Image | undefined;
+
   constructor() {
-    super("Game");
+    super();
   }
 
-  create() {
-    this.cameras.main.setBackgroundColor(0x00ff00);
-    this.add.image(512, 384, "background").setAlpha(0.5);
-    EventSystem.on("addBall", this.addBall, this);
-    // EventSystem.emit("current-scene-ready", this);
+  preload() {
+    super.preload();
+    //  Load the assets for the game - Replace with your own assets
+    this.load.image("bg_front", bg_front);
+    this.load.image("bg_hoop", bg_hoop);
+    this.load.image("bg_side", bg_side);
+    this.load.image("basketball", basketball);
+    this.load.image("player1", player1);
+    this.load.image("player2", player2);
+    this.load.image("player3", player3);
+    this.load.image("player4", player4);
+    this.load.image("player5", player5);
   }
 
-  addBall(ball: string) {
-    const image = this.add.image(
-      Math.random() * 100,
-      Math.random() * 100,
-      ball
-    );
-    image.scale = 0.1;
+  create(handler: GameStateHandler) {
+    super.create(handler);
+    EventSystem.on("addPlayer", this.addPlayer, this);
+  }
+
+  createScene() {
+    super.createScene();
+    const bg = addBackground(this, "bg_front");
+    this.bg = bg;
+  }
+
+  updateScene(scene?: any) {
+    // todo: define what the scene objects are in JSON
+    super.updateScene(scene);
+  }
+
+  startGame() {
+    super.startGame();
+  }
+
+  resetGame() {
+    super.resetGame();
+  }
+
+  /** event functions are defined per game */
+
+  addPlayer(player: BasketballPlayer) {
+    if (this.bbPlayer) {
+      this.bbPlayer.destroy();
+    }
+    this.bbPlayer = addImage(this, `player${player.clientId}`, undefined, {
+      bg: this.bg,
+      width: 300,
+      xAnchor: Anchor.center,
+      yAnchor: Anchor.center,
+    });
   }
 }
+
+export default BasketballGame;

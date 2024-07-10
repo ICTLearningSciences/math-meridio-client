@@ -5,31 +5,62 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import { v4 as uuid } from "uuid";
-import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { UserData } from "./userData";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { GameStateHandler } from "../../classes/game-state/game-state-handler";
 import { RootState } from "..";
-
-export interface ChatMessage {
-  sender: string;
-  message: string;
-}
+import { ChatMessage, GameRoom, Player } from "../../types";
 
 export interface GameData {
-  gameRoom: string;
-  players: UserData[];
-  messages: ChatMessage[];
-
+  currentGameId: string;
+  players: Player[];
+  chat: ChatMessage[];
+  room?: GameRoom;
   gameState?: GameStateHandler;
 }
 
 const initialState: GameData = {
-  gameRoom: uuid(),
+  currentGameId: "basketball", // todo: hard-coded for now
   players: [],
-  messages: [],
+  chat: [],
 };
 
 /** Actions */
+export const joinRoom = createAsyncThunk(
+  "gameData/joinRoom",
+  async (args, thunkAPI): Promise<void> => {
+    // todo
+  }
+);
+
+export const leaveRoom = createAsyncThunk(
+  "gameData/leaveRoom",
+  async (args, thunkAPI): Promise<void> => {
+    // todo
+  }
+);
+
+export const createRoom = createAsyncThunk(
+  "gameData/createRoom",
+  async (args, thunkAPI): Promise<void> => {
+    // todo
+  }
+);
+
+export const renameRoom = createAsyncThunk(
+  "gameData/renameRoom",
+  async (args, thunkAPI): Promise<void> => {
+    // todo
+  }
+);
+
+export const deleteRoom = createAsyncThunk(
+  "gameData/deleteRoom",
+  async (args, thunkAPI): Promise<void> => {
+    // todo
+  }
+);
+
+// todo: remove this
 export const startGame = createAsyncThunk(
   "gameData/startGame",
   async (args: GameStateHandler, thunkAPI): Promise<ChatMessage[]> => {
@@ -37,8 +68,8 @@ export const startGame = createAsyncThunk(
   }
 );
 
-export const sendChatMessage = createAsyncThunk(
-  "gameData/sendChatMessage",
+export const sendMessage = createAsyncThunk(
+  "gameData/sendMessage",
   async (args: ChatMessage, thunkAPI): Promise<ChatMessage[]> => {
     const state = thunkAPI.getState() as RootState;
     const msg = (await state.gameData.gameState?.respond(args)) || [];
@@ -54,10 +85,10 @@ export const dataSlice = createSlice({
     builder
       .addCase(startGame.fulfilled, (state, action) => {
         state.gameState = action.meta.arg;
-        state.messages.push(...action.payload);
+        state.chat.push(...action.payload);
       })
-      .addCase(sendChatMessage.fulfilled, (state, action) => {
-        state.messages.push(...action.payload);
+      .addCase(sendMessage.fulfilled, (state, action) => {
+        state.chat.push(...action.payload);
       });
   },
 });

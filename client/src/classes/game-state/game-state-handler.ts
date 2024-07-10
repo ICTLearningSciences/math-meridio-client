@@ -19,7 +19,7 @@ import {
   IRemoveItem,
   removeItemSchema,
 } from "./types";
-import { ChatMessage } from "../../store/slices/gameData";
+import { ChatMessage } from "../../types";
 
 export class GameStateHandler {
   objects: GameObjects[];

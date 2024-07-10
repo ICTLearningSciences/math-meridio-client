@@ -4,11 +4,10 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-
+import axios, { CancelToken } from "axios";
 import { AiServicesJobStatusResponseTypes } from "./ai-services/ai-service-types";
-import { execHttp } from "./api-helpers";
-import { GenericLlmRequest } from "./types";
-import { CancelToken } from "axios";
+import { execGql, execHttp } from "./api-helpers";
+import { GenericLlmRequest, Player } from "./types";
 
 type OpenAiJobId = string;
 export const LLM_API_ENDPOINT = process.env.GATSBY_LLM_API_ENDPOINT || "/docs";
@@ -47,4 +46,58 @@ export async function asyncLlmRequestStatus(
     }
   );
   return res;
+}
+
+export async function fetchPlayer(clientId: string): Promise<Player> {
+  const data = await execGql<Player>(
+    {
+      query: `
+      query FetchPlayer($id: String!) {
+        player(id: $id) {
+          clientId
+          name
+          description
+          avatar {
+            type
+            id
+            traits
+          }
+        }
+      }`,
+      variables: {
+        clientId,
+      },
+    },
+    {
+      dataPath: "player",
+    }
+  );
+  return data;
+}
+
+export async function updatePlayer(player: Player): Promise<Player> {
+  const data = await execGql<Player>(
+    {
+      query: `
+      mutation UpdatePlayer($player: PlayerInputType!) {
+        updatePlayer(player: $player) {
+          clientId
+          name
+          description
+          avatar {
+            type
+            id
+            traits
+          }
+        }
+      }`,
+      variables: {
+        player,
+      },
+    },
+    {
+      dataPath: "updatePlayer",
+    }
+  );
+  return data;
 }

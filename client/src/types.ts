@@ -39,3 +39,31 @@ export enum JobStatus {
   COMPLETE = "COMPLETE",
   FAILED = "FAILED",
 }
+
+export interface AvatarItem {
+  type: "head" | "brows" | "eyes" | "mouth" | "nose";
+  id: string;
+  traits: string[];
+}
+
+export interface Player {
+  clientId: string;
+  name: string;
+  avatar: AvatarItem[];
+  description: string;
+}
+
+export interface ChatMessage {
+  clientId: string;
+  sender: PromptRoles;
+  playerId?: string;
+  message: string;
+}
+
+export interface GameRoom {
+  clientId: string;
+  name: string;
+  createdAt: string;
+  players: string[];
+  game: string; // do we need this?
+}
