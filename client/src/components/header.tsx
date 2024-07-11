@@ -4,28 +4,32 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
+import { IconButton } from "@mui/material";
 import React from "react";
-import { Grid } from "@mui/material";
-import ChatThread from "./ChatThread";
-import ChatForm from "./ChatForm";
-import PhaserGame from "./PhaserGame";
-import { useWithHydrateRedux } from "../store/use-with-hydrate-redux";
-import { Header } from "./header";
-
-export default function App(): JSX.Element {
-  useWithHydrateRedux(); // NOTE: make sure to have this at the earliest point w/ store
+import CreateIcon from "@mui/icons-material/Create";
+import { navigate } from "gatsby";
+export function Header() {
   return (
-    <div className="root">
-      <Header />
-      <Grid container xs={true} flexDirection="row">
-        <Grid item xs={9}>
-          <PhaserGame />
-        </Grid>
-        <Grid item xs={3} display="flex" flexDirection="column">
-          <ChatThread />
-          <ChatForm />
-        </Grid>
-      </Grid>
+    <div
+      style={{
+        height: "100px",
+        width: "100%",
+        backgroundColor: "lightblue",
+        color: "white",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        fontSize: "24px",
+        fontWeight: "bold",
+      }}
+    >
+      <IconButton
+        onClick={() => {
+          navigate("/discussion-builder");
+        }}
+      >
+        <CreateIcon />
+      </IconButton>
     </div>
   );
 }

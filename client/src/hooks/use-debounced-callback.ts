@@ -4,28 +4,30 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from "react";
-import { Grid } from "@mui/material";
-import ChatThread from "./ChatThread";
-import ChatForm from "./ChatForm";
-import PhaserGame from "./PhaserGame";
-import { useWithHydrateRedux } from "../store/use-with-hydrate-redux";
-import { Header } from "./header";
 
-export default function App(): JSX.Element {
-  useWithHydrateRedux(); // NOTE: make sure to have this at the earliest point w/ store
-  return (
-    <div className="root">
-      <Header />
-      <Grid container xs={true} flexDirection="row">
-        <Grid item xs={9}>
-          <PhaserGame />
-        </Grid>
-        <Grid item xs={3} display="flex" flexDirection="column">
-          <ChatThread />
-          <ChatForm />
-        </Grid>
-      </Grid>
-    </div>
-  );
-}
+import { useRef, useEffect } from "react";
+import { debounce } from "lodash";
+
+// Custom hook for debouncing a callback
+export const useDebouncedCallback = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  callback: (...args: any[]) => void,
+  delay: number
+) => {
+  const debouncedFn = useRef(debounce(callback, delay)).current;
+
+  useEffect(() => {
+    // Update the debounced function if callback or delay changes
+    debouncedFn.cancel(); // Cancel the previous debounce instance
+    debouncedFn.flush = debounce(callback, delay);
+  }, [callback, delay]);
+
+  useEffect(() => {
+    // Cleanup on unmount
+    return () => {
+      debouncedFn.cancel();
+    };
+  }, [debouncedFn]);
+
+  return debouncedFn;
+};

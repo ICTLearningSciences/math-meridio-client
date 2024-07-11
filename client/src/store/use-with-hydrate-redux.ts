@@ -4,28 +4,13 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from "react";
-import { Grid } from "@mui/material";
-import ChatThread from "./ChatThread";
-import ChatForm from "./ChatForm";
-import PhaserGame from "./PhaserGame";
-import { useWithHydrateRedux } from "../store/use-with-hydrate-redux";
-import { Header } from "./header";
+import { useEffect } from "react";
+import { useWithStages } from "./slices/stages/use-with-stages";
 
-export default function App(): JSX.Element {
-  useWithHydrateRedux(); // NOTE: make sure to have this at the earliest point w/ store
-  return (
-    <div className="root">
-      <Header />
-      <Grid container xs={true} flexDirection="row">
-        <Grid item xs={9}>
-          <PhaserGame />
-        </Grid>
-        <Grid item xs={3} display="flex" flexDirection="column">
-          <ChatThread />
-          <ChatForm />
-        </Grid>
-      </Grid>
-    </div>
-  );
+export function useWithHydrateRedux() {
+  const { loadDiscussionStages } = useWithStages();
+
+  useEffect(() => {
+    loadDiscussionStages();
+  }, []);
 }
