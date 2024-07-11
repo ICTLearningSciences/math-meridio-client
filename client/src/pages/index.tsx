@@ -8,19 +8,13 @@ import "regenerator-runtime/runtime";
 
 import type { HeadFC, PageProps } from "gatsby";
 import * as React from "react";
-import { Provider } from "react-redux";
 import App from "../components/App";
-import { store } from "../store";
 
 import "../styles/layout.css";
 import "../styles/chat.css";
 
 const IndexPage: React.FC<PageProps> = () => {
-  return (
-    <Provider store={store}>
-      <App />
-    </Provider>
-  );
+  return <App />;
 };
 
 export default IndexPage;

@@ -4,20 +4,12 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { combineReducers, configureStore } from "@reduxjs/toolkit";
-import gameData from "./slices/gameData";
-import userData from "./slices/userData";
-import stages from "./slices/stages";
+import React from "react";
+import { StageBuilderPage } from "../components/discussion-stage-builder/stage-builder-page";
+import { useWithStages } from "../store/slices/stages/use-with-stages";
+import { Provider } from "react-redux";
+import { store } from "../store";
 
-export const store = configureStore({
-  reducer: combineReducers({
-    gameData,
-    userData,
-    stages,
-  }),
-});
-
-// Infer the `RootState` and `AppDispatch` types from the store itself
-export type RootState = ReturnType<typeof store.getState>;
-// Inferred type: {posts: PostsState, comments: CommentsState, users: UsersState}
-export type AppDispatch = typeof store.dispatch;
+export default function DiscussionBuilderPage() {
+  return <StageBuilderPage goToStage={() => {}} />;
+}

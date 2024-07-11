@@ -4,20 +4,30 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { combineReducers, configureStore } from "@reduxjs/toolkit";
-import gameData from "./slices/gameData";
-import userData from "./slices/userData";
-import stages from "./slices/stages";
 
-export const store = configureStore({
-  reducer: combineReducers({
-    gameData,
-    userData,
-    stages,
-  }),
-});
+import { useRef, useEffect } from "react";
+import { debounce } from "lodash";
 
-// Infer the `RootState` and `AppDispatch` types from the store itself
-export type RootState = ReturnType<typeof store.getState>;
-// Inferred type: {posts: PostsState, comments: CommentsState, users: UsersState}
-export type AppDispatch = typeof store.dispatch;
+// Custom hook for debouncing a callback
+export const useDebouncedCallback = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  callback: (...args: any[]) => void,
+  delay: number
+) => {
+  const debouncedFn = useRef(debounce(callback, delay)).current;
+
+  useEffect(() => {
+    // Update the debounced function if callback or delay changes
+    debouncedFn.cancel(); // Cancel the previous debounce instance
+    debouncedFn.flush = debounce(callback, delay);
+  }, [callback, delay]);
+
+  useEffect(() => {
+    // Cleanup on unmount
+    return () => {
+      debouncedFn.cancel();
+    };
+  }, [debouncedFn]);
+
+  return debouncedFn;
+};

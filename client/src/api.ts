@@ -6,7 +6,12 @@ The full terms of this copyright and license should always be found in the root 
 */
 
 import { AiServicesJobStatusResponseTypes } from "./ai-services/ai-service-types";
-import { execHttp } from "./api-helpers";
+import { execGql, execHttp } from "./api-helpers";
+import {
+  DiscussionStage,
+  DiscussionStageStepType,
+  PromptStageStepGql,
+} from "./components/discussion-stage-builder/types";
 import { GenericLlmRequest } from "./types";
 import { CancelToken } from "axios";
 
@@ -47,4 +52,123 @@ export async function asyncLlmRequestStatus(
     }
   );
   return res;
+}
+
+export const fullDiscussionStageQueryData = `
+                      _id
+                      clientId
+                      title
+                      stageType
+                      description
+                      flowsList{
+                        clientId
+                        name
+                        steps{
+                          ... on SystemMessageStageStepType {
+                              stepId
+                              stepType
+                              jumpToStepId
+                              message
+                          }
+
+                          ... on RequestUserInputStageStepType {
+                              stepId
+                              stepType
+                              jumpToStepId
+                              message
+                              saveResponseVariableName
+                              disableFreeInput
+                              predefinedResponses{
+                                  clientId
+                                  message
+                                  isArray
+                                  jumpToStepId
+                                  responseWeight
+                              }
+                          }
+
+                          ... on PromptStageStepType{
+                              stepId
+                              stepType
+                              jumpToStepId
+                              promptText
+                              responseFormat
+                              includeChatLogContext
+                              outputDataType
+                              jsonResponseData
+                              customSystemRole
+                          }
+                      }
+                      }
+`;
+
+export function convertDiscussionStageToGQl(
+  stage: DiscussionStage
+): DiscussionStage {
+  const copy: DiscussionStage = JSON.parse(JSON.stringify(stage));
+  copy.flowsList.forEach((flow) => {
+    flow.steps.forEach((step) => {
+      if (step.stepType === DiscussionStageStepType.PROMPT) {
+        const _step: PromptStageStepGql = step as PromptStageStepGql;
+        if (_step.jsonResponseData) {
+          _step.jsonResponseData = JSON.stringify(_step.jsonResponseData);
+        }
+      }
+    });
+  });
+  return copy;
+}
+
+export function convertGqlToDiscussionStage(
+  stage: DiscussionStage
+): DiscussionStage {
+  const copy: DiscussionStage = JSON.parse(JSON.stringify(stage));
+  copy.flowsList.forEach((flow) => {
+    flow.steps.forEach((step) => {
+      if (step.stepType === DiscussionStageStepType.PROMPT) {
+        const _step: PromptStageStepGql = step as PromptStageStepGql;
+        if (typeof _step.jsonResponseData === "string") {
+          _step.jsonResponseData = JSON.parse(_step.jsonResponseData as string);
+        }
+      }
+    });
+  });
+  return copy;
+}
+
+export async function addOrUpdateDiscussionStage(
+  stage: DiscussionStage
+): Promise<DiscussionStage> {
+  const res = await execGql<DiscussionStage>(
+    {
+      query: `mutation AddOrUpdateDiscussionStage($stage: DiscussionStageInputType!) {
+        addOrUpdateDiscussionStage(stage: $stage) {
+            ${fullDiscussionStageQueryData}
+            }
+       }`,
+      variables: {
+        stage: convertDiscussionStageToGQl(stage),
+      },
+    },
+    {
+      dataPath: "addOrUpdateDiscussionStage",
+    }
+  );
+  return convertGqlToDiscussionStage(res);
+}
+
+export async function fetchDiscussionStages(): Promise<DiscussionStage[]> {
+  const res = await execGql<DiscussionStage[]>(
+    {
+      query: `query FetchDiscussionStages{
+        fetchDiscussionStages { 
+            ${fullDiscussionStageQueryData}
+        }
+}`,
+    },
+    {
+      dataPath: "fetchDiscussionStages",
+    }
+  );
+  return res.map(convertGqlToDiscussionStage);
 }
