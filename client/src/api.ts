@@ -52,43 +52,43 @@ export async function fetchPlayer(id: string): Promise<Player> {
   const data = await execGql<Player>(
     {
       query: `
-      query FetchPlayer($id: String!) {
-        fetchPlayer(id: $id) {
-          clientId
-          name
-          avatar
-          description
-        }
-      }`,
+        query FetchPlayer($id: String!) {
+          fetchPlayer(id: $id) {
+            clientId
+            name
+            avatar
+            description
+          }
+        }`,
       variables: {
         id,
       },
     },
     {
-      dataPath: "player",
+      dataPath: "fetchPlayer",
     }
   );
   return data;
 }
 
-export async function updatePlayer(player: Player): Promise<Player> {
+export async function addOrUpdatePlayer(player: Player): Promise<Player> {
   const data = await execGql<Player>(
     {
       query: `
-      mutation UpdatePlayer($player: PlayerInputType!) {
-        updatePlayer(player: $player) {
-          clientId
-          name
-          avatar
-          description
-        }
-      }`,
+        mutation AddOrUpdatePlayer($player: PlayerInput!) {
+          addOrUpdatePlayer(player: $player) {
+            clientId
+            name
+            avatar
+            description
+          }
+        }`,
       variables: {
         player,
       },
     },
     {
-      dataPath: "updatePlayer",
+      dataPath: "addOrUpdatePlayer",
     }
   );
   return data;

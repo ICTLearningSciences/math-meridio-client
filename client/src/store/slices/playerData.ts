@@ -17,7 +17,7 @@ import * as api from "../../api";
 const initialState: Player = {
   clientId: uuid(),
   name: "",
-  avatar: [],
+  avatar: "",
   description: "",
 };
 
@@ -49,7 +49,7 @@ export const fetchPlayer = createAsyncThunk(
 export const updatePlayer = createAsyncThunk(
   "playerData/updatePlayer",
   async (args: Player, thunkAPI): Promise<Player> => {
-    return await api.updatePlayer(args);
+    return await api.addOrUpdatePlayer(args);
   }
 );
 

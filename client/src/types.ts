@@ -61,7 +61,7 @@ export interface ChatMessage {
 }
 
 export interface Room {
-  clientId: string;
+  _id: string;
   name: string;
   createdAt: string;
   players: string[];

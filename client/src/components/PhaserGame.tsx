@@ -8,11 +8,13 @@ import React from "react";
 import SportsGame from "../game/basketball";
 import { BasketballStateHandler } from "../game/basketball/game-state-handler";
 import { GameStateHandler } from "../classes/game-state/game-state-handler";
-import { useAppDispatch } from "../store/hooks";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { startGame } from "../store/slices/gameData";
 
 export default function PhaserGame(): JSX.Element {
   const dispatch = useAppDispatch();
+  const chat = useAppSelector((state) => state.gameData.chat);
+
   const gameContainerRef = React.useRef<HTMLDivElement | null>(null);
   const [game, setGame] =
     React.useState<Phaser.Types.Core.GameConfig>(SportsGame);
@@ -34,7 +36,7 @@ export default function PhaserGame(): JSX.Element {
         parent: gameContainerRef.current as HTMLElement,
       };
       const pg = new Phaser.Game(config);
-      pg.scene.start("Preloader");
+      pg.scene.start("AvatarCreator");
       dispatch(startGame(gameController));
       setPhaserGame(pg);
     }

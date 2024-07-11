@@ -6,6 +6,7 @@ The full terms of this copyright and license should always be found in the root 
 */
 import Phaser from "phaser";
 
+import AvatarCreator from "../AvatarCreator";
 import MainMenu from "./MainMenu";
 import Game from "./Game";
 import { GameOver } from "./GameOver";
@@ -95,7 +96,7 @@ export const BB_PLAYERS: BasketballPlayer[] = [
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.CANVAS,
   backgroundColor: "#282c34",
-  scene: [MainMenu, Game, GameOver],
+  scene: [AvatarCreator, MainMenu, Game, GameOver],
 };
 
 export default config;
