@@ -8,23 +8,21 @@ import React from "react";
 import { SelectCreateStage } from "./select-create-stage";
 import { EditDiscussionStage } from "./edit-stage/edit-stage";
 import { defaultDicussionStage, DiscussionStage } from "./types";
+import { useWithStages } from "../../store/slices/stages/use-with-stages";
 
 export function StageBuilderPage(props: {
   goToStage: (stage: DiscussionStage) => void;
-  curStage?: DiscussionStage;
 }): JSX.Element {
-  const { goToStage, curStage } = props;
-  // TODO: get these from a hook function
-  const existingStages: DiscussionStage[] = [];
-  const addOrUpdateDiscussionStage = (stage: DiscussionStage) => {
-    return defaultDicussionStage();
-  };
-  const addNewLocalDiscussionStage = () => {
-    return defaultDicussionStage();
-  };
+  const {
+    addNewLocalDiscussionStage,
+    addOrUpdateDiscussionStage,
+    discussionStages,
+  } = useWithStages();
+  const { goToStage } = props;
+  const existingStages: DiscussionStage[] = discussionStages;
 
   const [selectedStageClientId, setSelectedStageClientId] =
-    React.useState<string>(curStage?.clientId || "");
+    React.useState<string>("");
   const selectedStage = existingStages.find(
     (stage) => stage.clientId === selectedStageClientId
   );

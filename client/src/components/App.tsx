@@ -9,11 +9,14 @@ import { Grid } from "@mui/material";
 import ChatThread from "./ChatThread";
 import ChatForm from "./ChatForm";
 import PhaserGame from "./PhaserGame";
-import { GameStateHandlerTester } from "./test-components/game-state-handler-tester";
+import { useWithHydrateRedux } from "../store/use-with-hydrate-redux";
+import { Header } from "./header";
 
 export default function App(): JSX.Element {
+  useWithHydrateRedux(); // NOTE: make sure to have this at the earliest point w/ store
   return (
     <div className="root">
+      <Header />
       <Grid container xs={true} flexDirection="row">
         <Grid item xs={9}>
           <PhaserGame />
@@ -23,7 +26,6 @@ export default function App(): JSX.Element {
           <ChatForm />
         </Grid>
       </Grid>
-      {/* <GameStateHandlerTester /> */}
     </div>
   );
 }
