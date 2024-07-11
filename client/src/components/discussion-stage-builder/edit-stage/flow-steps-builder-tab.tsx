@@ -14,7 +14,7 @@ import {
   defaultPromptBuilder,
 } from "./step-builder/prompt-step-builder";
 import { InputField } from "../shared/input-components";
-import { AddNewDiscussionStageButton } from "../shared/add-new-activity-button";
+import { AddNewDiscussionStageButton } from "../shared/add-new-stage-button";
 import { Button } from "@mui/material";
 import {
   SystemMessageStepBuilder,
