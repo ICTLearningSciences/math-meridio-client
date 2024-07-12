@@ -16,7 +16,7 @@ export default function App(): JSX.Element {
   useWithHydrateRedux(); // NOTE: make sure to have this at the earliest point w/ store
   return (
     <div className="root">
-      <Header />
+      {/* <Header /> */}
       <Grid container xs={true} flexDirection="row">
         <Grid item xs={9}>
           <PhaserGame />

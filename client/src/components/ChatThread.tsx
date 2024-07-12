@@ -89,9 +89,9 @@ export default function ChatThread(): JSX.Element {
             >
               {msg.message}
             </Typography>
-            <div className={classes.chatIcon}>
+            {/* <div className={classes.chatIcon}>
               <Person />
-            </div>
+            </div> */}
           </ListItem>
         );
       })}

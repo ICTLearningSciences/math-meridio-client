@@ -43,7 +43,7 @@ export enum JobStatus {
 export interface Avatar {
   type: string;
   id: string;
-  traits: string[];
+  description: string;
 }
 
 export interface Player {
@@ -67,3 +67,248 @@ export interface Room {
   players: string[];
   game: string; // do we need this?
 }
+
+export const AVATAR_HEADS: Avatar[] = [
+  {
+    type: "head",
+    id: "boy_1",
+    description: ["Boy", "Male", "East Asian", "Asian", "Chinese", "Japanese", "Korean", "White skin", "Black hair", "Short hair", "Bob cut", "Bowl cut", "Bangs"].join(", "),
+  },
+  {
+    type: "head",
+    id: "boy_2",
+    description: ["Boy", "Male", "White", "Caucasian", "East Asian", "Asian", "White skin", "Brown hair", "Short hair", "Side part", "Side bangs"].join(", "),
+  },
+  {
+    type: "head",
+    id: "boy_3",
+    description: ["Boy", "Male", "East Asian", "Asian", "Chinese", "Japanese", "Korean", "White skin", "Black hair", "Short hair", "Bangs", "Mop top"].join(", "),
+  },
+  {
+    type: "head",
+    id: "boy_4",
+    description: ["Boy", "Male", "White", "Caucasian", "East Asian", "Asian", "White skin", "Brown hair", "Short hair", "Curly hair", "Forehead"].join(", "),
+  },
+  {
+    type: "head",
+    id: "boy_5",
+    description: ["Boy", "Male", "East Asian", "Asian", "Chinese", "Japanese", "Korean", "White skin", "Black hair", "Short hair", "Side part", "Side bangs"].join(", "),
+  },
+  {
+    type: "head",
+    id: "boy_6",
+    description: ["Boy", "Male", "East Asian", "Asian", "Chinese", "Japanese", "Korean", "White skin", "Black hair", "Short hair", "Crew cut"].join(", "),
+  },
+  {
+    type: "head",
+    id: "boy_7",
+    description: ["Boy", "Male", "East Asian", "Asian", "White skin", "Blue hair", "Dyed hair", "Kpop", "Short hair", "Styled hair"].join(", "),
+  },
+  {
+    type: "head",
+    id: "boy_8",
+    description: ["Boy", "Male", "White", "Caucasian", "Hispanic", "White skin", "Light brown hair", "Medium hair", "Forehead", "Neck-length hair", "Mullet"].join(", "),
+  },
+  {
+    type: "head",
+    id: "boy_9",
+    description: ["Boy", "Male", "White", "Caucasian", "White skin", "Light brown hair", "Dirty blonde hair", "Short hair", "Curly hair"].join(", "),
+  },
+  {
+    type: "head",
+    id: "boy_10",
+    description: ["Boy", "Male", "White", "Caucasian", "White skin", "Light blonde hair", "Platinum blonde hair", "Short hair", "Forehead"].join(", "),
+  },
+  {
+    type: "head",
+    id: "boy_11",
+    description: ["Boy", "Male", "White", "Caucasian", "White skin", "Brown hair", "Short hair", "Slicked back hair", "Grease", "Forehead", "Hair gel"].join(", "),
+  },
+  {
+    type: "head",
+    id: "boy_12",
+    description: ["Boy", "Male", "Black", "African American", "POC", "Black skin", "Brown skin", "Black hair", "Dark brown hair", "Short hair", "Shaved"].join(", "),
+  },
+  {
+    type: "head",
+    id: "boy_13",
+    description: ["Boy", "Male", "Black", "African American", "POC", "Black skin", "Brown skin", "Black hair", "Dark brown hair", "Curls", "Afro"].join(", "),
+  },
+  {
+    type: "head",
+    id: "boy_14",
+    description: ["Boy", "Male", "Black", "African American", "POC", "Black skin", "Brown skin", "Black hair", "Dark brown hair", "Cornrows"].join(", "),
+  },
+  {
+    type: "head",
+    id: "boy_15",
+    description: ["Boy", "Male", "Black", "African American", "POC", "Black skin", "Brown skin", "Black hair", "Dark brown hair", "Afro", "Knots", "Locs", "Dreadlocks"].join(", "),
+  },
+  {
+    type: "head",
+    id: "boy_16",
+    description: ["Boy", "Male", "Black", "African American", "POC", "South asian", "Black skin", "Brown skin", "Black hair", "Dark brown hair", "Curls", "Short hair"].join(", "),
+  },
+  {
+    type: "head",
+    id: "boy_17",
+    description: ["Boy", "Male", "Black", "African American", "POC", "Black skin", "Brown skin", "Black hair", "Dark brown hair", "Dreadlocks", "Locs", "Long hair"].join(", "),
+  },
+  {
+    type: "head",
+    id: "boy_18",
+    description: ["Boy", "Male", "Black", "South asian", "POC", "Blasian", "Indian", "Black skin", "Brown skin", "Black hair", "Dark brown hair", "Short hair"].join(", "),
+  },
+  {
+    type: "head",
+    id: "boy_19",
+    description: ["Boy", "Male", "Black", "South asian", "POC", "Blasian", "Indian", "Black skin", "Brown skin", "Dark brown hair", "Short hair"].join(", "),
+  },
+  {
+    type: "head",
+    id: "boy_20",
+    description: ["Boy", "Male", "Black", "South asian", "POC", "Blasian", "Indian", "Black skin", "Brown skin", "Black hair", "Dark brown hair", "Short hair", "Slicked back", "Hair gel", "Grease", "Forehead"].join(", "),
+  },
+
+  {
+    type: "head",
+    id: "girl_1",
+    description: ["Girl", "Female", "East Asian", "Asian", "Chinese", "Japanese", "Korean", "White skin", "Black hair", "Long hair", "Straight hair", "Forehead"].join(", "),
+  },
+  {
+    type: "head",
+    id: "girl_2",
+    description: ["Girl", "Female", "East Asian", "Asian", "Chinese", "Japanese", "Korean", "White skin", "Black hair", "Short hair", "Bob cut", "Forehead"].join(", "),
+  },
+  {
+    type: "head",
+    id: "girl_3",
+    description: ["Girl", "Female", "East Asian", "Asian", "Chinese", "Japanese", "Korean", "White skin", "Black hair", "Short hair", "Straight hair", "Forehead"].join(", "),
+  },
+  {
+    type: "head",
+    id: "girl_4",
+    description: ["Girl", "Female", "East Asian", "Asian", "Chinese", "Japanese", "Korean", "White skin", "Black hair", "Long hair", "Medium hair", "Straight hair", "Forehead"].join(", "),
+  },
+  {
+    type: "head",
+    id: "girl_5",
+    description: ["Girl", "Female", "East Asian", "Asian", "Chinese", "Japanese", "Korean", "White skin", "Black hair", "Short hair", "Straight hair", "Bangs", "Bowl cut", "Bob cut"].join(", "),
+  },
+  {
+    type: "head",
+    id: "girl_6",
+    description: ["Girl", "Female", "East Asian", "Asian", "Chinese", "Japanese", "Korean", "White skin", "Black hair", "Short hair", "Straight hair", "Forehead", "Pixie cut", "Butch"].join(", "),
+  },
+  {
+    type: "head",
+    id: "girl_7",
+    description: ["Girl", "Female", "Black", "African American", "POC", "South Asian", "Black skin", "Brown skin", "Black hair", "Dark brown hair", "Ponytail", "High ponytail", "Forehead"].join(", "),
+  },
+  {
+    type: "head",
+    id: "girl_8",
+    description: ["Girl", "Female", "Black", "African American", "POC", "South Asian", "Black skin", "Brown skin", "Black hair", "Dark brown hair", "Medium hair", "Locs", "Dreadlocks", "Forehead"].join(", "),
+  },
+  {
+    type: "head",
+    id: "girl_9",
+    description: ["Girl", "Female", "Black", "African American", "POC", "South Asian", "Black skin", "Brown skin", "Black hair", "Dark brown hair", "Short hair", "Dark brown hair", "Locs", "Dreadlocks", "Forehead", "Ponytail", "High ponytail"].join(", "),
+  },
+  {
+    type: "head",
+    id: "girl_10",
+    description: ["Girl", "Female", "Black", "African American", "POC", "South Asian", "Black skin", "Brown skin", "Black hair", "Dark brown hair", "Medium hair", "Medium hair", "Cornrows"].join(", "),
+  },
+  {
+    type: "head",
+    id: "girl_11",
+    description: ["Girl", "Female", "Black", "African American", "POC", "Black skin", "Brown skin", "Black hair", "Dark brown hair", "Short hair", "Afro"].join(", "),
+  },
+  {
+    type: "head",
+    id: "girl_12",
+    description: ["Girl", "Female", "Black", "African American", "POC", "South asian", "Black skin", "Brown skin", "Black hair", "Dark brown hair", "Medium hair", "Afro", "Cornrows"].join(", "),
+  },
+  {
+    type: "head",
+    id: "girl_13",
+    description: ["Girl", "Female", "White", "Caucasian", "White skin", "Light brown hair", "Blonde hair", "Medium hair", "Ponytail", "Bun", "Highlights", "Dyed hair", "Forehead"].join(", "),
+  },
+  {
+    type: "head",
+    id: "girl_14",
+    description: ["Girl", "Female", "White", "Caucasian", "White skin", "Brown hair", "Long hair", "Straight hair", "Forehead"].join(", "),
+  },
+  {
+    type: "head",
+    id: "girl_15",
+    description: ["Girl", "Female", "White", "Caucasian", "White skin", "Brown hair", "Dark brown hair", "Short hair", "Buns", "Bun", "Twin tails", "Forehead"].join(", "),
+  },
+  {
+    type: "head",
+    id: "girl_16",
+    description: ["Girl", "Female", "White", "Caucasian", "White skin", "Brown hair", "Dark brown hair", "Medium hair", "Curly hair", "Forehead"].join(", "),
+  },
+  {
+    type: "head",
+    id: "girl_17",
+    description: ["Girl", "Female", "White", "Caucasian", "White skin", "Brown hair", "Dark brown hair", "Short hair", "Curly hair", "Bob cut", "Forehead"].join(", "),
+  },
+  {
+    type: "head",
+    id: "girl_18",
+    description: ["Girl", "Female", "Black", "African American", "POC", "South asian", "Indian", "Black skin", "Brown skin", "Black hair", "Dark brown hair", "Medium hair", "Straight hair", "Forehead"].join(", "),
+  },
+  {
+    type: "head",
+    id: "girl_19",
+    description: ["Girl", "Female", "Black", "African American", "POC", "South asian", "Indian", "Black skin", "Brown skin", "Black hair", "Dark brown hair", "Short hair", "Curly hair", "Forehead"].join(", "),
+  },
+  {
+    type: "head",
+    id: "girl_20",
+    description: ["Girl", "Female", "Black", "African American", "POC", "South asian", "Indian", "Black skin", "Brown skin", "Black hair", "Dark brown hair", "Long hair", "Straight hair", "Forehead"].join(", "),
+  },
+  {
+    type: "head",
+    id: "girl_21",
+    description: ["Girl", "Female", "Black", "African American", "POC", "South asian", "Indian", "Black skin", "Brown skin", "Black hair", "Dark brown hair", "Short hair", "Pixie cut", "Cornrows", "Forehead"].join(", "),
+  },
+  {
+    type: "head",
+    id: "girl_22",
+    description: ["Girl", "Female", "White skin", "Pink hair", "Strawberry blonde hair", "Medium hair", "Bobcut", "Dyed hair", "Forehead", "Cat ears"].join(", "),
+  },
+  {
+    type: "head",
+    id: "girl_23",
+    description: ["Girl", "Female", "White skin", "Blue hair", "Purple hair", "Medium hair", "Ponytails", "Pigtails", "Twin tails", "Dyed hair", "Forehead"].join(", "),
+  },
+  {
+    type: "head",
+    id: "girl_24",
+    description: ["Girl", "Female", "White", "Caucasian", "Asian", "East asian", "Chinese", "Japanese", "Korean", "White skin", "Blue hair", "Purple hair", "Long hair", "Ponytails", "Pigtails", "Twin tails", "Forehead", "Braids"].join(", "),
+  },
+  {
+    type: "head",
+    id: "girl_25",
+    description: ["Girl", "Female", "Asian", "East asian", "Chinese", "Japanese", "Korean", "White skin", "Blue hair", "Purple hair", "Medium hair", "Ponytails", "Pigtails", "Twin tails", "Bangs", "Buns"].join(", "),
+  },
+  {
+    type: "head",
+    id: "girl_26",
+    description: ["Girl", "Female", "Asian", "East asian", "Chinese", "Japanese", "Korean", "White skin", "Pink hair", "Purple hair", "Dyed hair", "Long hair", "Ponytail", "Forehead"].join(", "),
+  },
+  {
+    type: "head",
+    id: "girl_27",
+    description: ["Girl", "Female", "White", "Caucasian", "White skin", "Pink hair", "Blonde hair", "Purple hair", "Strawberry blonde hair", "Dyed hair", "Long hair", "Ponytails", "Pigtails", "Twin tails", "Forehead"].join(", "),
+  },
+  {
+    type: "head",
+    id: "girl_28",
+    description: ["Girl", "Female", "White", "Caucasian", "White skin", "Pink hair", "Strawberry blonde hair", "Dyed hair", "Short hair", "Forehead", "Pixie cut", "Butch"].join(", "),
+  },
+
+];

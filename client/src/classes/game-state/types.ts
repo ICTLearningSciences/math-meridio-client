@@ -38,3 +38,15 @@ export const removeItemSchema: Schema = {
   },
   required: ["clientId"],
 };
+
+export const pickAvatarSchema: Schema = {
+  type: 'array',
+  items: {
+    type: 'object',
+    properties: {
+      id: { type: 'string' },
+      description: { type: 'string' },
+    },
+  },
+  required: ["id"],
+};

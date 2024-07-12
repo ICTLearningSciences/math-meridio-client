@@ -16,9 +16,11 @@ import React from "react";
 import SpeechRecognition, {
   useSpeechRecognition,
 } from "react-speech-recognition";
+import { v4 as uuid } from "uuid";
 import { useAppDispatch } from "../store/hooks";
 import { sendMessage } from "../store/slices/gameData";
 import { PromptRoles } from "../types";
+import EventSystem from "../game/event-system";
 
 export default function ChatForm(): JSX.Element {
   const dispatch = useAppDispatch();
@@ -36,10 +38,19 @@ export default function ChatForm(): JSX.Element {
     }
   }, [transcript]);
 
+  React.useEffect(() => {
+    EventSystem.emit("setTTS", listening)
+  }, [listening]);
+
+  React.useEffect(() => {
+    EventSystem.on("ttsToggled", onToggleSTT)
+  }, [EventSystem])
+
   function onSend(): void {
     setInput("");
     dispatch(
       sendMessage({
+        clientId: uuid(),
         sender: PromptRoles.USER,
         message: input,
       })

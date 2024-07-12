@@ -9,6 +9,7 @@ import { GameStateHandler } from "./game-state-handler";
 import EventSystem from "../../game/event-system";
 
 import button from "../../game/assets/wordui/buttons/long_buttons/blue_button_complete.png";
+import chat from "../../game/assets/wordui/icons/icons_256/microphone.png";
 
 /**
  * Abstract class defining a standard phaser menu
@@ -29,6 +30,7 @@ export abstract class MenuScene extends Scene {
 
     // Load the assets for the UI
     this.load.image("button", button);
+    this.load.image("chat", chat);
   }
 
   create(handler: GameStateHandler) {

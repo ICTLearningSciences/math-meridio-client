@@ -5,25 +5,26 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import React from "react";
+import { v4 as uuid } from "uuid";
+
 import SportsGame from "../game/basketball";
-import { BasketballStateHandler } from "../game/basketball/game-state-handler";
-import { GameStateHandler } from "../classes/game-state/game-state-handler";
+import EventSystem from "../game/event-system";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
-import { startGame } from "../store/slices/gameData";
+import { sendMessage } from "../store/slices/gameData";
+import { AVATAR_HEADS, ChatMessage, GenericLlmRequest, PromptOutputTypes, PromptRoles } from "../types";
+import { TtsSpeak } from "./tts";
+import { OpenAiServiceModel, pickAvatarSchema } from "../classes/game-state/types";
+import { jsonLlmRequest } from "../classes/game-state/api-helpers";
 
 export default function PhaserGame(): JSX.Element {
   const dispatch = useAppDispatch();
   const chat = useAppSelector((state) => state.gameData.chat);
+  const [ttsMessage, setTTSMessage] = React.useState<ChatMessage>();
 
   const gameContainerRef = React.useRef<HTMLDivElement | null>(null);
-  const [game, setGame] =
-    React.useState<Phaser.Types.Core.GameConfig>(SportsGame);
-  const [gameController, setGameController] = React.useState<GameStateHandler>(
-    new BasketballStateHandler()
-  );
+  const [game, setGame] = React.useState<Phaser.Types.Core.GameConfig>(SportsGame);
   const [phaserGame, setPhaserGame] = React.useState<Phaser.Game>();
 
-  // Create the game inside a useLayoutEffect hook to avoid the game being created outside the DOM
   React.useLayoutEffect(() => {
     if (gameContainerRef && !phaserGame) {
       const config = {
@@ -36,9 +37,13 @@ export default function PhaserGame(): JSX.Element {
         parent: gameContainerRef.current as HTMLElement,
       };
       const pg = new Phaser.Game(config);
-      pg.scene.start("AvatarCreator");
-      dispatch(startGame(gameController));
+      pg.scene.start("AvatarCreator", {});
       setPhaserGame(pg);
+
+      // hard-coded, move to game manager
+      EventSystem.on("sceneCreated", sceneCreated);
+      EventSystem.on("systemMessageStart", systemMessageStart);
+      EventSystem.on("avatarSelected", avatarSelected);
     }
     return () => {
       if (phaserGame) {
@@ -53,15 +58,123 @@ export default function PhaserGame(): JSX.Element {
     };
   }, [gameContainerRef]);
 
+  // let's hard-code literally everything for now.......
+  const [username, setUsername] = React.useState<string>();
+  const [description, setDescription] = React.useState<string>();
+  const [avatar, setAvatar] = React.useState<string>();
+  React.useEffect(() => {
+    if (chat.length === 0) return;
+    const lastMessage = chat[chat.length - 1];
+    if (lastMessage.sender === PromptRoles.SYSTEM) {
+
+    } else if (lastMessage.sender === PromptRoles.USER) {
+      EventSystem.emit("addChatMessage", lastMessage)
+      if (!username) {
+        EventSystem.emit("setPlayername", lastMessage.message)
+        addMessage(PromptRoles.SYSTEM, `It's nice to meet you, ${lastMessage.message}`);
+        addMessage(PromptRoles.SYSTEM, "What would you like your avatar to look like?");
+        setUsername(lastMessage.message);
+      } else if (!avatar) {
+        try {
+          requestAvatar(lastMessage.message);
+          setDescription(lastMessage.message);  
+        } catch(err) {
+          addMessage(PromptRoles.SYSTEM, `Sorry, I didn't understand that. Try something else.`);
+        }
+      } else {
+        // use AI to parse for actual responses...
+        if (lastMessage.message === "yes") {
+
+        } else if (lastMessage.message === "no") {
+          addMessage(PromptRoles.SYSTEM, "What would you like your avatar to look like?");
+          EventSystem.emit("showAvatars", [])
+          setAvatar(undefined);
+        }
+      }
+    }
+  }, [chat]);
+  function sceneCreated(scene: string) {
+    if (scene === "AvatarCreator") {
+      addMessage(PromptRoles.SYSTEM, "Welcome to Math Meridio!");
+      addMessage(PromptRoles.SYSTEM, "What would you like to be called?");
+      addMessage(PromptRoles.ASSISSANT, "Use the chat button or box to respond:");
+    }
+  }
+  function systemMessageStart(msg: ChatMessage) {
+    setTTSMessage(msg);
+  }
+  function addMessage(sender: PromptRoles, message: string) {
+    const msg = {
+      clientId: uuid(),
+      sender: sender,
+      message: message,
+    }
+    dispatch(sendMessage(msg));
+    if (sender === PromptRoles.SYSTEM) {
+      EventSystem.emit("addSystemMessage", msg)
+    } else {
+      EventSystem.emit("addChatMessage", msg)
+    }
+  }
+  async function requestAvatar(desc: string): Promise<void> {
+    addMessage(PromptRoles.SYSTEM, "Fetching your avatar results...");
+    EventSystem.emit("loadingAvatars", true)
+    const request: GenericLlmRequest = {
+      prompts: [
+        {
+          promptText: JSON.stringify(AVATAR_HEADS),
+          promptRole: PromptRoles.USER,
+        },
+        {
+          promptText:
+            "Based on the following description, choose five items to add from the list of items above, provide just the id of the item to add.",
+          promptRole: PromptRoles.USER,
+        },
+        {
+          promptText: desc,
+          promptRole: PromptRoles.USER,
+        },
+
+      ],
+      targetAiServiceModel: OpenAiServiceModel,
+      outputDataType: PromptOutputTypes.JSON,
+      responseFormat: `
+          Please only respond in JSON.
+          Validate that your response is in valid JSON.
+          Respond in this format:
+            [{
+                "id": "string" // the id of the item
+            }]
+        `,
+    };
+    const res = await jsonLlmRequest<{ id: string }[]>(request, pickAvatarSchema);
+    EventSystem.emit("loadingAvatars", false)
+    addMessage(PromptRoles.SYSTEM, "Select an avatar base or try describing your avatar again:");
+    EventSystem.emit("showAvatars", res.map(a => a.id))
+  }
+  function avatarSelected(avatar: string) {
+    console.log("avatarselected: ", avatar)
+    setAvatar(avatar);
+    addMessage(PromptRoles.SYSTEM, `Is this how you would like your avatar to look?`);
+  }
+  // end hard-coding
+
   return (
-    <div
-      id="game-container"
-      ref={gameContainerRef}
-      style={{
-        height: window.innerHeight,
-        width: window.innerWidth * (9 / 12) - 15,
-        backgroundColor: "pink,",
-      }}
-    />
+    <div>
+      <div
+        id="game-container"
+        ref={gameContainerRef}
+        style={{
+          height: window.innerHeight,
+          width: window.innerWidth * (9 / 12) - 15,
+          backgroundColor: "pink,",
+        }}
+      />
+      <div style={{ display: "none" }}>
+        <TtsSpeak message={ttsMessage}>
+          {ttsMessage?.message}
+        </TtsSpeak>
+      </div>
+    </div>
   );
 }

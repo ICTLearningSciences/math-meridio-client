@@ -96,6 +96,14 @@ export const BB_PLAYERS: BasketballPlayer[] = [
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.CANVAS,
   backgroundColor: "#282c34",
+  width: 1280,
+  height: 720,
+  scale: {
+    // Fit to window
+    mode: Phaser.Scale.FIT,
+    // Center vertically and horizontally
+    autoCenter: Phaser.Scale.CENTER_BOTH
+  },
   scene: [AvatarCreator, MainMenu, Game, GameOver],
 };
 

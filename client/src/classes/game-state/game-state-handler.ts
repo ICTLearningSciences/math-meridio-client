@@ -4,67 +4,39 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { GenericLlmRequest, PromptOutputTypes, PromptRoles } from "../../types";
-import { jsonLlmRequest } from "./api-helpers";
-import {
-  GameObjects,
-  OpenAiServiceModel,
-  IRemoveItem,
-  removeItemSchema,
-} from "./types";
-import { ChatMessage } from "../../types";
+import { DiscussionStage, StageBuilderStep } from "../../components/discussion-stage-builder/types";
+import { Player } from "../../types";
 
 export class GameStateHandler {
-  objects: GameObjects[];
 
-  constructor(objects: GameObjects[]) {
-    this.objects = objects;
+  stages: DiscussionStage[];
+  currentStage: DiscussionStage | undefined;
+  currentStep: StageBuilderStep | undefined;
+  players: Player[];
+
+  constructor() {
+    this.stages = [];
+    this.players = [];
   }
 
-  addObject(object: GameObjects) {
-    this.objects.push(object);
+  startGame(): void {
+    
   }
 
-  removeObject(object: GameObjects) {
-    this.objects = this.objects.filter(
-      (obj) => obj.clientId !== object.clientId
-    );
-    this.testAiRemoveItems = this.testAiRemoveItems.bind(this);
+  resetGame(): void {
+
   }
 
-  async start(): Promise<ChatMessage[]> {
-    return [];
+  setStage(): void {
+
   }
 
-  async respond(msg: ChatMessage): Promise<ChatMessage[]> {
-    return [];
+  nextStage(): void {
+
   }
 
-  async testAiRemoveItems() {
-    const request: GenericLlmRequest = {
-      prompts: [
-        {
-          promptText: JSON.stringify(this.objects),
-          promptRole: PromptRoles.USER,
-        },
-        {
-          promptText:
-            "choose an item to remove from the list of objects above, provide just the clientId of the item to remove.",
-          promptRole: PromptRoles.USER,
-        },
-      ],
-      targetAiServiceModel: OpenAiServiceModel,
-      outputDataType: PromptOutputTypes.JSON,
-      responseFormat: `
-        Please only respond in JSON.
-        Validate that your response is in valid JSON.
-        Respond in this format:
-        {
-            "clientId": "string" // the clientId of the object to remove
-        }
-      `,
-    };
-    const res = await jsonLlmRequest<IRemoveItem>(request, removeItemSchema);
-    this.objects = this.objects.filter((obj) => obj.clientId !== res.clientId);
+  globalStateUpdated(): void {
+    
   }
+
 }

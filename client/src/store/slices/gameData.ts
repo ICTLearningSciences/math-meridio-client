@@ -15,7 +15,6 @@ export interface GameData {
   players: Player[];
   chat: ChatMessage[];
   room?: Room;
-  gameState?: GameStateHandler;
 }
 
 const initialState: GameData = {
@@ -63,17 +62,14 @@ export const deleteRoom = createAsyncThunk(
 // todo: remove this
 export const startGame = createAsyncThunk(
   "gameData/startGame",
-  async (args: GameStateHandler, thunkAPI): Promise<ChatMessage[]> => {
-    return await args.start();
+  async (args, thunkAPI): Promise<void> => {
   }
 );
 
 export const sendMessage = createAsyncThunk(
   "gameData/sendMessage",
-  async (args: ChatMessage, thunkAPI): Promise<ChatMessage[]> => {
-    const state = thunkAPI.getState() as RootState;
-    const msg = (await state.gameData.gameState?.respond(args)) || [];
-    return [args, ...msg];
+  async (args: ChatMessage, thunkAPI): Promise<ChatMessage> => {
+    return args;
   }
 );
 
@@ -83,12 +79,8 @@ export const dataSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(startGame.fulfilled, (state, action) => {
-        state.gameState = action.meta.arg;
-        state.chat.push(...action.payload);
-      })
       .addCase(sendMessage.fulfilled, (state, action) => {
-        state.chat.push(...action.payload);
+        state.chat.push(action.payload);
       });
   },
 });

@@ -33,6 +33,7 @@
     "regenerator-runtime": "^0.14.1",
     "styled-components": "^6.1.11",
     "tss-react": "^4.9.10",
+    "tts-react": "^3.0.7",
     "url": "^0.11.3",
     "uuid": "^10.0.0"
   },
