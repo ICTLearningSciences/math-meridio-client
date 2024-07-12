@@ -58,6 +58,7 @@ export function getEmptyJsonResponseData(): JsonResponseData {
 export function defaultPromptBuilder(): PromptStageStep {
   return {
     stepId: uuid(),
+    lastStep: false,
     stepType: DiscussionStageStepType.PROMPT,
     promptText: "",
     responseFormat: "",
@@ -567,6 +568,14 @@ export function PromptStepBuilder(props: {
             updateField("customSystemRole", e);
           }}
           width="100%"
+        />
+
+        <CheckBoxInput
+          label="Is final step (discussion finished)?"
+          value={step.lastStep}
+          onChange={(e) => {
+            updateField("lastStep", e);
+          }}
         />
 
         <JumpToAlternateStep

@@ -9,7 +9,7 @@ import { v4 as uuid } from "uuid";
 import { IconButton } from "@mui/material";
 import { Delete } from "@mui/icons-material";
 import { RoundedBorderDiv, TopLeftText } from "../../../../styled-components";
-import { InputField } from "../../shared/input-components";
+import { CheckBoxInput, InputField } from "../../shared/input-components";
 import { JumpToAlternateStep } from "../../shared/jump-to-alternate-step";
 import Collapse from "@mui/material/Collapse";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -23,6 +23,7 @@ import {
 export function getDefaultSystemMessage(): SystemMessageStageStep {
   return {
     stepId: uuid(),
+    lastStep: false,
     stepType: DiscussionStageStepType.SYSTEM_MESSAGE,
     message: "",
     jumpToStepId: "",
@@ -106,6 +107,13 @@ export function SystemMessageStepBuilder(props: {
           }}
         />
 
+        <CheckBoxInput
+          label="Is final step (discussion finished)?"
+          value={step.lastStep}
+          onChange={(e) => {
+            updateField("lastStep", e);
+          }}
+        />
         <JumpToAlternateStep
           step={step}
           flowsList={props.flowsList}

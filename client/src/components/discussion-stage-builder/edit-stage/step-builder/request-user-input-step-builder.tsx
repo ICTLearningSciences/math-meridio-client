@@ -32,6 +32,7 @@ import {
 export function getDefaultRequestUserInputBuilder(): RequestUserInputStageStep {
   return {
     stepId: uuid(),
+    lastStep: false,
     stepType: DiscussionStageStepType.REQUEST_USER_INPUT,
     message: "",
     saveResponseVariableName: "",
@@ -335,6 +336,13 @@ export function RequestUserInputStepBuilder(props: {
           flowsList={props.flowsList}
         />
 
+        <CheckBoxInput
+          label="Is final step (discussion finished)?"
+          value={step.lastStep}
+          onChange={(e) => {
+            updateField("lastStep", e);
+          }}
+        />
         <JumpToAlternateStep
           step={step}
           flowsList={props.flowsList}

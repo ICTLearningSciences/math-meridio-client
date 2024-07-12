@@ -6,9 +6,6 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React from "react";
 import { StageBuilderPage } from "../components/discussion-stage-builder/stage-builder-page";
-import { useWithStages } from "../store/slices/stages/use-with-stages";
-import { Provider } from "react-redux";
-import { store } from "../store";
 
 export default function DiscussionBuilderPage() {
   return <StageBuilderPage goToStage={() => {}} />;

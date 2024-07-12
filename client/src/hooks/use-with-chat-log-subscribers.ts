@@ -4,28 +4,38 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
+import { useEffect, useState } from "react";
+import { useAppSelector } from "../store/hooks";
+import { ChatMessage } from "../store/slices/gameData";
 
-import { ChatMessage } from "./store/slices/gameData";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function equals<T>(val1: T, val2: T): boolean {
-  return JSON.stringify(val1) === JSON.stringify(val2);
+export abstract class ChatLogSubscriber {
+  abstract newChatLogReceived(chatLog: ChatMessage[]): void;
 }
 
-export function chatLogToString(chatLog: ChatMessage[]) {
-  let chatLogString = "";
-  for (let i = 0; i < chatLog.length; i++) {
-    chatLogString += `${chatLog[i].sender}: ${chatLog[i].message}\n`;
-  }
-  return chatLogString;
-}
+export function useWithChatLogSubscribers() {
+  const [subscribers, setSubscribers] = useState<ChatLogSubscriber[]>([]);
 
-export function isJsonString(str: string): boolean {
-  try {
-    JSON.parse(str);
-  } catch (e) {
-    console.log(`Error parsing string: ${str}`);
-    return false;
+  const messages = useAppSelector((state) => state.gameData.messages);
+
+  useEffect(() => {
+    for (let i = 0; i < subscribers.length; i++) {
+      const newChatLogFunction = subscribers[i].newChatLogReceived.bind(
+        subscribers[i]
+      );
+      newChatLogFunction(messages);
+    }
+  }, [messages]);
+
+  function addNewSubscriber(subscriber: ChatLogSubscriber) {
+    setSubscribers([...subscribers, subscriber]);
   }
-  return true;
+
+  function removeAllSubscribers() {
+    setSubscribers([]);
+  }
+
+  return {
+    addNewSubscriber,
+    removeAllSubscribers,
+  };
 }
