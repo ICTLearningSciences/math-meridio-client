@@ -60,6 +60,7 @@ export enum DiscussionStageStepType {
 export interface StageBuilderStep {
   stepId: string;
   stepType: DiscussionStageStepType;
+  lastStep: boolean;
   jumpToStepId?: string;
 }
 

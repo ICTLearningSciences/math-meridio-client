@@ -10,9 +10,23 @@ import { UserData } from "./userData";
 import { GameStateHandler } from "../../classes/game-state/game-state-handler";
 import { RootState } from "..";
 
+export enum SenderType {
+  PLAYER = "PLAYER",
+  SYSTEM = "SYSTEM",
+}
+
+export enum MessageDisplayType {
+  TEXT = "TEXT",
+  PENDING_MESSAGE = "PENDING_MESSAGE",
+}
+
 export interface ChatMessage {
-  sender: string;
+  id: string;
+  sender: SenderType;
   message: string;
+  displayType?: MessageDisplayType;
+  disableUserInput?: boolean;
+  mcqChoices?: string[];
 }
 
 export interface GameData {
