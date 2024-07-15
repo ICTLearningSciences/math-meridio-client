@@ -14,9 +14,8 @@ phases:
     commands:
       - npm run test:format
       - npm run test:license
-      - cd client
-      # - npm run test:lint
-      # - npm run test:types
+      - npm run test:lint
+      - npm run test:types
 
   build:
     commands:

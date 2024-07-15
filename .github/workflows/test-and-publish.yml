@@ -14,9 +14,7 @@ jobs:
         run: npm run test:format
       - name: Run license test
         run: npm run test:license
-      - name: Client - Install
-        run: cd client && npm ci
-      # - name: Client - Run lint test
-      #   run: cd client && npm run test:lint
-      # - name: Client - Run types test
-      #   run: cd client && npm run test:types
+      # - name: Run lint test
+      #   run: npm run test:lint
+      # - name: Run types test
+      #   run: npm run test:types

@@ -18,7 +18,7 @@ phases:
 
   build:
     commands:
-      - cd client && npm run build
+      - npm run build
       - echo Deploying to $S3_DEPLOY_BUCKET_QA
       - aws s3 sync ./build s3://$S3_DEPLOY_BUCKET_QA/
       - aws cloudfront create-invalidation --distribution-id $CDN_ID_QA --paths "/*"
