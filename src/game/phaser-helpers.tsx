@@ -60,7 +60,7 @@ export function addImage(
 export function addSprite(
   scene: Phaser.Scene,
   texture: string,
-  frame?: string,
+  frame?: string | number,
   props: ImageProps = {}
 ): Phaser.GameObjects.Sprite {
   const sprite = scene.add.sprite(0, 0, texture, frame);

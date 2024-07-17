@@ -6,7 +6,6 @@ The full terms of this copyright and license should always be found in the root 
 */
 import Phaser from 'phaser';
 
-import AvatarCreator from '../AvatarCreator';
 import Game from './Game';
 import { GameObjects } from '../../classes/game-state/types';
 
@@ -102,7 +101,7 @@ const config: Phaser.Types.Core.GameConfig = {
     // Center vertically and horizontally
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [AvatarCreator, Game],
+  scene: [Game],
 };
 
 export default config;

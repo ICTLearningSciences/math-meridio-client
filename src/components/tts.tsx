@@ -7,7 +7,7 @@ The full terms of this copyright and license should always be found in the root 
 import React from 'react';
 import { useTts, TTSHookProps } from 'tts-react';
 import EventSystem from '../game/event-system';
-import { ChatMessage } from '../store/slices/gameData';
+import { ChatMessage } from '../store/slices/game';
 
 interface SpeakProps extends TTSHookProps {
   message: ChatMessage | undefined;
@@ -31,5 +31,5 @@ export function TtsSpeak({ children, message }: SpeakProps): JSX.Element {
     },
   });
 
-  return <div>{ttsChildren}</div>;
+  return <div style={{ display: 'none' }}>{ttsChildren}</div>;
 }

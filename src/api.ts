@@ -13,10 +13,11 @@ import {
   PromptStageStepGql,
 } from './components/discussion-stage-builder/types';
 import { GenericLlmRequest } from './types';
-import { Player } from './store/slices/playerData';
+import { Player } from './store/slices/player';
 
 type OpenAiJobId = string;
-export const LLM_API_ENDPOINT = process.env.GATSBY_LLM_API_ENDPOINT || '/docs';
+export const LLM_API_ENDPOINT =
+  process.env.REACT_APP_LLM_API_ENDPOINT || '/docs';
 export async function asyncLlmRequest(
   llmRequest: GenericLlmRequest,
   cancelToken?: CancelToken
@@ -55,54 +56,54 @@ export async function asyncLlmRequestStatus(
 }
 
 export const fullDiscussionStageQueryData = `
-                      _id
-                      clientId
-                      title
-                      stageType
-                      description
-                      flowsList{
-                        clientId
-                        name
-                        steps{
-                          ... on SystemMessageStageStepType {
-                              lastStep
-                              stepId
-                              stepType
-                              jumpToStepId
-                              message
-                          }
+  _id
+  clientId
+  title
+  stageType
+  description
+  flowsList {
+    clientId
+    name
+    steps {
+      ... on SystemMessageStageStepType {
+          lastStep
+          stepId
+          stepType
+          jumpToStepId
+          message
+      }
 
-                          ... on RequestUserInputStageStepType {
-                              lastStep
-                              stepId
-                              stepType
-                              jumpToStepId
-                              message
-                              saveResponseVariableName
-                              disableFreeInput
-                              predefinedResponses{
-                                  clientId
-                                  message
-                                  isArray
-                                  jumpToStepId
-                                  responseWeight
-                              }
-                          }
+      ... on RequestUserInputStageStepType {
+          lastStep
+          stepId
+          stepType
+          jumpToStepId
+          message
+          saveResponseVariableName
+          disableFreeInput
+          predefinedResponses{
+              clientId
+              message
+              isArray
+              jumpToStepId
+              responseWeight
+          }
+      }
 
-                          ... on PromptStageStepType{
-                              lastStep
-                              stepId
-                              stepType
-                              jumpToStepId
-                              promptText
-                              responseFormat
-                              includeChatLogContext
-                              outputDataType
-                              jsonResponseData
-                              customSystemRole
-                          }
-                      }
-                      }
+      ... on PromptStageStepType {
+          lastStep
+          stepId
+          stepType
+          jumpToStepId
+          promptText
+          responseFormat
+          includeChatLogContext
+          outputDataType
+          jsonResponseData
+          customSystemRole
+      }
+    }
+  }
 `;
 
 export function convertDiscussionStageToGQl(
@@ -184,8 +185,17 @@ export async function fetchPlayer(id: string): Promise<Player> {
           fetchPlayer(id: $id) {
             clientId
             name
-            avatar
             description
+            avatar {
+              id
+              type
+              description
+            }
+            chatAvatar {
+              id
+              type
+              description
+            }
           }
         }`,
       variables: {
@@ -207,8 +217,17 @@ export async function addOrUpdatePlayer(player: Player): Promise<Player> {
           addOrUpdatePlayer(player: $player) {
             clientId
             name
-            avatar
             description
+            avatar {
+              id
+              type
+              description
+            }
+            chatAvatar {
+              id
+              type
+              description
+            }
           }
         }`,
       variables: {

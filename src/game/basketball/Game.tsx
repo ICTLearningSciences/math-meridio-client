@@ -14,7 +14,7 @@ export class BasketballGame extends GameScene {
   bbPlayer: Phaser.GameObjects.Image | undefined;
 
   constructor() {
-    super();
+    super('Game');
   }
 
   preload() {
@@ -43,9 +43,9 @@ export class BasketballGame extends GameScene {
     this.bg = bg;
   }
 
-  updateScene(scene?: any) {
+  updateScene() {
     // todo: define what the scene objects are in JSON
-    super.updateScene(scene);
+    super.updateScene();
   }
 
   startGame() {

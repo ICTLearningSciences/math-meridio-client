@@ -30,7 +30,7 @@ import {
   ChatMessage,
   MessageDisplayType,
   SenderType,
-} from '../store/slices/gameData';
+} from '../store/slices/game';
 import { GenericLlmRequest, PromptOutputTypes, PromptRoles } from '../types';
 import { CancelToken } from 'axios';
 import { v4 as uuidv4 } from 'uuid';

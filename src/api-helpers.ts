@@ -16,7 +16,7 @@ export interface AxiosMiddleware {
   (axiosInstance: AxiosInstance): void;
 }
 const GRAPHQL_ENDPOINT =
-  process.env.GATSBY_GRAPHQL_ENDPOINT || '/graphql/graphql';
+  process.env.REACT_APP_GRAPHQL_ENDPOINT || '/graphql/graphql';
 
 const REQUEST_TIMEOUT_GRAPHQL_DEFAULT = 30000;
 

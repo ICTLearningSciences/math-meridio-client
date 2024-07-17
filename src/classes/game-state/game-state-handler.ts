@@ -6,28 +6,61 @@ The full terms of this copyright and license should always be found in the root 
 */
 import {
   DiscussionStage,
+  SimulationStage,
   StageBuilderStep,
 } from '../../components/discussion-stage-builder/types';
-import { Player } from '../../store/slices/playerData';
+import { ChatLogSubscriber, UseWithChat } from '../../hooks/use-with-chat';
+import { ChatMessage, SenderType } from '../../store/slices/game';
+import { Player } from '../../store/slices/player';
 
-export class GameStateHandler {
+export interface GlobalStateData {
+  player: Player;
+}
+
+export abstract class GameStateHandler implements ChatLogSubscriber {
+  currentStage?: DiscussionStage;
+  currentStep?: StageBuilderStep;
+  globalStateData: GlobalStateData;
   stages: DiscussionStage[];
-  currentStage: DiscussionStage | undefined;
-  currentStep: StageBuilderStep | undefined;
-  players: Player[];
 
-  constructor() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  gameStateData: Record<string, any> = {};
+  chatLog: ChatMessage[] = [];
+  players: Player[] = [];
+
+  sendMessage: (msg: ChatMessage) => void;
+
+  constructor(sendMessage: (msg: ChatMessage) => void, player: Player) {
+    this.sendMessage = sendMessage;
     this.stages = [];
-    this.players = [];
+    this.globalStateData = {
+      player,
+    };
   }
 
-  startGame(): void {}
+  newChatLogReceived(chatLog: ChatMessage[]): void {
+    this.chatLog = chatLog;
+  }
 
-  resetGame(): void {}
+  startGame(): void {
+    // todo
+  }
 
-  setStage(): void {}
+  resetGame(): void {
+    // todo
+  }
 
-  nextStage(): void {}
+  setStage(stage: DiscussionStage): void {
+    this.currentStage = stage;
+    this.currentStep = stage.flowsList[0].steps[0];
+  }
 
-  globalStateUpdated(): void {}
+  nextStage(): void {
+    // todo
+  }
+
+  globalStateUpdated(newGlobalState: GlobalStateData): void {
+    // subscribe this function to the redux states global state data
+    this.globalStateData = newGlobalState;
+  }
 }

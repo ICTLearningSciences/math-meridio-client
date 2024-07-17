@@ -6,7 +6,7 @@ The full terms of this copyright and license should always be found in the root 
 */
 import { useEffect, useState } from 'react';
 import { useAppSelector } from '../store/hooks';
-import { ChatMessage } from '../store/slices/gameData';
+import { ChatMessage } from '../store/slices/game';
 
 export abstract class ChatLogSubscriber {
   abstract newChatLogReceived(chatLog: ChatMessage[]): void;

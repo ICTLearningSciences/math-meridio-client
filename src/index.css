@@ -25,3 +25,8 @@ body {
   display: flex;
   flex-direction: column;
 }
+
+.center-div {
+  align-items: center;
+  justify-content: center;
+}

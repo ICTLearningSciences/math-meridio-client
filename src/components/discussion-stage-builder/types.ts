@@ -42,6 +42,12 @@ export function defaultDicussionStage(): DiscussionStage {
   };
 }
 
+export interface SimulationStage extends IStage {
+  _id: string;
+  clientId: string;
+  stageType: 'simulation';
+}
+
 export interface DiscussionStage extends IStage {
   _id: string;
   clientId: string;

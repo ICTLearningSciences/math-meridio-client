@@ -14,6 +14,7 @@ import { isStageRunnable } from '../helpers';
 import { equals } from '../../../helpers';
 import { DiscussionStage, FlowItem } from '../types';
 import { ColumnDiv, RowDiv } from '../../../styled-components';
+
 export function EditDiscussionStage(props: {
   goToStage: (stage: DiscussionStage) => void;
   stage: DiscussionStage;

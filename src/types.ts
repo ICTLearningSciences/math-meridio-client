@@ -39,3 +39,19 @@ export enum JobStatus {
   COMPLETE = 'COMPLETE',
   FAILED = 'FAILED',
 }
+
+export enum LoadStatus {
+  NONE = 0,
+  IN_PROGRESS = 1,
+  DONE = 2,
+  FAILED = 3,
+  NOT_LOGGED_IN = 4,
+}
+
+export interface LoadingState {
+  status: LoadStatus;
+  error?: string;
+  startedAt?: string;
+  endedAt?: string;
+  failedAt?: string;
+}
