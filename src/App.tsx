@@ -10,7 +10,8 @@ import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 
 import LoginPage from './components/login-page';
 import AvatarPage from './components/avatar-page';
-import GamePage from './components/game-page';
+import GamePage from './components/game/game-page';
+import RoomPage from './components/game/room-page';
 import { StageBuilderPage } from './components/discussion-stage-builder/stage-builder-page';
 
 import { store } from './store';
@@ -23,6 +24,14 @@ function MainApp() {
       path: '/',
       element: (
         <>
+          <RoomPage />
+        </>
+      ),
+    },
+    {
+      path: '/login',
+      element: (
+        <>
           <LoginPage />
         </>
       ),
@@ -32,14 +41,6 @@ function MainApp() {
       element: (
         <>
           <AvatarPage />
-        </>
-      ),
-    },
-    {
-      path: '/game',
-      element: (
-        <>
-          <GamePage />
         </>
       ),
     },

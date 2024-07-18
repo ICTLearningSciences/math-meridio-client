@@ -7,12 +7,14 @@ The full terms of this copyright and license should always be found in the root 
 /* eslint-disable */
 
 import React, { useEffect, useState } from 'react';
-import { GameStateHandler } from '../classes/game-state/game-state-handler';
+import { GameStateHandler } from '../game/game-state-handler';
 import EventSystem from '../game/event-system';
+import { useAppSelector } from '../store/hooks';
 
 export function useWithPhaserGame(
   gameContainerRef: React.MutableRefObject<HTMLDivElement | null>
 ) {
+  const { player } = useAppSelector((state) => state.playerData);
   const [game, setGame] = useState<Phaser.Types.Core.GameConfig>();
   const [scene, setScene] = useState<string>();
   const [controller, setController] = useState<GameStateHandler>();
@@ -37,7 +39,7 @@ export function useWithPhaserGame(
       parent: gameContainerRef.current as HTMLElement,
     };
     const pg = new Phaser.Game(config);
-    pg.scene.start(scene || 'Boot', controller || {});
+    pg.scene.start(scene || 'Boot', controller || { player });
     setPhaserGame(pg);
     // listeners
     EventSystem.on('sceneCreated', onSceneStarted);

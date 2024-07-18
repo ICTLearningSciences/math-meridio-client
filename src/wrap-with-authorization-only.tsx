@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { CircularProgress } from '@mui/material';
 
 import { LoadStatus } from './types';
-import { useWithPlayer } from './store/slices/player/use-with-player';
+import { useWithPlayer } from './store/slices/player/use-with-player-state';
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -23,7 +23,7 @@ const withAuthorizationOnly = (Component: any) => (props: any) => {
         loadStatus.status === LoadStatus.FAILED) &&
       !player
     ) {
-      navigate('/');
+      navigate('/login');
     }
     if (loadStatus.status === LoadStatus.DONE && !player?.description) {
       navigate('/avatar-creator');
@@ -35,8 +35,8 @@ const withAuthorizationOnly = (Component: any) => (props: any) => {
     loadStatus.status === LoadStatus.IN_PROGRESS
   ) {
     return (
-      <div>
-        <CircularProgress />
+      <div className="root center-div">
+        <CircularProgress size="large" />
       </div>
     );
   }
@@ -44,8 +44,8 @@ const withAuthorizationOnly = (Component: any) => (props: any) => {
   return loadStatus.status === LoadStatus.DONE ? (
     <Component {...props} />
   ) : (
-    <div>
-      <CircularProgress />
+    <div className="root center-div">
+      <CircularProgress size="large" />
     </div>
   );
 };

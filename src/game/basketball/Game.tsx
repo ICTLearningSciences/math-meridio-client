@@ -4,8 +4,8 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { GameScene } from '../../classes/game-state/game-scene';
-import { GameStateHandler } from '../../classes/game-state/game-state-handler';
+import { GameScene } from '../game-scene';
+import { GameStateHandler } from '../game-state-handler';
 import { EventSystem } from '../event-system';
 import { Anchor, addBackground, addImage } from '../phaser-helpers';
 import { BasketballPlayer } from '.';

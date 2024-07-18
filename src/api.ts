@@ -14,6 +14,7 @@ import {
 } from './components/discussion-stage-builder/types';
 import { GenericLlmRequest } from './types';
 import { Player } from './store/slices/player';
+import { ChatMessage, GameData, Room } from './store/slices/game';
 
 type OpenAiJobId = string;
 export const LLM_API_ENDPOINT =
@@ -102,6 +103,48 @@ export const fullDiscussionStageQueryData = `
           jsonResponseData
           customSystemRole
       }
+    }
+  }
+`;
+
+export const fullRoomQueryData = `
+  _id
+  name
+  gameData {
+    gameId
+    status
+    players {
+      clientId
+      name
+      avatar {
+        id
+        type
+      }
+      chatAvatar {
+        id
+        type
+      }
+    }
+    chat {
+      id
+      sender
+      senderId
+      senderName
+      message
+    }
+    globalStateData {
+      curStageId
+      curStepId
+      playerState {
+        player
+        animation
+        locationX
+        locationY
+      }
+    }
+    gameStateData {
+      key
+      value
     }
   }
 `;
@@ -236,6 +279,203 @@ export async function addOrUpdatePlayer(player: Player): Promise<Player> {
     },
     {
       dataPath: 'addOrUpdatePlayer',
+    }
+  );
+  return data;
+}
+
+export async function fetchRooms(game: string): Promise<Room[]> {
+  const data = await execGql<Room[]>(
+    {
+      query: `
+        query FetchRooms($game: String!) {
+          fetchRooms(game: $game) {
+            ${fullRoomQueryData}
+          }
+        }`,
+      variables: {
+        game,
+      },
+    },
+    {
+      dataPath: 'fetchRooms',
+    }
+  );
+  return data;
+}
+
+export async function fetchRoom(roomId: string): Promise<Room> {
+  const data = await execGql<Room>(
+    {
+      query: `
+        query FetchRoom($roomId: ID!) {
+          fetchRoom(roomId: $roomId) {
+            ${fullRoomQueryData}
+          }
+        }`,
+      variables: {
+        roomId,
+      },
+    },
+    {
+      dataPath: 'fetchRoom',
+    }
+  );
+  return data;
+}
+
+export async function createAndJoinRoom(
+  playerId: string,
+  gameId: string
+): Promise<Room> {
+  const data = await execGql<Room>(
+    {
+      query: `
+        mutation CreateAndJoinRoom($playerId: String!, $gameId: String!) {
+          createAndJoinRoom(playerId: $playerId, gameId: $gameId) {
+            ${fullRoomQueryData}
+          }
+        }`,
+      variables: {
+        playerId,
+        gameId,
+      },
+    },
+    {
+      dataPath: 'createAndJoinRoom',
+    }
+  );
+  return data;
+}
+
+export async function joinRoom(
+  playerId: string,
+  roomId: string
+): Promise<Room> {
+  const data = await execGql<Room>(
+    {
+      query: `
+        mutation JoinRoom($playerId: String!, $roomId: ID!) {
+          joinRoom(playerId: $playerId, roomId: $roomId) {
+            ${fullRoomQueryData}
+          }
+        }`,
+      variables: {
+        playerId,
+        roomId,
+      },
+    },
+    {
+      dataPath: 'joinRoom',
+    }
+  );
+  return data;
+}
+
+export async function renameRoom(name: string, roomId: string): Promise<Room> {
+  const data = await execGql<Room>(
+    {
+      query: `
+        mutation RenameRoom($name: String!, $roomId: ID!) {
+          renameRoom(name: $name, roomId: $roomId) {
+            ${fullRoomQueryData}
+          }
+        }`,
+      variables: {
+        name,
+        roomId,
+      },
+    },
+    {
+      dataPath: 'renameRoom',
+    }
+  );
+  return data;
+}
+
+export async function leaveRoom(
+  playerId: string,
+  roomId: string
+): Promise<boolean> {
+  const data = await execGql<boolean>(
+    {
+      query: `
+        mutation LeaveRoom($playerId: String!, $roomId: ID!) {
+          leaveRoom(playerId: $playerId, roomId: $roomId)
+        }`,
+      variables: {
+        playerId,
+        roomId,
+      },
+    },
+    {
+      dataPath: 'leaveRoom',
+    }
+  );
+  return data;
+}
+
+export async function deleteRoom(roomId: string): Promise<boolean> {
+  const data = await execGql<boolean>(
+    {
+      query: `
+        mutation DeleteRoom($roomId: ID!) {
+          deleteRoom(roomId: $roomId)
+        }`,
+      variables: {
+        roomId,
+      },
+    },
+    {
+      dataPath: 'deleteRoom',
+    }
+  );
+  return data;
+}
+
+export async function updateRoomGameData(
+  roomId: string,
+  gameData: Partial<GameData>
+): Promise<Room> {
+  const data = await execGql<Room>(
+    {
+      query: `
+        mutation UpdateRoomGameData($roomId: ID!, $gameData: RoomGameDataInputType!) {
+          updateRoomGameData(roomId: $roomId, gameData: $gameData) {
+            ${fullRoomQueryData}
+          }
+        }`,
+      variables: {
+        roomId,
+        gameData,
+      },
+    },
+    {
+      dataPath: 'updateRoomGameData',
+    }
+  );
+  return data;
+}
+
+export async function sendMessage(
+  roomId: string,
+  msg: ChatMessage
+): Promise<Room> {
+  const data = await execGql<Room>(
+    {
+      query: `
+        mutation SendMessage($roomId: ID!, $msg: MessageInputType!) {
+          sendMessage(roomId: $roomId, msg: $msg) {
+            ${fullRoomQueryData}
+          }
+        }`,
+      variables: {
+        roomId,
+        msg,
+      },
+    },
+    {
+      dataPath: 'sendMessage',
     }
   );
   return data;

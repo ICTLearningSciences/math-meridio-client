@@ -9,15 +9,16 @@ import { useNavigate } from 'react-router-dom';
 import { CircularProgress } from '@mui/material';
 
 import EventSystem from '../game/event-system';
+import ChatForm from './game/chat-form';
+import AvatarCreator from '../game/avatar';
+import { useWithPhaserGame } from '../hooks/use-with-phaser-game';
 import { useAppSelector } from '../store/hooks';
 import { ChatMessage } from '../store/slices/game';
+import {
+  Avatars,
+  useWithPlayer,
+} from '../store/slices/player/use-with-player-state';
 import { LoadStatus } from '../types';
-import { TtsSpeak } from './tts';
-import ChatForm from './game/chat-form';
-import AvatarCreator, { AvatarStateHandler } from '../game/avatar';
-import { Avatars, useWithPlayer } from '../store/slices/player/use-with-player';
-import { useWithPhaserGame } from '../hooks/use-with-phaser-game';
-import { useWithChat } from '../hooks/use-with-chat';
 
 function AvatarPage(): JSX.Element {
   const { player, loadStatus, saveStatus } = useAppSelector(
@@ -26,7 +27,6 @@ function AvatarPage(): JSX.Element {
   const gameContainerRef = React.useRef<HTMLDivElement | null>(null);
   const { startPhaserGame } = useWithPhaserGame(gameContainerRef);
   const { loadAvatarsFromDesc, saveAvatar } = useWithPlayer();
-  const { ttsMessage } = useWithChat();
   const navigate = useNavigate();
 
   React.useEffect(() => {
@@ -42,16 +42,10 @@ function AvatarPage(): JSX.Element {
       !player ||
       !player.name
     ) {
-      navigate('/');
+      navigate('/login');
       return;
     }
-    startPhaserGame(
-      AvatarCreator,
-      new AvatarStateHandler((msg: ChatMessage) => {
-        /** */
-      }, player),
-      'AvatarCreator'
-    );
+    startPhaserGame(AvatarCreator, undefined, 'AvatarCreator');
     EventSystem.on('sceneCreated', () => setSceneCreated(true));
     EventSystem.on('avatarSelected', onAvatarSelected);
   }, [loadStatus]);
@@ -86,7 +80,8 @@ function AvatarPage(): JSX.Element {
   React.useEffect(() => {
     if (!isSaving) return;
     if (saveStatus.status === LoadStatus.DONE) {
-      navigate('/game');
+      navigate('/');
+      setIsSaving(false);
     } else if (saveStatus.status === LoadStatus.FAILED) {
       setIsSaving(false);
       EventSystem.emit('addSystemMessage', {
@@ -162,7 +157,6 @@ function AvatarPage(): JSX.Element {
         }}
       />
       <ChatForm sendMessage={onUserMessage} />
-      <TtsSpeak message={ttsMessage}>{ttsMessage?.message}</TtsSpeak>
     </>
   );
 }

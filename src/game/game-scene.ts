@@ -6,8 +6,8 @@ The full terms of this copyright and license should always be found in the root 
 */
 import { Scene } from 'phaser';
 import { GameStateHandler } from './game-state-handler';
-import EventSystem from '../../game/event-system';
-import { ChatMessage } from '../../store/slices/game';
+import EventSystem from './event-system';
+import { ChatMessage } from '../store/slices/game';
 import {
   Avatars,
   CHAT_AVATAR_BROWS,
@@ -19,7 +19,7 @@ import {
   SPRITE_BODY,
   SPRITE_CLOTHES,
   SPRITE_HAIR,
-} from '../../store/slices/player/use-with-player';
+} from '../store/slices/player/use-with-player-state';
 import {
   Anchor,
   addBackground,
@@ -28,8 +28,8 @@ import {
   addText,
   animateText,
   scaleText,
-} from '../../game/phaser-helpers';
-import { Avatar } from '../../store/slices/player';
+} from './phaser-helpers';
+import { Avatar } from '../store/slices/player';
 
 export interface RenderAvatars extends Avatars {
   sprite: Phaser.GameObjects.Sprite[];

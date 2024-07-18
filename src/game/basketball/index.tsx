@@ -6,8 +6,10 @@ The full terms of this copyright and license should always be found in the root 
 */
 import Phaser from 'phaser';
 
-import Game from './Game';
+import GameScene from './Game';
 import { GameObjects } from '../../classes/game-state/types';
+import { GameStateHandler, GameStateHandlerArgs } from '../game-state-handler';
+import { Game } from '../types';
 
 export interface BasketballPlayerStats {
   twoPoint: number;
@@ -90,18 +92,28 @@ export const BB_PLAYERS: BasketballPlayer[] = [
   },
 ];
 
-const config: Phaser.Types.Core.GameConfig = {
-  type: Phaser.CANVAS,
-  backgroundColor: '#282c34',
-  width: 1280,
-  height: 720,
-  scale: {
-    // Fit to window
-    mode: Phaser.Scale.FIT,
-    // Center vertically and horizontally
-    autoCenter: Phaser.Scale.CENTER_BOTH,
+export class BasketballStateHandler extends GameStateHandler {}
+
+const BasketballGame: Game = {
+  id: 'basketball',
+  name: 'NBA Analyst',
+  description:
+    'You are the manager for a basketball team and must help them achieve victory.',
+  // controller: new
+  config: {
+    type: Phaser.CANVAS,
+    backgroundColor: '#282c34',
+    width: 1280,
+    height: 720,
+    scale: {
+      // Fit to window
+      mode: Phaser.Scale.FIT,
+      // Center vertically and horizontally
+      autoCenter: Phaser.Scale.CENTER_BOTH,
+    },
+    scene: [GameScene],
   },
-  scene: [Game],
+  controller: (args: GameStateHandlerArgs) => new BasketballStateHandler(args),
 };
 
-export default config;
+export default BasketballGame;

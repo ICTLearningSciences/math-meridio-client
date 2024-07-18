@@ -4,37 +4,19 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { useEffect, useState } from 'react';
-import { useAppSelector } from '../store/hooks';
-import { ChatMessage } from '../store/slices/game';
 
-export abstract class ChatLogSubscriber {
-  abstract newChatLogReceived(chatLog: ChatMessage[]): void;
+import { Player } from "../../src/store/slices/player";
+
+interface FetchPlayerResponse {
+    fetchPlayer: Player;
 }
 
-export function useWithChatLogSubscribers() {
-  const [subscribers, setSubscribers] = useState<ChatLogSubscriber[]>([]);
-  const messages = useAppSelector((state) => state.gameData.chat);
-
-  useEffect(() => {
-    for (let i = 0; i < subscribers.length; i++) {
-      const newChatLogFunction = subscribers[i].newChatLogReceived.bind(
-        subscribers[i]
-      );
-      newChatLogFunction(messages);
+export const fetchPlayer: FetchPlayerResponse = {
+    "fetchPlayer": {
+        clientId: "my-player-id",
+        name: "My Player",
+        description: "",
+        avatar: [],
+        chatAvatar: [],
     }
-  }, [messages]);
-
-  function addNewSubscriber(subscriber: ChatLogSubscriber) {
-    setSubscribers([...subscribers, subscriber]);
-  }
-
-  function removeAllSubscribers() {
-    setSubscribers([]);
-  }
-
-  return {
-    addNewSubscriber,
-    removeAllSubscribers,
-  };
 }

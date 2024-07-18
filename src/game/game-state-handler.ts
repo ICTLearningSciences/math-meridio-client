@@ -6,40 +6,49 @@ The full terms of this copyright and license should always be found in the root 
 */
 import {
   DiscussionStage,
-  SimulationStage,
   StageBuilderStep,
-} from '../../components/discussion-stage-builder/types';
-import { ChatLogSubscriber, UseWithChat } from '../../hooks/use-with-chat';
-import { ChatMessage, SenderType } from '../../store/slices/game';
-import { Player } from '../../store/slices/player';
+} from '../components/discussion-stage-builder/types';
+import { ChatMessage, GlobalStateData } from '../store/slices/game';
+import { Subscriber } from '../store/slices/game/use-with-game-state';
+import { Player } from '../store/slices/player';
 
-export interface GlobalStateData {
+export interface GameStateHandlerArgs {
+  sendMessage: (msg: ChatMessage) => void;
+  globalStateData: GlobalStateData;
   player: Player;
 }
 
-export abstract class GameStateHandler implements ChatLogSubscriber {
-  currentStage?: DiscussionStage;
-  currentStep?: StageBuilderStep;
-  globalStateData: GlobalStateData;
-  stages: DiscussionStage[];
+export abstract class GameStateHandler implements Subscriber {
+  currentStage: DiscussionStage | undefined;
+  currentStep: StageBuilderStep | undefined;
+
+  myPlayer: Player;
+  players: Player[] = [];
+  chatLog: ChatMessage[] = [];
+  sendMessage: (msg: ChatMessage) => void;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   gameStateData: Record<string, any> = {};
-  chatLog: ChatMessage[] = [];
-  players: Player[] = [];
+  globalStateData: GlobalStateData;
 
-  sendMessage: (msg: ChatMessage) => void;
-
-  constructor(sendMessage: (msg: ChatMessage) => void, player: Player) {
-    this.sendMessage = sendMessage;
-    this.stages = [];
-    this.globalStateData = {
-      player,
-    };
+  constructor(args: GameStateHandlerArgs) {
+    this.sendMessage = args.sendMessage;
+    this.globalStateData = args.globalStateData;
+    this.myPlayer = args.player;
   }
 
   newChatLogReceived(chatLog: ChatMessage[]): void {
     this.chatLog = chatLog;
+  }
+
+  globalStateUpdated(newGlobalState: GlobalStateData): void {
+    // subscribe this function to the redux states global state data
+    this.globalStateData = newGlobalState;
+  }
+
+  gameStateUpdated(newGameState: Record<string, any>): void {
+    // subscribe this function to the redux states global state data
+    this.gameStateData = newGameState;
   }
 
   startGame(): void {
@@ -57,10 +66,5 @@ export abstract class GameStateHandler implements ChatLogSubscriber {
 
   nextStage(): void {
     // todo
-  }
-
-  globalStateUpdated(newGlobalState: GlobalStateData): void {
-    // subscribe this function to the redux states global state data
-    this.globalStateData = newGlobalState;
   }
 }

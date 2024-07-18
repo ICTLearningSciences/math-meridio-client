@@ -43,3 +43,7 @@ export function arrayNRandom(arr: any[], n: number): any[] {
   }
   return result;
 }
+
+export function isEqual(obj1: any, obj2: any): boolean {
+  return JSON.stringify(obj1) !== JSON.stringify(obj2);
+}

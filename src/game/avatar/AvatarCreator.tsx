@@ -5,11 +5,11 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 
-import { GameStateHandler } from '../../classes/game-state/game-state-handler';
-import GameScene, { RenderAvatars } from '../../classes/game-state/game-scene';
+import { GameStateHandler } from '../game-state-handler';
+import GameScene, { RenderAvatars } from '../game-scene';
 import EventSystem from '../event-system';
 import { Anchor, addImage, scaleText } from '../phaser-helpers';
-import { Avatars } from '../../store/slices/player/use-with-player';
+import { Avatars } from '../../store/slices/player/use-with-player-state';
 
 export class AvatarCreator extends GameScene {
   avatars: RenderAvatars[];

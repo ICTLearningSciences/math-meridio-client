@@ -4,7 +4,11 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { Mic, MicOutlined, Send } from '@mui/icons-material';
+import React from 'react';
+import SpeechRecognition, {
+  useSpeechRecognition,
+} from 'react-speech-recognition';
+import { v4 as uuid } from 'uuid';
 import {
   Button,
   FormControl,
@@ -13,19 +17,15 @@ import {
   InputLabel,
   OutlinedInput,
 } from '@mui/material';
-import React from 'react';
-import SpeechRecognition, {
-  useSpeechRecognition,
-} from 'react-speech-recognition';
-import { v4 as uuid } from 'uuid';
+import { Mic, MicOutlined, Send } from '@mui/icons-material';
 
-import { useAppDispatch } from '../../store/hooks';
-import { ChatMessage, SenderType, sendMessage } from '../../store/slices/game';
+import { useAppSelector } from '../../store/hooks';
+import { ChatMessage, SenderType } from '../../store/slices/game';
+import { useWithGame } from '../../store/slices/game/use-with-game-state';
 
 export default function ChatForm(props: {
   sendMessage?: (msg: ChatMessage) => void;
 }): JSX.Element {
-  const dispatch = useAppDispatch();
   const [input, setInput] = React.useState<string>('');
   const {
     transcript,
@@ -33,6 +33,8 @@ export default function ChatForm(props: {
     browserSupportsSpeechRecognition,
     resetTranscript,
   } = useSpeechRecognition();
+  const { sendMessage } = useWithGame();
+  const { player } = useAppSelector((state) => state.playerData);
 
   React.useEffect(() => {
     if (listening) {
@@ -41,15 +43,17 @@ export default function ChatForm(props: {
   }, [transcript]);
 
   function onSend(): void {
-    const msg = {
+    const msg: ChatMessage = {
       id: uuid(),
       sender: SenderType.PLAYER,
+      senderId: player?.clientId,
+      senderName: player?.name,
       message: input,
     };
     if (props.sendMessage) {
       props.sendMessage(msg);
     } else {
-      dispatch(sendMessage(msg));
+      sendMessage(msg);
     }
     setInput('');
   }

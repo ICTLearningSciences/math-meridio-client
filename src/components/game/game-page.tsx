@@ -4,19 +4,35 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { fetchPlayer } from "../../src/api";
-import { cyMockDefault, mockGQL } from "../support/functions";
+import React from 'react';
 
-describe("Login screen", () => {
+import withAuthorizationOnly from '../../wrap-with-authorization-only';
+import { Grid } from '@mui/material';
+import ChatThread from './chat-thread';
+import ChatForm from './chat-form';
 
-  it("shows login screen", () => {
-    cyMockDefault(cy,
-      {
-        gqlQueries: [
-          mockGQL('FetchPlayer', fetchPlayer, { statusCode: 200 })
-        ]
-      });
-    cy.visit("/");
-  })
+function GamePage(): JSX.Element {
+  const gameContainerRef = React.useRef<HTMLDivElement | null>(null);
 
-})
+  return (
+    <Grid container xs={true} flexDirection="row">
+      <Grid item xs={9}>
+        <div
+          id="game-container"
+          ref={gameContainerRef}
+          style={{
+            height: window.innerHeight,
+            width: window.innerWidth * (9 / 12),
+            backgroundColor: 'pink,',
+          }}
+        />
+      </Grid>
+      <Grid item xs={3} display="flex" flexDirection="column">
+        <ChatThread />
+        <ChatForm />
+      </Grid>
+    </Grid>
+  );
+}
+
+export default withAuthorizationOnly(GamePage);

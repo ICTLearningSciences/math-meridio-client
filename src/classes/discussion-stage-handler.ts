@@ -36,7 +36,7 @@ import { CancelToken } from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import { OpenAiServiceModel } from './game-state/types';
 import { chatLogToString, isJsonString } from '../helpers';
-import { ChatLogSubscriber } from '../hooks/use-with-chat-log-subscribers';
+import { ChatLogSubscriber } from '../store/slices/game/use-with-game-state';
 
 interface UserResponseHandleState {
   responseNavigations: {
@@ -55,6 +55,18 @@ export type CollectedDiscussionData = Record<
   string,
   string | number | boolean | string[]
 >;
+
+export interface DiscussionStageHandlerArgs {
+  sendMessage: (msg: ChatMessage) => void;
+  clearChat: () => void;
+  setResponsePending: (pending: boolean) => void;
+  executePrompt: (
+    llmRequest: GenericLlmRequest,
+    cancelToken?: CancelToken
+  ) => Promise<AiServicesResponseTypes>;
+  onDiscussionFinished?: (discussionData: CollectedDiscussionData) => void;
+  currentDiscussion?: DiscussionStage;
+}
 
 export class DiscussionStageHandler implements ChatLogSubscriber {
   currentDiscussion: DiscussionStage | undefined;
@@ -138,26 +150,16 @@ export class DiscussionStageHandler implements ChatLogSubscriber {
     }
   }
 
-  constructor(
-    sendMessage: (msg: ChatMessage) => void,
-    clearChat: () => void,
-    setResponsePending: (pending: boolean) => void,
-    executePrompt: (
-      llmRequest: GenericLlmRequest,
-      cancelToken?: CancelToken
-    ) => Promise<AiServicesResponseTypes>,
-    onDiscussionFinished?: (discussionData: CollectedDiscussionData) => void,
-    currentDiscussion?: DiscussionStage
-  ) {
-    this.currentDiscussion = currentDiscussion;
+  constructor(args: DiscussionStageHandlerArgs) {
+    this.currentDiscussion = args.currentDiscussion;
     this.stateData = {};
     this.stepIdsSinceLastInput = [];
     this.userResponseHandleState = getDefaultUserResponseHandleState();
-    this.sendMessage = sendMessage;
-    this.clearChat = clearChat;
-    this.executePrompt = executePrompt;
-    this.setResponsePending = setResponsePending;
-    this.onDiscussionFinished = onDiscussionFinished;
+    this.sendMessage = args.sendMessage;
+    this.clearChat = args.clearChat;
+    this.executePrompt = args.executePrompt;
+    this.setResponsePending = args.setResponsePending;
+    this.onDiscussionFinished = args.onDiscussionFinished;
 
     // bind functions to this
     this.setCurrentDiscussion = this.setCurrentDiscussion.bind(this);

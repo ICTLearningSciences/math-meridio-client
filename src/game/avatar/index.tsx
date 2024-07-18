@@ -6,20 +6,9 @@ The full terms of this copyright and license should always be found in the root 
 */
 import { Boot } from './Boot';
 import { AvatarCreator } from './AvatarCreator';
-import { GameStateHandler } from '../../classes/game-state/game-state-handler';
-import { ChatMessage } from '../../store/slices/game';
-import { Player } from '../../store/slices/player';
+import { GameStateHandler } from '../game-state-handler';
 
-export class AvatarStateHandler extends GameStateHandler {
-  constructor(sendMessage: (msg: ChatMessage) => void, player: Player) {
-    super(sendMessage, player);
-    this.sendMessage = sendMessage;
-    this.stages = [];
-    this.globalStateData = {
-      player,
-    };
-  }
-}
+export class AvatarStateHandler extends GameStateHandler {}
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.CANVAS,

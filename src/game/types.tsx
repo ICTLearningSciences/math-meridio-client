@@ -4,19 +4,15 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { fetchPlayer } from "../../src/api";
-import { cyMockDefault, mockGQL } from "../support/functions";
+import { GameStateHandler, GameStateHandlerArgs } from './game-state-handler';
+import BasketballGame from './basketball';
 
-describe("Login screen", () => {
+export interface Game {
+  id: 'basketball';
+  name: string;
+  description: string;
+  config: Phaser.Types.Core.GameConfig;
+  controller: (args: GameStateHandlerArgs) => GameStateHandler;
+}
 
-  it("shows login screen", () => {
-    cyMockDefault(cy,
-      {
-        gqlQueries: [
-          mockGQL('FetchPlayer', fetchPlayer, { statusCode: 200 })
-        ]
-      });
-    cy.visit("/");
-  })
-
-})
+export const GAMES: Game[] = [BasketballGame];

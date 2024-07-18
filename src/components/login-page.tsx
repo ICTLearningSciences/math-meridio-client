@@ -8,7 +8,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, CircularProgress, TextField, Typography } from '@mui/material';
 import { useAppSelector } from '../store/hooks';
-import { useWithPlayer } from '../store/slices/player/use-with-player';
+import { useWithPlayer } from '../store/slices/player/use-with-player-state';
 import { LoadStatus } from '../types';
 
 function LoginPage(): JSX.Element {
@@ -27,7 +27,7 @@ function LoginPage(): JSX.Element {
     if (loadStatus.status !== LoadStatus.DONE) return;
     if (player) {
       if (player.description) {
-        navigate('/game');
+        navigate('/');
       } else {
         navigate('/avatar-creator');
       }

@@ -58,8 +58,7 @@ export const fetchPlayer = createAsyncThunk(
 export const savePlayer = createAsyncThunk(
   'playerData/savePlayer',
   async (args: Player): Promise<Player> => {
-    // return await api.addOrUpdatePlayer(args);
-    return args;
+    return await api.addOrUpdatePlayer(args);
   }
 );
 
