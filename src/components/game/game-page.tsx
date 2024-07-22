@@ -17,22 +17,6 @@ import { useWithGame } from '../../store/slices/game/use-with-game-state';
 import { GameStateHandler } from '../../classes/game-state-handler';
 import withAuthorizationOnly from '../../wrap-with-authorization-only';
 
-const useStyles = makeStyles()(() => ({
-  box: {
-    position: 'relative',
-    top: 0,
-    left: '50%',
-    transform: 'translate(-50%, 50%)',
-    width: 300,
-    height: 60,
-    backgroundColor: 'white',
-    textAlign: 'center',
-    border: '1px solid lightgrey',
-    padding: '20px',
-    boxShadow: '-5px 5px 10px 0px rgba(0,0,0,0.75)',
-  },
-}));
-
 function ProblemSpace(props: {
   game: Game;
   controller: GameStateHandler;
@@ -127,11 +111,11 @@ function GamePage(): JSX.Element {
     } else if (!gameStateHandler) {
       launchGame();
     }
-    return () => {
-      if (gameStateHandler && room) {
-        leaveRoom();
-      }
-    };
+    // return () => {
+    //   if (gameStateHandler && room) {
+    //     leaveRoom();
+    //   }
+    // };
   }, [room?._id]);
 
   if (!room || !gameStateHandler || !game) {

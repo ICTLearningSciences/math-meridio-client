@@ -26,6 +26,7 @@ import { useNavigate } from 'react-router-dom';
 function RoomCard(props: {
   room: Room;
   join: (id: string) => void;
+  delete: (id: string) => void;
 }): JSX.Element {
   const { room } = props;
   const { player } = useAppSelector((state) => state.playerData);
@@ -79,6 +80,9 @@ function RoomCard(props: {
           <Typography variant="body2" color="text.secondary">
             Players: {room.gameData.players.map((p) => p.name).join(', ')}
           </Typography>
+          <Button variant='contained' color="error" onClick={() => props.delete(room._id)}>
+            Delete Room
+          </Button>
         </CardContent>
       </Collapse>
     </Card>
@@ -87,7 +91,7 @@ function RoomCard(props: {
 
 function RoomPage(): JSX.Element {
   const dispatch = useAppDispatch();
-  const { loadRooms, joinRoom, createRoom } = useWithGame();
+  const { loadRooms, joinRoom, createRoom, deleteRoom } = useWithGame();
   const { player } = useAppSelector((state) => state.playerData);
   const { room } = useAppSelector((state) => state.gameData);
   const [selectedGame, setSelectedGame] = React.useState<string>();
@@ -194,6 +198,10 @@ function RoomPage(): JSX.Element {
                   key={`room-${r._id}`}
                   room={r}
                   join={(id) => joinRoom(id)}
+                  delete={(id) => {
+                    // deleteRoom(id);
+                    // reloadRooms(selectedGame);
+                  }}
                 />
               ))
             )}

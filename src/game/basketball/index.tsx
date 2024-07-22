@@ -5,7 +5,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import React from 'react';
-import { Typography } from '@mui/material';
+import { Button, Typography } from '@mui/material';
 
 import {
   GameStateHandler,
@@ -28,24 +28,53 @@ export class BasketballStateHandler extends GameStateHandler {
   }
 
   async handleNewUserMessage(message: string) {
-    console.log('handle new user message: ', message);
-    // todo
     super.handleNewUserMessage(message);
-    if (message.includes('three pointer')) {
+    // todo (not hard-coded)
+    const msg = message.toLowerCase();
+    if (msg.includes('outside shot')) {
+      const value = msg.includes('3') || msg.includes('three') ? 3 : undefined;
       this.updateRoomGameData({
         globalStateData: {
           ...this.globalStateData,
-          gameStateData: [
-            { key: 'Points per three pointer', value: undefined },
-          ],
+          gameStateData: [{ key: 'Points per outside shot', value: value }],
         },
         playerStateData: [
           {
             player: this.player.clientId,
             animation: '',
-            gameStateData: [
-              { key: 'Points per three pointer', value: message },
-            ],
+            gameStateData: [{ key: 'Points per outside shot', value: value }],
+          },
+        ],
+      });
+    }
+    if (msg.includes('inside shot')) {
+      const value = msg.includes('2') || msg.includes('two') ? 2 : undefined;
+      this.updateRoomGameData({
+        globalStateData: {
+          ...this.globalStateData,
+          gameStateData: [{ key: 'Points per inside shot', value: value }],
+        },
+        playerStateData: [
+          {
+            player: this.player.clientId,
+            animation: '',
+            gameStateData: [{ key: 'Points per inside shot', value: value }],
+          },
+        ],
+      });
+    }
+    if (msg.includes('mid shot')) {
+      const value = msg.includes('2') || msg.includes('two') ? 2 : undefined;
+      this.updateRoomGameData({
+        globalStateData: {
+          ...this.globalStateData,
+          gameStateData: [{ key: 'Points per mid shot', value: value }],
+        },
+        playerStateData: [
+          {
+            player: this.player.clientId,
+            animation: '',
+            gameStateData: [{ key: 'Points per mid shot', value: value }],
           },
         ],
       });
@@ -153,30 +182,81 @@ function SolutionComponent(props: {
           color="#ff00ff"
         />
         <Variable
-          dKey="Points per three pointer"
+          dKey="Points per mid shot"
+          data={gameStateData}
+          color="#03517c"
+        />
+        <Variable
+          dKey="Points per outside shot"
           data={gameStateData}
           color="#03517c"
         />
       </div>
       {playerStateData.map((psd) => {
+        const playerName = players.find((p) => p.clientId === psd.player)?.name;
         return (
-          <div key={psd.player}>
-            <Typography textAlign="center">
-              Player Variables:{' '}
-              {players.find((p) => p.clientId === psd.player)?.name}
-            </Typography>
-            <div className="row center-div">
-              <Variable
-                dKey="Points per inside shot"
-                data={psd.gameStateData}
-                color="#ff00ff"
-              />
-              <Connection key="multiply" data={psd.gameStateData} />
-              <Variable
-                dKey="Points per three pointer"
-                data={psd.gameStateData}
-                color="#03517c"
-              />
+          <div key={psd.player} className="row center-div">
+            <div
+              className="column center-div"
+              style={{
+                flexGrow: 1,
+                borderStyle: 'solid',
+                borderWidth: 1,
+                borderColor: 'black',
+              }}
+            >
+              <div className="row center-div">
+                <Variable
+                  dKey="Points per inside shot"
+                  data={psd.gameStateData}
+                  color="#ff00ff"
+                />
+                <Connection key="inside_connection" data={psd.gameStateData} />
+                <Variable
+                  dKey="% of inside shot attempts"
+                  data={psd.gameStateData}
+                  color="#03517c"
+                />
+              </div>
+              <div className="row center-div">
+                <Variable
+                  dKey="Points per mid shot"
+                  data={psd.gameStateData}
+                  color="#ff00ff"
+                />
+                <Connection key="mid_connection" data={psd.gameStateData} />
+                <Variable
+                  dKey="% of mid shot attempts"
+                  data={psd.gameStateData}
+                  color="#03517c"
+                />
+              </div>
+              <div className="row center-div">
+                <Variable
+                  dKey="Points per outside shot"
+                  data={psd.gameStateData}
+                  color="#ff00ff"
+                />
+                <Connection key="outside_connection" data={psd.gameStateData} />
+                <Variable
+                  dKey="% of outside shot attempts"
+                  data={psd.gameStateData}
+                  color="#03517c"
+                />
+              </div>
+            </div>
+            <div
+              style={{
+                width: 50,
+                height: 50,
+                fontSize: 12,
+                padding: 10,
+                backgroundColor: '#cfd8dc',
+                borderRadius: 10,
+                marginLeft: 5,
+              }}
+            >
+              This is {playerName}&apos;s strategy
             </div>
           </div>
         );
