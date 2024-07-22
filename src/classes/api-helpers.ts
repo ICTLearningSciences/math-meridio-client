@@ -4,37 +4,27 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { Schema } from 'jsonschema';
-import { TargetAiModelServiceType } from '../../types';
+import Validator, { Schema } from 'jsonschema';
+import { GenericLlmRequest } from '../types';
+import { execHttp } from '../api-helpers';
+import { syncLlmRequest } from '../hooks/use-with-synchronous-polling';
+import { CancelToken } from 'axios';
 
-export interface GameObjects {
-  clientId: string;
-  name: string;
+export async function jsonLlmRequest<T>(
+  llmRequest: GenericLlmRequest,
+  jsonSchema: Schema,
+  cancelToken?: CancelToken
+): Promise<T> {
+  const res = await syncLlmRequest(llmRequest, cancelToken);
+  const v = new Validator.Validator();
+  const resJson: T = JSON.parse(res.answer);
+  const validationResult = v.validate(resJson, jsonSchema);
+  if (validationResult.errors.length > 0) {
+    throw new Error(
+      `Response does not match expected schema: ${JSON.stringify(
+        validationResult.errors
+      )}`
+    );
+  }
+  return resJson;
 }
-
-export const OpenAiServiceModel: TargetAiModelServiceType = {
-  serviceName: 'OPEN_AI',
-  model: 'gpt-3.5-turbo-16k',
-};
-
-export const AzureServiceModel: TargetAiModelServiceType = {
-  serviceName: 'AZURE_OPEN_AI',
-  model: 'ABE-GPT-3_5_turbo_16k',
-};
-
-export const GeminiServiceModel: TargetAiModelServiceType = {
-  serviceName: 'GEMINI',
-  model: 'gemini-pro',
-};
-
-export interface IRemoveItem {
-  clientId: string;
-}
-
-export const removeItemSchema: Schema = {
-  type: 'object',
-  properties: {
-    clientId: { type: 'string' },
-  },
-  required: ['clientId'],
-};

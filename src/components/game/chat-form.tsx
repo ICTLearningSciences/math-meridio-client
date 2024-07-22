@@ -11,6 +11,7 @@ import SpeechRecognition, {
 import { v4 as uuid } from 'uuid';
 import {
   Button,
+  Fab,
   FormControl,
   IconButton,
   InputAdornment,
@@ -78,7 +79,7 @@ export default function ChatForm(props: {
   }
 
   return (
-    <div className="row" style={{ width: '99%', padding: 5 }}>
+    <div className="row" style={{ width: '100%' }}>
       <FormControl variant="outlined" style={{ flex: 1 }}>
         <InputLabel>Chat:</InputLabel>
         <OutlinedInput
@@ -88,6 +89,7 @@ export default function ChatForm(props: {
           disabled={listening}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => onKeyPress(e)}
+          style={{ backgroundColor: 'white' }}
           endAdornment={
             <InputAdornment position="end">
               <IconButton
@@ -102,15 +104,14 @@ export default function ChatForm(props: {
           }
         />
       </FormControl>
-      <Button
-        variant={listening ? 'contained' : 'outlined'}
+      <Fab
         color={listening ? 'primary' : 'inherit'}
         onClick={onToggleSTT}
         disabled={!browserSupportsSpeechRecognition}
-        style={{ width: 100, marginLeft: 5 }}
+        style={{ marginLeft: 10, marginRight: 10 }}
       >
-        <div>{listening ? <Mic /> : <MicOutlined />}</div>
-      </Button>
+        {listening ? <Mic /> : <MicOutlined />}
+      </Fab>
     </div>
   );
 }

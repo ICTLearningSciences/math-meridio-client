@@ -18,6 +18,8 @@ export interface Avatar {
   type: string;
   id: string;
   description: string;
+  variant?: number;
+  variants?: string[];
 }
 
 export interface Player {
@@ -25,7 +27,6 @@ export interface Player {
   name: string;
   description: string;
   avatar: Avatar[];
-  chatAvatar: Avatar[];
 }
 
 interface PlayerData {

@@ -17,6 +17,5 @@ export const fetchPlayer: FetchPlayerResponse = {
         name: "My Player",
         description: "",
         avatar: [],
-        chatAvatar: [],
     }
 }

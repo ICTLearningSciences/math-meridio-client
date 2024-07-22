@@ -28,15 +28,19 @@ import {
 } from '../components/discussion-stage-builder/types';
 import {
   ChatMessage,
+  GameData,
+  GlobalStateData,
   MessageDisplayType,
+  PlayerStateData,
   SenderType,
 } from '../store/slices/game';
 import { GenericLlmRequest, PromptOutputTypes, PromptRoles } from '../types';
 import { CancelToken } from 'axios';
 import { v4 as uuidv4 } from 'uuid';
-import { OpenAiServiceModel } from './game-state/types';
+import { OpenAiServiceModel } from './types';
 import { chatLogToString, isJsonString } from '../helpers';
-import { ChatLogSubscriber } from '../store/slices/game/use-with-game-state';
+import { Subscriber } from '../store/slices/game/use-with-game-state';
+import { Player } from '../store/slices/player';
 
 interface UserResponseHandleState {
   responseNavigations: {
@@ -56,47 +60,99 @@ export type CollectedDiscussionData = Record<
   string | number | boolean | string[]
 >;
 
-export interface DiscussionStageHandlerArgs {
+export interface GameStateHandlerArgs {
   sendMessage: (msg: ChatMessage) => void;
-  clearChat: () => void;
   setResponsePending: (pending: boolean) => void;
   executePrompt: (
     llmRequest: GenericLlmRequest,
     cancelToken?: CancelToken
   ) => Promise<AiServicesResponseTypes>;
   onDiscussionFinished?: (discussionData: CollectedDiscussionData) => void;
-  currentDiscussion?: DiscussionStage;
+  updateRoomGameData(gameData: Partial<GameData>): void;
+  defaultStageId?: string;
+  stages?: DiscussionStage[];
+  player: Player;
+  game: Phaser.Types.Core.GameConfig;
+  gameData: GameData;
 }
 
-export class DiscussionStageHandler implements ChatLogSubscriber {
-  currentDiscussion: DiscussionStage | undefined;
-  curStep: DiscussionStageStep | undefined;
+export class GameStateHandler implements Subscriber {
+  currentStage: DiscussionStage | undefined;
+  currentStep: DiscussionStageStep | undefined;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   stateData: CollectedDiscussionData;
-  chatLog: ChatMessage[] = [];
   errorMessage: string | null = null;
+  userResponseHandleState: UserResponseHandleState;
+  stepIdsSinceLastInput: string[]; // used to prevent infinite loops, should never repeat a step until we've had some sort of user input.
+  lastFailedStepId: string | null = null;
   sendMessage: (msg: ChatMessage) => void;
-  clearChat: () => void;
+  onDiscussionFinished?: (discussionData: CollectedDiscussionData) => void;
   setResponsePending: (pending: boolean) => void; // let parent component know when we are waiting for an async response
   executePrompt: (
     llmRequest: GenericLlmRequest,
     cancelToken?: CancelToken
   ) => Promise<AiServicesResponseTypes>;
-  userResponseHandleState: UserResponseHandleState;
-  stepIdsSinceLastInput: string[]; // used to prevent infinite loops, should never repeat a step until we've had some sort of user input.
-  lastFailedStepId: string | null = null;
-  onDiscussionFinished?: (discussionData: CollectedDiscussionData) => void;
+
+  player: Player;
+  players: Player[] = [];
+  chatLog: ChatMessage[] = [];
+  acknowledgedChat: string[] = [];
+  game: Phaser.Types.Core.GameConfig;
+  globalStateData: GlobalStateData;
+  playerStateData: PlayerStateData[];
+  updateRoomGameData: (gameData: Partial<GameData>) => void;
+
+  constructor(args: GameStateHandlerArgs) {
+    const id = args.gameData.globalStateData.curStageId || args.defaultStageId;
+    this.currentStage = args.stages?.find((s) => s.clientId === id);
+    this.currentStep =
+      this.getStepById(args.gameData.globalStateData.curStepId) ||
+      this.currentStage?.flowsList[0].steps[0];
+    this.player = args.player;
+    this.players = args.gameData.players;
+    this.chatLog = args.gameData.chat;
+    this.acknowledgedChat = args.gameData.chat.map((c) => c.id);
+    this.game = args.game;
+    this.globalStateData = args.gameData.globalStateData;
+    this.playerStateData = args.gameData.playerStateData;
+
+    this.stateData = {};
+    this.stepIdsSinceLastInput = [];
+    this.userResponseHandleState = getDefaultUserResponseHandleState();
+    this.sendMessage = args.sendMessage;
+    this.updateRoomGameData = args.updateRoomGameData;
+    this.executePrompt = args.executePrompt;
+    this.setResponsePending = args.setResponsePending;
+    this.onDiscussionFinished = args.onDiscussionFinished;
+
+    // bind functions to this
+    this.setCurrentDiscussion = this.setCurrentDiscussion.bind(this);
+    this.initializeActivity = this.initializeActivity.bind(this);
+    this.resetActivity = this.resetActivity.bind(this);
+    this.handleStep = this.handleStep.bind(this);
+    this.handleSystemMessageStep = this.handleSystemMessageStep.bind(this);
+    this.handleRequestUserInputStep =
+      this.handleRequestUserInputStep.bind(this);
+    this.goToNextStep = this.goToNextStep.bind(this);
+    this.handleNewUserMessage = this.handleNewUserMessage.bind(this);
+    this.handlePromptStep = this.handlePromptStep.bind(this);
+    this.getNextStep = this.getNextStep.bind(this);
+    this.getStepById = this.getStepById.bind(this);
+    this.addResponseNavigation = this.addResponseNavigation.bind(this);
+    this.handleExtractMcqChoices = this.handleExtractMcqChoices.bind(this);
+    this.onDiscussionFinished = this.onDiscussionFinished?.bind(this);
+  }
 
   getStepById(stepId: string): DiscussionStageStep | undefined {
     if (
-      !this.currentDiscussion ||
-      !this.currentDiscussion.flowsList.length ||
-      !this.currentDiscussion.flowsList[0].steps.length
+      !this.currentStage ||
+      !this.currentStage.flowsList.length ||
+      !this.currentStage.flowsList[0].steps.length
     ) {
       throw new Error('No discussion data found');
     }
-    for (let i = 0; i < this.currentDiscussion.flowsList.length; i++) {
-      const flow = this.currentDiscussion.flowsList[i];
+    for (let i = 0; i < this.currentStage.flowsList.length; i++) {
+      const flow = this.currentStage.flowsList[i];
       for (let j = 0; j < flow.steps.length; j++) {
         const step = flow.steps[j];
         if (step.stepId === stepId) {
@@ -108,10 +164,9 @@ export class DiscussionStageHandler implements ChatLogSubscriber {
   }
 
   getNextStep(currentStep: DiscussionStageStep): DiscussionStageStep {
-    if (!this.currentDiscussion) {
+    if (!this.currentStage) {
       throw new Error('No activity data found');
     }
-
     if (currentStep.jumpToStepId) {
       const jumpStep = this.getStepById(currentStep.jumpToStepId);
       if (!jumpStep) {
@@ -122,8 +177,8 @@ export class DiscussionStageHandler implements ChatLogSubscriber {
       return jumpStep;
     } else {
       // go to next step in current flow
-      const currentStepFlowList = this.currentDiscussion.flowsList.find(
-        (flow) => flow.steps.find((step) => step.stepId === currentStep.stepId)
+      const currentStepFlowList = this.currentStage.flowsList.find((flow) =>
+        flow.steps.find((step) => step.stepId === currentStep.stepId)
       );
 
       if (!currentStepFlowList) {
@@ -150,44 +205,15 @@ export class DiscussionStageHandler implements ChatLogSubscriber {
     }
   }
 
-  constructor(args: DiscussionStageHandlerArgs) {
-    this.currentDiscussion = args.currentDiscussion;
-    this.stateData = {};
-    this.stepIdsSinceLastInput = [];
-    this.userResponseHandleState = getDefaultUserResponseHandleState();
-    this.sendMessage = args.sendMessage;
-    this.clearChat = args.clearChat;
-    this.executePrompt = args.executePrompt;
-    this.setResponsePending = args.setResponsePending;
-    this.onDiscussionFinished = args.onDiscussionFinished;
-
-    // bind functions to this
-    this.setCurrentDiscussion = this.setCurrentDiscussion.bind(this);
-    this.initializeActivity = this.initializeActivity.bind(this);
-    this.resetActivity = this.resetActivity.bind(this);
-    this.handleStep = this.handleStep.bind(this);
-    this.handleSystemMessageStep = this.handleSystemMessageStep.bind(this);
-    this.handleRequestUserInputStep =
-      this.handleRequestUserInputStep.bind(this);
-    this.goToNextStep = this.goToNextStep.bind(this);
-    this.handleNewUserMessage = this.handleNewUserMessage.bind(this);
-    this.handlePromptStep = this.handlePromptStep.bind(this);
-    this.getNextStep = this.getNextStep.bind(this);
-    this.getStepById = this.getStepById.bind(this);
-    this.addResponseNavigation = this.addResponseNavigation.bind(this);
-    this.handleExtractMcqChoices = this.handleExtractMcqChoices.bind(this);
-    this.onDiscussionFinished = this.onDiscussionFinished?.bind(this);
-  }
-
   setCurrentDiscussion(currentDiscussion?: DiscussionStage) {
-    this.currentDiscussion = currentDiscussion;
+    this.currentStage = currentDiscussion;
   }
 
   initializeActivity() {
     if (
-      !this.currentDiscussion ||
-      !this.currentDiscussion.flowsList.length ||
-      !this.currentDiscussion.flowsList[0].steps.length
+      !this.currentStage ||
+      !this.currentStage.flowsList.length ||
+      !this.currentStage.flowsList[0].steps.length
     ) {
       throw new Error('No built activity data found');
     }
@@ -196,23 +222,22 @@ export class DiscussionStageHandler implements ChatLogSubscriber {
 
   resetActivity() {
     if (
-      !this.currentDiscussion ||
-      !this.currentDiscussion.flowsList.length ||
-      !this.currentDiscussion.flowsList[0].steps.length
+      !this.currentStage ||
+      !this.currentStage.flowsList.length ||
+      !this.currentStage.flowsList[0].steps.length
     ) {
       throw new Error('No built activity data found');
     }
-    this.clearChat();
-    this.curStep = this.currentDiscussion.flowsList[0].steps[0];
+    this.currentStep = this.currentStage.flowsList[0].steps[0];
     this.stateData = {};
     this.stepIdsSinceLastInput = [];
     this.userResponseHandleState = getDefaultUserResponseHandleState();
-    this.handleStep(this.curStep);
+    this.handleStep(this.currentStep);
   }
 
   async handleStep(step: DiscussionStageStep) {
-    if (this.curStep?.stepId !== step.stepId) {
-      this.curStep = step;
+    if (this.currentStep?.stepId !== step.stepId) {
+      this.currentStep = step;
     }
     if (step.stepType === DiscussionStageStepType.REQUEST_USER_INPUT) {
       this.stepIdsSinceLastInput = [];
@@ -245,6 +270,7 @@ export class DiscussionStageHandler implements ChatLogSubscriber {
         throw new Error(`Unknown step type: ${step}`);
     }
     if (step.lastStep) {
+      // todo
     }
   }
 
@@ -319,23 +345,23 @@ export class DiscussionStageHandler implements ChatLogSubscriber {
   }
 
   async goToNextStep() {
-    if (!this.curStep) {
+    if (!this.currentStep) {
       throw new Error('No current step found');
     }
-    if (this.curStep.lastStep) {
+    if (this.currentStep.lastStep) {
       if (this.onDiscussionFinished) {
         this.onDiscussionFinished(this.stateData);
       }
       return;
     }
     try {
-      this.curStep = this.getNextStep(this.curStep);
+      this.currentStep = this.getNextStep(this.currentStep);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       this.sendErrorMessage(err.message);
       return;
     }
-    await this.handleStep(this.curStep);
+    await this.handleStep(this.currentStep);
   }
 
   sendErrorMessage(message: string) {
@@ -348,13 +374,15 @@ export class DiscussionStageHandler implements ChatLogSubscriber {
   }
 
   async handleNewUserMessage(message: string) {
-    if (!this.curStep) {
+    if (!this.currentStep) {
       throw new Error('No current step found');
     }
-    if (this.curStep.stepType !== DiscussionStageStepType.REQUEST_USER_INPUT) {
+    if (
+      this.currentStep.stepType !== DiscussionStageStepType.REQUEST_USER_INPUT
+    ) {
       return;
     }
-    const requestUserInputStep = this.curStep as RequestUserInputStageStep;
+    const requestUserInputStep = this.currentStep as RequestUserInputStageStep;
     if (requestUserInputStep.predefinedResponses.length > 0) {
       const predefinedResponseMatch =
         requestUserInputStep.predefinedResponses.find(
@@ -376,7 +404,7 @@ export class DiscussionStageHandler implements ChatLogSubscriber {
         }
       }
     }
-    const userInputStep = this.curStep as RequestUserInputStageStep;
+    const userInputStep = this.currentStep as RequestUserInputStageStep;
     if (userInputStep.saveResponseVariableName) {
       this.stateData[userInputStep.saveResponseVariableName] = message;
     }
@@ -404,17 +432,6 @@ export class DiscussionStageHandler implements ChatLogSubscriber {
     // reset user response handle state since we handled the user response
     this.userResponseHandleState = getDefaultUserResponseHandleState();
     await this.goToNextStep();
-  }
-
-  newChatLogReceived(chatLog: ChatMessage[]) {
-    this.chatLog = chatLog;
-    if (chatLog.length === 0) {
-      return;
-    }
-    const newMessage = chatLog[chatLog.length - 1];
-    if (newMessage.sender === SenderType.PLAYER) {
-      this.handleNewUserMessage(newMessage.message);
-    }
   }
 
   async handlePromptStep(step: PromptStageStep) {
@@ -518,5 +535,32 @@ export class DiscussionStageHandler implements ChatLogSubscriber {
 
     this.setResponsePending(false);
     await this.goToNextStep();
+  }
+
+  /** subscriber functions */
+
+  newChatLogReceived(chatLog: ChatMessage[]) {
+    this.chatLog = chatLog;
+    const newMessages = chatLog.filter(
+      (c) =>
+        !this.acknowledgedChat.includes(c.id) &&
+        c.sender === SenderType.PLAYER &&
+        c.senderId === this.player.clientId
+    );
+    if (newMessages.length === 0) {
+      return;
+    }
+    for (const newMessage of newMessages) {
+      this.handleNewUserMessage(newMessage.message);
+      this.acknowledgedChat.push(newMessage.id);
+    }
+  }
+
+  globalStateUpdated(newGlobalState: GlobalStateData): void {
+    this.globalStateData = newGlobalState;
+  }
+
+  playerStateUpdated(newGameState: PlayerStateData[]): void {
+    this.playerStateData = newGameState;
   }
 }

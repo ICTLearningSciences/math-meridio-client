@@ -5,11 +5,11 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 
-import { GameStateHandler } from '../game-state-handler';
 import GameScene, { RenderAvatars } from '../game-scene';
 import EventSystem from '../event-system';
-import { Anchor, addImage, scaleText } from '../phaser-helpers';
+import { Anchor, addImage } from '../phaser-helpers';
 import { Avatars } from '../../store/slices/player/use-with-player-state';
+import { GameStateHandler } from '../../classes/game-state-handler';
 
 export class AvatarCreator extends GameScene {
   avatars: RenderAvatars[];
@@ -61,11 +61,8 @@ export class AvatarCreator extends GameScene {
   destroyAvatars() {
     for (const avatar of this.avatars) {
       avatar.sprite.forEach((s) => s.destroy());
-      avatar.chatSprite.forEach((s) => s.destroy());
     }
     this.avatars = [];
-    this.myChatAvatar?.forEach((a) => a.destroy());
-    this.myChatAvatar = [];
   }
 
   loadingAvatars(tf: boolean) {
@@ -84,31 +81,26 @@ export class AvatarCreator extends GameScene {
     const y = this.bg!.displayHeight / 2;
     for (let i = 0; i < avatars.length; i++) {
       const a = avatars[i];
-      const chatAvatar = this.renderChatAvatar(a.chatAvatar, { x, y });
-      const spriteAvatar = this.renderSpriteAvatar(a.avatar, {
-        x: x + chatAvatar[1].displayWidth / 2,
-        y: y + chatAvatar[1].displayHeight,
-      });
-      x += chatAvatar[1].displayWidth + 50;
+      const avatar = this.renderSpriteAvatar(a.avatar, { x, y });
+      x += avatar[0].displayWidth + 50;
 
-      chatAvatar[1].setInteractive();
-      chatAvatar[1].on(
+      avatar[0].setInteractive();
+      avatar[0].on('pointerover', function () {
+        avatar.forEach((s) => s.play(`${s.name}_walk`));
+      });
+      avatar[0].on('pointerout', function () {
+        avatar.forEach((s) => s.stop());
+      });
+      avatar[0].on(
         'pointerdown',
         () => {
           this.selectAvatar(a, i);
         },
         this
       );
-      spriteAvatar[0].setInteractive();
-      spriteAvatar[0].on('pointerover', function () {
-        spriteAvatar.forEach((s) => s.play(`${s.name}_walk`));
-      });
-      spriteAvatar[0].on('pointerout', function () {
-        spriteAvatar.forEach((s) => s.stop());
-      });
 
       this.tweens.add({
-        targets: [...spriteAvatar, ...chatAvatar],
+        targets: avatar,
         alpha: { from: 0, to: 1 },
         duration: 1000,
         delay: i * 100,
@@ -116,26 +108,15 @@ export class AvatarCreator extends GameScene {
 
       this.avatars.push({
         ...a,
-        sprite: spriteAvatar,
-        chatSprite: chatAvatar,
+        sprite: avatar,
       });
     }
   }
 
   selectAvatar(avatar: Avatars, i: number) {
     EventSystem.emit('avatarSelected', avatar);
-    this.myChatAvatar?.forEach((a) => a.destroy());
-    this.myChatAvatar = [];
     for (let n = 0; n < this.avatars.length; n++) {
-      const a = this.avatars[n];
-      if (i === n) {
-        a.chatSprite.forEach((s) => s.setAlpha(1));
-        a.sprite.forEach((s) => s.setAlpha(1));
-      } else {
-        a.chatSprite.forEach((s) => s.setAlpha(0.2));
-        a.sprite.forEach((s) => s.setAlpha(0.2));
-      }
+      this.avatars[n].sprite.forEach((s) => s.setAlpha(n === i ? 1 : 0.1));
     }
-    this.myChatAvatar = this.renderChatAvatar(avatar.chatAvatar);
   }
 }

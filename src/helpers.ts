@@ -44,6 +44,15 @@ export function arrayNRandom(arr: any[], n: number): any[] {
   return result;
 }
 
+export function randomInt(n: number): number {
+  return Math.floor(Math.random() * n);
+}
+
+export function arrayGetRandom(arr: any[]): any {
+  if (arr.length === 0) return undefined;
+  return arr[randomInt(arr.length)];
+}
+
 export function isEqual(obj1: any, obj2: any): boolean {
   return JSON.stringify(obj1) !== JSON.stringify(obj2);
 }

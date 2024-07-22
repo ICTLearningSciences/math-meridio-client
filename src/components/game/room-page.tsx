@@ -16,24 +16,30 @@ import {
   Typography,
 } from '@mui/material';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
-import { fetchRooms } from '../../api';
 import { GAMES } from '../../game/types';
-import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { Room, createAndJoinRoom, joinRoom } from '../../store/slices/game';
+import { Room, setRoom } from '../../store/slices/game';
+import { useWithGame } from '../../store/slices/game/use-with-game-state';
 import withAuthorizationOnly from '../../wrap-with-authorization-only';
+import { useAppDispatch, useAppSelector } from '../../store/hooks';
+import { useNavigate } from 'react-router-dom';
 
 function RoomCard(props: {
   room: Room;
   join: (id: string) => void;
 }): JSX.Element {
   const { room } = props;
+  const { player } = useAppSelector((state) => state.playerData);
   const [expanded, setIsExpanded] = React.useState<boolean>(false);
+  const inRoom = room.gameData.players.find(
+    (p) => p.clientId === player?.clientId
+  );
   return (
     <Card
       className="list-item"
       style={{
         width: '100%',
         boxSizing: 'border-box',
+        backgroundColor: inRoom ? '#D2EBFE' : '',
       }}
     >
       <CardContent className="row" style={{ padding: 10 }}>
@@ -50,8 +56,12 @@ function RoomCard(props: {
         >
           <Typography>{room.name}</Typography>
           <Typography>{room.gameData.players.length} players</Typography>
-          <Button variant="contained" onClick={() => props.join(room._id)}>
-            Join
+          <Button
+            variant="contained"
+            disabled={room.gameData.players.length >= 4}
+            onClick={() => props.join(room._id)}
+          >
+            {inRoom ? 'Rejoin' : 'Join'}
           </Button>
         </div>
       </CardContent>
@@ -61,7 +71,10 @@ function RoomCard(props: {
             Game: {room.gameData.gameId}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Status: {room.gameData.status}
+            Current Stage: {room.gameData.globalStateData.curStageId}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Current Step: {room.gameData.globalStateData.curStepId}
           </Typography>
           <Typography variant="body2" color="text.secondary">
             Players: {room.gameData.players.map((p) => p.name).join(', ')}
@@ -74,23 +87,38 @@ function RoomCard(props: {
 
 function RoomPage(): JSX.Element {
   const dispatch = useAppDispatch();
+  const { loadRooms, joinRoom, createRoom } = useWithGame();
   const { player } = useAppSelector((state) => state.playerData);
+  const { room } = useAppSelector((state) => state.gameData);
   const [selectedGame, setSelectedGame] = React.useState<string>();
   const [rooms, setRooms] = React.useState<Room[]>([]);
   const [error, setError] = React.useState<string>();
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
+  const navigate = useNavigate();
 
   React.useEffect(() => {
     if (selectedGame) {
-      loadRooms(selectedGame);
+      reloadRooms(selectedGame);
     }
   }, [selectedGame]);
 
-  async function loadRooms(gameId: string) {
+  React.useEffect(() => {
+    if (room) {
+      navigate(`/game/${room._id}`);
+    }
+  }, [room]);
+
+  async function reloadRooms(gameId: string) {
     if (isLoading) return;
     setIsLoading(true);
-    fetchRooms(gameId)
+    loadRooms(gameId)
       .then((rooms) => {
+        const room = rooms.find((r) =>
+          r.gameData.players.find((p) => p.clientId === player?.clientId)
+        );
+        if (room) {
+          dispatch(setRoom(room));
+        }
         setRooms(rooms);
         setError(undefined);
         setIsLoading(false);
@@ -100,16 +128,6 @@ function RoomPage(): JSX.Element {
         setError(err.message);
         setIsLoading(false);
       });
-  }
-
-  function join(roomId: string) {
-    if (!player?.clientId) return;
-    dispatch(joinRoom({ roomId, playerId: player.clientId }));
-  }
-
-  function create(gameId: string) {
-    if (!player?.clientId) return;
-    dispatch(createAndJoinRoom({ gameId, playerId: player.clientId }));
   }
 
   return (
@@ -142,7 +160,7 @@ function RoomPage(): JSX.Element {
                       {g.name}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      {g.description}
+                      {g.problem}
                     </Typography>
                   </CardContent>
                 </CardActionArea>
@@ -172,18 +190,24 @@ function RoomPage(): JSX.Element {
               <Typography color="error">Failed to load rooms</Typography>
             ) : (
               rooms.map((r) => (
-                <RoomCard key={`room-${r._id}`} room={r} join={join} />
+                <RoomCard
+                  key={`room-${r._id}`}
+                  room={r}
+                  join={(id) => joinRoom(id)}
+                />
               ))
             )}
           </div>
-          <Button onClick={() => loadRooms(selectedGame)}>Reload rooms</Button>
+          <Button onClick={() => reloadRooms(selectedGame)}>
+            Reload rooms
+          </Button>
           <Typography variant="h5" style={{ marginTop: 20 }}>
             Or Create One
           </Typography>
           <Button
             variant="contained"
             color="primary"
-            onClick={() => create(selectedGame)}
+            onClick={() => createRoom(selectedGame)}
           >
             Create new room & join
           </Button>

@@ -8,6 +8,7 @@ import React from 'react';
 import { Provider } from 'react-redux';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 
+import { Header } from './components/header';
 import LoginPage from './components/login-page';
 import AvatarPage from './components/avatar-page';
 import GamePage from './components/game/game-page';
@@ -24,7 +25,10 @@ function MainApp() {
       path: '/',
       element: (
         <>
-          <RoomPage />
+          <Header />
+          <div className="page">
+            <RoomPage />
+          </div>
         </>
       ),
     },
@@ -32,7 +36,10 @@ function MainApp() {
       path: '/login',
       element: (
         <>
-          <LoginPage />
+          <Header />
+          <div className="page">
+            <LoginPage />
+          </div>
         </>
       ),
     },
@@ -40,7 +47,21 @@ function MainApp() {
       path: '/avatar-creator',
       element: (
         <>
-          <AvatarPage />
+          <Header />
+          <div className="page">
+            <AvatarPage />
+          </div>
+        </>
+      ),
+    },
+    {
+      path: '/game',
+      element: (
+        <>
+          <Header />
+          <div className="page">
+            <GamePage />
+          </div>
         </>
       ),
     },
@@ -48,7 +69,10 @@ function MainApp() {
       path: '/game/:roomId',
       element: (
         <>
-          <GamePage />
+          <Header />
+          <div className="page">
+            <GamePage />
+          </div>
         </>
       ),
     },
@@ -56,11 +80,14 @@ function MainApp() {
       path: '/discussion-builder',
       element: (
         <>
-          <StageBuilderPage
-            goToStage={() => {
-              console.log('');
-            }}
-          />
+          <Header />
+          <div className="page">
+            <StageBuilderPage
+              goToStage={() => {
+                console.log('');
+              }}
+            />
+          </div>
         </>
       ),
     },

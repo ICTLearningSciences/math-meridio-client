@@ -5,33 +5,175 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { makeStyles } from 'tss-react/mui';
+import { Card, CircularProgress, Grid, Typography } from '@mui/material';
 
-import withAuthorizationOnly from '../../wrap-with-authorization-only';
-import { Grid } from '@mui/material';
 import ChatThread from './chat-thread';
 import ChatForm from './chat-form';
+import { Game } from '../../game/types';
+import { useAppSelector } from '../../store/hooks';
+import { useWithGame } from '../../store/slices/game/use-with-game-state';
+import { GameStateHandler } from '../../classes/game-state-handler';
+import withAuthorizationOnly from '../../wrap-with-authorization-only';
+
+const useStyles = makeStyles()(() => ({
+  box: {
+    position: 'relative',
+    top: 0,
+    left: '50%',
+    transform: 'translate(-50%, 50%)',
+    width: 300,
+    height: 60,
+    backgroundColor: 'white',
+    textAlign: 'center',
+    border: '1px solid lightgrey',
+    padding: '20px',
+    boxShadow: '-5px 5px 10px 0px rgba(0,0,0,0.75)',
+  },
+}));
+
+function ProblemSpace(props: {
+  game: Game;
+  controller: GameStateHandler;
+}): JSX.Element {
+  return (
+    <Card
+      className="column box"
+      style={{
+        overflowY: 'auto',
+        height: 150,
+        margin: 10,
+        borderTopRightRadius: 20,
+        borderBottomLeftRadius: 20,
+      }}
+    >
+      <Typography fontWeight="bold">Problem</Typography>
+      {props.game.showProblem(props.controller)}
+    </Card>
+  );
+}
+
+function SolutionSpace(props: {
+  game: Game;
+  controller: GameStateHandler;
+}): JSX.Element {
+  return (
+    <Card
+      className="scroll box"
+      style={{
+        overflowY: 'auto',
+        flexGrow: 1,
+        margin: 10,
+        borderTopRightRadius: 20,
+        borderBottomLeftRadius: 20,
+      }}
+    >
+      <Typography fontWeight="bold">Approach</Typography>
+      {props.game.showSolution(props.controller)}
+    </Card>
+  );
+}
+
+function SimulationSpace(props: {
+  game: Game;
+  controller: GameStateHandler;
+  simulation?: string;
+}): JSX.Element {
+  return (
+    <Card
+      className="scroll box"
+      style={{
+        flexGrow: 1,
+        margin: 10,
+        borderTopLeftRadius: 20,
+        borderBottomRightRadius: 20,
+      }}
+    >
+      <Typography fontWeight="bold">Simulation</Typography>
+      {props.game.showSimulation(props.controller, props.simulation)}
+    </Card>
+  );
+}
+
+function ResultsSpace(props: {
+  game: Game;
+  controller: GameStateHandler;
+}): JSX.Element {
+  return (
+    <Card
+      className="scroll box"
+      style={{
+        flexGrow: 1,
+        margin: 10,
+        borderTopLeftRadius: 20,
+        borderBottomRightRadius: 20,
+      }}
+    >
+      <Typography fontWeight="bold">Results</Typography>
+      {props.game.showResult(props.controller)}
+    </Card>
+  );
+}
 
 function GamePage(): JSX.Element {
-  const gameContainerRef = React.useRef<HTMLDivElement | null>(null);
+  const { room, simulation } = useAppSelector((state) => state.gameData);
+  const { game, gameStateHandler, launchGame, leaveRoom } = useWithGame();
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (!room) {
+      navigate('/');
+    } else if (!gameStateHandler) {
+      launchGame();
+    }
+    return () => {
+      if (gameStateHandler && room) {
+        leaveRoom();
+      }
+    };
+  }, [room?._id]);
+
+  if (!room || !gameStateHandler || !game) {
+    return (
+      <div className="root center-div">
+        <CircularProgress />
+      </div>
+    );
+  }
 
   return (
-    <Grid container xs={true} flexDirection="row">
-      <Grid item xs={9}>
-        <div
-          id="game-container"
-          ref={gameContainerRef}
-          style={{
-            height: window.innerHeight,
-            width: window.innerWidth * (9 / 12),
-            backgroundColor: 'pink,',
-          }}
-        />
+    <div className="root row" style={{ backgroundColor: '#cfdaf8' }}>
+      <Grid container flexDirection="row" style={{ height: '100%' }}>
+        <Grid item xs={5} flexDirection="column" style={{ height: '100%' }}>
+          <div className="column" style={{ height: '100%', width: '100%' }}>
+            <ProblemSpace game={game} controller={gameStateHandler} />
+            <SolutionSpace game={game} controller={gameStateHandler} />
+          </div>
+        </Grid>
+        <Grid item xs={5} style={{ height: '100%' }}>
+          <div className="column" style={{ height: '100%', width: '100%' }}>
+            <SimulationSpace
+              game={game}
+              controller={gameStateHandler}
+              simulation={simulation}
+            />
+            <ResultsSpace game={game} controller={gameStateHandler} />
+          </div>
+        </Grid>
+        <Grid
+          item
+          xs={2}
+          display="flex"
+          flexDirection="column"
+          style={{ height: '100%', padding: 10 }}
+        >
+          <ChatThread />
+          <div style={{ height: 10 }} />
+          <ChatForm />
+        </Grid>
       </Grid>
-      <Grid item xs={3} display="flex" flexDirection="column">
-        <ChatThread />
-        <ChatForm />
-      </Grid>
-    </Grid>
+    </div>
   );
 }
 

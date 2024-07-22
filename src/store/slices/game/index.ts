@@ -4,10 +4,12 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { v4 as uuid } from 'uuid';
+import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { Player } from '../player';
 import * as api from '../../../api';
 import { LoadStatus, LoadingState } from '../../../types';
+import { RootState } from '../..';
 
 export enum SenderType {
   PLAYER = 'PLAYER',
@@ -38,35 +40,32 @@ export interface Room {
 
 export interface GameData {
   gameId: string;
-  status: GameStatus;
   players: Player[];
   chat: ChatMessage[];
   globalStateData: GlobalStateData;
-  gameStateData: Record<string, any>;
+  playerStateData: PlayerStateData[];
 }
 
-export enum GameStatus {
-  IN_LOBBY = 'IN_LOBBY',
-  IN_GAME = 'IN_GAME',
-  IN_SIMULATION = 'IN_SIMULATION',
-  IN_RESULTS = 'IN_RESULTS',
+export interface GameStateData {
+  key: string;
+  value: any;
 }
 
-export interface PlayerState {
+export interface PlayerStateData {
   player: string;
   animation: string;
-  locationX: number;
-  locationY: number;
+  gameStateData: GameStateData[];
 }
 
 export interface GlobalStateData {
   curStageId: string;
   curStepId: string;
-  playerState: PlayerState[];
+  gameStateData: GameStateData[];
 }
 
 interface Data {
   room: Room | undefined;
+  simulation?: string;
   loadStatus: LoadingState;
 }
 const initialState: Data = {
@@ -77,8 +76,12 @@ const initialState: Data = {
 /** Actions */
 export const createAndJoinRoom = createAsyncThunk(
   'gameData/createAndJoinRoom',
-  async (args: { gameId: string; playerId: string }): Promise<Room> => {
-    return api.createAndJoinRoom(args.playerId, args.gameId);
+  async (args: {
+    gameId: string;
+    gameName: string;
+    playerId: string;
+  }): Promise<Room> => {
+    return api.createAndJoinRoom(args.playerId, args.gameId, args.gameName);
   }
 );
 
@@ -91,7 +94,7 @@ export const joinRoom = createAsyncThunk(
 
 export const leaveRoom = createAsyncThunk(
   'gameData/leaveRoom',
-  async (args: { roomId: string; playerId: string }): Promise<boolean> => {
+  async (args: { roomId: string; playerId: string }): Promise<Room> => {
     return api.leaveRoom(args.playerId, args.roomId);
   }
 );
@@ -123,7 +126,7 @@ export const updateRoomGameData = createAsyncThunk(
     roomId: string;
     gameData: Partial<GameData>;
   }): Promise<Room> => {
-    return api.updateRoomGameData(args.roomId, args.gameData);
+    return api.updateRoom(args.roomId, args.gameData);
   }
 );
 
@@ -137,7 +140,11 @@ export const sendMessage = createAsyncThunk(
 export const dataSlice = createSlice({
   name: 'gameData',
   initialState: initialState,
-  reducers: {},
+  reducers: {
+    setRoom: (state, action: PayloadAction<Room>) => {
+      state.room = action.payload;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(createAndJoinRoom.pending, (state, action) => {
@@ -278,4 +285,5 @@ export const dataSlice = createSlice({
   },
 });
 
+export const { setRoom } = dataSlice.actions;
 export default dataSlice.reducer;

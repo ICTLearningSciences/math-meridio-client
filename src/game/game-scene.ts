@@ -5,16 +5,10 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import { Scene } from 'phaser';
-import { GameStateHandler } from './game-state-handler';
 import EventSystem from './event-system';
 import { ChatMessage } from '../store/slices/game';
 import {
   Avatars,
-  CHAT_AVATAR_BROWS,
-  CHAT_AVATAR_EYES,
-  CHAT_AVATAR_HEADS,
-  CHAT_AVATAR_MOUTH,
-  CHAT_AVATAR_NOSE,
   SPRITE_ACCESSORY,
   SPRITE_BODY,
   SPRITE_CLOTHES,
@@ -27,13 +21,12 @@ import {
   addSprite,
   addText,
   animateText,
-  scaleText,
 } from './phaser-helpers';
 import { Avatar } from '../store/slices/player';
+import { GameStateHandler } from '../classes/game-state-handler';
 
 export interface RenderAvatars extends Avatars {
   sprite: Phaser.GameObjects.Sprite[];
-  chatSprite: Phaser.GameObjects.Image[];
 }
 
 /**
@@ -52,13 +45,11 @@ export abstract class GameScene extends Scene {
   curChatMessage: ChatMessage | undefined;
 
   mySprite: Phaser.GameObjects.Sprite[];
-  myChatAvatar: Phaser.GameObjects.Image[];
 
   constructor(name: string) {
     super(name);
     this.sceneName = name;
     this.messageQueue = [];
-    this.myChatAvatar = [];
     this.mySprite = [];
   }
 
@@ -69,22 +60,6 @@ export abstract class GameScene extends Scene {
     this.load.image('button', 'buttons/long_buttons/blue_button_complete.png');
 
     // Load the assets for the avatars
-    this.load.setPath('assets/avatar/chat');
-    for (const a of [
-      ...CHAT_AVATAR_HEADS,
-      ...CHAT_AVATAR_EYES,
-      ...CHAT_AVATAR_BROWS,
-      ...CHAT_AVATAR_NOSE,
-    ]) {
-      this.load.image(a.id, `${a.id}.png`);
-    }
-    for (const a of CHAT_AVATAR_MOUTH) {
-      this.load.image(a.id, `${a.id}.png`);
-      this.load.image(`${a.id}_open`, `${a.id}_open.png`);
-      this.load.image(`${a.id}_happy`, `${a.id}_happy.png`);
-      this.load.image(`${a.id}_sad`, `${a.id}_sad.png`);
-    }
-
     this.load.setPath('assets/avatar/sprite');
     for (const a of SPRITE_BODY) {
       this.loadSprite(a.id, `body/${a.id}.png`, 32, 32);
@@ -102,14 +77,24 @@ export abstract class GameScene extends Scene {
 
   create(handler: GameStateHandler) {
     this.gameStateHandler = handler;
-
     for (const a of [
       ...SPRITE_BODY,
       ...SPRITE_CLOTHES,
       ...SPRITE_HAIR,
       ...SPRITE_ACCESSORY,
     ]) {
-      this.createSpriteAnim(a.id, 'walk', Array.from(Array(8).keys()));
+      if (a.variants) {
+        for (let i = 0; i < a.variants?.length || 0; i++) {
+          this.createSpriteAnim(
+            a.id,
+            `walk`,
+            Array.from(Array(8).keys()).map((n) => n + 8 * i),
+            i
+          );
+        }
+      } else {
+        this.createSpriteAnim(a.id, 'walk', Array.from(Array(8).keys()));
+      }
     }
 
     this.bg = addBackground(this, 'background').setAlpha(0);
@@ -181,9 +166,15 @@ export abstract class GameScene extends Scene {
     });
   }
 
-  createSpriteAnim(name: string, anim: string, frames: number[]): void {
+  createSpriteAnim(
+    name: string,
+    anim: string,
+    frames: number[],
+    variant?: number
+  ): void {
     this.anims.create({
-      key: `${name}_${anim}`,
+      key:
+        variant === undefined ? `${name}_${anim}` : `${name}${variant}_${anim}`,
       frames: this.anims.generateFrameNumbers(name, {
         frames: frames,
       }),
@@ -198,11 +189,11 @@ export abstract class GameScene extends Scene {
   ): Phaser.GameObjects.Sprite[] {
     const sprites: Phaser.GameObjects.Sprite[] = [];
     avatar.forEach((a) => {
-      const sprite = addSprite(this, a.id, 0, {
+      const sprite = addSprite(this, a.id, (a.variant || 0) * 8, {
         bg: this.bg,
-        heightRel: 0.1,
+        heightRel: 0.2,
       })
-        .setName(a.id)
+        .setName(a.variant !== undefined ? `${a.id}${a.variant}` : a.id)
         .setX(props.x)
         .setY(props.y);
       sprites.push(sprite);
@@ -278,27 +269,8 @@ export abstract class GameScene extends Scene {
     this.chatMsgText.setY(
       this.chatWindow.y + this.chatWindow.displayHeight / 2
     );
-    const mouth = this.myChatAvatar[0];
-    let timer: Phaser.Time.TimerEvent;
-    // if (mouth) {
-    //   timer = this.time.addEvent({
-    //     delay: 100,
-    //     loop: true,
-    //     callback() {
-    //       if (mouth.texture.key.endsWith("_open")) {
-    //         mouth.setTexture(mouth.name);
-    //       } else {
-    //         mouth.setTexture(`${mouth.name}_open`);
-    //       }
-    //     },
-    //   });
-    // }
     animateText(this.chatMsgText).then(() => {
       EventSystem.emit('chatMessageEnd', msg);
-      if (mouth) {
-        timer?.destroy();
-        // mouth.setTexture(mouth.name);
-      }
     });
   }
 

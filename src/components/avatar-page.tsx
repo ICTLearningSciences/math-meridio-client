@@ -109,11 +109,7 @@ function AvatarPage(): JSX.Element {
         EventSystem.emit('addSystemMessage', {
           message: 'Saving your avatar...',
         });
-        saveAvatar(
-          description,
-          selectedAvatar.avatar,
-          selectedAvatar.chatAvatar
-        );
+        saveAvatar(description, selectedAvatar.avatar);
         setIsSaving(true);
       } else {
         EventSystem.emit('addSystemMessage', {

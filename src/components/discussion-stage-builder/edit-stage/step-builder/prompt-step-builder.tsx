@@ -38,7 +38,7 @@ import {
   JsonResponseDataType,
   PromptStageStep,
 } from '../../types';
-import { AzureServiceModel } from '../../../../classes/game-state/types';
+import { AzureServiceModel } from '../../../../classes/types';
 import {
   RoundedBorderDiv,
   RowDiv,

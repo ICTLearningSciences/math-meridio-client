@@ -4,20 +4,32 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { AvatarCreator } from './AvatarCreator';
+import React from 'react';
+import { Typography } from '@mui/material';
 
-const config: Phaser.Types.Core.GameConfig = {
-  type: Phaser.CANVAS,
-  backgroundColor: '#282c34',
-  width: 1280,
-  height: 720,
-  scale: {
-    // Fit to window
-    mode: Phaser.Scale.FIT,
-    // Center vertically and horizontally
-    autoCenter: Phaser.Scale.CENTER_BOTH,
-  },
-  scene: [AvatarCreator],
-};
-
-export default config;
+export function OverlayBox(props: {
+  message: string;
+  styles?: Record<string, any>;
+}): JSX.Element {
+  return (
+    <div
+      className="column center-div"
+      style={{
+        position: 'relative',
+        top: 0,
+        left: '50%',
+        transform: 'translate(-50%, 50%)',
+        width: 300,
+        height: 60,
+        backgroundColor: 'white',
+        textAlign: 'center',
+        border: '1px solid lightgrey',
+        padding: '20px',
+        boxShadow: '-5px 5px 10px 0px rgba(0,0,0,0.75)',
+        ...props.styles,
+      }}
+    >
+      <Typography>{props.message}</Typography>
+    </div>
+  );
+}

@@ -16,6 +16,9 @@ const useStyles = makeStyles()(() => ({
     flexDirection: 'column',
     flexGrow: 1,
     overflowY: 'auto',
+    backgroundColor: 'white',
+    borderTopRightRadius: 20,
+    borderBottomLeftRadius: 20,
   },
   chatItem: {
     position: 'relative',
@@ -24,7 +27,7 @@ const useStyles = makeStyles()(() => ({
     paddingLeft: 15,
     paddingRight: 15,
     borderRadius: 30,
-    marginBottom: 2,
+    marginBottom: 15,
     alignItems: 'center',
     fontFamily: 'Helvetica, Arial, sans-serif',
     maxWidth: '80%',
@@ -33,6 +36,18 @@ const useStyles = makeStyles()(() => ({
       alignSelf: 'flex-end',
       backgroundColor: '#0084ff',
       borderBottomRightRadius: 5,
+      '&:after': {
+        content: '""',
+        display: 'block',
+        position: 'absolute',
+        right: -15,
+        bottom: -5,
+        transform: 'rotate(230deg)',
+        borderStyle: 'solid',
+        borderWidth: '30px 0 0 30px',
+        borderColor: '#0084ff transparent',
+        borderRadius: '0 0 40px 0',
+      },
     },
     '&.SYSTEM': {
       alignSelf: 'flex-start',
@@ -83,6 +98,19 @@ export default function ChatThread(): JSX.Element {
               }`}
             style={msgStyles}
           >
+            {msg.senderName && (
+              <Typography
+                style={{
+                  position: 'absolute',
+                  fontSize: 12,
+                  bottom: -15,
+                  right: 20,
+                }}
+              >
+                {msg.senderName}
+              </Typography>
+            )}
+            <div></div>
             <Typography
               style={{
                 color: msg.sender === SenderType.PLAYER ? 'white' : 'black',

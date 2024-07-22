@@ -7,8 +7,8 @@ The full terms of this copyright and license should always be found in the root 
 import React from 'react';
 import { v4 as uuid } from 'uuid';
 import { Avatar, clearPlayer, fetchPlayer, savePlayer } from '.';
-import { jsonLlmRequest } from '../../../classes/game-state/api-helpers';
-import { OpenAiServiceModel } from '../../../classes/game-state/types';
+import { jsonLlmRequest } from '../../../classes/api-helpers';
+import { OpenAiServiceModel } from '../../../classes/types';
 import {
   GenericLlmRequest,
   LoadStatus,
@@ -17,7 +17,7 @@ import {
 } from '../../../types';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { Schema } from 'jsonschema';
-import { arrayNRandom } from '../../../helpers';
+import { arrayGetRandom, randomInt } from '../../../helpers';
 
 export const pickAvatarSchema: Schema = {
   type: 'array',
@@ -34,7 +34,6 @@ export const pickAvatarSchema: Schema = {
 
 export interface Avatars {
   avatar: Avatar[];
-  chatAvatar: Avatar[];
 }
 
 export function useWithPlayer() {
@@ -61,24 +60,18 @@ export function useWithPlayer() {
         clientId: uuid(),
         name: name,
         avatar: [],
-        chatAvatar: [],
         description: '',
       })
     );
   }
 
-  function saveAvatar(
-    description: string,
-    avatar: Avatar[],
-    chatAvatar: Avatar[]
-  ): void {
+  function saveAvatar(description: string, avatar: Avatar[]): void {
     if (!player) return;
     dispatch(
       savePlayer({
         clientId: player.clientId,
         name: player.name,
         avatar: avatar,
-        chatAvatar: chatAvatar,
         description: description,
       })
     );
@@ -88,47 +81,55 @@ export function useWithPlayer() {
     desc: string
   ): Promise<{ message: string; avatars: Avatars[] }> {
     try {
+      const items = [
+        ...SPRITE_BODY,
+        ...SPRITE_HAIR,
+        ...SPRITE_CLOTHES,
+        ...SPRITE_ACCESSORY,
+      ];
+      const items_ids = items.map((i) => i.id);
+      let sprites = await requestAvatarItems(desc, items, 20);
+      sprites = sprites.filter((s) => items_ids.includes(s.id));
+      const message =
+        sprites.length >= 5
+          ? 'Select an avatar or try describing your avatar again:'
+          : 'Too few results. Describe avatar again or use a random one:';
       const avatars: Avatars[] = [];
-      let message = 'Select an avatar or try describing your avatar again:';
-      let heads = await requestAvatarItems(desc, CHAT_AVATAR_HEADS);
-      let eyes = await requestAvatarItems(desc, CHAT_AVATAR_EYES);
-      if (heads.length === 0) {
-        message =
-          'Not enough results. Describe avatar again or use a random one:';
-        heads = arrayNRandom(CHAT_AVATAR_HEADS, NUM_AVATARS_TO_SPAWN);
-      }
-      if (eyes.length === 0) {
-        message =
-          'Not enough results. Describe avatar again or use a random ones';
-        eyes = arrayNRandom(CHAT_AVATAR_EYES, NUM_AVATARS_TO_SPAWN);
-      }
+      for (let i = 0; i < 10; i++) {
+        const avatar: Avatar[] = [];
+        const bodies = sprites.filter((s) => s.type.endsWith('body'));
+        const body = bodies[i % bodies.length] || arrayGetRandom(SPRITE_BODY);
+        body.variant = body.variants
+          ? randomInt(body.variants.length)
+          : undefined;
+        avatar.push(body);
 
-      const s_body = arrayNRandom(SPRITE_BODY, NUM_AVATARS_TO_SPAWN);
-      const s_hair = arrayNRandom(SPRITE_HAIR, NUM_AVATARS_TO_SPAWN);
-      const s_clothes = arrayNRandom(SPRITE_CLOTHES, NUM_AVATARS_TO_SPAWN);
-      const s_acc = arrayNRandom(SPRITE_ACCESSORY, NUM_AVATARS_TO_SPAWN);
+        const clothes = sprites.filter((s) => s.type.endsWith('clothes'));
+        const cloth =
+          clothes[i % clothes.length] || arrayGetRandom(SPRITE_CLOTHES);
+        cloth.variant = cloth.variants
+          ? randomInt(cloth.variants.length)
+          : undefined;
+        avatar.push(cloth);
 
-      for (let i = 0; i < NUM_AVATARS_TO_SPAWN; i++) {
-        const head = heads[i % heads.length];
-        const eye = eyes[i % eyes.length];
-        const desc = head.description.toLowerCase();
-        const brow = desc.includes('black hair')
-          ? CHAT_AVATAR_BROWS[0]
-          : desc.includes('blonde hair')
-          ? CHAT_AVATAR_BROWS[1]
-          : CHAT_AVATAR_BROWS[2];
-        const nose = desc.includes('white skin')
-          ? CHAT_AVATAR_NOSE[0]
-          : CHAT_AVATAR_NOSE[1];
-        const mouth = desc.includes('white skin')
-          ? CHAT_AVATAR_MOUTH[0]
-          : CHAT_AVATAR_MOUTH[1];
-        avatars.push({
-          avatar: [s_body[i], s_hair[i], s_clothes[i], s_acc[i]],
-          chatAvatar: [head, brow, eye, nose, mouth],
-        });
+        const hairStyles = sprites.filter((s) => s.type.endsWith('hair'));
+        const hair =
+          hairStyles[i % hairStyles.length] || arrayGetRandom(SPRITE_HAIR);
+        hair.variant = hair.variants
+          ? randomInt(hair.variants.length)
+          : undefined;
+        avatar.push(hair);
+
+        const accessories = sprites.filter((s) => s.type.endsWith('acc'));
+        const acc = accessories[i % accessories.length];
+        if (acc) {
+          acc.variant = acc.variants
+            ? randomInt(acc.variants.length)
+            : undefined;
+          avatar.push(acc);
+        }
+        avatars.push({ avatar });
       }
-
       return {
         message,
         avatars,
@@ -144,7 +145,8 @@ export function useWithPlayer() {
 
   async function requestAvatarItems(
     desc: string,
-    items: Avatar[]
+    items: Avatar[],
+    n: number
   ): Promise<Avatar[]> {
     try {
       const request: GenericLlmRequest = {
@@ -154,7 +156,7 @@ export function useWithPlayer() {
             promptRole: PromptRoles.USER,
           },
           {
-            promptText: `Based on the following description, choose ${NUM_AVATARS_TO_SPAWN} items to add from the list of items above.`,
+            promptText: `Based on the following description, choose ${n} items to add from the list of items above.`,
             promptRole: PromptRoles.USER,
           },
           {
@@ -193,8 +195,6 @@ export function useWithPlayer() {
 }
 
 /** */
-
-export const NUM_AVATARS_TO_SPAWN = 5;
 
 export const CHAT_AVATAR_HEADS: Avatar[] = [
   {
@@ -1330,552 +1330,917 @@ export const CHAT_AVATAR_MOUTH: Avatar[] = [
 
 export const SPRITE_BODY: Avatar[] = [
   {
-    type: 'sprite',
+    type: 'sprite_body',
     id: 'char1',
     description: [
-      'Caucasian',
-      'European',
-      'White',
-      'White skin',
-      'Pale',
-      'Light skin',
+      'Human, Person',
+      'Boy, Male, Man, Guy, Dude',
+      'Girl, Female, Woman, Chick, Lady',
+      'Caucasian, European, East asian, Chinese, Japanese, Korean',
+      'Pale skin, Light skin, White skin',
     ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_body',
     id: 'char2',
     description: [
-      'Caucasian',
-      'European',
-      'White',
-      'White skin',
-      'Pale',
-      'Light skin',
-      'Tan',
-      'Suntan',
+      'Human, Person',
+      'Boy, Male, Man, Guy, Dude',
+      'Girl, Female, Woman, Chick, Lady',
+      'Caucasian, European, East asian, Chinese, Japanese, Korean',
+      'Pale skin, Light skin, White skin',
     ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_body',
     id: 'char3',
     description: [
-      'Asian',
-      'East asian',
-      'White',
-      'White skin',
-      'Pale',
-      'Light skin',
+      'Human, Person',
+      'Boy, Male, Man, Guy, Dude',
+      'Girl, Female, Woman, Chick, Lady',
+      'Caucasian, European, East asian, Chinese, Japanese, Korean',
+      'South asian, Hispanic, Latino, Indian, Native American, Filipino, Pacific islander',
+      'Slightly tanned skin, Tanned skin, Tan skin, Suntan',
     ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_body',
     id: 'char4',
     description: [
-      'Asian',
-      'East asian',
-      'White',
-      'White skin',
-      'Pale',
-      'Light skin',
-      'Tan',
-      'Suntan',
+      'Human, Person',
+      'Boy, Male, Man, Guy, Dude',
+      'Girl, Female, Woman, Chick, Lady',
+      'Caucasian, European, East asian, Chinese, Japanese, Korean',
+      'South asian, Hispanic, Latino, Indian, Native American, Filipino, Pacific islander',
+      'Slightly tanned skin, Tanned skin, Tan skin, Suntan',
     ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_body',
     id: 'char5',
     description: [
-      'South asian',
-      'Hispanic',
-      'Latino',
-      'Indian',
-      'Native American',
-      'Light brown skin',
-      'Brown skin',
-      'Red skin',
+      'Human, Person',
+      'Boy, Male, Man, Guy, Dude',
+      'Girl, Female, Woman, Chick, Lady',
+      'South asian, Hispanic, Latino, Indian, Native American, Filipino, Pacific islander',
+      'Brown skin, Light brown skin, Darker skin, POC',
     ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_body',
     id: 'char6',
     description: [
-      'South asian',
-      'Hispanic',
-      'Latino',
-      'Indian',
-      'Native American',
-      'Light brown skin',
-      'Brown skin',
-      'Red skin',
-      'Tan',
-      'Suntan',
+      'Human, Person',
+      'Boy, Male, Man, Guy, Dude',
+      'Girl, Female, Woman, Chick, Lady',
+      'South asian, Hispanic, Latino, Indian, Native American, Filipino, Pacific islander',
+      'Brown skin, Light brown skin, Darker skin, POC',
     ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_body',
     id: 'char7',
     description: [
-      'Black',
-      'Black skin',
-      'Dark skin',
-      'Dark brown skin',
-      'Brown skin',
-      'African American',
-      'POC',
+      'Human, Person',
+      'Boy, Male, Man, Guy, Dude',
+      'Girl, Female, Woman, Chick, Lady',
+      'African, African American',
+      'Black skin, Brown skin, Dark brown skin, Darker skin, POC',
     ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_body',
     id: 'char8',
     description: [
-      'Black',
-      'Black skin',
-      'Dark skin',
-      'Dark brown skin',
-      'Brown skin',
-      'African American',
-      'POC',
-      'Tan',
-      'Suntan',
+      'Human, Person',
+      'Boy, Male, Man, Guy, Dude',
+      'Girl, Female, Woman, Chick, Lady',
+      'African, African American',
+      'Black skin, Brown skin, Dark brown skin, Darker skin, POC',
     ].join(', '),
   },
 ];
 
 export const SPRITE_HAIR: Avatar[] = [
   {
-    type: 'sprite',
+    type: 'sprite_hair',
     id: 'bob',
-    description: ['Bob', 'Short hair', 'Side part', 'Girl', 'Female'].join(
-      ', '
-    ),
+    variants: [
+      'black',
+      'blonde',
+      'brown',
+      'brownlight',
+      'copper',
+      'emerald',
+      'green',
+      'grey',
+      'lilac',
+      'navy',
+      'pink',
+      'purple',
+      'red',
+      'turquoise',
+    ],
+    description: [
+      'Human, Person',
+      'Girl, Female, Woman, Chick, Lady',
+      'Bob, Short hair, Side part',
+    ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_hair',
     id: 'braids',
+    variants: [
+      'black',
+      'blonde',
+      'brown',
+      'brown_light',
+      'copper',
+      'emerald',
+      'green',
+      'grey',
+      'lilac',
+      'navy',
+      'pink',
+      'purple',
+      'red',
+      'turquoise',
+    ],
     description: [
-      'Braids',
-      'Ponytails',
-      'Bangs',
-      'Long hair',
-      'Girl',
-      'Female',
+      'Human, Person',
+      'Girl, Female, Woman, Chick, Lady',
+      'Braids, Ponytails, Twin tails, Medium hair, Bangs',
     ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_hair',
     id: 'buzzcut',
+    variants: [
+      'black',
+      'blonde',
+      'brown',
+      'brown_light',
+      'copper',
+      'emerald',
+      'green',
+      'grey',
+      'lilac',
+      'navy',
+      'pink',
+      'purple',
+      'red',
+      'turquoise',
+    ],
     description: [
-      'Buzzcut',
-      'Shaved',
-      'Short hair',
-      'Boy',
-      'Male',
-      'Butch',
+      'Human, Person',
+      'Boy, Male, Man, Guy, Dude',
+      'Buzzcut, Shaved head, Crew cut, Short hair, Army',
     ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_hair',
     id: 'curly',
-    description: ['Curly', 'Curls', 'Afro', 'Short hair', 'Boy', 'Male'].join(
-      ', '
-    ),
+    variants: [
+      'black',
+      'blonde',
+      'brown',
+      'brown_light',
+      'copper',
+      'emerald',
+      'green',
+      'grey',
+      'lilac',
+      'navy',
+      'pink',
+      'purple',
+      'red',
+      'turquoise',
+    ],
+    description: [
+      'Human, Person',
+      'Boy, Male, Man, Guy, Dude',
+      'Curly hair, Curls, Afro, Short hair',
+    ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_hair',
     id: 'emo',
+    variants: [
+      'black',
+      'blonde',
+      'brown',
+      'brown_light',
+      'copper',
+      'emerald',
+      'green',
+      'grey',
+      'lilac',
+      'navy',
+      'pink',
+      'purple',
+      'red',
+      'turquoise',
+    ],
     description: [
-      'Emo',
-      'Asymmetrical hair cut',
-      'Short hair',
-      'Boy',
-      'Male',
-      'Bangs',
+      'Human, Person',
+      'Boy, Male, Man, Guy, Dude',
+      'Emo, Asymmetrical haircut, Bangs, Side part, Short hair',
     ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_hair',
     id: 'extra_long_skirt',
-    description: ['Long hair', 'Straight hair', 'Girl', 'Female', 'Bangs'].join(
-      ', '
-    ),
+    variants: [
+      'black',
+      'blonde',
+      'brown',
+      'brown_light',
+      'copper',
+      'emerald',
+      'green',
+      'grey',
+      'lilac',
+      'navy',
+      'pink',
+      'purple',
+      'red',
+      'turquoise',
+    ],
+    description: [
+      'Human, Person',
+      'Girl, Female, Woman, Chick, Lady',
+      'Long hair, Extra long hair, Straight hair, Skirt hair, Bangs, Side part',
+    ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_hair',
     id: 'extra_long',
-    description: ['Long hair', 'Straight hair', 'Girl', 'Female', 'Bangs'].join(
-      ', '
-    ),
+    variants: [
+      'black',
+      'blonde',
+      'brown',
+      'brown_light',
+      'copper',
+      'emerald',
+      'green',
+      'grey',
+      'lilac',
+      'navy',
+      'pink',
+      'purple',
+      'red',
+      'turquoise',
+    ],
+    description: [
+      'Human, Person',
+      'Girl, Female, Woman, Chick, Lady',
+      'Long hair, Extra long hair, Straight hair, Bangs, Side part',
+    ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_hair',
     id: 'french_curl',
+    variants: [
+      'black',
+      'blonde',
+      'brown',
+      'brown_light',
+      'copper',
+      'emerald',
+      'green',
+      'grey',
+      'lilac',
+      'navy',
+      'pink',
+      'purple',
+      'red',
+      'turquoise',
+    ],
     description: [
-      'French curl',
-      'Curly hair',
-      'Curls',
-      'Short hair',
-      'Girl',
-      'Female',
-      'Bangs',
+      'Human, Person',
+      'Girl, Female, Woman, Chick, Lady',
+      'French curl, Curly hair, Curls, Short hair, Bangs, Bob',
     ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_hair',
     id: 'gentleman',
-    description: ['Gentleman', 'Fancy', 'Short hair', 'Boy', 'Male'].join(', '),
+    variants: [
+      'black',
+      'blonde',
+      'brown',
+      'brown_light',
+      'copper',
+      'emerald',
+      'green',
+      'grey',
+      'lilac',
+      'navy',
+      'pink',
+      'purple',
+      'red',
+      'turquoise',
+    ],
+    description: [
+      'Human, Person',
+      'Boy, Male, Man, Guy, Dude',
+      'Gentleman, Fancy, Tuxedo, Short hair',
+    ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_hair',
     id: 'long_straight',
-    description: ['Long hair', 'Straight hair', 'Girl', 'Female'].join(', '),
+    variants: [
+      'black',
+      'blonde',
+      'brown',
+      'brown_light',
+      'copper',
+      'emerald',
+      'green',
+      'grey',
+      'lilac',
+      'navy',
+      'pink',
+      'purple',
+      'red',
+      'turquoise',
+    ],
+    description: [
+      'Human, Person',
+      'Girl, Female, Woman, Chick, Lady',
+      'Long hair, Straight hair, Bangs, Side part',
+    ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_hair',
     id: 'long_straight_skirt',
-    description: ['Long hair', 'Straight hair', 'Girl', 'Female'].join(', '),
+    variants: [
+      'black',
+      'blonde',
+      'brown',
+      'brown_light',
+      'copper',
+      'emerald',
+      'green',
+      'grey',
+      'lilac',
+      'navy',
+      'pink',
+      'purple',
+      'red',
+      'turquoise',
+    ],
+    description: [
+      'Human, Person',
+      'Girl, Female, Woman, Chick, Lady',
+      'Long hair, Straight hair, Skirt hair, Bangs, Side part',
+    ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_hair',
     id: 'midiwave',
+    variants: [
+      'black',
+      'blonde',
+      'brown',
+      'brown_light',
+      'copper',
+      'emerald',
+      'green',
+      'grey',
+      'lilac',
+      'navy',
+      'pink',
+      'purple',
+      'red',
+      'turquoise',
+    ],
     description: [
-      'Medium hair',
-      'Wavy hair',
-      'Curly hair',
-      'Girl',
-      'Female',
+      'Human, Person',
+      'Girl, Female, Woman, Chick, Lady',
+      'Medium hair, Wavy hair, Curly hair, Bangs, Side part',
     ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_hair',
     id: 'ponytail',
-    description: ['Medium hair', 'Ponytail', 'Girl', 'Female', 'Bangs'].join(
-      ', '
-    ),
-  },
-  {
-    type: 'sprite',
-    id: 'spacebuns',
+    variants: [
+      'black',
+      'blonde',
+      'brown',
+      'brown_light',
+      'copper',
+      'emerald',
+      'green',
+      'grey',
+      'lilac',
+      'navy',
+      'pink',
+      'purple',
+      'red',
+      'turquoise',
+    ],
     description: [
-      'Short hair',
-      'Buns',
-      'Space buns',
-      'Girl',
-      'Female',
-      'Bangs',
+      'Human, Person',
+      'Girl, Female, Woman, Chick, Lady',
+      'Medium hair, Ponytail, Bangs, Sporty',
     ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_hair',
+    id: 'spacebuns',
+    variants: [
+      'black',
+      'blonde',
+      'brown',
+      'brown_light',
+      'copper',
+      'emerald',
+      'green',
+      'grey',
+      'lilac',
+      'navy',
+      'pink',
+      'purple',
+      'red',
+      'turquoise',
+    ],
+    description: [
+      'Human, Person',
+      'Girl, Female, Woman, Chick, Lady',
+      'Short hair, Buns, Space buns, Bangs',
+    ].join(', '),
+  },
+  {
+    type: 'sprite_hair',
     id: 'wavy',
-    description: ['Medium hair', 'Wavy hair', 'Girl', 'Female', 'Bangs'].join(
-      ', '
-    ),
+    variants: [
+      'black',
+      'blonde',
+      'brown',
+      'brown_light',
+      'copper',
+      'emerald',
+      'green',
+      'grey',
+      'lilac',
+      'navy',
+      'pink',
+      'purple',
+      'red',
+      'turquoise',
+    ],
+    description: [
+      'Human, Person',
+      'Girl, Female, Woman, Chick, Lady',
+      'Medium hair, Wavy hair, Bangs',
+    ].join(', '),
   },
 ];
 
 export const SPRITE_CLOTHES: Avatar[] = [
   {
-    type: 'sprite',
+    type: 'sprite_clothes',
     id: 'basic',
-    description: ['T-shirt', 'Shirt', 'Short-sleeved shirt', 'Top'].join(', '),
+    variants: [
+      'black',
+      'blue',
+      'bluelight',
+      'brown',
+      'green',
+      'greenlight',
+      'pink',
+      'purple',
+      'red',
+      'white',
+    ],
+    description: [
+      'Human, Person',
+      'Boy, Male, Man, Guy, Dude',
+      'Girl, Female, Woman, Chick, Lady',
+      'No pattern, Plain, Simple',
+      'T-shirt, Shirt, Short-sleeved shirt, Top',
+    ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_clothes',
     id: 'clown',
+    variants: ['black', 'red'],
     description: [
-      'Clown',
-      'Joker',
-      'Jester',
-      'Halloween',
-      'Spooky',
-      'Scary',
-      'Funny',
-      'Outfit',
-      'Cosplay',
+      'Human, Person',
+      'Boy, Male, Man, Guy, Dude',
+      'Girl, Female, Woman, Chick, Lady',
+      'Clown, Joker, Jester, Black pants, Black shirt, Yellow buttons',
+      'Halloween, Spooky, Scary, Funny',
+      'Outfit, Cosplay, Costume, Top, Bottom',
     ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_clothes',
     id: 'dress',
+    variants: [
+      'black',
+      'blue',
+      'bluelight',
+      'brown',
+      'green',
+      'greenlight',
+      'pink',
+      'purple',
+      'red',
+      'white',
+    ],
     description: [
-      'Dress',
-      'Gown',
-      'Girl',
-      'Female',
-      'Pretty',
-      'Girly',
-      'Outfit',
+      'Human, Person',
+      'Girl, Female, Woman, Chick, Lady',
+      'No pattern, Plain, Simple, Pretty, Girly',
+      'Dress, Gown, Outfit, Top, Bottom',
     ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_clothes',
     id: 'floral',
+    variants: [
+      'black',
+      'blue',
+      'bluelight',
+      'brown',
+      'green',
+      'greenlight',
+      'pink',
+      'purple',
+      'red',
+      'white',
+    ],
     description: [
-      'T-shirt',
-      'Shirt',
-      'Short-sleeved shirt',
-      'Flower',
-      'Floral',
-      'Print shirt',
-      'Plant',
+      'Human, Person',
+      'Boy, Male, Man, Guy, Dude',
+      'Girl, Female, Woman, Chick, Lady',
+      'Pattern, Flower, Floral, Print shirt, Plants, Nature',
+      'T-shirt, Shirt, Short-sleeved shirt, Top',
     ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_clothes',
     id: 'overalls',
+    variants: [
+      'black',
+      'blue',
+      'bluelight',
+      'brown',
+      'green',
+      'greenlight',
+      'pink',
+      'purple',
+      'red',
+      'white',
+    ],
     description: [
-      'Overalls',
-      'Jumper',
-      'Work outfit',
-      'Pants',
-      'Shirt',
-      'Outfit',
-      'Top',
-      'Bottoms',
+      'Human, Person',
+      'Boy, Male, Man, Guy, Dude',
+      'Girl, Female, Woman, Chick, Lady',
+      'Overalls, Jumper, Work outfit, Coverall',
+      'T-shirt, Shirt, Short-sleeved shirt, Top',
     ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_clothes',
     id: 'pants',
+    variants: [
+      'black',
+      'blue',
+      'bluelight',
+      'brown',
+      'green',
+      'greenlight',
+      'pink',
+      'purple',
+      'red',
+      'white',
+    ],
     description: [
-      'Pants',
-      'Suit',
-      'Bottoms',
-      'Long pants',
-      'Formal',
-      'Tuxedo',
+      'Human, Person',
+      'Boy, Male, Man, Guy, Dude',
+      'Girl, Female, Woman, Chick, Lady',
+      'No pattern, Plain, Simple',
+      'Pants, Suit, Bottoms, Long pants, Shorts, Formal, Tuxedo',
     ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_clothes',
     id: 'pumpkin',
+    variants: ['purple', 'black'],
     description: [
-      'Pumpkin',
-      'Jack-o-lantern',
-      'Halloween',
-      'Spooky',
-      'Scary',
-      'Funny',
-      'Outfit',
-      'Cosplay',
-      'Top',
-      'Bottoms',
+      'Human, Person',
+      'Boy, Male, Man, Guy, Dude',
+      'Girl, Female, Woman, Chick, Lady',
+      'Pumpkin, Jack-o-lantern, Purple',
+      'Halloween, Spooky, Scary, Funny',
+      'Outfit, Cosplay, Costume, Top, Bottom',
     ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_clothes',
     id: 'sailor_bow',
+    variants: [
+      'black',
+      'blue',
+      'bluelight',
+      'brown',
+      'green',
+      'greenlight',
+      'pink',
+      'purple',
+      'red',
+      'white',
+    ],
     description: [
-      'Sailor suit',
-      'Shirt',
-      'T-shirt',
-      'Top',
-      'Cute',
-      'Uniform',
-      'School uniform',
-      'Ocean',
-      'Navy',
-      'Tie',
-      'Girl',
-      'Female',
+      'Human, Person',
+      'Girl, Female, Woman, Chick, Lady',
+      'Sailor suit, Sailor, Cute, Uniform, School uniform, Tie, Navy, Ocean',
+      'T-shirt, Shirt, Short-sleeved shirt, Top',
     ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_clothes',
     id: 'sailor',
+    variants: [
+      'black',
+      'blue',
+      'bluelight',
+      'brown',
+      'green',
+      'greenlight',
+      'pink',
+      'purple',
+      'red',
+      'white',
+    ],
     description: [
-      'Sailor suit',
-      'Shirt',
-      'T-shirt',
-      'Top',
-      'Cute',
-      'Uniform',
-      'School uniform',
-      'Ocean',
-      'Navy',
-      'Tie',
-      'Boy',
-      'Male',
+      'Human, Person',
+      'Boy, Male, Man, Guy, Dude',
+      'Sailor suit, Sailor, Cute, Uniform, School uniform, Tie, Navy, Ocean',
+      'T-shirt, Shirt, Short-sleeved shirt, Top',
     ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_clothes',
     id: 'skirt',
-    description: ['Skirt', 'Bottoms', 'Girl', 'Female'].join(', '),
+    variants: [
+      'black',
+      'blue',
+      'bluelight',
+      'brown',
+      'green',
+      'greenlight',
+      'pink',
+      'purple',
+      'red',
+      'white',
+    ],
+    description: [
+      'Human, Person',
+      'Girl, Female, Woman, Chick, Lady',
+      'No pattern, Plain, Simple',
+      'Skirt, Bottoms, Cute, Girly',
+    ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_clothes',
     id: 'skull',
+    variants: [
+      'black',
+      'blue',
+      'bluelight',
+      'brown',
+      'green',
+      'greenlight',
+      'pink',
+      'purple',
+      'red',
+      'white',
+    ],
     description: [
-      'T-shirt',
-      'Shirt',
-      'Short-sleeved shirt',
-      'Skull',
-      'Skeleton',
-      'Print shirt',
-      'Zombie',
-      'Spooky',
-      'Scary',
-      'Halloween',
-      'Costume',
-      'Goth',
-      'Emo',
+      'Human, Person',
+      'Boy, Male, Man, Guy, Dude',
+      'Girl, Female, Woman, Chick, Lady',
+      'Pattern, Print shirt, Skull, Zombie, Skeleton, Spooky, Scary, Halloween, Emo, Goth',
+      'T-shirt, Shirt, Short-sleeved shirt, Top',
     ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_clothes',
     id: 'spaghetti',
+    variants: [
+      'black',
+      'blue',
+      'bluelight',
+      'brown',
+      'green',
+      'greenlight',
+      'pink',
+      'purple',
+      'red',
+      'white',
+    ],
     description: [
-      'Tank top',
-      'Sleeveless shirt',
-      'Top',
-      'Hot',
-      'Summer',
-      'Casual',
+      'Human, Person',
+      'Boy, Male, Man, Guy, Dude',
+      'Girl, Female, Woman, Chick, Lady',
+      'Summer, Casual, Simple',
+      'Tank top, Short-sleeved shirt, Sleeveless shirt, Top',
     ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_clothes',
     id: 'spooky',
+    variants: ['black'],
     description: [
-      'Spooky',
-      'Zombie',
-      'Ghost',
-      'Halloween',
-      'Spooky',
-      'Scary',
-      'Funny',
-      'Outfit',
-      'Cosplay',
-      'Top',
-      'Bottoms',
-      'Black',
+      'Human, Person',
+      'Boy, Male, Man, Guy, Dude',
+      'Girl, Female, Woman, Chick, Lady',
+      'Ghost, Zombie, Black pants, Black shirt, White buttons',
+      'Halloween, Spooky, Scary, Funny',
+      'Outfit, Cosplay, Costume, Top, Bottom',
     ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_clothes',
     id: 'sporty',
+    variants: [
+      'black',
+      'blue',
+      'bluelight',
+      'brown',
+      'green',
+      'greenlight',
+      'pink',
+      'purple',
+      'red',
+      'white',
+    ],
     description: [
-      'T-shirt',
-      'Shirt',
-      'Short-sleeved shirt',
-      'Sporty',
-      'Jersey',
-      'Print shirt',
-      'Sports',
-      'Jock',
-      'Casual',
-      'Top',
+      'Human, Person',
+      'Boy, Male, Man, Guy, Dude',
+      'Girl, Female, Woman, Chick, Lady',
+      'Pattern, Print shirt, Sporty, Jersey, Sports, Jock, Casual',
+      'T-shirt, Shirt, Short-sleeved shirt, Top',
     ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_clothes',
     id: 'stripe',
+    variants: [
+      'black',
+      'blue',
+      'bluelight',
+      'brown',
+      'green',
+      'greenlight',
+      'pink',
+      'purple',
+      'red',
+      'white',
+    ],
     description: [
-      'T-shirt',
-      'Shirt',
-      'Short-sleeved shirt',
-      'Striped shirt',
-      'Stripe',
-      'Print shirt',
-      'Casual',
-      'Top',
+      'Human, Person',
+      'Boy, Male, Man, Guy, Dude',
+      'Girl, Female, Woman, Chick, Lady',
+      'Pattern, Print shirt, Stripe, Striped shirt, Casual',
+      'T-shirt, Shirt, Short-sleeved shirt, Top',
     ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_clothes',
     id: 'suit',
+    variants: [
+      'black',
+      'blue',
+      'bluelight',
+      'brown',
+      'green',
+      'greenlight',
+      'pink',
+      'purple',
+      'red',
+      'white',
+    ],
     description: [
-      'Top',
-      'Shirt',
-      'Jacket',
-      'Tie',
-      'Suit',
-      'Formal',
-      'Tuxedo',
-      'Long sleeved shirt',
+      'Human, Person',
+      'Boy, Male, Man, Guy, Dude',
+      'Girl, Female, Woman, Chick, Lady',
+      'Shirt, Suit, Tie, Top, Bottoms, Long pants, Shorts, Formal, Tuxedo',
     ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_clothes',
     id: 'witch',
+    variants: ['purple'],
     description: [
-      'Witch',
-      'Mage',
-      'Wizard',
-      'Purple',
-      'Dress',
-      'Robe',
-      'Halloween',
-      'Spooky',
-      'Scary',
-      'Outfit',
-      'Cosplay',
+      'Human, Person',
+      'Boy, Male, Man, Guy, Dude',
+      'Girl, Female, Woman, Chick, Lady',
+      'Witch, Mage, Wizard, Purple, Dress, Robe',
+      'Halloween, Spooky, Scary, Funny',
+      'Outfit, Cosplay, Costume, Top, Bottom',
     ].join(', '),
   },
 ];
 
 export const SPRITE_ACCESSORY: Avatar[] = [
   {
-    type: 'sprite',
+    type: 'sprite_acc',
     id: 'earring_emerald_silver',
     description: ['Earring', 'Earrings', 'Pretty', 'Girly'].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_acc',
     id: 'earring_emerald',
     description: ['Earring', 'Earrings', 'Pretty', 'Girly'].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_acc',
     id: 'earring_red_silver',
     description: ['Earring', 'Earrings', 'Pretty', 'Girly'].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_acc',
     id: 'earring_red',
     description: ['Earring', 'Earrings', 'Pretty', 'Girly'].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_acc',
     id: 'hat_cowboy',
     description: ['Cowboy', 'Hat', 'Southern', 'Western'].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_acc',
     id: 'hat_lucky',
     description: ['Leprechaun', 'Hat', 'Irish', 'Clover', 'Lucky'].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_acc',
     id: 'hat_pumpkin',
     description: ['Pumpkin', 'Hat', 'Halloween', 'Spooky', 'Scary'].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_acc',
     id: 'beard',
-    description: [
-      'Beard',
-      'Facial hair',
-      'Boy',
-      'Male',
-      'Man',
-      'Adult',
-      'Hairy',
-    ].join(', '),
+    variants: [
+      'black',
+      'blonde',
+      'brown',
+      'brownlight',
+      'copper',
+      'emerald',
+      'green',
+      'grey',
+      'lilac',
+      'navy',
+      'pink',
+      'purple',
+      'red',
+      'turquoise',
+    ],
+    description: 'Beard, Facial hair, Boy, Male, Man, Guy, Dude, Adult, Hairy',
   },
   {
-    type: 'sprite',
+    type: 'sprite_acc',
     id: 'glasses_sun',
+    variants: [
+      'black',
+      'blue',
+      'bluelight',
+      'brown',
+      'green',
+      'greenlight',
+      'pink',
+      'purple',
+      'red',
+      'white',
+    ],
     description: ['Sunglasses', 'Shades', 'Cool', 'Beach', 'Summer'].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_acc',
     id: 'glasses',
+    variants: [
+      'black',
+      'blue',
+      'bluelight',
+      'brown',
+      'green',
+      'greenlight',
+      'pink',
+      'purple',
+      'red',
+      'white',
+    ],
     description: ['Glasses', 'Spectacles', 'Smart', 'Nerd'].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_acc',
     id: 'hat_witch',
     description: [
       'Witch',
@@ -1889,7 +2254,7 @@ export const SPRITE_ACCESSORY: Avatar[] = [
     ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_acc',
     id: 'mask_clown_blue',
     description: [
       'Clown',
@@ -1901,7 +2266,7 @@ export const SPRITE_ACCESSORY: Avatar[] = [
     ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_acc',
     id: 'mask_clown_red',
     description: [
       'Clown',
@@ -1913,7 +2278,7 @@ export const SPRITE_ACCESSORY: Avatar[] = [
     ].join(', '),
   },
   {
-    type: 'sprite',
+    type: 'sprite_acc',
     id: 'mask_spooky',
     description: [
       'Ghost',

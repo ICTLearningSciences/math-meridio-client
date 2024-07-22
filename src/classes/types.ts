@@ -4,20 +4,37 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { AvatarCreator } from './AvatarCreator';
+import { Schema } from 'jsonschema';
+import { TargetAiModelServiceType } from '../types';
 
-const config: Phaser.Types.Core.GameConfig = {
-  type: Phaser.CANVAS,
-  backgroundColor: '#282c34',
-  width: 1280,
-  height: 720,
-  scale: {
-    // Fit to window
-    mode: Phaser.Scale.FIT,
-    // Center vertically and horizontally
-    autoCenter: Phaser.Scale.CENTER_BOTH,
-  },
-  scene: [AvatarCreator],
+export interface GameObjects {
+  clientId: string;
+  name: string;
+}
+
+export const OpenAiServiceModel: TargetAiModelServiceType = {
+  serviceName: 'OPEN_AI',
+  model: 'gpt-3.5-turbo-16k',
 };
 
-export default config;
+export const AzureServiceModel: TargetAiModelServiceType = {
+  serviceName: 'AZURE_OPEN_AI',
+  model: 'ABE-GPT-3_5_turbo_16k',
+};
+
+export const GeminiServiceModel: TargetAiModelServiceType = {
+  serviceName: 'GEMINI',
+  model: 'gemini-pro',
+};
+
+export interface IRemoveItem {
+  clientId: string;
+}
+
+export const removeItemSchema: Schema = {
+  type: 'object',
+  properties: {
+    clientId: { type: 'string' },
+  },
+  required: ['clientId'],
+};

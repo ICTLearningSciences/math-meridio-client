@@ -7,7 +7,7 @@ The full terms of this copyright and license should always be found in the root 
 /* eslint-disable */
 
 import React, { useEffect, useState } from 'react';
-import { GameStateHandler } from '../game/game-state-handler';
+import { GameStateHandler } from '../classes/game-state-handler';
 import EventSystem from '../game/event-system';
 import { useAppSelector } from '../store/hooks';
 
@@ -29,7 +29,7 @@ export function useWithPhaserGame(
     const config = {
       ...game,
       type: Phaser.CANVAS,
-      backgroundColor: '#282c34',
+      backgroundColor: '#f1f1f1',
       width: 1280,
       height: 720,
       scale: {

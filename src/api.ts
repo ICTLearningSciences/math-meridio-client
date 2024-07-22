@@ -107,44 +107,52 @@ export const fullDiscussionStageQueryData = `
   }
 `;
 
+export const fullPlayerQueryData = `
+  clientId
+  name
+  description
+  avatar {
+    id
+    type
+    description
+    variant
+    variants
+  }
+`;
+
 export const fullRoomQueryData = `
   _id
   name
   gameData {
     gameId
-    status
     players {
-      clientId
-      name
-      avatar {
-        id
-        type
-      }
-      chatAvatar {
-        id
-        type
-      }
+      ${fullPlayerQueryData}
     }
     chat {
       id
+      message
       sender
       senderId
       senderName
-      message
+      displayType
+      disableUserInput
+      mcqChoices
     }
     globalStateData {
       curStageId
       curStepId
-      playerState {
-        player
-        animation
-        locationX
-        locationY
+      gameStateData {
+        key
+        value
       }
     }
-    gameStateData {
-      key
-      value
+    playerStateData {
+      player
+      animation
+      gameStateData {
+        key
+        value
+      }
     }
   }
 `;
@@ -226,19 +234,7 @@ export async function fetchPlayer(id: string): Promise<Player> {
       query: `
         query FetchPlayer($id: String!) {
           fetchPlayer(id: $id) {
-            clientId
-            name
-            description
-            avatar {
-              id
-              type
-              description
-            }
-            chatAvatar {
-              id
-              type
-              description
-            }
+            ${fullPlayerQueryData}
           }
         }`,
       variables: {
@@ -258,19 +254,7 @@ export async function addOrUpdatePlayer(player: Player): Promise<Player> {
       query: `
         mutation AddOrUpdatePlayer($player: PlayerInput!) {
           addOrUpdatePlayer(player: $player) {
-            clientId
-            name
-            description
-            avatar {
-              id
-              type
-              description
-            }
-            chatAvatar {
-              id
-              type
-              description
-            }
+            ${fullPlayerQueryData}
           }
         }`,
       variables: {
@@ -326,19 +310,21 @@ export async function fetchRoom(roomId: string): Promise<Room> {
 
 export async function createAndJoinRoom(
   playerId: string,
-  gameId: string
+  gameId: string,
+  gameName: string
 ): Promise<Room> {
   const data = await execGql<Room>(
     {
       query: `
-        mutation CreateAndJoinRoom($playerId: String!, $gameId: String!) {
-          createAndJoinRoom(playerId: $playerId, gameId: $gameId) {
+        mutation CreateAndJoinRoom($playerId: String!, $gameId: String!, $gameName: String!) {
+          createAndJoinRoom(playerId: $playerId, gameId: $gameId, gameName: $gameName) {
             ${fullRoomQueryData}
           }
         }`,
       variables: {
         playerId,
         gameId,
+        gameName,
       },
     },
     {
@@ -396,12 +382,14 @@ export async function renameRoom(name: string, roomId: string): Promise<Room> {
 export async function leaveRoom(
   playerId: string,
   roomId: string
-): Promise<boolean> {
-  const data = await execGql<boolean>(
+): Promise<Room> {
+  const data = await execGql<Room>(
     {
       query: `
         mutation LeaveRoom($playerId: String!, $roomId: ID!) {
-          leaveRoom(playerId: $playerId, roomId: $roomId)
+          leaveRoom(playerId: $playerId, roomId: $roomId) {
+            ${fullRoomQueryData}
+          }
         }`,
       variables: {
         playerId,
@@ -433,15 +421,15 @@ export async function deleteRoom(roomId: string): Promise<boolean> {
   return data;
 }
 
-export async function updateRoomGameData(
+export async function updateRoom(
   roomId: string,
   gameData: Partial<GameData>
 ): Promise<Room> {
   const data = await execGql<Room>(
     {
       query: `
-        mutation UpdateRoomGameData($roomId: ID!, $gameData: RoomGameDataInputType!) {
-          updateRoomGameData(roomId: $roomId, gameData: $gameData) {
+        mutation UpdateRoom($roomId: ID!, $gameData: GameDataInput!) {
+          updateRoom(roomId: $roomId, gameData: $gameData) {
             ${fullRoomQueryData}
           }
         }`,
@@ -451,7 +439,7 @@ export async function updateRoomGameData(
       },
     },
     {
-      dataPath: 'updateRoomGameData',
+      dataPath: 'updateRoom',
     }
   );
   return data;
@@ -464,7 +452,7 @@ export async function sendMessage(
   const data = await execGql<Room>(
     {
       query: `
-        mutation SendMessage($roomId: ID!, $msg: MessageInputType!) {
+        mutation SendMessage($roomId: ID!, $msg: ChatMessageInput!) {
           sendMessage(roomId: $roomId, msg: $msg) {
             ${fullRoomQueryData}
           }
