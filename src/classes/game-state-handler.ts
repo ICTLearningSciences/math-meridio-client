@@ -565,6 +565,10 @@ export class GameStateHandler implements Subscriber {
     this.playerStateData = newGameState;
   }
 
+  playersUpdated(players: Player[]): void {
+    this.players = players;
+  }
+
   /** */
 
   updatePlayerStateVariable(updated: GameStateData): void {

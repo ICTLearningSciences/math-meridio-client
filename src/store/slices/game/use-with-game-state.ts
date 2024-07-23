@@ -28,11 +28,13 @@ import { GAMES, Game } from '../../../game/types';
 import { CancelToken } from 'axios';
 import { syncLlmRequest } from '../../../hooks/use-with-synchronous-polling';
 import { useWithStages } from '../stages/use-with-stages';
+import { Player } from '../player';
 
 export abstract class Subscriber {
   abstract newChatLogReceived(chatLog: ChatMessage[]): void;
   abstract globalStateUpdated(newState: GlobalStateData): void;
   abstract playerStateUpdated(newState: PlayerStateData[]): void;
+  abstract playersUpdated(newState: Player[]): void;
 }
 
 export function useWithGame() {
@@ -86,6 +88,14 @@ export function useWithGame() {
   }, [room?.gameData.playerStateData]);
 
   React.useEffect(() => {
+    if (!room) return;
+    for (let i = 0; i < subscribers.length; i++) {
+      const updateFunction = subscribers[i].playersUpdated.bind(subscribers[i]);
+      updateFunction(room.gameData.players);
+    }
+  }, [room?.gameData.players]);
+
+  React.useEffect(() => {
     if (!room && poll.current) {
       clearInterval(poll.current);
     }
@@ -123,9 +133,9 @@ export function useWithGame() {
       },
     });
     if (!poll.current) {
-      // poll.current = setInterval(() => {
-      //   dispatch(fetchRoom({ roomId: room._id }));
-      // }, 1000);
+      poll.current = setInterval(() => {
+        dispatch(fetchRoom({ roomId: room._id }));
+      }, 1000);
     }
     addNewSubscriber(controller);
     setGame(game);

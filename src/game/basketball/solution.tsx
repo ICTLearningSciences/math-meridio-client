@@ -115,24 +115,6 @@ export function SolutionComponent(props: {
   }
 
   function PlayerStrategy(props: { data: PlayerStateData }): JSX.Element {
-    // const psd: PlayerStateData = {
-    //   player: props.data.player,
-    //   animation: '',
-    //   gameStateData: [
-    //     {
-    //       key: 'inside_shot_percent',
-    //       value: 1,
-    //     },
-    //     {
-    //       key: 'mid_shot_percent',
-    //       value: 1,
-    //     },
-    //     {
-    //       key: 'outside_shot_percent',
-    //       value: 1,
-    //     },
-    //   ],
-    // };
     const psd = props.data;
     const player = players.find((p) => p.clientId === psd.player);
     const insideShots = psd.gameStateData.find(

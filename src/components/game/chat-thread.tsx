@@ -62,9 +62,9 @@ const useStyles = makeStyles()(() => ({
         borderRadius: '0 0 40px 0',
       },
       '&.PLAYER': {
-        backgroundColor: '#12d54f',
+        backgroundColor: '#d2eafe',
         '&:after': {
-          borderColor: '#12d54f transparent',
+          borderColor: '#d2eafe transparent',
         },
       },
     },
@@ -88,7 +88,7 @@ export default function ChatThread(): JSX.Element {
         if (idx > 0) {
           if (msg.senderId !== messages[idx - 1].senderId) {
             msgStyles.marginTop = 10;
-          } else if (msg.sender === SenderType.PLAYER) {
+          } else if (msg.senderId === player?.clientId) {
             msgStyles.borderTopRightRadius = 5;
           } else {
             msgStyles.borderTopLeftRadius = 5;
