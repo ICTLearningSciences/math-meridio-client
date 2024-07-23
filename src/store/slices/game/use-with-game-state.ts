@@ -29,6 +29,7 @@ import { CancelToken } from 'axios';
 import { syncLlmRequest } from '../../../hooks/use-with-synchronous-polling';
 import { useWithStages } from '../stages/use-with-stages';
 import { Player } from '../player';
+import { equals } from '../../../helpers';
 
 export abstract class Subscriber {
   abstract newChatLogReceived(chatLog: ChatMessage[]): void;
@@ -51,11 +52,12 @@ export function useWithGame() {
     React.useState<GlobalStateData>();
   const [lastPlayerState, setLastPlayerState] =
     React.useState<PlayerStateData[]>();
+  const [lastPlayers, setLastPlayers] = React.useState<Player[]>();
   const [gameStateHandler, setGameStateHandler] =
     React.useState<GameStateHandler>();
 
   React.useEffect(() => {
-    if (!room) return;
+    if (!room || equals(lastChatLog, room.gameData.chat)) return;
     for (let i = 0; i < subscribers.length; i++) {
       const updateFunction = subscribers[i].newChatLogReceived.bind(
         subscribers[i]
@@ -66,7 +68,7 @@ export function useWithGame() {
   }, [room?.gameData.chat]);
 
   React.useEffect(() => {
-    if (!room) return;
+    if (!room || equals(lastGlobalState, room.gameData.globalStateData)) return;
     for (let i = 0; i < subscribers.length; i++) {
       const updateFunction = subscribers[i].globalStateUpdated.bind(
         subscribers[i]
@@ -77,7 +79,7 @@ export function useWithGame() {
   }, [room?.gameData.globalStateData]);
 
   React.useEffect(() => {
-    if (!room) return;
+    if (!room || equals(lastPlayerState, room.gameData.playerStateData)) return;
     for (let i = 0; i < subscribers.length; i++) {
       const updateFunction = subscribers[i].playerStateUpdated.bind(
         subscribers[i]
@@ -88,11 +90,12 @@ export function useWithGame() {
   }, [room?.gameData.playerStateData]);
 
   React.useEffect(() => {
-    if (!room) return;
+    if (!room || equals(lastPlayers, room.gameData.players)) return;
     for (let i = 0; i < subscribers.length; i++) {
       const updateFunction = subscribers[i].playersUpdated.bind(subscribers[i]);
       updateFunction(room.gameData.players);
     }
+    setLastPlayers(room.gameData.players);
   }, [room?.gameData.players]);
 
   React.useEffect(() => {
@@ -135,7 +138,7 @@ export function useWithGame() {
     if (!poll.current) {
       poll.current = setInterval(() => {
         dispatch(fetchRoom({ roomId: room._id }));
-      }, 1000);
+      }, 5000);
     }
     addNewSubscriber(controller);
     setGame(game);

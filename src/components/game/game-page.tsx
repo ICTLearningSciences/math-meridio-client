@@ -68,6 +68,7 @@ function SimulationSpace(props: {
     <Card
       className="scroll box"
       style={{
+        overflowY: 'auto',
         flexGrow: 1,
         margin: 10,
         borderTopLeftRadius: 20,
@@ -88,6 +89,7 @@ function ResultsSpace(props: {
     <Card
       className="scroll box"
       style={{
+        overflowY: 'auto',
         flexGrow: 1,
         margin: 10,
         borderTopLeftRadius: 20,
