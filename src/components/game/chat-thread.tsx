@@ -78,8 +78,19 @@ export default function ChatThread(): JSX.Element {
     (state) => state.gameData.room?.gameData.chat || []
   );
 
+  React.useEffect(() => {
+    const objDiv = document.getElementById('chat-thread');
+    if (objDiv) {
+      objDiv.scroll({
+        top: objDiv.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+  }, [messages.length]);
+
   return (
     <div
+      id="chat-thread"
       className={classes.chatThread}
       style={{ maxHeight: window.innerHeight - 80 }}
     >

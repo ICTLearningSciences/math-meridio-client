@@ -26,6 +26,20 @@ export function SolutionComponent(props: {
     playerStateData.find((p) => p.player === controller.player.clientId)
       ?.gameStateData || [];
 
+  function GivenVariable(props: {
+    title: string;
+    value: number | string | boolean;
+  }): JSX.Element {
+    return (
+      <div className={classes.grouping}>
+        <Typography className={classes.text}>{props.title}</Typography>
+        <Card className={classes.box} style={{ backgroundColor: '#ff00ff' }}>
+          <Typography className={classes.boxText}>{props.value}</Typography>
+        </Card>
+      </div>
+    );
+  }
+
   function Variable(props: {
     dataKey: string;
     title: string;
@@ -179,6 +193,8 @@ export function SolutionComponent(props: {
 
   return (
     <div className="column center-div" style={{ height: '95%' }}>
+      <GivenVariable title="Number of shots" value={100} />
+      <div style={{ flexGrow: 1 }} />
       <div className="row center-div">
         <Variable
           dataKey="inside_shot_points"
