@@ -8,18 +8,25 @@ import GameScene from '../game-scene';
 import { GameStateHandler } from '../../classes/game-state-handler';
 import { addBackground, addImage } from '../phaser-helpers';
 import EventSystem from '../event-system';
+import {
+  INSIDE_SHOT_SUCCESS_VALUE,
+  MID_SHOT_SUCCESS_VALUE,
+  NUMBER_OF_SHOTS,
+  OUTSIDE_SHOT_SUCCESS_VALUE,
+} from './solution';
 
-export interface BasketballSimData {
+export interface BasketballSimulationData {
   player: string;
+
   outsideShots: number;
   midShots: number;
   insideShots: number;
-  outsidePoints: number;
-  midPoints: number;
-  insidePoints: number;
-  outsidePercent: number;
-  midPercent: number;
-  insidePercent: number;
+
+  outsideShotsMade: number;
+  midShotsMade: number;
+  insideShotsMade: number;
+
+  totalPoints: number;
 }
 
 export interface BasketballShot {
@@ -28,7 +35,7 @@ export interface BasketballShot {
 }
 
 export class SimulationScene extends GameScene {
-  simulation: BasketballSimData | undefined;
+  simulation: BasketballSimulationData | undefined;
   shots: BasketballShot[];
   curShot: number;
 
@@ -63,7 +70,7 @@ export class SimulationScene extends GameScene {
     super.createScene();
   }
 
-  simulate(simulation: BasketballSimData) {
+  simulate(simulation: BasketballSimulationData) {
     if (!this.gameStateHandler || !this.bg) return;
     this.simulation = simulation;
     this.destroySprite(this.mySprite);
@@ -79,22 +86,34 @@ export class SimulationScene extends GameScene {
     this.shots = [];
     this.curShot = 0;
 
-    for (let i = 0; i < simulation.outsideShots; i++) {
+    for (
+      let i = 0;
+      i < Math.ceil(simulation.outsideShots / (NUMBER_OF_SHOTS / 10));
+      i++
+    ) {
       this.shots.push({
         position: 'outside',
-        success: Math.random() > simulation.outsidePercent,
+        success: Math.random() <= OUTSIDE_SHOT_SUCCESS_VALUE,
       });
     }
-    for (let i = 0; i < simulation.midShots; i++) {
+    for (
+      let i = 0;
+      i < Math.ceil(simulation.midShots / (NUMBER_OF_SHOTS / 10));
+      i++
+    ) {
       this.shots.push({
         position: 'mid',
-        success: Math.random() > simulation.midPercent,
+        success: Math.random() <= MID_SHOT_SUCCESS_VALUE,
       });
     }
-    for (let i = 0; i < simulation.insideShots; i++) {
+    for (
+      let i = 0;
+      i < Math.ceil(simulation.insideShots / (NUMBER_OF_SHOTS / 10));
+      i++
+    ) {
       this.shots.push({
         position: 'inside',
-        success: Math.random() > simulation.insidePercent,
+        success: Math.random() <= INSIDE_SHOT_SUCCESS_VALUE,
       });
     }
 
@@ -102,7 +121,10 @@ export class SimulationScene extends GameScene {
   }
 
   shootBall() {
-    if (this.curShot >= this.shots.length) return;
+    if (this.curShot >= this.shots.length) {
+      EventSystem.emit('simulationEnded', this.simulation);
+      return;
+    }
     const shot = this.shots[this.curShot];
     const x =
       shot.position === 'outside'
@@ -117,49 +139,61 @@ export class SimulationScene extends GameScene {
       direction = '_left';
     }
     this.playSpriteAnim(this.mySprite, `walk${direction}`);
-    // run up to position
+
+    if (x === this.mySprite[0].x) {
+      this._shoot(shot);
+    } else {
+      this._runAndShoot(shot, x);
+    }
+  }
+
+  _runAndShoot(shot: BasketballShot, x: number) {
     this.tweens.add({
       targets: this.mySprite,
       x: x,
+      duration: 500,
+      onComplete: () => {
+        this._shoot(shot);
+      },
+    });
+  }
+
+  _shoot(shot: BasketballShot) {
+    // jump
+    this.playSpriteAnim(this.mySprite, `jump_right`);
+    const hoop = addImage(this, 'hoop', undefined, {
+      bg: this.bg,
+      heightRel: 1,
+    }).setAlpha(0);
+    const ball = addImage(this, 'basketball', undefined, {
+      bg: this.bg,
+      height: this.mySprite[0].displayHeight / 2,
+    });
+    ball.setX(this.mySprite[0].x);
+    ball.setY(this.mySprite[0].y);
+    // throw ball
+    this.tweens.add({
+      targets: ball,
+      x: this.bg!.displayWidth * 0.9,
+      y: 320,
       duration: 1000,
       onComplete: () => {
-        // jump
-        this.playSpriteAnim(this.mySprite, `jump_right`);
-        const hoop = addImage(this, 'hoop', undefined, {
-          bg: this.bg,
-          heightRel: 1,
-        }).setAlpha(0);
-        const ball = addImage(this, 'basketball', undefined, {
-          bg: this.bg,
-          height: this.mySprite[0].displayHeight / 2,
-        });
-        ball.setX(this.mySprite[0].x);
-        ball.setY(this.mySprite[0].y);
-        // throw ball
+        // show whether shot made or not
+        hoop.setAlpha(1);
+        ball.displayHeight = 200;
+        ball.displayWidth = 200;
+        ball.setX(this.bg!.displayWidth / 2);
+        ball.setY(0);
         this.tweens.add({
           targets: ball,
-          x: this.bg!.displayWidth * 0.9,
-          y: 320,
-          duration: 1000,
+          x: shot.success ? this.bg!.displayWidth / 2 : 0,
+          y: this.bg!.displayHeight,
+          duration: 500,
           onComplete: () => {
-            // show whether shot made or not
-            hoop.setAlpha(1);
-            ball.displayHeight = 200;
-            ball.displayWidth = 200;
-            ball.setX(this.bg!.displayWidth / 2);
-            ball.setY(0);
-            this.tweens.add({
-              targets: ball,
-              x: shot.success ? this.bg!.displayWidth / 2 : 0,
-              y: this.bg!.displayHeight,
-              duration: 1000,
-              onComplete: () => {
-                ball.destroy();
-                hoop.destroy();
-                this.curShot++;
-                this.shootBall();
-              },
-            });
+            ball.destroy();
+            hoop.destroy();
+            this.curShot++;
+            this.shootBall();
           },
         });
       },

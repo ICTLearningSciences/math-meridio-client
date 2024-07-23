@@ -12,13 +12,28 @@ import { GameStateHandler } from '../../classes/game-state-handler';
 import { GameStateData, PlayerStateData } from '../../store/slices/game';
 import { makeStyles } from 'tss-react/mui';
 import EventSystem from '../event-system';
+import { BasketballSimulationData } from './SimulationScene';
+import { Player } from '../../store/slices/player';
 
-export const INSIDE_SHOT_PERCENT = 'inside_shot_percent';
-export const MID_SHOT_PERCENT = 'mid_shot_percent';
-export const OUTSIDE_SHOT_PERCENT = 'outside_shot_percent';
+export const NUMBER_OF_SHOTS = 100;
 export const INSIDE_SHOT_POINTS = 'inside_shot_points';
+export const INSIDE_SHOT_PERCENT = 'inside_shot_percent';
+export const INSIDE_SHOT_SUCCESS = 'inside_shot_success';
+export const INSIDE_SHOT_POINTS_VALUE = 2;
+export const INSIDE_SHOT_SUCCESS_VALUE = 0.75;
+
 export const MID_SHOT_POINTS = 'mid_shot_points';
+export const MID_SHOT_PERCENT = 'mid_shot_percent';
+export const MID_SHOT_SUCCESS = 'mid_shot_success';
+export const MID_SHOT_POINTS_VALUE = 2;
+export const MID_SHOT_SUCCESS_VALUE = 0.5;
+
 export const OUTSIDE_SHOT_POINTS = 'outside_shot_points';
+export const OUTSIDE_SHOT_PERCENT = 'outside_shot_percent';
+export const OUTSIDE_SHOT_SUCCESS = 'outside_shot_success';
+export const OUTSIDE_SHOT_POINTS_VALUE = 3;
+export const OUTSIDE_SHOT_SUCCESS_VALUE = 0.25;
+
 
 export function SolutionComponent(props: {
   controller: GameStateHandler;
@@ -26,19 +41,69 @@ export function SolutionComponent(props: {
   const { controller } = props;
   const { classes } = useStyles();
 
-  const players = controller.players;
-  const gameStateData = controller.globalStateData.gameStateData;
-  const playerStateData = controller.playerStateData;
-  const myPlayerStateData =
-    playerStateData.find((p) => p.player === controller.player.clientId)
-      ?.gameStateData || [];
+  const [gameStateData, setGameStateData] = React.useState<Record<string, any>>(
+    {}
+  );
+  const [players, setPlayers] = React.useState<Player[]>([]);
+  const [playerStateData, setPlayerStateData] = React.useState<
+    PlayerStateData[]
+  >([]);
+  const [myPlayerStateData, setMyPlayerStateData] = React.useState<
+    Record<string, any>
+  >({});
+  const [curSimulation, setCurSimulation] = React.useState<string>();
 
-  function Variable(props: {
-    dataKey: string;
+  React.useEffect(() => {
+    EventSystem.on('simulate', (data: BasketballSimulationData) =>
+      setCurSimulation(data.player)
+    );
+  }, []);
+
+  React.useEffect(() => {
+    setPlayers(controller.players);
+  }, [controller.players]);
+
+  React.useEffect(() => {
+    const data: Record<string, any> = {};
+    controller.globalStateData.gameStateData.forEach((d) => {
+      data[d.key] = d.value;
+    });
+    setGameStateData(data);
+  }, [controller.globalStateData.gameStateData]);
+
+  React.useEffect(() => {
+    setPlayerStateData(controller.playerStateData);
+  }, [controller.playerStateData]);
+
+  React.useEffect(() => {
+    const data: Record<string, any> = {};
+    const gameState =
+      playerStateData.find((p) => p.player === controller.player.clientId)
+        ?.gameStateData || [];
+    gameState.forEach((d) => {
+      data[d.key] = d.value;
+    });
+    setMyPlayerStateData(data);
+  }, [playerStateData, players]);
+
+  function GivenVariable(props: {
     title: string;
-    data: GameStateData[];
+    value: number | string | boolean;
   }): JSX.Element {
-    const data = props.data.find((d) => d.key === props.dataKey);
+    return (
+      <div className={classes.grouping}>
+        <Typography className={classes.text}>{props.title}</Typography>
+        <Card className={classes.box} style={{ backgroundColor: '#ff00ff' }}>
+          <Typography className={classes.boxText} style={{ color: 'black' }}>
+            {props.value}
+          </Typography>
+        </Card>
+      </div>
+    );
+  }
+
+  function Variable(props: { dataKey: string; title: string }): JSX.Element {
+    const data = gameStateData[props.dataKey];
     return (
       <div
         className={classes.grouping}
@@ -59,9 +124,9 @@ export function SolutionComponent(props: {
   function EditableVariable(props: {
     dataKey: string;
     title: string;
-    data: GameStateData[];
   }): JSX.Element {
-    const data = props.data.find((d) => d.key === props.dataKey);
+    const data = myPlayerStateData[props.dataKey];
+
     return (
       <div
         className={classes.grouping}
@@ -75,7 +140,7 @@ export function SolutionComponent(props: {
           }}
         >
           <TextField
-            value={data?.value || 0}
+            value={data || 0}
             variant="standard"
             type="number"
             sx={{
@@ -83,30 +148,31 @@ export function SolutionComponent(props: {
               '& .MuiInput-underline:before': { borderBottomColor: 'white' },
               '& .MuiInput-underline:after': { borderBottomColor: 'white' },
             }}
-            InputProps={{ inputProps: { min: 0, max: 10 } }}
-            onChange={(e) =>
-              controller.newPlayerStateData([
-                {
+            InputProps={{ inputProps: { min: 0, max: 100 } }}
+            onChange={(e) => {
+              const value = parseInt(e.target.value);
+              const data = { ...myPlayerStateData };
+              data[props.dataKey] = value;
+              if (
+                (data[INSIDE_SHOT_PERCENT] || 0) +
+                  (data[MID_SHOT_PERCENT] || 0) +
+                  (data[OUTSIDE_SHOT_PERCENT] || 0) <=
+                NUMBER_OF_SHOTS
+              ) {
+                controller.newPlayerStateData([{
                   key: props.dataKey,
-                  value: parseInt(e.target.value),
-                },
-              ])
-            }
+                  value: value,
+                }]);
+              }
+            }}
           />
         </Card>
       </div>
     );
   }
 
-  function Connection(props: {
-    dataKey: string;
-    data: GameStateData[];
-  }): JSX.Element {
-    const data = props.data.find(
-      (d) =>
-        `${d.key}`.toLowerCase().replace(' ', '') ===
-        `${props.dataKey}`.toLowerCase().replace(' ', '')
-    );
+  function Connection(props: { dataKey: string }): JSX.Element {
+    const data = gameStateData[props.dataKey];
     return (
       <Card
         className={classes.box}
@@ -133,7 +199,37 @@ export function SolutionComponent(props: {
     const outsideShots = psd.gameStateData.find(
       (d) => d.key === OUTSIDE_SHOT_PERCENT
     );
-    const canSimulate = Boolean(insideShots && midShots && outsideShots);
+
+    const canSimulate = Boolean(
+      insideShots &&
+        midShots &&
+        outsideShots &&
+        (parseInt(insideShots.value) + parseInt(midShots.value) + parseInt(outsideShots.value) ===
+          NUMBER_OF_SHOTS)
+    );
+
+    function simulate(): void {
+      if (!outsideShots || !midShots || !insideShots) return;
+      const simData: BasketballSimulationData = {
+        player: psd.player,
+        outsideShots: outsideShots.value,
+        midShots: midShots.value,
+        insideShots: insideShots.value,
+        outsideShotsMade: Math.round(
+          outsideShots.value * OUTSIDE_SHOT_SUCCESS_VALUE
+        ),
+        insideShotsMade: Math.round(
+          insideShots.value * INSIDE_SHOT_SUCCESS_VALUE
+        ),
+        midShotsMade: Math.round(midShots.value * MID_SHOT_SUCCESS_VALUE),
+        totalPoints: 0,
+      };
+      simData.totalPoints =
+        simData.outsideShotsMade * OUTSIDE_SHOT_POINTS_VALUE +
+        simData.insideShotsMade * INSIDE_SHOT_POINTS_VALUE +
+        simData.midShotsMade * MID_SHOT_POINTS_VALUE;
+      EventSystem.emit('simulate', simData);
+    }
 
     return (
       <Card elevation={canSimulate ? 5 : 0}>
@@ -141,24 +237,16 @@ export function SolutionComponent(props: {
           className={classes.box}
           style={{
             flexDirection: 'column',
-            backgroundColor: '#cfd8dc',
+            backgroundColor:
+              psd.player === curSimulation ? '#6bffff' : '#cfd8dc',
             width: 'auto',
             margin: 0,
           }}
           disabled={!canSimulate}
-          onClick={() =>
-            EventSystem.emit('simulate', {
-              player: psd.player,
-              outsideShots: outsideShots?.value,
-              midShots: midShots?.value,
-              insideShots: insideShots?.value,
-              outsidePercent: 0.25,
-              midPercent: 0.5,
-              insidePercent: 0.75,
-            })
-          }
+          onClick={simulate}
         >
           <Typography className={classes.text} style={{ fontWeight: 'bold' }}>
+            {player?.clientId === controller.player.clientId && '(MINE) '}
             {player?.name}&apos;s strategy:
           </Typography>
           <Typography
@@ -186,63 +274,44 @@ export function SolutionComponent(props: {
 
   return (
     <div className="column center-div" style={{ height: '95%' }}>
+      <GivenVariable title="Number of shots" value={NUMBER_OF_SHOTS} />
+      <div style={{ flexGrow: 1 }} />
       <div className="row center-div">
-        <Variable
-          dataKey={INSIDE_SHOT_POINTS}
-          title="Points per inside shot"
-          data={gameStateData}
-        />
-        <Connection dataKey="multiplication" data={myPlayerStateData} />
+        <Variable dataKey={INSIDE_SHOT_POINTS} title="Points per inside shot" />
+        <Connection dataKey="multiplication" />
         <EditableVariable
           dataKey={INSIDE_SHOT_PERCENT}
           title="# of inside shots"
-          data={myPlayerStateData}
         />
-        <Connection dataKey="multiplication" data={myPlayerStateData} />
+        <Connection dataKey="multiplication" />
         <Variable
-          dataKey="inside_shot_success"
+          dataKey={INSIDE_SHOT_SUCCESS}
           title="Success% of inside shots"
-          data={myPlayerStateData}
         />
       </div>
-      <Connection dataKey="addition" data={myPlayerStateData} />
+      <Connection dataKey="addition" />
       <div className="row center-div">
-        <Variable
-          dataKey={MID_SHOT_POINTS}
-          title="Points per mid shot"
-          data={gameStateData}
-        />
-        <Connection dataKey="multiplication" data={myPlayerStateData} />
-        <EditableVariable
-          dataKey={MID_SHOT_PERCENT}
-          title="# of mid shots"
-          data={myPlayerStateData}
-        />
-        <Connection dataKey="multiplication" data={myPlayerStateData} />
-        <Variable
-          dataKey="mid_shot_success"
-          title="Success% of mid shots"
-          data={myPlayerStateData}
-        />
+        <Variable dataKey={MID_SHOT_POINTS} title="Points per mid shot" />
+        <Connection dataKey="multiplication" />
+        <EditableVariable dataKey={MID_SHOT_PERCENT} title="# of mid shots" />
+        <Connection dataKey="multiplication" />
+        <Variable dataKey={MID_SHOT_SUCCESS} title="Success% of mid shots" />
       </div>
-      <Connection dataKey="addition" data={myPlayerStateData} />
+      <Connection dataKey="addition" />
       <div className="row center-div">
         <Variable
           dataKey={OUTSIDE_SHOT_POINTS}
           title="Points per outside shot"
-          data={gameStateData}
         />
-        <Connection dataKey="multiplication" data={myPlayerStateData} />
+        <Connection dataKey="multiplication" />
         <EditableVariable
           dataKey={OUTSIDE_SHOT_PERCENT}
           title="# of outside shots"
-          data={myPlayerStateData}
         />
-        <Connection dataKey="multiplication" data={myPlayerStateData} />
+        <Connection dataKey="multiplication" />
         <Variable
-          dataKey="outside_shot_success"
+          dataKey={OUTSIDE_SHOT_SUCCESS}
           title="Success% of outside shots"
-          data={myPlayerStateData}
         />
       </div>
       <div style={{ flexGrow: 1 }} />
