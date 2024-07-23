@@ -10,6 +10,7 @@ import {
   extractServiceStepResponse,
 } from '../ai-services/ai-service-types';
 import {
+  convertCollectedDataToGSData,
   processPredefinedResponses,
   receivedExpectedData,
   recursivelyConvertExpectedDataToAiPromptString,
@@ -37,6 +38,7 @@ import {
   MessageDisplayType,
   GlobalStateData,
   PlayerStateData,
+  GameStateData,
 } from '../store/slices/game';
 import { Subscriber } from '../store/slices/game/use-with-game-state';
 import { Player } from '../store/slices/player';
@@ -76,6 +78,7 @@ export class DiscussionStageHandler implements Subscriber {
   stepIdsSinceLastInput: string[]; // used to prevent infinite loops, should never repeat a step until we've had some sort of user input.
   lastFailedStepId: string | null = null;
   onDiscussionFinished?: (discussionData: CollectedDiscussionData) => void;
+  newPlayerStateData?: (data: GameStateData[]) => void;
 
   getStepById(stepId: string): DiscussionStageStep | undefined {
     if (
@@ -148,7 +151,8 @@ export class DiscussionStageHandler implements Subscriber {
       cancelToken?: CancelToken
     ) => Promise<AiServicesResponseTypes>,
     onDiscussionFinished?: (discussionData: CollectedDiscussionData) => void,
-    currentDiscussion?: DiscussionStage
+    currentDiscussion?: DiscussionStage,
+    newPlayerStateData?: (data: GameStateData[]) => void
   ) {
     this.currentDiscussion = currentDiscussion;
     this.stateData = {};
@@ -158,8 +162,10 @@ export class DiscussionStageHandler implements Subscriber {
     this.executePrompt = executePrompt;
     this.setResponsePending = setResponsePending;
     this.onDiscussionFinished = onDiscussionFinished;
+    this.newPlayerStateData = newPlayerStateData;
 
     // bind functions to this
+    this.newPlayerStateData = this.newPlayerStateData?.bind(this);
     this.setCurrentDiscussion = this.setCurrentDiscussion.bind(this);
     this.initializeActivity = this.initializeActivity.bind(this);
     this.handleStep = this.handleStep.bind(this);
@@ -184,6 +190,7 @@ export class DiscussionStageHandler implements Subscriber {
   }
 
   initializeActivity() {
+    console.log(this.currentDiscussion);
     if (
       !this.currentDiscussion ||
       !this.currentDiscussion.flowsList.length ||
@@ -347,6 +354,7 @@ export class DiscussionStageHandler implements Subscriber {
     if (this.curStep.stepType !== DiscussionStageStepType.REQUEST_USER_INPUT) {
       return;
     }
+    console.log('handling new user message for step', this.curStep);
     const requestUserInputStep = this.curStep as RequestUserInputStageStep;
     if (requestUserInputStep.predefinedResponses.length > 0) {
       const predefinedResponseMatch =
@@ -372,6 +380,8 @@ export class DiscussionStageHandler implements Subscriber {
     const userInputStep = this.curStep as RequestUserInputStageStep;
     if (userInputStep.saveResponseVariableName) {
       this.stateData[userInputStep.saveResponseVariableName] = message;
+      this.newPlayerStateData &&
+        this.newPlayerStateData(convertCollectedDataToGSData(this.stateData));
     }
     if (this.userResponseHandleState.responseNavigations.length > 0) {
       for (
@@ -478,6 +488,8 @@ export class DiscussionStageHandler implements Subscriber {
         }
         const resData = JSON.parse(response);
         this.stateData = { ...this.stateData, ...resData };
+        this.newPlayerStateData &&
+          this.newPlayerStateData(convertCollectedDataToGSData(this.stateData));
       } else {
         // is a text response
         this.sendMessage({

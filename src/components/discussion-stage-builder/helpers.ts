@@ -201,7 +201,9 @@ export function recursiveUpdateAdditionalInfo(
   return copy;
 }
 
-export function convertCollectedDataToGSData(data: CollectedDiscussionData): GameStateData[]{
+export function convertCollectedDataToGSData(
+  data: CollectedDiscussionData
+): GameStateData[] {
   return Object.entries(data).map(([key, value]) => {
     return {
       key,

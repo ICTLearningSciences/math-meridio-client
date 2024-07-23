@@ -5,9 +5,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 
-import {
-  AiServicesResponseTypes,
-} from '../ai-services/ai-service-types';
+import { AiServicesResponseTypes } from '../ai-services/ai-service-types';
 import {
   DiscussionStage,
   IStage,
@@ -26,6 +24,7 @@ import { CancelToken } from 'axios';
 import { Subscriber } from '../store/slices/game/use-with-game-state';
 import { Player } from '../store/slices/player';
 import { DiscussionStageHandler } from './discussion-stage-handler';
+import { convertCollectedDataToGSData } from '../components/discussion-stage-builder/helpers';
 
 interface UserResponseHandleState {
   responseNavigations: {
@@ -63,7 +62,7 @@ export interface GameStateHandlerArgs {
 
 export abstract class GameStateHandler implements Subscriber {
   abstract currentStage: IStage | undefined;
-  abstract currentStep: StageBuilderStep | undefined;
+  abstract currentStepId: string | undefined;
   abstract discussionStageHandler: DiscussionStageHandler;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   stateData: CollectedDiscussionData;
@@ -119,7 +118,6 @@ export abstract class GameStateHandler implements Subscriber {
 
   newChatLogReceived(chatLog: ChatMessage[]) {
     this.chatLog = chatLog;
-    this.discussionStageHandler.newChatLogReceived(chatLog);
     const newMessages = chatLog.filter(
       (c) =>
         !this.acknowledgedChat.includes(c.id) &&
@@ -129,6 +127,7 @@ export abstract class GameStateHandler implements Subscriber {
     if (newMessages.length === 0) {
       return;
     }
+    this.discussionStageHandler.newChatLogReceived(chatLog);
     for (const newMessage of newMessages) {
       // TODO: notify handlers of new message
       this.acknowledgedChat.push(newMessage.id);
@@ -155,7 +154,7 @@ export abstract class GameStateHandler implements Subscriber {
         {
           player: this.player.clientId,
           animation: '',
-          gameStateData: newData
+          gameStateData: newData,
         },
       ],
     });

@@ -85,10 +85,12 @@ export function SolutionComponent(props: {
             }}
             InputProps={{ inputProps: { min: 0, max: 10 } }}
             onChange={(e) =>
-              controller.newPlayerStateData([{
-                key: props.dataKey,
-                value: parseInt(e.target.value),
-              }])
+              controller.newPlayerStateData([
+                {
+                  key: props.dataKey,
+                  value: parseInt(e.target.value),
+                },
+              ])
             }
           />
         </Card>
@@ -127,9 +129,7 @@ export function SolutionComponent(props: {
     const insideShots = psd.gameStateData.find(
       (d) => d.key === INSIDE_SHOT_PERCENT
     );
-    const midShots = psd.gameStateData.find(
-      (d) => d.key === MID_SHOT_PERCENT
-    );
+    const midShots = psd.gameStateData.find((d) => d.key === MID_SHOT_PERCENT);
     const outsideShots = psd.gameStateData.find(
       (d) => d.key === OUTSIDE_SHOT_PERCENT
     );
@@ -198,12 +198,12 @@ export function SolutionComponent(props: {
           title="# of inside shots"
           data={myPlayerStateData}
         />
-        {/* <Connection dataKey="multiplication" data={myPlayerStateData} />
+        <Connection dataKey="multiplication" data={myPlayerStateData} />
         <Variable
           dataKey="inside_shot_success"
           title="Success% of inside shots"
           data={myPlayerStateData}
-        /> */}
+        />
       </div>
       <Connection dataKey="addition" data={myPlayerStateData} />
       <div className="row center-div">
@@ -218,12 +218,12 @@ export function SolutionComponent(props: {
           title="# of mid shots"
           data={myPlayerStateData}
         />
-        {/* <Connection dataKey="multiplication" data={myPlayerStateData} />
+        <Connection dataKey="multiplication" data={myPlayerStateData} />
         <Variable
           dataKey="mid_shot_success"
           title="Success% of mid shots"
           data={myPlayerStateData}
-        /> */}
+        />
       </div>
       <Connection dataKey="addition" data={myPlayerStateData} />
       <div className="row center-div">
@@ -238,12 +238,12 @@ export function SolutionComponent(props: {
           title="# of outside shots"
           data={myPlayerStateData}
         />
-        {/* <Connection dataKey="multiplication" data={myPlayerStateData} />
+        <Connection dataKey="multiplication" data={myPlayerStateData} />
         <Variable
           dataKey="outside_shot_success"
           title="Success% of outside shots"
           data={myPlayerStateData}
-        /> */}
+        />
       </div>
       <div style={{ flexGrow: 1 }} />
       <div
