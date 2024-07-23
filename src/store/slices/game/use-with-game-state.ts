@@ -13,27 +13,28 @@ import {
   Room,
   createAndJoinRoom,
   deleteRoom,
+  fetchRoom,
   joinRoom,
   leaveRoom,
-  pollRoomGameData,
   renameRoom,
   sendMessage,
   updateRoomGameData,
 } from '.';
 import { GenericLlmRequest, LoadStatus } from '../../../types';
 import { useAppDispatch, useAppSelector } from '../../hooks';
-import { isEqual } from '../../../helpers';
 import { fetchRooms } from '../../../api';
 import { GameStateHandler } from '../../../classes/game-state-handler';
 import { GAMES, Game } from '../../../game/types';
 import { CancelToken } from 'axios';
 import { syncLlmRequest } from '../../../hooks/use-with-synchronous-polling';
 import { useWithStages } from '../stages/use-with-stages';
+import { Player } from '../player';
 
 export abstract class Subscriber {
   abstract newChatLogReceived(chatLog: ChatMessage[]): void;
   abstract globalStateUpdated(newState: GlobalStateData): void;
   abstract playerStateUpdated(newState: PlayerStateData[]): void;
+  abstract playersUpdated(newState: Player[]): void;
 }
 
 export function useWithGame() {
@@ -42,6 +43,7 @@ export function useWithGame() {
   const { room, loadStatus } = useAppSelector((state) => state.gameData);
   const [responsePending, setResponsePending] = React.useState<boolean>(false);
   const { loadDiscussionStages } = useWithStages();
+  const poll = React.useRef<any>(null);
 
   const [game, setGame] = React.useState<Game>();
   const [subscribers, setSubscribers] = React.useState<Subscriber[]>([]);
@@ -52,7 +54,6 @@ export function useWithGame() {
     React.useState<PlayerStateData[]>();
   const [gameStateHandler, setGameStateHandler] =
     React.useState<GameStateHandler>();
-  const [poll, setPoll] = React.useState<NodeJS.Timeout>();
 
   React.useEffect(() => {
     if (!room) return;
@@ -88,13 +89,58 @@ export function useWithGame() {
   }, [room?.gameData.playerStateData]);
 
   React.useEffect(() => {
+    if (!room) return;
+    for (let i = 0; i < subscribers.length; i++) {
+      const updateFunction = subscribers[i].playersUpdated.bind(subscribers[i]);
+      updateFunction(room.gameData.players);
+    }
+  }, [room?.gameData.players]);
+
+  React.useEffect(() => {
+    if (!room && poll.current) {
+      clearInterval(poll.current);
+    }
+  }, [room, loadStatus]);
+
+  React.useEffect(() => {
     return () => {
-      if (poll) {
-        clearInterval(poll);
-        setPoll(undefined);
+      if (poll.current) {
+        clearInterval(poll.current);
       }
     };
   }, []);
+
+  async function launchGame() {
+    if (!room || !player) return undefined;
+    const gameId = room.gameData.gameId;
+    const game = GAMES.find((g) => g.id === gameId);
+    if (!game) return undefined;
+    const stages = await loadDiscussionStages();
+    const controller = game.createController({
+      stages: stages,
+      game: game.config,
+      gameData: room.gameData,
+      player: player,
+      sendMessage: _sendMessage,
+      updateRoomGameData: _updateRoomGameData,
+      setResponsePending: setResponsePending,
+      executePrompt: (
+        llmRequest: GenericLlmRequest,
+        cancelToken?: CancelToken
+      ) => {
+        return syncLlmRequest(llmRequest, cancelToken);
+      },
+    });
+    if (!poll.current) {
+      poll.current = setInterval(() => {
+        dispatch(fetchRoom({ roomId: room._id }));
+      }, 5000);
+    }
+    addNewSubscriber(controller);
+    setGame(game);
+    setGameStateHandler(controller);
+    controller.initializeGame();
+  }
 
   function addNewSubscriber(subscriber: Subscriber) {
     setSubscribers([...subscribers, subscriber]);
@@ -131,9 +177,8 @@ export function useWithGame() {
     );
   }
 
-  function _deleteRoom() {
-    if (!player || !room) return;
-    dispatch(deleteRoom({ roomId: room._id }));
+  function _deleteRoom(id: string) {
+    dispatch(deleteRoom({ roomId: id }));
   }
 
   function _renameRoom(name: string) {
@@ -149,39 +194,6 @@ export function useWithGame() {
   function _updateRoomGameData(gameData: Partial<GameData>): void {
     if (!player || !room) return;
     dispatch(updateRoomGameData({ roomId: room._id, gameData }));
-  }
-  async function launchGame() {
-    if (!room || !player) return undefined;
-    const gameId = room.gameData.gameId;
-    const game = GAMES.find((g) => g.id === gameId);
-    if (!game) return undefined;
-    const stages = await loadDiscussionStages();
-    const controller = game.createController({
-      stages: stages,
-      game: game.config,
-      gameData: room.gameData,
-      player: player,
-      sendMessage: _sendMessage,
-      updateRoomGameData: _updateRoomGameData,
-      setResponsePending: setResponsePending,
-      executePrompt: (
-        llmRequest: GenericLlmRequest,
-        cancelToken?: CancelToken
-      ) => {
-        return syncLlmRequest(llmRequest, cancelToken);
-      },
-    });
-    if (!poll) {
-      const timer = setInterval(() => {
-        dispatch(pollRoomGameData({ roomId: room._id }));
-      }, 5000);
-      setPoll(timer);
-    }
-    addNewSubscriber(controller);
-    setGame(game);
-    setGameStateHandler(controller);
-    console.log('initilizing game');
-    controller.initializeGame();
   }
 
   return {
@@ -199,6 +211,6 @@ export function useWithGame() {
     renameRoom: _renameRoom,
     sendMessage: _sendMessage,
     updateRoomGameData: _updateRoomGameData,
-    responsePending
+    responsePending,
   };
 }

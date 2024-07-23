@@ -7,7 +7,13 @@ The full terms of this copyright and license should always be found in the root 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { makeStyles } from 'tss-react/mui';
-import { Button, Card, CircularProgress, Grid, Typography } from '@mui/material';
+import {
+  Button,
+  Card,
+  CircularProgress,
+  Grid,
+  Typography,
+} from '@mui/material';
 
 import ChatThread from './chat-thread';
 import ChatForm from './chat-form';
@@ -16,7 +22,7 @@ import { useAppSelector } from '../../store/hooks';
 import { useWithGame } from '../../store/slices/game/use-with-game-state';
 import { GameStateHandler } from '../../classes/game-state-handler';
 import withAuthorizationOnly from '../../wrap-with-authorization-only';
-import {v4 as uuid} from 'uuid'
+import { v4 as uuid } from 'uuid';
 
 function ProblemSpace(props: {
   game: Game;
@@ -103,15 +109,20 @@ function ResultsSpace(props: {
 
 function GamePage(): JSX.Element {
   const { room, simulation } = useAppSelector((state) => state.gameData);
-  const { game, gameStateHandler, launchGame, leaveRoom, responsePending } = useWithGame();
+  const { game, gameStateHandler, launchGame, leaveRoom, responsePending } =
+    useWithGame();
   const [stableUuid] = React.useState(uuid());
   const navigate = useNavigate();
 
   React.useEffect(() => {
-    console.log(Boolean(gameStateHandler), Boolean(room), stableUuid);
     if (!room) {
       navigate('/');
     }
+    return () => {
+      if (gameStateHandler && room) {
+        leaveRoom();
+      }
+    };
   }, [Boolean(room)]);
 
   if (!room) {
@@ -122,29 +133,26 @@ function GamePage(): JSX.Element {
     );
   }
 
-  if(!gameStateHandler || !game) {
-        return (
-          <div className="root center-div">
-                <Button
-    onClick={launchGame}
-    disabled={Boolean(gameStateHandler)}
-    >
-      Begin
-    </Button>
-          </div>
-        );
+  if (!gameStateHandler || !game) {
+    return (
+      <div className="root center-div">
+        <Button onClick={launchGame} disabled={Boolean(gameStateHandler)}>
+          Begin
+        </Button>
+      </div>
+    );
   }
 
   return (
     <div className="root row" style={{ backgroundColor: '#cfdaf8' }}>
       <Grid container flexDirection="row" style={{ height: '100%' }}>
-        <Grid item xs={5} flexDirection="column" style={{ height: '100%' }}>
+        <Grid item xs={6} flexDirection="column" style={{ height: '100%' }}>
           <div className="column" style={{ height: '100%', width: '100%' }}>
             <ProblemSpace game={game} controller={gameStateHandler} />
             <SolutionSpace game={game} controller={gameStateHandler} />
           </div>
         </Grid>
-        <Grid item xs={5} style={{ height: '100%' }}>
+        <Grid item xs={6} style={{ height: '100%' }}>
           <div className="column" style={{ height: '100%', width: '100%' }}>
             <SimulationSpace
               game={game}
@@ -154,18 +162,22 @@ function GamePage(): JSX.Element {
             <ResultsSpace game={game} controller={gameStateHandler} />
           </div>
         </Grid>
-        <Grid
-          item
-          xs={2}
-          display="flex"
-          flexDirection="column"
-          style={{ height: '100%', padding: 10 }}
-        >
-          <ChatThread responsePending={responsePending}  />
-          <div style={{ height: 10 }} />
-          <ChatForm />
-        </Grid>
       </Grid>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          width: 400,
+          padding: 10,
+          marginTop: 10,
+          marginBottom: 10,
+          boxSizing: 'border-box',
+        }}
+      >
+        <ChatThread responsePending={responsePending} />
+        <ChatForm />
+      </div>
     </div>
   );
 }

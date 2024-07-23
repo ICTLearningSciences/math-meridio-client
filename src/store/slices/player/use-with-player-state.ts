@@ -4,14 +4,12 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
 import { v4 as uuid } from 'uuid';
-import { Avatar, clearPlayer, fetchPlayer, savePlayer } from '.';
+import { Avatar, savePlayer } from '.';
 import { jsonLlmRequest } from '../../../classes/api-helpers';
 import { AzureServiceModel, OpenAiServiceModel } from '../../../classes/types';
 import {
   GenericLlmRequest,
-  LoadStatus,
   PromptOutputTypes,
   PromptRoles,
 } from '../../../types';
@@ -41,18 +39,6 @@ export function useWithPlayer() {
   const { player, loadStatus, saveStatus } = useAppSelector(
     (state) => state.playerData
   );
-
-  React.useEffect(() => {
-    if (loadStatus.status === LoadStatus.NONE) {
-      if (player) {
-        dispatch(fetchPlayer(player.clientId));
-      } else {
-        dispatch(clearPlayer());
-      }
-    } else if (loadStatus.status === LoadStatus.FAILED) {
-      dispatch(clearPlayer());
-    }
-  }, [loadStatus]);
 
   function createPlayerName(name: string): void {
     dispatch(

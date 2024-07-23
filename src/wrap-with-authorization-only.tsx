@@ -9,30 +9,67 @@ import { useNavigate } from 'react-router-dom';
 import { CircularProgress } from '@mui/material';
 
 import { LoadStatus } from './types';
-import { useWithPlayer } from './store/slices/player/use-with-player-state';
+import { useAppDispatch, useAppSelector } from './store/hooks';
+import { clearPlayer } from './store/slices/player';
+import { fetchDiscussionStages } from './store/slices/stages';
+import { Room, fetchRooms, leaveRoom } from './store/slices/game';
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const withAuthorizationOnly = (Component: any) => (props: any) => {
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { loadStatus, player } = useWithPlayer();
+  const { roomsLoadStatus } = useAppSelector((state) => state.gameData);
+  const { player, loadStatus: playerLoadStatus } = useAppSelector(
+    (state) => state.playerData
+  );
+  const { loadStagesStatus } = useAppSelector((state) => state.stages);
+
+  // const { loadStatus, player } = useWithPlayer();
 
   React.useEffect(() => {
     if (
-      (loadStatus.status === LoadStatus.NOT_LOGGED_IN ||
-        loadStatus.status === LoadStatus.FAILED) &&
+      playerLoadStatus.status === LoadStatus.NONE ||
+      playerLoadStatus.status === LoadStatus.NOT_LOGGED_IN ||
+      playerLoadStatus.status === LoadStatus.FAILED ||
       !player
     ) {
+      dispatch(clearPlayer());
       navigate('/login');
+      return;
     }
-    if (loadStatus.status === LoadStatus.DONE && !player?.description) {
+    if (playerLoadStatus.status === LoadStatus.DONE && !player.description) {
       navigate('/avatar-creator');
     }
-  }, [loadStatus]);
+  }, [playerLoadStatus.status]);
+
+  React.useEffect(() => {
+    if (loadStagesStatus === LoadStatus.NONE) {
+      dispatch(fetchDiscussionStages());
+    }
+  }, [loadStagesStatus]);
+
+  React.useEffect(() => {
+    if (!player) return;
+    if (roomsLoadStatus.status === LoadStatus.NONE) {
+      dispatch(fetchRooms({})).then((res) => {
+        const rooms = res.payload as Room[];
+        for (const room of rooms) {
+          if (
+            room.gameData?.players.find((p) => p.clientId === player.clientId)
+          ) {
+            dispatch(
+              leaveRoom({ playerId: player.clientId, roomId: room._id })
+            );
+          }
+        }
+      });
+    }
+  }, [player, roomsLoadStatus.status]);
 
   if (
-    loadStatus.status === LoadStatus.NONE ||
-    loadStatus.status === LoadStatus.IN_PROGRESS
+    playerLoadStatus.status === LoadStatus.NONE ||
+    playerLoadStatus.status === LoadStatus.IN_PROGRESS
   ) {
     return (
       <div className="root center-div">
@@ -41,7 +78,7 @@ const withAuthorizationOnly = (Component: any) => (props: any) => {
     );
   }
 
-  return loadStatus.status === LoadStatus.DONE ? (
+  return playerLoadStatus.status === LoadStatus.DONE ? (
     <Component {...props} />
   ) : (
     <div className="root center-div">

@@ -108,7 +108,7 @@ export default function ChatForm(props: {
         color={listening ? 'primary' : 'inherit'}
         onClick={onToggleSTT}
         disabled={!browserSupportsSpeechRecognition}
-        style={{ marginLeft: 10, marginRight: 10 }}
+        style={{ marginLeft: 10 }}
       >
         {listening ? <Mic /> : <MicOutlined />}
       </Fab>

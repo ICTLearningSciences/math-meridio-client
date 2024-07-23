@@ -9,17 +9,8 @@ import {
   addOrUpdateDiscussionStage as _addOrUpdateDiscussionStage,
   fetchDiscussionStages as _fetchDiscussionStages,
 } from '../../../api';
-import {
-  defaultDicussionStage,
-  DiscussionStage,
-} from '../../../components/discussion-stage-builder/types';
-
-export enum LoadStatus {
-  NONE,
-  LOADING,
-  SUCCEEDED,
-  FAILED,
-}
+import { DiscussionStage } from '../../../components/discussion-stage-builder/types';
+import { LoadStatus } from '../../../types';
 
 export interface Stages {
   discussionStages: DiscussionStage[];
@@ -63,7 +54,7 @@ export const dataSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(addOrUpdateDiscussionStage.pending, (state) => {
-        state.addOrUpdateStatus = LoadStatus.LOADING;
+        state.addOrUpdateStatus = LoadStatus.IN_PROGRESS;
       })
       .addCase(addOrUpdateDiscussionStage.rejected, (state) => {
         state.addOrUpdateStatus = LoadStatus.FAILED;
@@ -73,14 +64,14 @@ export const dataSlice = createSlice({
           (s) => s.clientId !== action.payload.clientId
         );
         state.discussionStages.push(action.payload);
-        state.addOrUpdateStatus = LoadStatus.SUCCEEDED;
+        state.addOrUpdateStatus = LoadStatus.DONE;
       })
       .addCase(fetchDiscussionStages.fulfilled, (state, action) => {
         state.discussionStages = action.payload;
-        state.loadStagesStatus = LoadStatus.SUCCEEDED;
+        state.loadStagesStatus = LoadStatus.DONE;
       })
       .addCase(fetchDiscussionStages.pending, (state) => {
-        state.loadStagesStatus = LoadStatus.LOADING;
+        state.loadStagesStatus = LoadStatus.IN_PROGRESS;
       })
       .addCase(fetchDiscussionStages.rejected, (state) => {
         state.loadStagesStatus = LoadStatus.FAILED;
