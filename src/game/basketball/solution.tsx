@@ -34,7 +34,6 @@ export const OUTSIDE_SHOT_SUCCESS = 'outside_shot_success';
 export const OUTSIDE_SHOT_POINTS_VALUE = 3;
 export const OUTSIDE_SHOT_SUCCESS_VALUE = 0.25;
 
-
 export function SolutionComponent(props: {
   controller: GameStateHandler;
 }): JSX.Element {
@@ -159,10 +158,12 @@ export function SolutionComponent(props: {
                   (data[OUTSIDE_SHOT_PERCENT] || 0) <=
                 NUMBER_OF_SHOTS
               ) {
-                controller.newPlayerStateData([{
-                  key: props.dataKey,
-                  value: value,
-                }]);
+                controller.newPlayerStateData([
+                  {
+                    key: props.dataKey,
+                    value: value,
+                  },
+                ]);
               }
             }}
           />
@@ -204,8 +205,10 @@ export function SolutionComponent(props: {
       insideShots &&
         midShots &&
         outsideShots &&
-        (parseInt(insideShots.value) + parseInt(midShots.value) + parseInt(outsideShots.value) ===
-          NUMBER_OF_SHOTS)
+        parseInt(insideShots.value) +
+          parseInt(midShots.value) +
+          parseInt(outsideShots.value) ===
+          NUMBER_OF_SHOTS
     );
 
     function simulate(): void {
