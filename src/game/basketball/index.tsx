@@ -5,21 +5,18 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import React from 'react';
-import { Button, Typography } from '@mui/material';
-
 import {
   GameStateHandler,
   GameStateHandlerArgs,
 } from '../../classes/game-state-handler';
 import { Game } from '../types';
 import { SolutionSpace } from './SolutionSpace';
-import { SimulationSpace } from './SimulationSpace';
-import { useWithPhaserGame } from '../../hooks/use-with-phaser-game';
+import { SimulationScene } from './SimulationScene';
 
-import shotChart from './shot-chart.png';
-import { OverlayBox } from '../../components/overlay-box';
-import { QuestionMark } from '@mui/icons-material';
-import { GameStateData } from '../../store/slices/game';
+import { ProblemComponent } from './problem';
+import { SolutionComponent } from './solution';
+import { SimulationComponent } from './simulation';
+import { ResultComponent } from './results';
 
 export class BasketballStateHandler extends GameStateHandler {
   // todo
@@ -82,240 +79,23 @@ export class BasketballStateHandler extends GameStateHandler {
   }
 }
 
-function ProblemComponent(props: {
-  controller: GameStateHandler;
-}): JSX.Element {
-  return (
-    <div>
-      <Typography>{BasketballGame.problem}</Typography>
-      <img style={{ width: '100%', height: 200 }} src={shotChart}></img>
-    </div>
-  );
-}
-
-function SolutionComponent(props: {
-  controller: GameStateHandler;
-}): JSX.Element {
-  const { controller } = props;
-  const players = controller.players;
-  const gameStateData = controller.globalStateData.gameStateData;
-  const playerStateData = controller.playerStateData;
-
-  function Variable(props: {
-    dKey: string;
-    data: GameStateData[];
-    color?: string;
-  }): JSX.Element {
-    const data = props.data.find((d) => d.key === props.dKey);
-    return (
-      <div
-        className="column center-div"
-        style={{
-          marginLeft: 5,
-          marginRight: 5,
-          marginBottom: 10,
-          padding: 10,
-          // backgroundColor: "#d9d9d9",
-          width: 'auto',
-          display: data ? '' : 'none',
-        }}
-      >
-        <Typography fontSize={14}>{data?.key}</Typography>
-        <div
-          className="center-div column"
-          style={{
-            padding: 20,
-            backgroundColor: props.color || 'white',
-            borderRadius: 10,
-            height: 'auto',
-            borderStyle: 'solid',
-            borderWidth: 1,
-            borderColor: 'black',
-          }}
-        >
-          {data?.value ? (
-            <Typography style={{ color: 'white' }}>{data.value}</Typography>
-          ) : (
-            <QuestionMark style={{ color: 'white' }} />
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  function Connection(props: {
-    key: string;
-    data: GameStateData[];
-  }): JSX.Element {
-    const data = props.data.find(
-      (d) =>
-        `${d.key}`.toLowerCase().replace(' ', '') ===
-        `${props.key}`.toLowerCase().replace(' ', '')
-    );
-    return (
-      <div
-        style={{
-          marginLeft: 5,
-          marginRight: 5,
-          marginBottom: 10,
-          padding: 20,
-          backgroundColor: '#b8e1a9',
-          width: 'auto',
-          display: data ? '' : 'none',
-          borderStyle: 'solid',
-          borderWidth: 1,
-          borderColor: 'black',
-        }}
-      >
-        {data?.value ? <Typography>{data.value}</Typography> : <QuestionMark />}
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <Typography textAlign="center">Global Variables</Typography>
-      <div className="row center-div">
-        <Variable
-          dKey="Points per inside shot"
-          data={gameStateData}
-          color="#ff00ff"
-        />
-        <Variable
-          dKey="Points per mid shot"
-          data={gameStateData}
-          color="#03517c"
-        />
-        <Variable
-          dKey="Points per outside shot"
-          data={gameStateData}
-          color="#03517c"
-        />
-      </div>
-      {playerStateData.map((psd) => {
-        const playerName = players.find((p) => p.clientId === psd.player)?.name;
-        return (
-          <div key={psd.player} className="row center-div">
-            <div
-              className="column center-div"
-              style={{
-                flexGrow: 1,
-                borderStyle: 'solid',
-                borderWidth: 1,
-                borderColor: 'black',
-              }}
-            >
-              <div className="row center-div">
-                <Variable
-                  dKey="Points per inside shot"
-                  data={psd.gameStateData}
-                  color="#ff00ff"
-                />
-                <Connection key="inside_connection" data={psd.gameStateData} />
-                <Variable
-                  dKey="% of inside shot attempts"
-                  data={psd.gameStateData}
-                  color="#03517c"
-                />
-              </div>
-              <div className="row center-div">
-                <Variable
-                  dKey="Points per mid shot"
-                  data={psd.gameStateData}
-                  color="#ff00ff"
-                />
-                <Connection key="mid_connection" data={psd.gameStateData} />
-                <Variable
-                  dKey="% of mid shot attempts"
-                  data={psd.gameStateData}
-                  color="#03517c"
-                />
-              </div>
-              <div className="row center-div">
-                <Variable
-                  dKey="Points per outside shot"
-                  data={psd.gameStateData}
-                  color="#ff00ff"
-                />
-                <Connection key="outside_connection" data={psd.gameStateData} />
-                <Variable
-                  dKey="% of outside shot attempts"
-                  data={psd.gameStateData}
-                  color="#03517c"
-                />
-              </div>
-            </div>
-            <div
-              style={{
-                width: 50,
-                height: 50,
-                fontSize: 12,
-                padding: 10,
-                backgroundColor: '#cfd8dc',
-                borderRadius: 10,
-                marginLeft: 5,
-              }}
-            >
-              This is {playerName}&apos;s strategy
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-function SimulationComponent(props: {
-  controller: GameStateHandler;
-  simulation?: string;
-}): JSX.Element {
-  // todo
-  const gameContainerRef = React.useRef<HTMLDivElement | null>(null);
-  const { phaserGame, startPhaserGame } = useWithPhaserGame(gameContainerRef);
-
-  React.useEffect(() => {
-    if (props.simulation) {
-      startPhaserGame(
-        props.controller.game,
-        props.controller,
-        'SimulationSpace'
-      );
-    }
-  }, [props.controller, props.simulation]);
-
-  return (
-    <div>
-      <div
-        id="game-container"
-        ref={gameContainerRef}
-        style={{
-          height: '100%',
-          width: '100%',
-          backgroundColor: 'black',
-        }}
-      />
-      {!phaserGame && (
-        <OverlayBox message="Select a strategy first to see simulation" />
-      )}
-    </div>
-  );
-}
-
-function ResultComponent(props: { controller: GameStateHandler }): JSX.Element {
-  // todo
-  return (
-    <div>
-      <OverlayBox message="Complete first to see results" />
-    </div>
-  );
-}
-
 const BasketballGame: Game = {
   id: 'basketball',
   name: 'NBA Analyst',
   problem: `We need you and the analyst team to figure out why we're losing and what we need to change in our strategy to be winners! From what you're seeing right now, what do you think we're doing wrong?`,
   config: {
-    scene: [SolutionSpace, SimulationSpace],
+    type: Phaser.CANVAS,
+    backgroundColor: '#282c34',
+    width: 1280,
+    height: 720,
+    scale: {
+      // Fit to window
+      mode: Phaser.Scale.FIT,
+      // Center vertically and horizontally
+      autoCenter: Phaser.Scale.CENTER_BOTH,
+    },
+
+    scene: [SimulationScene],
   },
   showProblem: (controller: GameStateHandler) => {
     return <ProblemComponent controller={controller} />;
@@ -323,10 +103,8 @@ const BasketballGame: Game = {
   showSolution: (controller: GameStateHandler) => {
     return <SolutionComponent controller={controller} />;
   },
-  showSimulation: (controller: GameStateHandler, simulation?: string) => {
-    return (
-      <SimulationComponent controller={controller} simulation={simulation} />
-    );
+  showSimulation: (controller: GameStateHandler) => {
+    return <SimulationComponent controller={controller} />;
   },
   showResult: (controller: GameStateHandler) => {
     return <ResultComponent controller={controller} />;

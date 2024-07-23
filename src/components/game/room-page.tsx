@@ -5,6 +5,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Button,
   Card,
@@ -17,11 +18,11 @@ import {
 } from '@mui/material';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
 import { GAMES } from '../../game/types';
-import { Room, setRoom } from '../../store/slices/game';
+import { Room, deleteRoom, fetchRooms } from '../../store/slices/game';
 import { useWithGame } from '../../store/slices/game/use-with-game-state';
 import withAuthorizationOnly from '../../wrap-with-authorization-only';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { useNavigate } from 'react-router-dom';
+import { LoadStatus } from '../../types';
 
 function RoomCard(props: {
   room: Room;
@@ -29,18 +30,13 @@ function RoomCard(props: {
   delete: (id: string) => void;
 }): JSX.Element {
   const { room } = props;
-  const { player } = useAppSelector((state) => state.playerData);
   const [expanded, setIsExpanded] = React.useState<boolean>(false);
-  const inRoom = room.gameData.players.find(
-    (p) => p.clientId === player?.clientId
-  );
   return (
     <Card
       className="list-item"
       style={{
         width: '100%',
         boxSizing: 'border-box',
-        backgroundColor: inRoom ? '#D2EBFE' : '',
       }}
     >
       <CardContent className="row" style={{ padding: 10 }}>
@@ -55,14 +51,16 @@ function RoomCard(props: {
             alignItems: 'center',
           }}
         >
-          <Typography>{room.name}</Typography>
-          <Typography>{room.gameData.players.length} players</Typography>
+          <Typography style={{ flexGrow: 1 }}>{room.name}</Typography>
+          <Typography style={{ marginRight: 10 }}>
+            {room.gameData.players.length} players
+          </Typography>
           <Button
             variant="contained"
             disabled={room.gameData.players.length >= 4}
             onClick={() => props.join(room._id)}
           >
-            {inRoom ? 'Rejoin' : 'Join'}
+            Join
           </Button>
         </div>
       </CardContent>
@@ -80,7 +78,11 @@ function RoomCard(props: {
           <Typography variant="body2" color="text.secondary">
             Players: {room.gameData.players.map((p) => p.name).join(', ')}
           </Typography>
-          <Button variant='contained' color="error" onClick={() => props.delete(room._id)}>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => props.delete(room._id)}
+          >
             Delete Room
           </Button>
         </CardContent>
@@ -91,13 +93,11 @@ function RoomCard(props: {
 
 function RoomPage(): JSX.Element {
   const dispatch = useAppDispatch();
-  const { loadRooms, joinRoom, createRoom, deleteRoom } = useWithGame();
-  const { player } = useAppSelector((state) => state.playerData);
-  const { room } = useAppSelector((state) => state.gameData);
+  const { joinRoom, createRoom } = useWithGame();
+  const { room, rooms, roomsLoadStatus } = useAppSelector(
+    (state) => state.gameData
+  );
   const [selectedGame, setSelectedGame] = React.useState<string>();
-  const [rooms, setRooms] = React.useState<Room[]>([]);
-  const [error, setError] = React.useState<string>();
-  const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const navigate = useNavigate();
 
   React.useEffect(() => {
@@ -113,25 +113,14 @@ function RoomPage(): JSX.Element {
   }, [room]);
 
   async function reloadRooms(gameId: string) {
-    if (isLoading) return;
-    setIsLoading(true);
-    loadRooms(gameId)
-      .then((rooms) => {
-        const room = rooms.find((r) =>
-          r.gameData.players.find((p) => p.clientId === player?.clientId)
-        );
-        if (room) {
-          dispatch(setRoom(room));
-        }
-        setRooms(rooms);
-        setError(undefined);
-        setIsLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setError(err.message);
-        setIsLoading(false);
-      });
+    dispatch(fetchRooms({ gameId }));
+  }
+
+  async function onDeleteRoom(roomId: string) {
+    await dispatch(deleteRoom({ roomId: roomId }));
+    if (selectedGame) {
+      reloadRooms(selectedGame);
+    }
   }
 
   return (
@@ -188,22 +177,21 @@ function RoomPage(): JSX.Element {
             className="column list"
             style={{ flexGrow: 1, alignItems: 'center' }}
           >
-            {isLoading ? (
+            {roomsLoadStatus.status === LoadStatus.IN_PROGRESS ? (
               <CircularProgress />
-            ) : error ? (
+            ) : roomsLoadStatus.status === LoadStatus.FAILED ? (
               <Typography color="error">Failed to load rooms</Typography>
             ) : (
-              rooms.map((r) => (
-                <RoomCard
-                  key={`room-${r._id}`}
-                  room={r}
-                  join={(id) => joinRoom(id)}
-                  delete={(id) => {
-                    // deleteRoom(id);
-                    // reloadRooms(selectedGame);
-                  }}
-                />
-              ))
+              rooms
+                .filter((r) => r.gameData?.gameId === selectedGame)
+                .map((r) => (
+                  <RoomCard
+                    key={`room-${r._id}`}
+                    room={r}
+                    join={(id) => joinRoom(id)}
+                    delete={(id) => onDeleteRoom(id)}
+                  />
+                ))
             )}
           </div>
           <Button onClick={() => reloadRooms(selectedGame)}>

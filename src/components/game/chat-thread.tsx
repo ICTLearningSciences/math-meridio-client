@@ -23,16 +23,12 @@ const useStyles = makeStyles()(() => ({
   chatItem: {
     position: 'relative',
     flexDirection: 'row',
-    padding: 10,
-    paddingLeft: 15,
-    paddingRight: 15,
     borderRadius: 30,
-    marginBottom: 15,
     alignItems: 'center',
     fontFamily: 'Helvetica, Arial, sans-serif',
     maxWidth: '80%',
     textAlign: 'left',
-    '&.PLAYER': {
+    '&.mine': {
       alignSelf: 'flex-end',
       backgroundColor: '#0084ff',
       borderBottomRightRadius: 5,
@@ -41,36 +37,43 @@ const useStyles = makeStyles()(() => ({
         display: 'block',
         position: 'absolute',
         right: -15,
-        bottom: -5,
-        transform: 'rotate(230deg)',
+        bottom: -15,
+        transform: 'rotate(270deg)',
         borderStyle: 'solid',
         borderWidth: '30px 0 0 30px',
         borderColor: '#0084ff transparent',
         borderRadius: '0 0 40px 0',
       },
     },
-    '&.SYSTEM': {
+    '&.other': {
       alignSelf: 'flex-start',
       backgroundColor: '#e6e6e6',
       borderBottomLeftRadius: 5,
+      '&:after': {
+        content: '""',
+        display: 'block',
+        position: 'absolute',
+        left: 0,
+        bottom: -5,
+        transform: 'rotate(-140deg)',
+        borderStyle: 'solid',
+        borderWidth: '30px 0 0 30px',
+        borderColor: '#e6e6e6 transparent',
+        borderRadius: '0 0 40px 0',
+      },
+      '&.PLAYER': {
+        backgroundColor: '#d2eafe',
+        '&:after': {
+          borderColor: '#d2eafe transparent',
+        },
+      },
     },
-  },
-  chatIcon: {
-    position: 'absolute',
-    display: 'flex',
-    width: 30,
-    height: 30,
-    right: -10,
-    borderRadius: 30,
-    backgroundColor: '#ccc',
-    alignItems: 'center',
-    alignContent: 'center',
-    justifyContent: 'center',
   },
 }));
 
 export default function ChatThread(): JSX.Element {
   const { classes } = useStyles();
+  const { player } = useAppSelector((state) => state.playerData);
   const messages = useAppSelector(
     (state) => state.gameData.room?.gameData.chat || []
   );
@@ -83,37 +86,42 @@ export default function ChatThread(): JSX.Element {
       {messages.map((msg, idx) => {
         const msgStyles: Record<string, number> = {};
         if (idx > 0) {
-          if (msg.sender !== messages[idx - 1].sender) {
+          if (msg.senderId !== messages[idx - 1].senderId) {
             msgStyles.marginTop = 10;
-          } else if (msg.sender === SenderType.PLAYER) {
+          } else if (msg.senderId === player?.clientId) {
             msgStyles.borderTopRightRadius = 5;
           } else {
             msgStyles.borderTopLeftRadius = 5;
           }
         }
+        const myMessage =
+          msg.sender === SenderType.PLAYER && msg.senderId === player?.clientId;
         return (
           <ListItem
             key={`chat-msg-${idx}`}
-            className={`${classes.chatItem} ${msg.sender}
-              }`}
+            className={`${classes.chatItem} ${myMessage ? 'mine' : 'other'} ${
+              msg.sender
+            }`}
             style={msgStyles}
           >
-            {msg.senderName && (
-              <Typography
-                style={{
-                  position: 'absolute',
-                  fontSize: 12,
-                  bottom: -15,
-                  right: 20,
-                }}
-              >
-                {msg.senderName}
-              </Typography>
-            )}
-            <div></div>
             <Typography
               style={{
-                color: msg.sender === SenderType.PLAYER ? 'white' : 'black',
+                position: 'absolute',
+                fontSize: 12,
+                bottom: -15,
+                right: myMessage ? 20 : undefined,
+                left: myMessage ? undefined : 20,
+              }}
+            >
+              {msg.senderName}
+            </Typography>
+            <Typography
+              style={{
+                color:
+                  msg.sender === SenderType.PLAYER &&
+                  msg.senderId === player?.clientId
+                    ? 'white'
+                    : 'black',
               }}
             >
               {msg.message}
