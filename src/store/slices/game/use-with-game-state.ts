@@ -40,6 +40,7 @@ export function useWithGame() {
   const dispatch = useAppDispatch();
   const { player } = useAppSelector((state) => state.playerData);
   const { room, loadStatus } = useAppSelector((state) => state.gameData);
+  const [responsePending, setResponsePending] = React.useState<boolean>(false);
   const { loadDiscussionStages } = useWithStages();
 
   const [game, setGame] = React.useState<Game>();
@@ -162,9 +163,7 @@ export function useWithGame() {
       player: player,
       sendMessage: _sendMessage,
       updateRoomGameData: _updateRoomGameData,
-      setResponsePending: (pending: boolean) => {
-        // todo
-      },
+      setResponsePending: setResponsePending,
       executePrompt: (
         llmRequest: GenericLlmRequest,
         cancelToken?: CancelToken
@@ -200,5 +199,6 @@ export function useWithGame() {
     renameRoom: _renameRoom,
     sendMessage: _sendMessage,
     updateRoomGameData: _updateRoomGameData,
+    responsePending
   };
 }

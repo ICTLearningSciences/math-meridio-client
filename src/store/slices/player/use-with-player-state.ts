@@ -8,7 +8,7 @@ import React from 'react';
 import { v4 as uuid } from 'uuid';
 import { Avatar, clearPlayer, fetchPlayer, savePlayer } from '.';
 import { jsonLlmRequest } from '../../../classes/api-helpers';
-import { OpenAiServiceModel } from '../../../classes/types';
+import { AzureServiceModel, OpenAiServiceModel } from '../../../classes/types';
 import {
   GenericLlmRequest,
   LoadStatus,
@@ -164,7 +164,7 @@ export function useWithPlayer() {
             promptRole: PromptRoles.USER,
           },
         ],
-        targetAiServiceModel: OpenAiServiceModel,
+        targetAiServiceModel: AzureServiceModel,
         outputDataType: PromptOutputTypes.JSON,
         responseFormat: `
             Please only respond in JSON.

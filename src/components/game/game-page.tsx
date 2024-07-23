@@ -103,7 +103,7 @@ function ResultsSpace(props: {
 
 function GamePage(): JSX.Element {
   const { room, simulation } = useAppSelector((state) => state.gameData);
-  const { game, gameStateHandler, launchGame, leaveRoom } = useWithGame();
+  const { game, gameStateHandler, launchGame, leaveRoom, responsePending } = useWithGame();
   const [stableUuid] = React.useState(uuid());
   const navigate = useNavigate();
 
@@ -161,7 +161,7 @@ function GamePage(): JSX.Element {
           flexDirection="column"
           style={{ height: '100%', padding: 10 }}
         >
-          <ChatThread />
+          <ChatThread responsePending={responsePending}  />
           <div style={{ height: 10 }} />
           <ChatForm />
         </Grid>

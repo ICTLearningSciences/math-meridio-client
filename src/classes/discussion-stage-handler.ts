@@ -30,7 +30,7 @@ import { GenericLlmRequest, PromptOutputTypes, PromptRoles } from '../types';
 import { CancelToken } from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import { chatLogToString, isJsonString } from '../helpers';
-import { OpenAiServiceModel } from './types';
+import { AzureServiceModel, OpenAiServiceModel } from './types';
 import {
   ChatMessage,
   SenderType,
@@ -233,11 +233,15 @@ export class DiscussionStageHandler implements Subscriber {
   }
 
   async handleSystemMessageStep(step: SystemMessageStageStep) {
+    // wait 1 second
+    this.setResponsePending(true);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     this.sendMessage({
       id: uuidv4(),
       message: replaceStoredDataInString(step.message, this.stateData),
       sender: SenderType.SYSTEM,
     });
+    this.setResponsePending(false);
     await this.goToNextStep();
   }
 
@@ -246,6 +250,9 @@ export class DiscussionStageHandler implements Subscriber {
       step.predefinedResponses,
       this.stateData
     );
+    // wait 1 second
+    this.setResponsePending(true);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     this.sendMessage({
       id: uuidv4(),
       message: replaceStoredDataInString(step.message, this.stateData),
@@ -254,6 +261,7 @@ export class DiscussionStageHandler implements Subscriber {
       disableUserInput: step.disableFreeInput,
       mcqChoices: this.handleExtractMcqChoices(processedPredefinedResponses),
     });
+    this.setResponsePending(false);
     // Will now wait for user input before progressing to next step
   }
 
@@ -422,7 +430,7 @@ export class DiscussionStageHandler implements Subscriber {
     const llmRequest: GenericLlmRequest = {
       prompts: [],
       outputDataType: step.outputDataType,
-      targetAiServiceModel: OpenAiServiceModel,
+      targetAiServiceModel: AzureServiceModel,
       responseFormat: responseFormat,
       systemRole: customSystemRole,
     };

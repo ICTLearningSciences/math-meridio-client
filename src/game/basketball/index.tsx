@@ -78,6 +78,9 @@ export class BasketballStateHandler extends GameStateHandler {
           console.log("going to collect variables stage")
           this.discussionStageHandler.setCurrentDiscussion(collectVariablesStage)
           this.discussionStageHandler.stateData = collectedData;
+          this.discussionStageHandler.onDiscussionFinished = () =>{
+            console.log("done with collect variables stage")
+          }
           this.discussionStageHandler.initializeActivity();
         }else{
           throw new Error('collect variables stage not found')

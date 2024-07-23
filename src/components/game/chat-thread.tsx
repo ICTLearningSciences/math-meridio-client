@@ -9,6 +9,7 @@ import { makeStyles } from 'tss-react/mui';
 import { useAppSelector } from '../../store/hooks';
 import { ListItem, Typography } from '@mui/material';
 import { SenderType } from '../../store/slices/game';
+import { FadingText } from '../fading-text';
 
 const useStyles = makeStyles()(() => ({
   chatThread: {
@@ -69,7 +70,10 @@ const useStyles = makeStyles()(() => ({
   },
 }));
 
-export default function ChatThread(): JSX.Element {
+export default function ChatThread(props:{
+  responsePending: boolean;
+}): JSX.Element {
+  const { responsePending } = props;
   const { classes } = useStyles();
   const messages = useAppSelector(
     (state) => state.gameData.room?.gameData.chat || []
@@ -91,6 +95,7 @@ export default function ChatThread(): JSX.Element {
             msgStyles.borderTopLeftRadius = 5;
           }
         }
+
         return (
           <ListItem
             key={`chat-msg-${idx}`}
@@ -121,6 +126,11 @@ export default function ChatThread(): JSX.Element {
           </ListItem>
         );
       })}
+      {responsePending && (
+        <ListItem className={classes.chatItem}>
+          <FadingText strings={["Thinking 1...", "Thinking 2...", "Thinking 3..."]} />
+        </ListItem>
+      )}
     </div>
   );
 }
