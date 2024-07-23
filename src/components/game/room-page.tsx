@@ -80,7 +80,11 @@ function RoomCard(props: {
           <Typography variant="body2" color="text.secondary">
             Players: {room.gameData.players.map((p) => p.name).join(', ')}
           </Typography>
-          <Button variant='contained' color="error" onClick={() => props.delete(room._id)}>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => props.delete(room._id)}
+          >
             Delete Room
           </Button>
         </CardContent>

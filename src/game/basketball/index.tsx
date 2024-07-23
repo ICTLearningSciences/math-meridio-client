@@ -20,15 +20,77 @@ import shotChart from './shot-chart.png';
 import { OverlayBox } from '../../components/overlay-box';
 import { QuestionMark } from '@mui/icons-material';
 import { GameStateData } from '../../store/slices/game';
+import {
+  DiscussionStage,
+  DiscussionStageStep,
+  isDiscussionStage,
+  IStage,
+  StageBuilderStep,
+} from '../../components/discussion-stage-builder/types';
+import { getStepFromFlowList } from '../../components/discussion-stage-builder/helpers';
+import { DiscussionStageHandler } from '../../classes/discussion-stage-handler';
+
+const introductionDiscussionStage = 'de0b94b9-1fc2-4ea1-995e-21a75670c16d';
+const collectVariablesDiscussionStage = '86587083-9279-4c27-8470-836f992670fc';
 
 export class BasketballStateHandler extends GameStateHandler {
+  // note: was previously a DiscussionStage
+  currentStage: IStage | undefined;
+  currentStep: StageBuilderStep | undefined; // Note: this only applies to the discussion builder
+  discussionStageHandler: DiscussionStageHandler;
+
   // todo
   constructor(args: GameStateHandlerArgs) {
     super({ ...args, defaultStageId: 'de0b94b9-1fc2-4ea1-995e-21a75670c16d' });
+    this.currentStage =
+      args.stages?.find((s) => s.clientId === args.defaultStageId) ||
+      args.stages?.find((s) => s.clientId === introductionDiscussionStage);
+    const currentStageId =
+      args.gameData.globalStateData.curStageId ||
+      args.defaultStageId ||
+      introductionDiscussionStage;
+    this.currentStage = args.stages?.find((s) => s.clientId === currentStageId);
+    this.stages
+    const currentStepId = args.gameData.globalStateData.curStepId;
+    this.currentStep =
+      this.currentStage && isDiscussionStage(this.currentStage)
+        ? getStepFromFlowList(currentStepId, this.currentStage.flowsList)
+        : undefined;
+
+    this.discussionStageHandler = new DiscussionStageHandler(
+      args.sendMessage,
+      args.setResponsePending,
+      args.executePrompt
+    );
+  }
+
+  initializeGame() {
+    if (!this.currentStage) {
+      return;
+    }
+    if (isDiscussionStage(this.currentStage)) {
+      this.discussionStageHandler.setCurrentDiscussion(this.currentStage);
+      this.discussionStageHandler.onDiscussionFinished = (collectedData) => {
+        const collectVariablesStage = this.stages.find(
+          (s) => s.clientId === collectVariablesDiscussionStage
+        );
+        if(collectVariablesStage){
+          console.log("going to collect variables stage")
+          this.discussionStageHandler.setCurrentDiscussion(collectVariablesStage)
+          this.discussionStageHandler.stateData = collectedData;
+          this.discussionStageHandler.initializeActivity();
+        }else{
+          throw new Error('collect variables stage not found')
+        }
+      };
+      this.discussionStageHandler.initializeActivity();
+    } else {
+      throw new Error(`unhandled stage type: ${this.currentStage.stageType}`);
+    }
   }
 
   async handleNewUserMessage(message: string) {
-    super.handleNewUserMessage(message);
+    // super.handleNewUserMessage(message);
     // todo (not hard-coded)
     const msg = message.toLowerCase();
     if (msg.includes('outside shot')) {

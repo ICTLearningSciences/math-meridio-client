@@ -95,40 +95,6 @@ export function useWithGame() {
     };
   }, []);
 
-  async function launchGame() {
-    if (!room || !player) return undefined;
-    const gameId = room.gameData.gameId;
-    const game = GAMES.find((g) => g.id === gameId);
-    if (!game) return undefined;
-    const stages = await loadDiscussionStages();
-    const controller = game.createController({
-      stages: stages,
-      game: game.config,
-      gameData: room.gameData,
-      player: player,
-      sendMessage: _sendMessage,
-      updateRoomGameData: _updateRoomGameData,
-      setResponsePending: (pending: boolean) => {
-        // todo
-      },
-      executePrompt: (
-        llmRequest: GenericLlmRequest,
-        cancelToken?: CancelToken
-      ) => {
-        return syncLlmRequest(llmRequest, cancelToken);
-      },
-    });
-    // if (!poll) {
-    //   const timer = setInterval(() => {
-    //     dispatch(pollRoomGameData({ roomId: room._id }));
-    //   }, 1000);
-    //   setPoll(timer);
-    // }
-    addNewSubscriber(controller);
-    setGame(game);
-    setGameStateHandler(controller);
-  }
-
   function addNewSubscriber(subscriber: Subscriber) {
     setSubscribers([...subscribers, subscriber]);
   }
@@ -182,6 +148,41 @@ export function useWithGame() {
   function _updateRoomGameData(gameData: Partial<GameData>): void {
     if (!player || !room) return;
     dispatch(updateRoomGameData({ roomId: room._id, gameData }));
+  }
+  async function launchGame() {
+    if (!room || !player) return undefined;
+    const gameId = room.gameData.gameId;
+    const game = GAMES.find((g) => g.id === gameId);
+    if (!game) return undefined;
+    const stages = await loadDiscussionStages();
+    const controller = game.createController({
+      stages: stages,
+      game: game.config,
+      gameData: room.gameData,
+      player: player,
+      sendMessage: _sendMessage,
+      updateRoomGameData: _updateRoomGameData,
+      setResponsePending: (pending: boolean) => {
+        // todo
+      },
+      executePrompt: (
+        llmRequest: GenericLlmRequest,
+        cancelToken?: CancelToken
+      ) => {
+        return syncLlmRequest(llmRequest, cancelToken);
+      },
+    });
+    if (!poll) {
+      const timer = setInterval(() => {
+        dispatch(pollRoomGameData({ roomId: room._id }));
+      }, 5000);
+      setPoll(timer);
+    }
+    addNewSubscriber(controller);
+    setGame(game);
+    setGameStateHandler(controller);
+    console.log('initilizing game');
+    controller.initializeGame();
   }
 
   return {

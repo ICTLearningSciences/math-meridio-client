@@ -103,12 +103,16 @@ function ResultsSpace(props: {
 function GamePage(): JSX.Element {
   const { room, simulation } = useAppSelector((state) => state.gameData);
   const { game, gameStateHandler, launchGame, leaveRoom } = useWithGame();
+  const [gameLaunching, setGameLaunching] = React.useState(false);
   const navigate = useNavigate();
 
   React.useEffect(() => {
+    console.log(Boolean(gameStateHandler), Boolean(room));
     if (!room) {
       navigate('/');
-    } else if (!gameStateHandler) {
+    } else if (!gameStateHandler && !gameLaunching) {
+      setGameLaunching(true);
+      console.log('launching game');
       launchGame();
     }
     // return () => {
@@ -116,7 +120,7 @@ function GamePage(): JSX.Element {
     //     leaveRoom();
     //   }
     // };
-  }, [room?._id]);
+  }, [Boolean(gameStateHandler), Boolean(room)]);
 
   if (!room || !gameStateHandler || !game) {
     return (

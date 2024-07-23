@@ -13,6 +13,7 @@ export enum PromptOutputTypes {
 
 export interface IStage {
   stageType: 'discussion' | 'simulation';
+  clientId: string;
 }
 
 export type DiscussionStageStep =
@@ -44,13 +45,15 @@ export function defaultDicussionStage(): DiscussionStage {
 
 export interface SimulationStage extends IStage {
   _id: string;
-  clientId: string;
   stageType: 'simulation';
+}
+
+export function isDiscussionStage(stage: IStage): stage is DiscussionStage {
+  return stage.stageType === 'discussion';
 }
 
 export interface DiscussionStage extends IStage {
   _id: string;
-  clientId: string;
   stageType: 'discussion';
   title: string;
   description: string;
