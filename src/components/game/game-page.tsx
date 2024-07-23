@@ -7,7 +7,7 @@ The full terms of this copyright and license should always be found in the root 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { makeStyles } from 'tss-react/mui';
-import { Card, CircularProgress, Grid, Typography } from '@mui/material';
+import { Button, Card, CircularProgress, Grid, Typography } from '@mui/material';
 
 import ChatThread from './chat-thread';
 import ChatForm from './chat-form';
@@ -16,6 +16,7 @@ import { useAppSelector } from '../../store/hooks';
 import { useWithGame } from '../../store/slices/game/use-with-game-state';
 import { GameStateHandler } from '../../classes/game-state-handler';
 import withAuthorizationOnly from '../../wrap-with-authorization-only';
+import {v4 as uuid} from 'uuid'
 
 function ProblemSpace(props: {
   game: Game;
@@ -103,31 +104,35 @@ function ResultsSpace(props: {
 function GamePage(): JSX.Element {
   const { room, simulation } = useAppSelector((state) => state.gameData);
   const { game, gameStateHandler, launchGame, leaveRoom } = useWithGame();
-  const [gameLaunching, setGameLaunching] = React.useState(false);
+  const [stableUuid] = React.useState(uuid());
   const navigate = useNavigate();
 
   React.useEffect(() => {
-    console.log(Boolean(gameStateHandler), Boolean(room));
+    console.log(Boolean(gameStateHandler), Boolean(room), stableUuid);
     if (!room) {
       navigate('/');
-    } else if (!gameStateHandler && !gameLaunching) {
-      setGameLaunching(true);
-      console.log('launching game');
-      launchGame();
     }
-    // return () => {
-    //   if (gameStateHandler && room) {
-    //     leaveRoom();
-    //   }
-    // };
-  }, [Boolean(gameStateHandler), Boolean(room)]);
+  }, [Boolean(room)]);
 
-  if (!room || !gameStateHandler || !game) {
+  if (!room) {
     return (
       <div className="root center-div">
         <CircularProgress />
       </div>
     );
+  }
+
+  if(!gameStateHandler || !game) {
+        return (
+          <div className="root center-div">
+                <Button
+    onClick={launchGame}
+    disabled={Boolean(gameStateHandler)}
+    >
+      Begin
+    </Button>
+          </div>
+        );
   }
 
   return (

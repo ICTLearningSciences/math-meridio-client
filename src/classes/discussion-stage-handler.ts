@@ -230,9 +230,6 @@ export class DiscussionStageHandler implements Subscriber {
       default:
         throw new Error(`Unknown step type: ${step}`);
     }
-    if (step.lastStep && this.onDiscussionFinished) {
-      this.onDiscussionFinished(this.stateData);
-    }
   }
 
   async handleSystemMessageStep(step: SystemMessageStageStep) {
@@ -490,7 +487,6 @@ export class DiscussionStageHandler implements Subscriber {
       try {
         await requestFunction();
         success = true;
-        console.log('breaking');
         break;
       } catch (err) {
         counter++;

@@ -43,6 +43,7 @@ import { OpenAiServiceModel } from './types';
 import { chatLogToString, isJsonString } from '../helpers';
 import { Subscriber } from '../store/slices/game/use-with-game-state';
 import { Player } from '../store/slices/player';
+import { DiscussionStageHandler } from './discussion-stage-handler';
 
 interface UserResponseHandleState {
   responseNavigations: {
@@ -81,6 +82,7 @@ export interface GameStateHandlerArgs {
 export abstract class GameStateHandler implements Subscriber {
   abstract currentStage: IStage | undefined;
   abstract currentStep: StageBuilderStep | undefined;
+  abstract discussionStageHandler: DiscussionStageHandler;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   stateData: CollectedDiscussionData;
   errorMessage: string | null = null;
@@ -135,6 +137,7 @@ export abstract class GameStateHandler implements Subscriber {
 
   newChatLogReceived(chatLog: ChatMessage[]) {
     this.chatLog = chatLog;
+    this.discussionStageHandler.newChatLogReceived(chatLog);
     const newMessages = chatLog.filter(
       (c) =>
         !this.acknowledgedChat.includes(c.id) &&
