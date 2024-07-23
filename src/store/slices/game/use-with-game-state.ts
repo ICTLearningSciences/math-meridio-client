@@ -30,9 +30,11 @@ import { syncLlmRequest } from '../../../hooks/use-with-synchronous-polling';
 import { useWithStages } from '../stages/use-with-stages';
 import { Player } from '../player';
 import { equals } from '../../../helpers';
+import EventSystem from '../../../game/event-system';
 
 export abstract class Subscriber {
   abstract newChatLogReceived(chatLog: ChatMessage[]): void;
+  abstract simulationEnded(): void;
   abstract globalStateUpdated(newState: GlobalStateData): void;
   abstract playerStateUpdated(newState: PlayerStateData[]): void;
   abstract playersUpdated(newState: Player[]): void;
@@ -56,6 +58,7 @@ export function useWithGame() {
   const [lastPlayers, setLastPlayers] = React.useState<Player[]>();
   const [gameStateHandler, setGameStateHandler] =
     React.useState<GameStateHandler>();
+
 
   React.useEffect(() => {
     if (!room || equals(lastChatLog, room.gameData.chat)) return;
@@ -105,7 +108,19 @@ export function useWithGame() {
     }
   }, [room, loadStatus]);
 
+  React.useEffect(()=>{
+    EventSystem.on('simulate', () => {
+      for (let i = 0; i < subscribers.length; i++) {
+        const updateFunction = subscribers[i].simulationEnded.bind(
+          subscribers[i]
+        );
+        updateFunction();
+      }
+    });
+  }, [subscribers.length])
+
   React.useEffect(() => {
+
     return () => {
       if (poll.current) {
         clearInterval(poll.current);

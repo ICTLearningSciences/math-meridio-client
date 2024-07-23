@@ -25,6 +25,7 @@ import { Subscriber } from '../store/slices/game/use-with-game-state';
 import { Player } from '../store/slices/player';
 import { DiscussionStageHandler } from './discussion-stage-handler';
 import { convertCollectedDataToGSData } from '../components/discussion-stage-builder/helpers';
+import { CurrentStage } from '../game/basketball';
 
 interface UserResponseHandleState {
   responseNavigations: {
@@ -61,7 +62,7 @@ export interface GameStateHandlerArgs {
 }
 
 export abstract class GameStateHandler implements Subscriber {
-  abstract currentStage: IStage | undefined;
+  abstract currentStage: CurrentStage | undefined;
   abstract currentStepId: string | undefined;
   abstract discussionStageHandler: DiscussionStageHandler;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -146,8 +147,6 @@ export abstract class GameStateHandler implements Subscriber {
     this.players = players;
   }
 
-  /** */
-
   newPlayerStateData(newData: GameStateData[]): void {
     this.updateRoomGameData({
       playerStateData: [
@@ -159,4 +158,6 @@ export abstract class GameStateHandler implements Subscriber {
       ],
     });
   }
+
+  abstract simulationEnded(): void;
 }

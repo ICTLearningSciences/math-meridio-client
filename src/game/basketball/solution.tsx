@@ -34,6 +34,9 @@ export const OUTSIDE_SHOT_SUCCESS = 'outside_shot_success';
 export const OUTSIDE_SHOT_POINTS_VALUE = 3;
 export const OUTSIDE_SHOT_SUCCESS_VALUE = 0.25;
 
+export const UNDERSTANDS_MULTIPLICATION = 'understands_multiplication';
+export const UNDERSTANDS_ADDITION = 'understands_addition';
+
 export function SolutionComponent(props: {
   controller: GameStateHandler;
 }): JSX.Element {
@@ -102,7 +105,10 @@ export function SolutionComponent(props: {
   }
 
   function Variable(props: { dataKey: string; title: string }): JSX.Element {
-    const data = gameStateData[props.dataKey];
+    const data = gameStateData[props.dataKey] || playerStateData.find(
+      (p) => p.player === controller.player.clientId
+    )?.gameStateData.find((d) => d.key === props.dataKey);
+    
     return (
       <div
         className={classes.grouping}
@@ -172,8 +178,11 @@ export function SolutionComponent(props: {
     );
   }
 
-  function Connection(props: { dataKey: string }): JSX.Element {
-    const data = gameStateData[props.dataKey];
+  function Connection(props: { dataKey: string, isEnabled: (data: any) => boolean, displayValue?: string }): JSX.Element {
+    const {isEnabled, displayValue} = props;
+    const data = gameStateData[props.dataKey] || playerStateData.find(
+      (p) => p.player === controller.player.clientId
+    )?.gameStateData.find((d) => d.key === props.dataKey);
     return (
       <Card
         className={classes.box}
@@ -185,7 +194,7 @@ export function SolutionComponent(props: {
           // display: data ? '' : 'none',
         }}
       >
-        {data?.value ? <Typography>{data.value}</Typography> : <QuestionMark />}
+        {data?.value && isEnabled(data?.value) ? <Typography>{displayValue || data.value}</Typography> : <QuestionMark />}
       </Card>
     );
   }
@@ -281,37 +290,37 @@ export function SolutionComponent(props: {
       <div style={{ flexGrow: 1 }} />
       <div className="row center-div">
         <Variable dataKey={INSIDE_SHOT_POINTS} title="Points per inside shot" />
-        <Connection dataKey="multiplication" />
+        <Connection dataKey={UNDERSTANDS_MULTIPLICATION} isEnabled={(value)=>value === "true"} displayValue='*' />
         <EditableVariable
           dataKey={INSIDE_SHOT_PERCENT}
           title="# of inside shots"
         />
-        <Connection dataKey="multiplication" />
+        <Connection dataKey={UNDERSTANDS_MULTIPLICATION} isEnabled={(value)=>value === "true"} displayValue='*' />
         <Variable
           dataKey={INSIDE_SHOT_SUCCESS}
           title="Success% of inside shots"
         />
       </div>
-      <Connection dataKey="addition" />
+      <Connection dataKey={UNDERSTANDS_ADDITION} isEnabled={()=>true} displayValue='+'  />
       <div className="row center-div">
         <Variable dataKey={MID_SHOT_POINTS} title="Points per mid shot" />
-        <Connection dataKey="multiplication" />
+        <Connection dataKey={UNDERSTANDS_MULTIPLICATION} isEnabled={(value)=>value === "true"} displayValue='*' />
         <EditableVariable dataKey={MID_SHOT_PERCENT} title="# of mid shots" />
-        <Connection dataKey="multiplication" />
+        <Connection dataKey={UNDERSTANDS_MULTIPLICATION} isEnabled={(value)=>value === "true"} displayValue='*' />
         <Variable dataKey={MID_SHOT_SUCCESS} title="Success% of mid shots" />
       </div>
-      <Connection dataKey="addition" />
+      <Connection dataKey={UNDERSTANDS_ADDITION} isEnabled={(value)=>value === "true"} displayValue='+' />
       <div className="row center-div">
         <Variable
           dataKey={OUTSIDE_SHOT_POINTS}
           title="Points per outside shot"
         />
-        <Connection dataKey="multiplication" />
+        <Connection dataKey={UNDERSTANDS_MULTIPLICATION} isEnabled={(value)=>value === "true"} displayValue='*' />
         <EditableVariable
           dataKey={OUTSIDE_SHOT_PERCENT}
           title="# of outside shots"
         />
-        <Connection dataKey="multiplication" />
+        <Connection dataKey={UNDERSTANDS_MULTIPLICATION} isEnabled={(value)=>value === "true"} displayValue='*' />
         <Variable
           dataKey={OUTSIDE_SHOT_SUCCESS}
           title="Success% of outside shots"

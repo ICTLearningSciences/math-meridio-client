@@ -79,6 +79,7 @@ export class DiscussionStageHandler implements Subscriber {
   lastFailedStepId: string | null = null;
   onDiscussionFinished?: (discussionData: CollectedDiscussionData) => void;
   newPlayerStateData?: (data: GameStateData[]) => void;
+  exitEarlyCondition?: (data: CollectedDiscussionData) => boolean;
 
   getStepById(stepId: string): DiscussionStageStep | undefined {
     if (
@@ -152,7 +153,8 @@ export class DiscussionStageHandler implements Subscriber {
     ) => Promise<AiServicesResponseTypes>,
     onDiscussionFinished?: (discussionData: CollectedDiscussionData) => void,
     currentDiscussion?: DiscussionStage,
-    newPlayerStateData?: (data: GameStateData[]) => void
+    newPlayerStateData?: (data: GameStateData[]) => void,
+    exitEarlyCondition?: (data: CollectedDiscussionData) => boolean
   ) {
     this.currentDiscussion = currentDiscussion;
     this.stateData = {};
@@ -163,8 +165,10 @@ export class DiscussionStageHandler implements Subscriber {
     this.setResponsePending = setResponsePending;
     this.onDiscussionFinished = onDiscussionFinished;
     this.newPlayerStateData = newPlayerStateData;
+    this.exitEarlyCondition = exitEarlyCondition;
 
     // bind functions to this
+    this.exitEarlyCondition = this.exitEarlyCondition?.bind(this);
     this.newPlayerStateData = this.newPlayerStateData?.bind(this);
     this.setCurrentDiscussion = this.setCurrentDiscussion.bind(this);
     this.initializeActivity = this.initializeActivity.bind(this);
@@ -190,7 +194,6 @@ export class DiscussionStageHandler implements Subscriber {
   }
 
   initializeActivity() {
-    console.log(this.currentDiscussion);
     if (
       !this.currentDiscussion ||
       !this.currentDiscussion.flowsList.length ||
@@ -219,6 +222,12 @@ export class DiscussionStageHandler implements Subscriber {
         sender: SenderType.SYSTEM,
       });
       return;
+    }
+    if(this.exitEarlyCondition && this.exitEarlyCondition(this.stateData)) {
+      if (this.onDiscussionFinished) {
+        this.onDiscussionFinished(this.stateData);
+      }
+      return
     }
     this.stepIdsSinceLastInput.push(step.stepId);
     // work through steps until we get to a user message step, then wait to be notified of a user message
@@ -354,7 +363,6 @@ export class DiscussionStageHandler implements Subscriber {
     if (this.curStep.stepType !== DiscussionStageStepType.REQUEST_USER_INPUT) {
       return;
     }
-    console.log('handling new user message for step', this.curStep);
     const requestUserInputStep = this.curStep as RequestUserInputStageStep;
     if (requestUserInputStep.predefinedResponses.length > 0) {
       const predefinedResponseMatch =
@@ -522,6 +530,10 @@ export class DiscussionStageHandler implements Subscriber {
 
     this.setResponsePending(false);
     await this.goToNextStep();
+  }
+
+  simulationEnded(): void {
+    console.log('simulation ended from discussion stage handler');
   }
 
   globalStateUpdated(newState: GlobalStateData): void {
