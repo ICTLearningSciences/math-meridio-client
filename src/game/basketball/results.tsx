@@ -10,6 +10,11 @@ import { GameStateHandler } from '../../classes/game-state-handler';
 import { OverlayBox } from '../../components/overlay-box';
 import { BasketballSimulationData } from './SimulationScene';
 import EventSystem from '../event-system';
+import {
+  INSIDE_SHOT_POINTS_VALUE,
+  MID_SHOT_POINTS_VALUE,
+  OUTSIDE_SHOT_POINTS_VALUE,
+} from './solution';
 
 export function ResultComponent(props: {
   controller: GameStateHandler;
@@ -28,7 +33,6 @@ export function ResultComponent(props: {
     setSimulationData({ ...simulationData });
   }
 
-  // todo
   return (
     <div>
       {Object.keys(simulationData).length === 0 ? (
@@ -40,61 +44,74 @@ export function ResultComponent(props: {
           ]}
           series={[
             {
-              data: [10],
+              data: controller.players.map(
+                (p) => simulationData[p.clientId]?.outsideShotsMade || 0
+              ),
               stack: 'A',
               label: 'Outside shots succeeded',
               color: '#2e95ff',
             },
             {
-              data: [5],
+              data: controller.players.map(
+                (p) =>
+                  (simulationData[p.clientId]?.outsideShots || 0) -
+                  (simulationData[p.clientId]?.outsideShotsMade || 0)
+              ),
               stack: 'A',
               label: 'Outside shots failed',
               color: '#1c5999',
             },
             {
-              data: [20],
+              data: controller.players.map(
+                (p) => simulationData[p.clientId]?.midShotsMade || 0
+              ),
               stack: 'B',
               label: 'Mid shots succeeded',
               color: '#b800d8',
             },
             {
-              data: [2],
+              data: controller.players.map(
+                (p) =>
+                  (simulationData[p.clientId]?.midShots || 0) -
+                  (simulationData[p.clientId]?.midShotsMade || 0)
+              ),
               stack: 'B',
               label: 'Mid shots failed',
               color: '#60039b',
             },
             {
-              data: [10],
+              data: controller.players.map(
+                (p) => simulationData[p.clientId]?.insideShotsMade || 0
+              ),
               stack: 'C',
               label: 'Inside shots succeeded',
               color: '#02b2af',
             },
             {
-              data: [10],
+              data: controller.players.map(
+                (p) =>
+                  (simulationData[p.clientId]?.insideShots || 0) -
+                  (simulationData[p.clientId]?.insideShotsMade || 0)
+              ),
               stack: 'C',
               label: 'Inside shots failed',
               color: '#015958',
             },
-            { data: [50], stack: 'D', label: 'Total points', color: 'orange' },
+            {
+              data: controller.players.map(
+                (p) =>
+                  (simulationData[p.clientId]?.outsideShotsMade || 0) *
+                    OUTSIDE_SHOT_POINTS_VALUE +
+                  (simulationData[p.clientId]?.midShotsMade || 0) *
+                    MID_SHOT_POINTS_VALUE +
+                  (simulationData[p.clientId]?.insideShotsMade || 0) *
+                    INSIDE_SHOT_POINTS_VALUE
+              ),
+              stack: 'D',
+              label: 'Total points',
+              color: 'orange',
+            },
           ]}
-          // series={controller.players.map((p) => {
-          //   const s = simulationData[p.clientId];
-          //   if (s) {
-          //     return {
-          //       data: [
-          //         s.insideShots,
-          //         s.insideShotsMade,
-          //         s.midShots,
-          //         s.midShotsMade,
-          //         s.outsideShots,
-          //         s.outsideShotsMade,
-          //         s.totalPoints,
-          //       ],
-          //     };
-          //   } else {
-          //     return { data: [] };
-          //   }
-          // })}
           width={window.innerWidth / 2 - 200}
           height={500}
         />
