@@ -46,6 +46,7 @@ export function defaultDicussionStage(): DiscussionStage {
 export interface SimulationStage extends IStage {
   _id: string;
   stageType: 'simulation';
+  
 }
 
 export function isDiscussionStage(stage: IStage): stage is DiscussionStage {

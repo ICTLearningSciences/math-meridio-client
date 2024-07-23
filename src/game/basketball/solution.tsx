@@ -13,6 +13,13 @@ import { GameStateData, PlayerStateData } from '../../store/slices/game';
 import { makeStyles } from 'tss-react/mui';
 import EventSystem from '../event-system';
 
+export const INSIDE_SHOT_PERCENT = 'inside_shot_percent';
+export const MID_SHOT_PERCENT = 'mid_shot_percent';
+export const OUTSIDE_SHOT_PERCENT = 'outside_shot_percent';
+export const INSIDE_SHOT_POINTS = 'inside_shot_points';
+export const MID_SHOT_POINTS = 'mid_shot_points';
+export const OUTSIDE_SHOT_POINTS = 'outside_shot_points';
+
 export function SolutionComponent(props: {
   controller: GameStateHandler;
 }): JSX.Element {
@@ -78,10 +85,10 @@ export function SolutionComponent(props: {
             }}
             InputProps={{ inputProps: { min: 0, max: 10 } }}
             onChange={(e) =>
-              controller.updatePlayerStateVariable({
+              controller.newPlayerStateData([{
                 key: props.dataKey,
                 value: parseInt(e.target.value),
-              })
+              }])
             }
           />
         </Card>
@@ -118,13 +125,13 @@ export function SolutionComponent(props: {
     const psd = props.data;
     const player = players.find((p) => p.clientId === psd.player);
     const insideShots = psd.gameStateData.find(
-      (d) => d.key === 'inside_shot_percent'
+      (d) => d.key === INSIDE_SHOT_PERCENT
     );
     const midShots = psd.gameStateData.find(
-      (d) => d.key === 'mid_shot_percent'
+      (d) => d.key === MID_SHOT_PERCENT
     );
     const outsideShots = psd.gameStateData.find(
-      (d) => d.key === 'outside_shot_percent'
+      (d) => d.key === OUTSIDE_SHOT_PERCENT
     );
     const canSimulate = Boolean(insideShots && midShots && outsideShots);
 
@@ -181,62 +188,62 @@ export function SolutionComponent(props: {
     <div className="column center-div" style={{ height: '95%' }}>
       <div className="row center-div">
         <Variable
-          dataKey="inside_shot_points"
+          dataKey={INSIDE_SHOT_POINTS}
           title="Points per inside shot"
           data={gameStateData}
         />
         <Connection dataKey="multiplication" data={myPlayerStateData} />
         <EditableVariable
-          dataKey="inside_shot_percent"
+          dataKey={INSIDE_SHOT_PERCENT}
           title="# of inside shots"
           data={myPlayerStateData}
         />
-        <Connection dataKey="multiplication" data={myPlayerStateData} />
+        {/* <Connection dataKey="multiplication" data={myPlayerStateData} />
         <Variable
           dataKey="inside_shot_success"
           title="Success% of inside shots"
           data={myPlayerStateData}
-        />
+        /> */}
       </div>
       <Connection dataKey="addition" data={myPlayerStateData} />
       <div className="row center-div">
         <Variable
-          dataKey="mid_shot_points"
+          dataKey={MID_SHOT_POINTS}
           title="Points per mid shot"
           data={gameStateData}
         />
         <Connection dataKey="multiplication" data={myPlayerStateData} />
         <EditableVariable
-          dataKey="mid_shot_percent"
+          dataKey={MID_SHOT_PERCENT}
           title="# of mid shots"
           data={myPlayerStateData}
         />
-        <Connection dataKey="multiplication" data={myPlayerStateData} />
+        {/* <Connection dataKey="multiplication" data={myPlayerStateData} />
         <Variable
           dataKey="mid_shot_success"
           title="Success% of mid shots"
           data={myPlayerStateData}
-        />
+        /> */}
       </div>
       <Connection dataKey="addition" data={myPlayerStateData} />
       <div className="row center-div">
         <Variable
-          dataKey="outside_shot_points"
+          dataKey={OUTSIDE_SHOT_POINTS}
           title="Points per outside shot"
           data={gameStateData}
         />
         <Connection dataKey="multiplication" data={myPlayerStateData} />
         <EditableVariable
-          dataKey="outside_shot_percent"
+          dataKey={OUTSIDE_SHOT_PERCENT}
           title="# of outside shots"
           data={myPlayerStateData}
         />
-        <Connection dataKey="multiplication" data={myPlayerStateData} />
+        {/* <Connection dataKey="multiplication" data={myPlayerStateData} />
         <Variable
           dataKey="outside_shot_success"
           title="Success% of outside shots"
           data={myPlayerStateData}
-        />
+        /> */}
       </div>
       <div style={{ flexGrow: 1 }} />
       <div

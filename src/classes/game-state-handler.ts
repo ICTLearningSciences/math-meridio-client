@@ -7,41 +7,22 @@ The full terms of this copyright and license should always be found in the root 
 
 import {
   AiServicesResponseTypes,
-  extractServiceStepResponse,
 } from '../ai-services/ai-service-types';
 import {
-  processPredefinedResponses,
-  receivedExpectedData,
-  recursivelyConvertExpectedDataToAiPromptString,
-  recursiveUpdateAdditionalInfo,
-  replaceStoredDataInString,
-  sortMessagesByResponseWeight,
-} from '../components/discussion-stage-builder/helpers';
-import {
   DiscussionStage,
-  DiscussionStageStep,
-  DiscussionStageStepType,
   IStage,
-  PredefinedResponse,
-  PromptStageStep,
-  RequestUserInputStageStep,
   StageBuilderStep,
-  SystemMessageStageStep,
 } from '../components/discussion-stage-builder/types';
 import {
   ChatMessage,
   GameData,
   GameStateData,
   GlobalStateData,
-  MessageDisplayType,
   PlayerStateData,
   SenderType,
 } from '../store/slices/game';
-import { GenericLlmRequest, PromptOutputTypes, PromptRoles } from '../types';
+import { GenericLlmRequest } from '../types';
 import { CancelToken } from 'axios';
-import { v4 as uuidv4 } from 'uuid';
-import { OpenAiServiceModel } from './types';
-import { chatLogToString, isJsonString } from '../helpers';
 import { Subscriber } from '../store/slices/game/use-with-game-state';
 import { Player } from '../store/slices/player';
 import { DiscussionStageHandler } from './discussion-stage-handler';
@@ -168,13 +149,13 @@ export abstract class GameStateHandler implements Subscriber {
 
   /** */
 
-  updatePlayerStateVariable(updated: GameStateData): void {
+  newPlayerStateData(newData: GameStateData[]): void {
     this.updateRoomGameData({
       playerStateData: [
         {
           player: this.player.clientId,
           animation: '',
-          gameStateData: [updated],
+          gameStateData: newData
         },
       ],
     });

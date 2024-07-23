@@ -39,6 +39,7 @@ import {
   PlayerStateData,
 } from '../store/slices/game';
 import { Subscriber } from '../store/slices/game/use-with-game-state';
+import { Player } from '../store/slices/player';
 
 interface UserResponseHandleState {
   responseNavigations: {
@@ -517,5 +518,9 @@ export class DiscussionStageHandler implements Subscriber {
 
   playerStateUpdated(newState: PlayerStateData[]): void {
     console.log('player state updated');
+  }
+
+  playersUpdated(newState: Player[]): void {
+    console.log('players updated');
   }
 }

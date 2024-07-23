@@ -24,7 +24,7 @@ import {
   IStage,
   StageBuilderStep,
 } from '../../components/discussion-stage-builder/types';
-import { getStepFromFlowList } from '../../components/discussion-stage-builder/helpers';
+import { convertCollectedDataToGSData, getStepFromFlowList } from '../../components/discussion-stage-builder/helpers';
 import { DiscussionStageHandler } from '../../classes/discussion-stage-handler';
 
 import { ProblemComponent } from './problem';
@@ -73,6 +73,7 @@ export class BasketballStateHandler extends GameStateHandler {
     if (isDiscussionStage(this.currentStage)) {
       this.discussionStageHandler.setCurrentDiscussion(this.currentStage);
       this.discussionStageHandler.onDiscussionFinished = (collectedData) => {
+        this.newPlayerStateData(convertCollectedDataToGSData(collectedData));
         const collectVariablesStage = this.stages.find(
           (s) => s.clientId === collectVariablesDiscussionStage
         );
