@@ -29,6 +29,7 @@ import {
 import {
   ChatMessage,
   GameData,
+  GameStateData,
   GlobalStateData,
   MessageDisplayType,
   PlayerStateData,
@@ -562,5 +563,19 @@ export class GameStateHandler implements Subscriber {
 
   playerStateUpdated(newGameState: PlayerStateData[]): void {
     this.playerStateData = newGameState;
+  }
+
+  /** */
+
+  updatePlayerStateVariable(updated: GameStateData): void {
+    this.updateRoomGameData({
+      playerStateData: [
+        {
+          player: this.player.clientId,
+          animation: '',
+          gameStateData: [updated],
+        },
+      ],
+    });
   }
 }

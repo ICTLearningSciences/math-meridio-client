@@ -13,6 +13,7 @@ import LoginPage from './components/login-page';
 import AvatarPage from './components/avatar-page';
 import GamePage from './components/game/game-page';
 import RoomPage from './components/game/room-page';
+import PhaserTestPage from './components/phaser-test-page';
 import { StageBuilderPage } from './components/discussion-stage-builder/stage-builder-page';
 
 import { store } from './store';
@@ -87,6 +88,18 @@ function MainApp() {
                 console.log('');
               }}
             />
+          </div>
+        </>
+      ),
+    },
+    // test stuff only remove later
+    {
+      path: '/phaser',
+      element: (
+        <>
+          <Header />
+          <div className="page">
+            <PhaserTestPage />
           </div>
         </>
       ),

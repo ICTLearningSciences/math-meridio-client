@@ -4,12 +4,10 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { v4 as uuid } from 'uuid';
-import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { Player } from '../player';
 import * as api from '../../../api';
 import { LoadStatus, LoadingState } from '../../../types';
-import { RootState } from '../..';
 
 export enum SenderType {
   PLAYER = 'PLAYER',
@@ -65,15 +63,33 @@ export interface GlobalStateData {
 
 interface Data {
   room: Room | undefined;
+  rooms: Room[];
   simulation?: string;
   loadStatus: LoadingState;
+  roomsLoadStatus: LoadingState;
 }
 const initialState: Data = {
   room: undefined,
+  rooms: [],
   loadStatus: { status: LoadStatus.NONE },
+  roomsLoadStatus: { status: LoadStatus.NONE },
 };
 
 /** Actions */
+export const fetchRooms = createAsyncThunk(
+  'gameData/fetchRooms',
+  async (args: { gameId?: string }): Promise<Room[]> => {
+    return api.fetchRooms(args.gameId || '');
+  }
+);
+
+export const fetchRoom = createAsyncThunk(
+  'gameData/fetchRoom',
+  async (args: { roomId: string }): Promise<Room> => {
+    return api.fetchRoom(args.roomId);
+  }
+);
+
 export const createAndJoinRoom = createAsyncThunk(
   'gameData/createAndJoinRoom',
   async (args: {
@@ -113,13 +129,6 @@ export const renameRoom = createAsyncThunk(
   }
 );
 
-export const pollRoomGameData = createAsyncThunk(
-  'gameData/pollRoomGameData',
-  async (args: { roomId: string }): Promise<Room> => {
-    return api.fetchRoom(args.roomId);
-  }
-);
-
 export const updateRoomGameData = createAsyncThunk(
   'gameData/updateRoomGameData',
   async (args: {
@@ -140,13 +149,45 @@ export const sendMessage = createAsyncThunk(
 export const dataSlice = createSlice({
   name: 'gameData',
   initialState: initialState,
-  reducers: {
-    setRoom: (state, action: PayloadAction<Room>) => {
-      state.room = action.payload;
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
+      .addCase(fetchRooms.pending, (state, action) => {
+        state.roomsLoadStatus.status = LoadStatus.IN_PROGRESS;
+        state.roomsLoadStatus.startedAt = Date.now.toString();
+        state.roomsLoadStatus.error = undefined;
+      })
+      .addCase(fetchRooms.fulfilled, (state, action) => {
+        state.rooms = action.payload;
+        state.roomsLoadStatus.status = LoadStatus.DONE;
+        state.roomsLoadStatus.endedAt = Date.now.toString();
+        state.roomsLoadStatus.error = undefined;
+      })
+      .addCase(fetchRooms.rejected, (state, action) => {
+        state.roomsLoadStatus.status = LoadStatus.FAILED;
+        state.roomsLoadStatus.failedAt = Date.now.toString();
+        state.roomsLoadStatus.error = action.error.message;
+      })
+
+      .addCase(fetchRoom.pending, (state, action) => {
+        state.loadStatus.status = LoadStatus.IN_PROGRESS;
+        state.loadStatus.startedAt = Date.now.toString();
+        state.loadStatus.error = undefined;
+      })
+      .addCase(fetchRoom.fulfilled, (state, action) => {
+        if (state.room) {
+          state.room = action.payload;
+        }
+        state.loadStatus.status = LoadStatus.DONE;
+        state.loadStatus.endedAt = Date.now.toString();
+        state.loadStatus.error = undefined;
+      })
+      .addCase(fetchRoom.rejected, (state, action) => {
+        state.loadStatus.status = LoadStatus.FAILED;
+        state.loadStatus.failedAt = Date.now.toString();
+        state.loadStatus.error = action.error.message;
+      })
+
       .addCase(createAndJoinRoom.pending, (state, action) => {
         state.loadStatus.status = LoadStatus.IN_PROGRESS;
         state.loadStatus.startedAt = Date.now.toString();
@@ -232,23 +273,6 @@ export const dataSlice = createSlice({
         state.loadStatus.error = action.error.message;
       })
 
-      .addCase(pollRoomGameData.pending, (state, action) => {
-        state.loadStatus.status = LoadStatus.IN_PROGRESS;
-        state.loadStatus.startedAt = Date.now.toString();
-        state.loadStatus.error = undefined;
-      })
-      .addCase(pollRoomGameData.fulfilled, (state, action) => {
-        state.room = action.payload;
-        state.loadStatus.status = LoadStatus.DONE;
-        state.loadStatus.endedAt = Date.now.toString();
-        state.loadStatus.error = undefined;
-      })
-      .addCase(pollRoomGameData.rejected, (state, action) => {
-        state.loadStatus.status = LoadStatus.FAILED;
-        state.loadStatus.failedAt = Date.now.toString();
-        state.loadStatus.error = action.error.message;
-      })
-
       .addCase(updateRoomGameData.pending, (state, action) => {
         state.loadStatus.status = LoadStatus.IN_PROGRESS;
         state.loadStatus.startedAt = Date.now.toString();
@@ -285,5 +309,4 @@ export const dataSlice = createSlice({
   },
 });
 
-export const { setRoom } = dataSlice.actions;
 export default dataSlice.reducer;

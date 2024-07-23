@@ -39,7 +39,9 @@ function loadCache(): PlayerData {
   const cacheData = localStorageGet(PLAYER_DATA) as Player;
   return {
     player: cacheData,
-    loadStatus: { status: LoadStatus.NONE },
+    loadStatus: {
+      status: cacheData ? LoadStatus.DONE : LoadStatus.NOT_LOGGED_IN,
+    },
     saveStatus: { status: LoadStatus.NONE },
   };
 }

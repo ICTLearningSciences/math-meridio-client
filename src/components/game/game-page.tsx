@@ -111,11 +111,11 @@ function GamePage(): JSX.Element {
     } else if (!gameStateHandler) {
       launchGame();
     }
-    // return () => {
-    //   if (gameStateHandler && room) {
-    //     leaveRoom();
-    //   }
-    // };
+    return () => {
+      if (gameStateHandler && room) {
+        leaveRoom();
+      }
+    };
   }, [room?._id]);
 
   if (!room || !gameStateHandler || !game) {
@@ -129,13 +129,13 @@ function GamePage(): JSX.Element {
   return (
     <div className="root row" style={{ backgroundColor: '#cfdaf8' }}>
       <Grid container flexDirection="row" style={{ height: '100%' }}>
-        <Grid item xs={5} flexDirection="column" style={{ height: '100%' }}>
+        <Grid item xs={6} flexDirection="column" style={{ height: '100%' }}>
           <div className="column" style={{ height: '100%', width: '100%' }}>
             <ProblemSpace game={game} controller={gameStateHandler} />
             <SolutionSpace game={game} controller={gameStateHandler} />
           </div>
         </Grid>
-        <Grid item xs={5} style={{ height: '100%' }}>
+        <Grid item xs={6} style={{ height: '100%' }}>
           <div className="column" style={{ height: '100%', width: '100%' }}>
             <SimulationSpace
               game={game}
@@ -145,18 +145,22 @@ function GamePage(): JSX.Element {
             <ResultsSpace game={game} controller={gameStateHandler} />
           </div>
         </Grid>
-        <Grid
-          item
-          xs={2}
-          display="flex"
-          flexDirection="column"
-          style={{ height: '100%', padding: 10 }}
-        >
-          <ChatThread />
-          <div style={{ height: 10 }} />
-          <ChatForm />
-        </Grid>
       </Grid>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          width: 400,
+          padding: 10,
+          marginTop: 10,
+          marginBottom: 10,
+          boxSizing: 'border-box',
+        }}
+      >
+        <ChatThread />
+        <ChatForm />
+      </div>
     </div>
   );
 }

@@ -13,16 +13,15 @@ import {
   Room,
   createAndJoinRoom,
   deleteRoom,
+  fetchRoom,
   joinRoom,
   leaveRoom,
-  pollRoomGameData,
   renameRoom,
   sendMessage,
   updateRoomGameData,
 } from '.';
 import { GenericLlmRequest, LoadStatus } from '../../../types';
 import { useAppDispatch, useAppSelector } from '../../hooks';
-import { isEqual } from '../../../helpers';
 import { fetchRooms } from '../../../api';
 import { GameStateHandler } from '../../../classes/game-state-handler';
 import { GAMES, Game } from '../../../game/types';
@@ -41,6 +40,7 @@ export function useWithGame() {
   const { player } = useAppSelector((state) => state.playerData);
   const { room, loadStatus } = useAppSelector((state) => state.gameData);
   const { loadDiscussionStages } = useWithStages();
+  const poll = React.useRef<any>(null);
 
   const [game, setGame] = React.useState<Game>();
   const [subscribers, setSubscribers] = React.useState<Subscriber[]>([]);
@@ -51,7 +51,6 @@ export function useWithGame() {
     React.useState<PlayerStateData[]>();
   const [gameStateHandler, setGameStateHandler] =
     React.useState<GameStateHandler>();
-  const [poll, setPoll] = React.useState<NodeJS.Timeout>();
 
   React.useEffect(() => {
     if (!room) return;
@@ -87,10 +86,15 @@ export function useWithGame() {
   }, [room?.gameData.playerStateData]);
 
   React.useEffect(() => {
+    if (!room && poll.current) {
+      clearInterval(poll.current);
+    }
+  }, [room, loadStatus]);
+
+  React.useEffect(() => {
     return () => {
-      if (poll) {
-        clearInterval(poll);
-        setPoll(undefined);
+      if (poll.current) {
+        clearInterval(poll.current);
       }
     };
   }, []);
@@ -118,12 +122,11 @@ export function useWithGame() {
         return syncLlmRequest(llmRequest, cancelToken);
       },
     });
-    // if (!poll) {
-    //   const timer = setInterval(() => {
-    //     dispatch(pollRoomGameData({ roomId: room._id }));
-    //   }, 1000);
-    //   setPoll(timer);
-    // }
+    if (!poll.current) {
+      // poll.current = setInterval(() => {
+      //   dispatch(fetchRoom({ roomId: room._id }));
+      // }, 1000);
+    }
     addNewSubscriber(controller);
     setGame(game);
     setGameStateHandler(controller);
@@ -164,9 +167,8 @@ export function useWithGame() {
     );
   }
 
-  function _deleteRoom() {
-    if (!player || !room) return;
-    dispatch(deleteRoom({ roomId: room._id }));
+  function _deleteRoom(id: string) {
+    dispatch(deleteRoom({ roomId: id }));
   }
 
   function _renameRoom(name: string) {

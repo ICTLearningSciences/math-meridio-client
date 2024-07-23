@@ -83,17 +83,90 @@ export abstract class GameScene extends Scene {
       ...SPRITE_HAIR,
       ...SPRITE_ACCESSORY,
     ]) {
-      if (a.variants) {
-        for (let i = 0; i < a.variants?.length || 0; i++) {
-          this.createSpriteAnim(
-            a.id,
-            `walk`,
-            Array.from(Array(8).keys()).map((n) => n + 8 * i),
-            i
-          );
-        }
-      } else {
-        this.createSpriteAnim(a.id, 'walk', Array.from(Array(8).keys()));
+      for (let i = 0; i < (a.variants?.length || 1); i++) {
+        this.createSpriteAnim({
+          name: a.id,
+          variant: i,
+          anim: 'walk',
+          numFrames: 8,
+          frameOffset: 0,
+          variants: a.variants?.length,
+          repeat: true,
+        });
+        this.createSpriteAnim({
+          name: a.id,
+          variant: i,
+          anim: 'walk_right',
+          numFrames: 8,
+          frameOffset: 2,
+          variants: a.variants?.length,
+          repeat: true,
+        });
+        this.createSpriteAnim({
+          name: a.id,
+          variant: i,
+          anim: 'walk_left',
+          numFrames: 8,
+          frameOffset: 3,
+          variants: a.variants?.length,
+          repeat: true,
+        });
+        this.createSpriteAnim({
+          name: a.id,
+          variant: i,
+          anim: 'jump',
+          numFrames: 5,
+          frameOffset: 4,
+          variants: a.variants?.length,
+        });
+        this.createSpriteAnim({
+          name: a.id,
+          variant: i,
+          anim: 'jump_right',
+          numFrames: 5,
+          frameOffset: 6,
+          variants: a.variants?.length,
+        });
+        this.createSpriteAnim({
+          name: a.id,
+          variant: i,
+          anim: 'jump_left',
+          numFrames: 5,
+          frameOffset: 7,
+          variants: a.variants?.length,
+        });
+        this.createSpriteAnim({
+          name: a.id,
+          variant: i,
+          anim: 'throw',
+          numFrames: 5,
+          frameOffset: 8,
+          variants: a.variants?.length,
+        });
+        this.createSpriteAnim({
+          name: a.id,
+          variant: i,
+          anim: 'throw_back',
+          numFrames: 5,
+          frameOffset: 9,
+          variants: a.variants?.length,
+        });
+        this.createSpriteAnim({
+          name: a.id,
+          variant: i,
+          anim: 'throw_right',
+          numFrames: 5,
+          frameOffset: 10,
+          variants: a.variants?.length,
+        });
+        this.createSpriteAnim({
+          name: a.id,
+          variant: i,
+          anim: 'throw_left',
+          numFrames: 5,
+          frameOffset: 11,
+          variants: a.variants?.length,
+        });
       }
     }
 
@@ -166,20 +239,28 @@ export abstract class GameScene extends Scene {
     });
   }
 
-  createSpriteAnim(
-    name: string,
-    anim: string,
-    frames: number[],
-    variant?: number
-  ): void {
+  createSpriteAnim(props: {
+    name: string;
+    anim: string;
+    numFrames: number;
+    variant: number;
+    variants?: number;
+    frameOffset?: number;
+    repeat?: boolean;
+  }): void {
+    const { name, anim, numFrames, variant } = props;
+    const frameOffset = props.frameOffset || 0;
+    const variants = props.variants || 1;
+    const frames = Array.from(Array(numFrames).keys()).map(
+      (n) => n + 8 * variant + 8 * frameOffset * variants
+    );
     this.anims.create({
-      key:
-        variant === undefined ? `${name}_${anim}` : `${name}${variant}_${anim}`,
+      key: `${name}_${variant}_${anim}`,
       frames: this.anims.generateFrameNumbers(name, {
         frames: frames,
       }),
-      frameRate: 20,
-      repeat: -1,
+      frameRate: 10,
+      repeat: props.repeat ? -1 : 0,
     });
   }
 
@@ -193,7 +274,7 @@ export abstract class GameScene extends Scene {
         bg: this.bg,
         heightRel: 0.2,
       })
-        .setName(a.variant !== undefined ? `${a.id}${a.variant}` : a.id)
+        .setName(`${a.id}_${a.variant || 0}`)
         .setX(props.x)
         .setY(props.y);
       sprites.push(sprite);
@@ -253,6 +334,16 @@ export abstract class GameScene extends Scene {
       .setName(mouth);
 
     return [mouthSprite, headSprite, eyeSprite, browSprite, noseSprite];
+  }
+
+  playSpriteAnim(sprite: Phaser.GameObjects.Sprite[], anim: string) {
+    sprite.forEach((s) => {
+      s.play(`${s.name}_${anim}`);
+    });
+  }
+
+  destroySprite(sprite: Phaser.GameObjects.Sprite[]) {
+    for (const s of sprite) s.destroy();
   }
 
   /** event functions */
