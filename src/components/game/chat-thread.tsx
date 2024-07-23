@@ -146,9 +146,11 @@ export default function ChatThread(props: {
         );
       })}
       {responsePending && (
-        <ListItem className={classes.chatItem}>
+        <ListItem      className={`${classes.chatItem} ${'other'} ${
+          SenderType.SYSTEM
+        }`}>
           <FadingText
-            strings={['Thinking 1...', 'Thinking 2...', 'Thinking 3...']}
+            strings={['Thinking...', 'Dribbling...', 'Analyzing...']}
           />
         </ListItem>
       )}
