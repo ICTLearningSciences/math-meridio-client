@@ -4,7 +4,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardActionArea, TextField, Typography } from '@mui/material';
 import { QuestionMark } from '@mui/icons-material';
 
@@ -14,26 +14,29 @@ import { makeStyles } from 'tss-react/mui';
 import EventSystem from '../event-system';
 import { BasketballSimulationData } from './SimulationScene';
 import { Player } from '../../store/slices/player';
+import { checkGameAndPlayerStateForValue } from '../../components/discussion-stage-builder/helpers';
 
 export const NUMBER_OF_SHOTS = 100;
-export const INSIDE_SHOT_POINTS = 'inside_shot_points';
+// export const INSIDE_SHOT_POINTS = 'inside_shot_points';
+// export const INSIDE_SHOT_SUCCESS = 'inside_shot_success';
 export const INSIDE_SHOT_PERCENT = 'inside_shot_percent';
-export const INSIDE_SHOT_SUCCESS = 'inside_shot_success';
 export const INSIDE_SHOT_POINTS_VALUE = 2;
-export const INSIDE_SHOT_SUCCESS_VALUE = 0.75;
+export const INSIDE_SHOT_SUCCESS_VALUE = 0.5;
 
-export const MID_SHOT_POINTS = 'mid_shot_points';
-export const MID_SHOT_PERCENT = 'mid_shot_percent';
-export const MID_SHOT_SUCCESS = 'mid_shot_success';
+// export const MID_SHOT_POINTS = 'mid_shot_points';
+// export const MID_SHOT_SUCCESS = 'mid_shot_success';
+export const MID_SHOT_PERCENT = 'middle_shot_percent';
 export const MID_SHOT_POINTS_VALUE = 2;
-export const MID_SHOT_SUCCESS_VALUE = 0.5;
+export const MID_SHOT_SUCCESS_VALUE = 0.4;
 
-export const OUTSIDE_SHOT_POINTS = 'outside_shot_points';
+// export const OUTSIDE_SHOT_POINTS = 'outside_shot_points';
+// export const OUTSIDE_SHOT_SUCCESS = 'outside_shot_success';
 export const OUTSIDE_SHOT_PERCENT = 'outside_shot_percent';
-export const OUTSIDE_SHOT_SUCCESS = 'outside_shot_success';
 export const OUTSIDE_SHOT_POINTS_VALUE = 3;
-export const OUTSIDE_SHOT_SUCCESS_VALUE = 0.25;
+export const OUTSIDE_SHOT_SUCCESS_VALUE = 0.36;
 
+export const UNDERSTANDS_SUCCESS_SHOTS = 'understands_success_shots';
+export const UNDERSTANDS_SHOT_POINTS = 'understands_shot_points';
 export const UNDERSTANDS_MULTIPLICATION = 'understands_multiplication';
 export const UNDERSTANDS_ADDITION = 'understands_addition';
 
@@ -54,12 +57,63 @@ export function SolutionComponent(props: {
     Record<string, any>
   >({});
   const [curSimulation, setCurSimulation] = React.useState<string>();
+  const curPlayerStateData = playerStateData.find(
+    (p) => p.player === controller.player.clientId
+  );
+
+  const [understandsPoints, setUnderstandsPoints] = React.useState(false);
+  const [understandsSuccess, setUnderstandsSuccess] = React.useState(false);
+  const [understandsMultiplication, setUnderstandsMultiplication] =
+    React.useState(false);
+  const [understandsAddition, setUnderstandsAddition] = React.useState(false);
 
   React.useEffect(() => {
     EventSystem.on('simulate', (data: BasketballSimulationData) =>
       setCurSimulation(data.player)
     );
   }, []);
+
+  React.useEffect(() => {
+    !understandsPoints &&
+      setUnderstandsPoints(
+        checkGameAndPlayerStateForValue(
+          controller.globalStateData.gameStateData,
+          curPlayerStateData?.gameStateData || [],
+          UNDERSTANDS_SHOT_POINTS,
+          'true'
+        )
+      );
+    !understandsSuccess &&
+      setUnderstandsSuccess(
+        checkGameAndPlayerStateForValue(
+          controller.globalStateData.gameStateData,
+          curPlayerStateData?.gameStateData || [],
+          UNDERSTANDS_SUCCESS_SHOTS,
+          'true'
+        )
+      );
+    !understandsMultiplication &&
+      setUnderstandsMultiplication(
+        checkGameAndPlayerStateForValue(
+          controller.globalStateData.gameStateData,
+          curPlayerStateData?.gameStateData || [],
+          UNDERSTANDS_MULTIPLICATION,
+          'true'
+        )
+      );
+    !understandsAddition &&
+      setUnderstandsAddition(
+        checkGameAndPlayerStateForValue(
+          controller.globalStateData.gameStateData,
+          curPlayerStateData?.gameStateData || [],
+          UNDERSTANDS_ADDITION,
+          'true'
+        )
+      );
+  }, [
+    controller.globalStateData.gameStateData,
+    curPlayerStateData?.gameStateData || [],
+  ]);
 
   React.useEffect(() => {
     setPlayers(controller.players);
@@ -108,19 +162,42 @@ export function SolutionComponent(props: {
     );
   }
 
-  function Variable(props: { dataKey: string; title: string }): JSX.Element {
+  function Variable(props: {
+    dataKey: string;
+    title: string;
+    isEnabled: (value: any) => boolean;
+    value?: string;
+  }): JSX.Element {
+    const { isEnabled } = props;
     const data =
       gameStateData[props.dataKey] ||
       playerStateData
         .find((p) => p.player === controller.player.clientId)
         ?.gameStateData.find((d) => d.key === props.dataKey);
+    const [revealed, setRevealed] = React.useState(
+      data && isEnabled(data.value)
+    );
+
+    useEffect(() => {
+      if (revealed) {
+        return;
+      }
+      if (data && isEnabled(data.value)) {
+        setRevealed(true);
+      }
+    }, [data, isEnabled]);
 
     return (
-      <div className={classes.grouping} style={{ display: data ? '' : 'none' }}>
+      <div
+        className={classes.grouping}
+        style={{ display: revealed ? '' : 'none' }}
+      >
         <Typography className={classes.text}>{props.title}</Typography>
         <Card className={classes.box} style={{ backgroundColor: '#888' }}>
-          {data?.value ? (
-            <Typography className={classes.boxText}>{data.value}</Typography>
+          {revealed ? (
+            <Typography className={classes.boxText}>
+              {props.value || data.value}
+            </Typography>
           ) : (
             <QuestionMark className={classes.boxText} />
           )}
@@ -178,17 +255,22 @@ export function SolutionComponent(props: {
     );
   }
 
-  function Connection(props: {
-    dataKey: string;
-    isEnabled: (data: any) => boolean;
-    displayValue?: string;
+  /**
+   * A component that will reveal the icon when reveal is true, and never hide it again.
+   */
+  function RevealingIcon(props: {
+    reveal: boolean;
+    icon: JSX.Element;
   }): JSX.Element {
-    const { isEnabled, displayValue } = props;
-    const data =
-      gameStateData[props.dataKey] ||
-      playerStateData
-        .find((p) => p.player === controller.player.clientId)
-        ?.gameStateData.find((d) => d.key === props.dataKey);
+    const { reveal, icon } = props;
+    const [revealed, setRevealed] = React.useState(reveal);
+
+    useEffect(() => {
+      if (reveal) {
+        setRevealed(true);
+      }
+    }, [reveal]);
+
     return (
       <Card
         className={classes.box}
@@ -197,14 +279,10 @@ export function SolutionComponent(props: {
           marginTop: 10,
           width: 1,
           height: 1,
-          display: data ? '' : 'none',
+          display: reveal ? '' : 'none',
         }}
       >
-        {data?.value && isEnabled(data?.value) ? (
-          <Typography>{displayValue || data.value}</Typography>
-        ) : (
-          <QuestionMark />
-        )}
+        {revealed ? <Typography>{icon}</Typography> : <QuestionMark />}
       </Card>
     );
   }
@@ -299,73 +377,86 @@ export function SolutionComponent(props: {
       <GivenVariable title="Number of shots" value={NUMBER_OF_SHOTS} />
       <div style={{ flexGrow: 1 }} />
       <div className="row center-div">
-        <Variable dataKey={INSIDE_SHOT_POINTS} title="Points per inside shot" />
-        <Connection
-          dataKey={UNDERSTANDS_MULTIPLICATION}
-          isEnabled={(value) => value === 'true'}
-          displayValue="*"
+        <Variable
+          dataKey={UNDERSTANDS_SHOT_POINTS}
+          isEnabled={() => understandsPoints}
+          title="Points per inside shot"
+          value={String(INSIDE_SHOT_POINTS_VALUE)}
+        />
+        <RevealingIcon
+          reveal={understandsMultiplication}
+          icon={<Typography> * </Typography>}
         />
         <EditableVariable
           dataKey={INSIDE_SHOT_PERCENT}
           title="# of inside shots"
         />
-        <Connection
-          dataKey={UNDERSTANDS_MULTIPLICATION}
-          isEnabled={(value) => value === 'true'}
-          displayValue="*"
+        <RevealingIcon
+          reveal={understandsMultiplication}
+          icon={<Typography> * </Typography>}
         />
         <Variable
-          dataKey={INSIDE_SHOT_SUCCESS}
+          dataKey={UNDERSTANDS_SUCCESS_SHOTS}
+          isEnabled={() => understandsSuccess}
           title="Success% of inside shots"
+          value={String(INSIDE_SHOT_SUCCESS_VALUE)}
         />
       </div>
-      <Connection
-        dataKey={UNDERSTANDS_ADDITION}
-        isEnabled={() => true}
-        displayValue="+"
+      <RevealingIcon
+        reveal={understandsAddition}
+        icon={<Typography> + </Typography>}
       />
       <div className="row center-div">
-        <Variable dataKey={MID_SHOT_POINTS} title="Points per mid shot" />
-        <Connection
-          dataKey={UNDERSTANDS_MULTIPLICATION}
-          isEnabled={(value) => value === 'true'}
-          displayValue="*"
+        <Variable
+          isEnabled={() => understandsPoints}
+          dataKey={UNDERSTANDS_SHOT_POINTS}
+          title="Points per mid shot"
+          value={String(MID_SHOT_POINTS_VALUE)}
+        />
+        <RevealingIcon
+          reveal={understandsMultiplication}
+          icon={<Typography> * </Typography>}
         />
         <EditableVariable dataKey={MID_SHOT_PERCENT} title="# of mid shots" />
-        <Connection
-          dataKey={UNDERSTANDS_MULTIPLICATION}
-          isEnabled={(value) => value === 'true'}
-          displayValue="*"
+        <RevealingIcon
+          reveal={understandsMultiplication}
+          icon={<Typography> * </Typography>}
         />
-        <Variable dataKey={MID_SHOT_SUCCESS} title="Success% of mid shots" />
+        <Variable
+          isEnabled={() => understandsSuccess}
+          dataKey={UNDERSTANDS_SUCCESS_SHOTS}
+          title="Success% of mid shots"
+          value={String(MID_SHOT_SUCCESS_VALUE)}
+        />
       </div>
-      <Connection
-        dataKey={UNDERSTANDS_ADDITION}
-        isEnabled={(value) => value === 'true'}
-        displayValue="+"
+      <RevealingIcon
+        reveal={understandsAddition}
+        icon={<Typography> + </Typography>}
       />
       <div className="row center-div">
         <Variable
-          dataKey={OUTSIDE_SHOT_POINTS}
+          dataKey={UNDERSTANDS_SHOT_POINTS}
+          isEnabled={() => understandsPoints}
           title="Points per outside shot"
+          value={String(OUTSIDE_SHOT_POINTS_VALUE)}
         />
-        <Connection
-          dataKey={UNDERSTANDS_MULTIPLICATION}
-          isEnabled={(value) => value === 'true'}
-          displayValue="*"
+        <RevealingIcon
+          reveal={understandsMultiplication}
+          icon={<Typography> * </Typography>}
         />
         <EditableVariable
           dataKey={OUTSIDE_SHOT_PERCENT}
           title="# of outside shots"
         />
-        <Connection
-          dataKey={UNDERSTANDS_MULTIPLICATION}
-          isEnabled={(value) => value === 'true'}
-          displayValue="*"
+        <RevealingIcon
+          reveal={understandsMultiplication}
+          icon={<Typography> * </Typography>}
         />
         <Variable
-          dataKey={OUTSIDE_SHOT_SUCCESS}
+          dataKey={UNDERSTANDS_SUCCESS_SHOTS}
+          isEnabled={() => understandsSuccess}
           title="Success% of outside shots"
+          value={String(OUTSIDE_SHOT_SUCCESS_VALUE)}
         />
       </div>
       <div style={{ flexGrow: 1 }} />

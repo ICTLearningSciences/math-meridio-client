@@ -150,7 +150,7 @@ export function useWithGame() {
     if (!poll.current) {
       poll.current = setInterval(() => {
         dispatch(fetchRoom({ roomId: room._id }));
-      }, 5000);
+      }, 1000);
     }
     addNewSubscriber(controller);
     setGame(game);
