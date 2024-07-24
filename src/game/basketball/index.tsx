@@ -137,10 +137,12 @@ export class BasketballStateHandler extends GameStateHandler {
       {
         id: 'key-concepts-convo',
         stage: keyConceptsConvoStage,
-        beforeStart: ()=>{
-          this.discussionStageHandler.exitEarlyCondition = (data: CollectedDiscussionData) => {
+        beforeStart: () => {
+          this.discussionStageHandler.exitEarlyCondition = (
+            data: CollectedDiscussionData
+          ) => {
             return data['understands_algorithm'] === 'true';
-          }
+          };
         },
         onStageFinished: (data) => {
           this.discussionStageHandler.exitEarlyCondition = undefined;
@@ -168,18 +170,18 @@ export class BasketballStateHandler extends GameStateHandler {
         },
       },
       {
-        id:"wait-for-simulation",
+        id: 'wait-for-simulation',
         stage: {
-          _id:"wait-for-simulation",
-          clientId: "wait-for-simulation",
-          stageType: "simulation"
+          _id: 'wait-for-simulation',
+          clientId: 'wait-for-simulation',
+          stageType: 'simulation',
         } as SimulationStage,
         onStageFinished: () => {
           this.currentStage = this.stageList.find(
             (s) => s.id === 'discuss-new-strategy'
           );
           this.handleCurrentStage();
-        }
+        },
       },
       {
         id: 'discuss-new-strategy',
@@ -207,17 +209,20 @@ export class BasketballStateHandler extends GameStateHandler {
       if (!stage) {
         throw new Error('missing stage');
       }
-      this.discussionStageHandler.setCurrentDiscussion(stage.stage as DiscussionStage);
-      this.discussionStageHandler.onDiscussionFinished =
-        stage.onStageFinished;
-      if(stage.beforeStart){
+      this.discussionStageHandler.setCurrentDiscussion(
+        stage.stage as DiscussionStage
+      );
+      this.discussionStageHandler.onDiscussionFinished = stage.onStageFinished;
+      if (stage.beforeStart) {
         stage.beforeStart();
       }
       this.discussionStageHandler.initializeActivity();
     } else if (this.currentStage.stage.stageType === 'simulation') {
       // wait for simulation to end
-    } else{
-      throw new Error(`unhandled stage type: ${this.currentStage.stage.stageType}`);
+    } else {
+      throw new Error(
+        `unhandled stage type: ${this.currentStage.stage.stageType}`
+      );
     }
   }
 
@@ -229,7 +234,7 @@ export class BasketballStateHandler extends GameStateHandler {
   }
 
   simulationEnded(): void {
-    if(this.currentStage?.stage.stageType === 'simulation'){
+    if (this.currentStage?.stage.stageType === 'simulation') {
       const stage = this.stageList.find(
         (s) => s.stage?.clientId === this.currentStage?.stage.clientId
       );
@@ -298,7 +303,7 @@ export class BasketballStateHandler extends GameStateHandler {
 const BasketballGame: Game = {
   id: 'basketball',
   name: 'NBA Analyst',
-  problem: `We need you and the analyst team to figure out why we're losing and what we need to change in our strategy to be winners! From what you're seeing right now, what do you think we're doing wrong?`,
+  problem: `We need you and the analyst team to figure out why we're losing and what we need to change in our strategy to be winners! From what you're seeing right now, what do you think we're doing wrong? Out of 100 shots, how many should be inside, outside, or mid lane? Inside and mid lane shots are worth 2 points, and outside shots are worth 3 points. Outside shots have a lower success rate, however.`,
   config: {
     type: Phaser.CANVAS,
     backgroundColor: '#282c34',

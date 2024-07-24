@@ -223,11 +223,11 @@ export class DiscussionStageHandler implements Subscriber {
       });
       return;
     }
-    if(this.exitEarlyCondition && this.exitEarlyCondition(this.stateData)) {
+    if (this.exitEarlyCondition && this.exitEarlyCondition(this.stateData)) {
       if (this.onDiscussionFinished) {
         this.onDiscussionFinished(this.stateData);
       }
-      return
+      return;
     }
     this.stepIdsSinceLastInput.push(step.stepId);
     // work through steps until we get to a user message step, then wait to be notified of a user message

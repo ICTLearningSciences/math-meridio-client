@@ -59,7 +59,6 @@ export function useWithGame() {
   const [gameStateHandler, setGameStateHandler] =
     React.useState<GameStateHandler>();
 
-
   React.useEffect(() => {
     if (!room || equals(lastChatLog, room.gameData.chat)) return;
     for (let i = 0; i < subscribers.length; i++) {
@@ -108,7 +107,7 @@ export function useWithGame() {
     }
   }, [room, loadStatus]);
 
-  React.useEffect(()=>{
+  React.useEffect(() => {
     EventSystem.on('simulate', () => {
       for (let i = 0; i < subscribers.length; i++) {
         const updateFunction = subscribers[i].simulationEnded.bind(
@@ -117,10 +116,9 @@ export function useWithGame() {
         updateFunction();
       }
     });
-  }, [subscribers.length])
+  }, [subscribers.length]);
 
   React.useEffect(() => {
-
     return () => {
       if (poll.current) {
         clearInterval(poll.current);

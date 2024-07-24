@@ -34,6 +34,7 @@ function ProblemSpace(props: {
       style={{
         overflowY: 'auto',
         height: 150,
+        minHeight: 200,
         margin: 10,
         borderTopRightRadius: 20,
         borderBottomLeftRadius: 20,
@@ -170,7 +171,7 @@ function GamePage(): JSX.Element {
           display: 'flex',
           flexDirection: 'column',
           height: '100%',
-          width: 400,
+          width: 600,
           padding: 10,
           marginTop: 10,
           marginBottom: 10,
