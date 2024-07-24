@@ -93,7 +93,7 @@ export function SolutionComponent(props: {
       <Card
         className={classes.box}
         style={{
-          // display: data ? '' : 'none',
+          display: value === undefined ? 'none' : '',
           backgroundColor: value === undefined ? '#205961' : '#e3a363',
         }}
       >
@@ -120,7 +120,7 @@ export function SolutionComponent(props: {
         style={{
           backgroundColor: '#fff8db',
           borderColor: 'red',
-          // display: data ? '' : 'none',
+          display: data ? '' : 'none',
         }}
       >
         <Typography className={classes.text} style={{ color: '#c96049' }}>
@@ -149,8 +149,8 @@ export function SolutionComponent(props: {
             data[props.dataKey] = value;
             if (
               (data[INSIDE_SHOT_PERCENT] || 0) +
-                (data[MID_SHOT_PERCENT] || 0) +
-                (data[OUTSIDE_SHOT_PERCENT] || 0) <=
+              (data[MID_SHOT_PERCENT] || 0) +
+              (data[OUTSIDE_SHOT_PERCENT] || 0) <=
               NUMBER_OF_SHOTS
             ) {
               controller.newPlayerStateData([
@@ -186,7 +186,7 @@ export function SolutionComponent(props: {
           minWidth: 50,
           minHeight: 50,
           borderRadius: 50,
-          // display: value ? '' : 'none',
+          display: value && isEnabled(value) ? '' : 'none',
         }}
       >
         <Typography
