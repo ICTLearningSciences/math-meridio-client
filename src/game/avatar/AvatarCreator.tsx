@@ -77,12 +77,16 @@ export class AvatarCreator extends GameScene {
   showAvatars(avatars: Avatars[]) {
     this.destroyAvatars();
 
-    let x = 50;
-    const y = this.bg!.displayHeight / 2;
+    let x = 100;
+    let y = this.bg!.displayHeight / 3;
     for (let i = 0; i < avatars.length; i++) {
       const a = avatars[i];
       const avatar = this.renderSpriteAvatar(a.avatar, { x, y });
       x += avatar[0].displayWidth + 50;
+      if (i === 5) {
+        x = 100;
+        y += avatar[0].displayHeight + 50;
+      }
 
       avatar[0].setInteractive();
       avatar[0].on('pointerover', function () {

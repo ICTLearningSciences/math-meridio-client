@@ -1,3 +1,15 @@
+@font-face {
+  font-family: "Caprasimo";   /*Can be any text*/
+  src: local("Caprasimo-Regular"),
+    url("./fonts/Caprasimo-Regular.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "SigmarOne";   /*Can be any text*/
+  src: local("SigmarOne-Regular"),
+    url("./fonts/SigmarOne-Regular.ttf") format("truetype");
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",

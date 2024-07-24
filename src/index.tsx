@@ -10,6 +10,8 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
+import './fonts/Caprasimo-Regular.ttf';
+import './fonts/SigmarOne-Regular.ttf';
 import './index.css';
 
 const root = ReactDOM.createRoot(

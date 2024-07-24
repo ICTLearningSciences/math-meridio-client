@@ -6,7 +6,6 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { makeStyles } from 'tss-react/mui';
 import {
   Button,
   Card,
@@ -121,11 +120,11 @@ function GamePage(): JSX.Element {
     if (!room) {
       navigate('/');
     }
-    return () => {
-      if (gameStateHandler && room) {
-        leaveRoom();
-      }
-    };
+    // return () => {
+    //   if (gameStateHandler && room) {
+    //     leaveRoom();
+    //   }
+    // };
   }, [Boolean(room)]);
 
   if (!room) {

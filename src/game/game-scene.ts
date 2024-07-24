@@ -171,36 +171,32 @@ export abstract class GameScene extends Scene {
     }
 
     this.bg = addBackground(this, 'background').setAlpha(0);
-    const chatWindow = this.add.rectangle(
-      10,
-      this.bg.displayHeight * 0.9 - 5,
-      1260,
-      this.bg.displayHeight * 0.1 - 5,
-      0x41eaea,
-      1
-    );
-    chatWindow.setOrigin(0, 0);
-    this.chatWindow = this.add.rectangle(
-      20,
-      this.bg.displayHeight * 0.9 + 5,
-      chatWindow.displayWidth - 20,
-      chatWindow.displayHeight - 20,
-      0x6bffff,
-      1
-    );
-    this.chatWindow.setOrigin(0, 0);
+    this.chatWindow = this.add
+      .rectangle(
+        10,
+        this.bg.displayHeight * 0.9 - 5,
+        1260,
+        this.bg.displayHeight * 0.1 - 5,
+        0x6bffff,
+        1
+      )
+      .setDepth(999)
+      .setOrigin(0, 0);
 
     this.systemMsgText = addText(this, '              ', {
       bg: this.bg,
       yAnchor: Anchor.start,
     })
+      .setDepth(1000)
       .setFontSize(48)
       .setWordWrapWidth(this.bg.displayWidth);
     this.chatMsgText = addText(this, '              ', {
       bg: this.bg,
       yAnchor: Anchor.end,
       xAnchor: Anchor.center,
-    }).setFontSize(36);
+    })
+      .setDepth(1000)
+      .setFontSize(36);
 
     EventSystem.on('startGame', this.startGame, this);
     EventSystem.on('resetGame', this.resetGame, this);
@@ -272,7 +268,7 @@ export abstract class GameScene extends Scene {
     avatar.forEach((a) => {
       const sprite = addSprite(this, a.id, (a.variant || 0) * 8, {
         bg: this.bg,
-        heightRel: 0.2,
+        heightRel: 0.3,
       })
         .setName(`${a.id}_${a.variant || 0}`)
         .setX(props.x)

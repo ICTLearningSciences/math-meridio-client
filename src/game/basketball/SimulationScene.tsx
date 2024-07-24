@@ -14,6 +14,7 @@ import {
   NUMBER_OF_SHOTS,
   OUTSIDE_SHOT_SUCCESS_VALUE,
 } from './solution';
+import { SenderType } from '../../store/slices/game';
 
 export interface BasketballSimulationData {
   player: string;
@@ -67,11 +68,19 @@ export class SimulationScene extends GameScene {
 
   createScene() {
     this.bg = addBackground(this, 'court');
+    this.chatWindow?.setY(this.bg.displayHeight / 2);
+    this.addChatMessage({
+      id: '',
+      sender: SenderType.SYSTEM,
+      message: 'Select a strategy first to see simulation',
+    });
     super.createScene();
   }
 
   simulate(simulation: BasketballSimulationData) {
     if (!this.gameStateHandler || !this.bg) return;
+    this.chatMsgText?.setAlpha(0);
+    this.chatWindow?.setAlpha(0);
     this.simulation = simulation;
     this.destroySprite(this.mySprite);
     this.mySprite = this.renderSpriteAvatar(
