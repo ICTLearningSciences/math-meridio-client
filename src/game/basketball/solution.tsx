@@ -6,11 +6,9 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React, { useEffect } from 'react';
 import { Card, TextField, Typography } from '@mui/material';
-import { QuestionMark } from '@mui/icons-material';
 import { GameStateHandler } from '../../classes/game-state-handler';
-import { GameStateData, PlayerStateData } from '../../store/slices/game';
+import { PlayerStateData } from '../../store/slices/game';
 import { makeStyles } from 'tss-react/mui';
-import EventSystem from '../event-system';
 import { Player } from '../../store/slices/player';
 import { checkGameAndPlayerStateForValue } from '../../components/discussion-stage-builder/helpers';
 
@@ -139,16 +137,13 @@ export function SolutionComponent(props: {
     title: string;
     isEnabled: (value: any) => boolean;
     value?: string;
+    forceShow?: boolean
   }): JSX.Element {
     const { isEnabled } = props;
     const data =
       gameStateData[props.dataKey] ||
-      playerStateData
-        .find((p) => p.player === controller.player.clientId)
-        ?.gameStateData.find((d) => d.key === props.dataKey);
-    const [revealed, setRevealed] = React.useState(
-      data && isEnabled(data.value)
-    );
+      myPlayerStateData[props.dataKey];
+    const [revealed, setRevealed] = React.useState(data && isEnabled(data));
     const value =
       props.value ||
       gameStateData[props.dataKey] ||
@@ -158,7 +153,7 @@ export function SolutionComponent(props: {
       if (revealed) {
         return;
       }
-      if (data && isEnabled(data.value)) {
+      if (props.forceShow || (data && isEnabled(data))) {
         setRevealed(true);
       }
     }, [data, isEnabled]);
@@ -167,57 +162,13 @@ export function SolutionComponent(props: {
       <Card
         className={classes.box}
         style={{
-          display: revealed ? '' : 'none',
+          display: props.forceShow || (data && isEnabled(data)) ? '' : 'none',
           backgroundColor: '#e3a363',
         }}
       >
-        {/* <Typography className={classes.text}>{props.title}</Typography>
-        <Card className={classes.box} style={{ backgroundColor: '#888' }}>
-          {revealed ? (
-            <Typography className={classes.boxText}>
-              {props.value || data.value}
-            </Typography>
-          ) : (
-            <QuestionMark className={classes.boxText} />
-          )}
-        </Card> */}
-
         <Typography className={classes.text}>{props.title}</Typography>
         <Typography className={classes.boxText} style={{ color: 'white' }}>
           {value}
-        </Typography>
-      </Card>
-    );
-  }
-
-  function Connection(props: {
-    dataKey: string;
-    isEnabled: (data: any) => boolean;
-    displayValue?: string;
-  }): JSX.Element {
-    const { isEnabled, displayValue } = props;
-    const value =
-      gameStateData[props.dataKey] || myPlayerStateData[props.dataKey];
-    return (
-      <Card
-        className={classes.box}
-        style={{
-          backgroundColor: value && isEnabled(value) ? '#E3A363' : '#205961',
-          borderColor: value && isEnabled(value) ? '#C96049' : '',
-          padding: 0,
-          width: 50,
-          height: 50,
-          minWidth: 50,
-          minHeight: 50,
-          borderRadius: 50,
-          display: value && isEnabled(value) ? '' : 'none',
-        }}
-      >
-        <Typography
-          className={classes.boxText}
-          style={{ color: value && isEnabled(value) ? '#C96049' : 'yellow' }}
-        >
-          {value && isEnabled(value) ? displayValue || value : '?'}
         </Typography>
       </Card>
     );
@@ -264,8 +215,8 @@ export function SolutionComponent(props: {
             data[props.dataKey] = value;
             if (
               (data[INSIDE_SHOT_PERCENT] || 0) +
-                (data[MID_SHOT_PERCENT] || 0) +
-                (data[OUTSIDE_SHOT_PERCENT] || 0) <=
+              (data[MID_SHOT_PERCENT] || 0) +
+              (data[OUTSIDE_SHOT_PERCENT] || 0) <=
               NUMBER_OF_SHOTS
             ) {
               controller.newPlayerStateData([
@@ -297,21 +248,6 @@ export function SolutionComponent(props: {
       }
     }, [reveal]);
 
-    // return (
-    //   <Card
-    //     className={classes.box}
-    //     style={{
-    //       backgroundColor: '#b8e1a9',
-    //       marginTop: 10,
-    //       width: 1,
-    //       height: 1,
-    //       display: reveal ? '' : 'none',
-    //     }}
-    //   >
-    //     {revealed ? <Typography>{icon}</Typography> : <QuestionMark />}
-    //   </Card>
-    // );
-
     return (
       <Card
         className={classes.box}
@@ -327,7 +263,7 @@ export function SolutionComponent(props: {
           display: revealed ? '' : 'none',
         }}
       >
-        <Typography className={classes.boxText} style={{ color: '#C96049' }}>
+        <Typography className={classes.boxText}>
           {icon}
         </Typography>
       </Card>
@@ -338,6 +274,7 @@ export function SolutionComponent(props: {
     <div
       className="column center-div"
       style={{
+        height: window.innerHeight - 400,
         backgroundImage: `url(${courtBg})`,
         backgroundSize: 'cover',
         backgroundRepeat: 'no-repeat',
@@ -348,6 +285,7 @@ export function SolutionComponent(props: {
         dataKey=""
         isEnabled={() => true}
         value={String(NUMBER_OF_SHOTS)}
+        forceShow={true}
       />
       <div className="row center-div">
         <Variable
@@ -358,17 +296,7 @@ export function SolutionComponent(props: {
         />
         <RevealingIcon
           reveal={understandsMultiplication}
-          icon={
-            <Typography
-              style={{
-                fontSize: '20',
-                fontWeight: 'bold',
-              }}
-            >
-              {' '}
-              *{' '}
-            </Typography>
-          }
+          icon={<Typography className={classes.boxText} style={{ color: "#C96049" }}> * </Typography>}
         />
         <EditableVariable
           dataKey={INSIDE_SHOT_PERCENT}
@@ -376,7 +304,7 @@ export function SolutionComponent(props: {
         />
         <RevealingIcon
           reveal={understandsMultiplication}
-          icon={<Typography> * </Typography>}
+          icon={<Typography className={classes.boxText} style={{ color: "#C96049" }}> * </Typography>}
         />
         <Variable
           dataKey={UNDERSTANDS_SUCCESS_SHOTS}
@@ -387,7 +315,7 @@ export function SolutionComponent(props: {
       </div>
       <RevealingIcon
         reveal={understandsAddition}
-        icon={<Typography> + </Typography>}
+        icon={<Typography className={classes.boxText} style={{ color: "#C96049" }}> + </Typography>}
       />
       <div className="row center-div">
         <Variable
@@ -398,12 +326,12 @@ export function SolutionComponent(props: {
         />
         <RevealingIcon
           reveal={understandsMultiplication}
-          icon={<Typography> * </Typography>}
+          icon={<Typography className={classes.boxText} style={{ color: "#C96049" }}> * </Typography>}
         />
         <EditableVariable dataKey={MID_SHOT_PERCENT} title="# of mid shots" />
         <RevealingIcon
           reveal={understandsMultiplication}
-          icon={<Typography> * </Typography>}
+          icon={<Typography className={classes.boxText} style={{ color: "#C96049" }}> * </Typography>}
         />
         <Variable
           isEnabled={() => understandsSuccess}
@@ -414,7 +342,7 @@ export function SolutionComponent(props: {
       </div>
       <RevealingIcon
         reveal={understandsAddition}
-        icon={<Typography> + </Typography>}
+        icon={<Typography className={classes.boxText} style={{ color: "#C96049" }}> + </Typography>}
       />
       <div className="row center-div">
         <Variable
@@ -425,7 +353,7 @@ export function SolutionComponent(props: {
         />
         <RevealingIcon
           reveal={understandsMultiplication}
-          icon={<Typography> * </Typography>}
+          icon={<Typography className={classes.boxText} style={{ color: "#C96049" }}> * </Typography>}
         />
         <EditableVariable
           dataKey={OUTSIDE_SHOT_PERCENT}
@@ -433,7 +361,7 @@ export function SolutionComponent(props: {
         />
         <RevealingIcon
           reveal={understandsMultiplication}
-          icon={<Typography> * </Typography>}
+          icon={<Typography className={classes.boxText} style={{ color: "#C96049" }}> * </Typography>}
         />
         <Variable
           dataKey={UNDERSTANDS_SUCCESS_SHOTS}
