@@ -5,14 +5,12 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import React, { useEffect } from 'react';
-import { Card, CardActionArea, TextField, Typography } from '@mui/material';
+import { Card, TextField, Typography } from '@mui/material';
 import { QuestionMark } from '@mui/icons-material';
-
 import { GameStateHandler } from '../../classes/game-state-handler';
 import { GameStateData, PlayerStateData } from '../../store/slices/game';
 import { makeStyles } from 'tss-react/mui';
 import EventSystem from '../event-system';
-import { BasketballSimulationData } from './SimulationScene';
 import { Player } from '../../store/slices/player';
 import { checkGameAndPlayerStateForValue } from '../../components/discussion-stage-builder/helpers';
 
@@ -40,12 +38,13 @@ export const UNDERSTANDS_SHOT_POINTS = 'understands_shot_points';
 export const UNDERSTANDS_MULTIPLICATION = 'understands_multiplication';
 export const UNDERSTANDS_ADDITION = 'understands_addition';
 
+import courtBg from './court.png';
+
 export function SolutionComponent(props: {
   controller: GameStateHandler;
 }): JSX.Element {
   const { controller } = props;
   const { classes } = useStyles();
-
   const [gameStateData, setGameStateData] = React.useState<Record<string, any>>(
     {}
   );
@@ -56,7 +55,6 @@ export function SolutionComponent(props: {
   const [myPlayerStateData, setMyPlayerStateData] = React.useState<
     Record<string, any>
   >({});
-  const [curSimulation, setCurSimulation] = React.useState<string>();
   const curPlayerStateData = playerStateData.find(
     (p) => p.player === controller.player.clientId
   );
@@ -66,12 +64,6 @@ export function SolutionComponent(props: {
   const [understandsMultiplication, setUnderstandsMultiplication] =
     React.useState(false);
   const [understandsAddition, setUnderstandsAddition] = React.useState(false);
-
-  React.useEffect(() => {
-    EventSystem.on('simulate', (data: BasketballSimulationData) =>
-      setCurSimulation(data.player)
-    );
-  }, []);
 
   React.useEffect(() => {
     !understandsPoints &&
@@ -142,26 +134,6 @@ export function SolutionComponent(props: {
     setMyPlayerStateData(data);
   }, [playerStateData, players]);
 
-  function GivenVariable(props: {
-    title: string;
-    value: number | string | boolean;
-  }): JSX.Element {
-    return (
-      <div className={classes.grouping}>
-        <Typography className={classes.text}>{props.title}</Typography>
-        <Card
-          elevation={20}
-          className={classes.box}
-          style={{ backgroundColor: '#ff00ff' }}
-        >
-          <Typography className={classes.boxText} style={{ color: 'black' }}>
-            {props.value}
-          </Typography>
-        </Card>
-      </div>
-    );
-  }
-
   function Variable(props: {
     dataKey: string;
     title: string;
@@ -177,6 +149,10 @@ export function SolutionComponent(props: {
     const [revealed, setRevealed] = React.useState(
       data && isEnabled(data.value)
     );
+    const value =
+      props.value ||
+      gameStateData[props.dataKey] ||
+      myPlayerStateData[props.dataKey];
 
     useEffect(() => {
       if (revealed) {
@@ -188,11 +164,14 @@ export function SolutionComponent(props: {
     }, [data, isEnabled]);
 
     return (
-      <div
-        className={classes.grouping}
-        style={{ display: revealed ? '' : 'none' }}
+      <Card
+        className={classes.box}
+        style={{
+          display: revealed ? '' : 'none',
+          backgroundColor: '#e3a363',
+        }}
       >
-        <Typography className={classes.text}>{props.title}</Typography>
+        {/* <Typography className={classes.text}>{props.title}</Typography>
         <Card className={classes.box} style={{ backgroundColor: '#888' }}>
           {revealed ? (
             <Typography className={classes.boxText}>
@@ -201,8 +180,46 @@ export function SolutionComponent(props: {
           ) : (
             <QuestionMark className={classes.boxText} />
           )}
-        </Card>
-      </div>
+        </Card> */}
+
+        <Typography className={classes.text}>{props.title}</Typography>
+        <Typography className={classes.boxText} style={{ color: 'white' }}>
+          {value}
+        </Typography>
+      </Card>
+    );
+  }
+
+  function Connection(props: {
+    dataKey: string;
+    isEnabled: (data: any) => boolean;
+    displayValue?: string;
+  }): JSX.Element {
+    const { isEnabled, displayValue } = props;
+    const value =
+      gameStateData[props.dataKey] || myPlayerStateData[props.dataKey];
+    return (
+      <Card
+        className={classes.box}
+        style={{
+          backgroundColor: value && isEnabled(value) ? '#E3A363' : '#205961',
+          borderColor: value && isEnabled(value) ? '#C96049' : '',
+          padding: 0,
+          width: 50,
+          height: 50,
+          minWidth: 50,
+          minHeight: 50,
+          borderRadius: 50,
+          display: value && isEnabled(value) ? '' : 'none',
+        }}
+      >
+        <Typography
+          className={classes.boxText}
+          style={{ color: value && isEnabled(value) ? '#C96049' : 'yellow' }}
+        >
+          {value && isEnabled(value) ? displayValue || value : '?'}
+        </Typography>
+      </Card>
     );
   }
 
@@ -213,45 +230,54 @@ export function SolutionComponent(props: {
     const data = myPlayerStateData[props.dataKey];
 
     return (
-      <div className={classes.grouping} style={{ display: data ? '' : 'none' }}>
-        <Typography fontSize={14}>{props.title}</Typography>
-        <Card
-          className={classes.box}
-          style={{
-            backgroundColor: '#03517c',
+      <Card
+        className={classes.box}
+        style={{
+          backgroundColor: '#fff8db',
+          borderColor: 'red',
+          display: data ? '' : 'none',
+        }}
+      >
+        <Typography className={classes.text} style={{ color: '#c96049' }}>
+          {props.title}
+        </Typography>
+        <TextField
+          value={data || 0}
+          variant="standard"
+          type="number"
+          sx={{
+            input: {
+              color: '#c96049',
+              fontSize: 40,
+              fontFamily: 'SigmarOne',
+              textAlign: 'center',
+              margin: 0,
+              padding: 0,
+            },
+            '& .MuiInput-underline:before': { borderBottomColor: '#c96049' },
+            '& .MuiInput-underline:after': { borderBottomColor: '#c96049' },
           }}
-        >
-          <TextField
-            value={data || 0}
-            variant="standard"
-            type="number"
-            sx={{
-              input: { color: 'white', textAlign: 'center' },
-              '& .MuiInput-underline:before': { borderBottomColor: 'white' },
-              '& .MuiInput-underline:after': { borderBottomColor: 'white' },
-            }}
-            InputProps={{ inputProps: { min: 0, max: 100 } }}
-            onChange={(e) => {
-              const value = parseInt(e.target.value);
-              const data = { ...myPlayerStateData };
-              data[props.dataKey] = value;
-              if (
-                (data[INSIDE_SHOT_PERCENT] || 0) +
-                  (data[MID_SHOT_PERCENT] || 0) +
-                  (data[OUTSIDE_SHOT_PERCENT] || 0) <=
-                NUMBER_OF_SHOTS
-              ) {
-                controller.newPlayerStateData([
-                  {
-                    key: props.dataKey,
-                    value: value,
-                  },
-                ]);
-              }
-            }}
-          />
-        </Card>
-      </div>
+          InputProps={{ inputProps: { min: 0, max: 100 } }}
+          onChange={(e) => {
+            const value = parseInt(e.target.value);
+            const data = { ...myPlayerStateData };
+            data[props.dataKey] = value;
+            if (
+              (data[INSIDE_SHOT_PERCENT] || 0) +
+                (data[MID_SHOT_PERCENT] || 0) +
+                (data[OUTSIDE_SHOT_PERCENT] || 0) <=
+              NUMBER_OF_SHOTS
+            ) {
+              controller.newPlayerStateData([
+                {
+                  key: props.dataKey,
+                  value: value,
+                },
+              ]);
+            }
+          }}
+        />
+      </Card>
     );
   }
 
@@ -271,111 +297,58 @@ export function SolutionComponent(props: {
       }
     }, [reveal]);
 
+    // return (
+    //   <Card
+    //     className={classes.box}
+    //     style={{
+    //       backgroundColor: '#b8e1a9',
+    //       marginTop: 10,
+    //       width: 1,
+    //       height: 1,
+    //       display: reveal ? '' : 'none',
+    //     }}
+    //   >
+    //     {revealed ? <Typography>{icon}</Typography> : <QuestionMark />}
+    //   </Card>
+    // );
+
     return (
       <Card
         className={classes.box}
         style={{
-          backgroundColor: '#b8e1a9',
-          marginTop: 10,
-          width: 1,
-          height: 1,
-          display: reveal ? '' : 'none',
+          backgroundColor: '#E3A363',
+          borderColor: '#C96049',
+          padding: 0,
+          width: 50,
+          height: 50,
+          minWidth: 50,
+          minHeight: 50,
+          borderRadius: 50,
+          display: revealed ? '' : 'none',
         }}
       >
-        {revealed ? <Typography>{icon}</Typography> : <QuestionMark />}
-      </Card>
-    );
-  }
-
-  function PlayerStrategy(props: { data: PlayerStateData }): JSX.Element {
-    const psd = props.data;
-    const player = players.find((p) => p.clientId === psd.player);
-    const insideShots = psd.gameStateData.find(
-      (d) => d.key === INSIDE_SHOT_PERCENT
-    );
-    const midShots = psd.gameStateData.find((d) => d.key === MID_SHOT_PERCENT);
-    const outsideShots = psd.gameStateData.find(
-      (d) => d.key === OUTSIDE_SHOT_PERCENT
-    );
-
-    const canSimulate = Boolean(
-      insideShots &&
-        midShots &&
-        outsideShots &&
-        parseInt(insideShots.value) +
-          parseInt(midShots.value) +
-          parseInt(outsideShots.value) ===
-          NUMBER_OF_SHOTS
-    );
-
-    function simulate(): void {
-      if (!outsideShots || !midShots || !insideShots) return;
-      const simData: BasketballSimulationData = {
-        player: psd.player,
-        outsideShots: outsideShots.value,
-        midShots: midShots.value,
-        insideShots: insideShots.value,
-        outsideShotsMade: Math.round(
-          outsideShots.value * OUTSIDE_SHOT_SUCCESS_VALUE
-        ),
-        insideShotsMade: Math.round(
-          insideShots.value * INSIDE_SHOT_SUCCESS_VALUE
-        ),
-        midShotsMade: Math.round(midShots.value * MID_SHOT_SUCCESS_VALUE),
-        totalPoints: 0,
-      };
-      simData.totalPoints =
-        simData.outsideShotsMade * OUTSIDE_SHOT_POINTS_VALUE +
-        simData.insideShotsMade * INSIDE_SHOT_POINTS_VALUE +
-        simData.midShotsMade * MID_SHOT_POINTS_VALUE;
-      EventSystem.emit('simulate', simData);
-    }
-
-    return (
-      <Card elevation={canSimulate ? 5 : 0}>
-        <CardActionArea
-          className={classes.box}
-          style={{
-            flexDirection: 'column',
-            backgroundColor:
-              psd.player === curSimulation ? '#6bffff' : '#cfd8dc',
-            width: 'auto',
-            margin: 0,
-          }}
-          disabled={!canSimulate}
-          onClick={simulate}
-        >
-          <Typography className={classes.text} style={{ fontWeight: 'bold' }}>
-            {player?.clientId === controller.player.clientId && '(MINE) '}
-            {player?.name}&apos;s strategy:
-          </Typography>
-          <Typography
-            className={classes.text}
-            style={{ display: insideShots ? '' : 'none' }}
-          >
-            # of inside shots: {insideShots?.value || 0}
-          </Typography>
-          <Typography
-            className={classes.text}
-            style={{ display: midShots ? '' : 'none' }}
-          >
-            # of mid shots: {midShots?.value || 0}
-          </Typography>
-          <Typography
-            className={classes.text}
-            style={{ display: outsideShots ? '' : 'none' }}
-          >
-            # of mid shots: {outsideShots?.value || 0}
-          </Typography>
-        </CardActionArea>
+        <Typography className={classes.boxText} style={{ color: '#C96049' }}>
+          {icon}
+        </Typography>
       </Card>
     );
   }
 
   return (
-    <div className="column center-div" style={{ height: '95%' }}>
-      <GivenVariable title="Number of shots" value={NUMBER_OF_SHOTS} />
-      <div style={{ flexGrow: 1 }} />
+    <div
+      className="column center-div"
+      style={{
+        backgroundImage: `url(${courtBg})`,
+        backgroundSize: 'cover',
+        backgroundRepeat: 'no-repeat',
+      }}
+    >
+      <Variable
+        title="# of shots"
+        dataKey=""
+        isEnabled={() => true}
+        value={String(NUMBER_OF_SHOTS)}
+      />
       <div className="row center-div">
         <Variable
           dataKey={UNDERSTANDS_SHOT_POINTS}
@@ -385,7 +358,17 @@ export function SolutionComponent(props: {
         />
         <RevealingIcon
           reveal={understandsMultiplication}
-          icon={<Typography> * </Typography>}
+          icon={
+            <Typography
+              style={{
+                fontSize: '20',
+                fontWeight: 'bold',
+              }}
+            >
+              {' '}
+              *{' '}
+            </Typography>
+          }
         />
         <EditableVariable
           dataKey={INSIDE_SHOT_PERCENT}
@@ -446,7 +429,7 @@ export function SolutionComponent(props: {
         />
         <EditableVariable
           dataKey={OUTSIDE_SHOT_PERCENT}
-          title="# of outside shots"
+          title="# of 3 pointers"
         />
         <RevealingIcon
           reveal={understandsMultiplication}
@@ -458,15 +441,6 @@ export function SolutionComponent(props: {
           title="Success% of outside shots"
           value={String(OUTSIDE_SHOT_SUCCESS_VALUE)}
         />
-      </div>
-      <div style={{ flexGrow: 1 }} />
-      <div
-        className="row center-div"
-        style={{ width: '100%', justifyContent: 'space-evenly' }}
-      >
-        {playerStateData.map((psd) => (
-          <PlayerStrategy key={psd.player} data={psd} />
-        ))}
       </div>
     </div>
   );
@@ -482,21 +456,28 @@ const useStyles = makeStyles()(() => ({
   },
   box: {
     display: 'flex',
+    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 20,
+    padding: 10,
     borderRadius: 10,
     marginRight: 5,
+    marginBottom: 10,
     height: 'auto',
-    width: 100,
-    borderStyle: 'solid',
-    borderColor: 'black',
-    borderWidth: 1,
+    width: 'auto',
+    minWidth: 100,
+    border: '1px solid lightgrey',
+    boxShadow: '-5px 5px 10px 0px rgba(0,0,0,0.75)',
   },
   text: {
+    color: 'white',
     fontSize: 14,
+    fontWeight: 600,
+    textAlign: 'center',
   },
   boxText: {
     color: 'white',
+    fontSize: 40,
+    fontFamily: 'SigmarOne',
   },
 }));

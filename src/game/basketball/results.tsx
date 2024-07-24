@@ -7,7 +7,6 @@ The full terms of this copyright and license should always be found in the root 
 import React from 'react';
 import { BarChart } from '@mui/x-charts/BarChart';
 import { GameStateHandler } from '../../classes/game-state-handler';
-import { OverlayBox } from '../../components/overlay-box';
 import { BasketballSimulationData } from './SimulationScene';
 import EventSystem from '../event-system';
 import {
@@ -23,6 +22,7 @@ export function ResultComponent(props: {
   const [simulationData, setSimulationData] = React.useState<
     Record<string, BasketballSimulationData>
   >({});
+  const [results, setResults] = React.useState<any[]>([]);
 
   React.useEffect(() => {
     EventSystem.on('simulationEnded', simulationEnded);
@@ -31,91 +31,105 @@ export function ResultComponent(props: {
   function simulationEnded(data: BasketballSimulationData): void {
     simulationData[data.player] = data;
     setSimulationData({ ...simulationData });
+    setResults([
+      {
+        data: controller.players.map(
+          (p) => simulationData[p.clientId]?.outsideShotsMade || 0
+        ),
+        stack: 'A',
+        label: 'Outside shots succeeded',
+        color: '#2e95ff',
+      },
+      {
+        data: controller.players.map(
+          (p) =>
+            (simulationData[p.clientId]?.outsideShots || 0) -
+            (simulationData[p.clientId]?.outsideShotsMade || 0)
+        ),
+        stack: 'A',
+        label: 'Outside shots failed',
+        color: '#1c5999',
+      },
+      {
+        data: controller.players.map(
+          (p) => simulationData[p.clientId]?.midShotsMade || 0
+        ),
+        stack: 'B',
+        label: 'Mid shots succeeded',
+        color: '#b800d8',
+      },
+      {
+        data: controller.players.map(
+          (p) =>
+            (simulationData[p.clientId]?.midShots || 0) -
+            (simulationData[p.clientId]?.midShotsMade || 0)
+        ),
+        stack: 'B',
+        label: 'Mid shots failed',
+        color: '#60039b',
+      },
+      {
+        data: controller.players.map(
+          (p) => simulationData[p.clientId]?.insideShotsMade || 0
+        ),
+        stack: 'C',
+        label: 'Inside shots succeeded',
+        color: '#02b2af',
+      },
+      {
+        data: controller.players.map(
+          (p) =>
+            (simulationData[p.clientId]?.insideShots || 0) -
+            (simulationData[p.clientId]?.insideShotsMade || 0)
+        ),
+        stack: 'C',
+        label: 'Inside shots failed',
+        color: '#015958',
+      },
+      {
+        data: controller.players.map(
+          (p) =>
+            (simulationData[p.clientId]?.outsideShotsMade || 0) *
+            OUTSIDE_SHOT_POINTS_VALUE
+        ),
+        stack: 'D',
+        label: 'Outside points',
+        color: '#2e95ff',
+      },
+      {
+        data: controller.players.map(
+          (p) =>
+            (simulationData[p.clientId]?.midShotsMade || 0) *
+            MID_SHOT_POINTS_VALUE
+        ),
+        stack: 'D',
+        label: 'Mid points',
+        color: '#b800d8',
+      },
+      {
+        data: controller.players.map(
+          (p) =>
+            (simulationData[p.clientId]?.insideShotsMade || 0) *
+            INSIDE_SHOT_POINTS_VALUE
+        ),
+        stack: 'D',
+        label: 'Inside points',
+        color: '#02b2af',
+      },
+    ]);
   }
 
   return (
     <div>
-      {Object.keys(simulationData).length === 0 ? (
-        <OverlayBox message="Complete simulation first to see results" />
-      ) : (
-        <BarChart
-          xAxis={[
-            { scaleType: 'band', data: controller.players.map((p) => p.name) },
-          ]}
-          series={[
-            {
-              data: controller.players.map(
-                (p) => simulationData[p.clientId]?.outsideShotsMade || 0
-              ),
-              stack: 'A',
-              label: 'Outside shots succeeded',
-              color: '#2e95ff',
-            },
-            {
-              data: controller.players.map(
-                (p) =>
-                  (simulationData[p.clientId]?.outsideShots || 0) -
-                  (simulationData[p.clientId]?.outsideShotsMade || 0)
-              ),
-              stack: 'A',
-              label: 'Outside shots failed',
-              color: '#1c5999',
-            },
-            {
-              data: controller.players.map(
-                (p) => simulationData[p.clientId]?.midShotsMade || 0
-              ),
-              stack: 'B',
-              label: 'Mid shots succeeded',
-              color: '#b800d8',
-            },
-            {
-              data: controller.players.map(
-                (p) =>
-                  (simulationData[p.clientId]?.midShots || 0) -
-                  (simulationData[p.clientId]?.midShotsMade || 0)
-              ),
-              stack: 'B',
-              label: 'Mid shots failed',
-              color: '#60039b',
-            },
-            {
-              data: controller.players.map(
-                (p) => simulationData[p.clientId]?.insideShotsMade || 0
-              ),
-              stack: 'C',
-              label: 'Inside shots succeeded',
-              color: '#02b2af',
-            },
-            {
-              data: controller.players.map(
-                (p) =>
-                  (simulationData[p.clientId]?.insideShots || 0) -
-                  (simulationData[p.clientId]?.insideShotsMade || 0)
-              ),
-              stack: 'C',
-              label: 'Inside shots failed',
-              color: '#015958',
-            },
-            {
-              data: controller.players.map(
-                (p) =>
-                  (simulationData[p.clientId]?.outsideShotsMade || 0) *
-                    OUTSIDE_SHOT_POINTS_VALUE +
-                  (simulationData[p.clientId]?.midShotsMade || 0) *
-                    MID_SHOT_POINTS_VALUE +
-                  (simulationData[p.clientId]?.insideShotsMade || 0) *
-                    INSIDE_SHOT_POINTS_VALUE
-              ),
-              stack: 'D',
-              label: 'Total points',
-              color: 'orange',
-            },
-          ]}
-          width={window.innerWidth / 2 - 200}
-          height={500}
-        />
-      )}
+      <BarChart
+        xAxis={[
+          { scaleType: 'band', data: controller.players.map((p) => p.name) },
+        ]}
+        series={results}
+        slotProps={{ legend: { hidden: true } }}
+        width={window.innerWidth / 2 - 350}
+        height={window.innerHeight / 2 - 150}
+      />
     </div>
   );
 }
