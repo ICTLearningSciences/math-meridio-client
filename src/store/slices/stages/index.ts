@@ -26,8 +26,11 @@ const initialState: Stages = {
 
 export const addOrUpdateDiscussionStage = createAsyncThunk(
   'stages/addOrUpdateDiscussionStage',
-  async (stage: DiscussionStage): Promise<DiscussionStage> => {
-    const res = await _addOrUpdateDiscussionStage(stage);
+  async (args: {
+    stage: DiscussionStage;
+    password: string;
+  }): Promise<DiscussionStage> => {
+    const res = await _addOrUpdateDiscussionStage(args.stage, args.password);
     return res;
   }
 );

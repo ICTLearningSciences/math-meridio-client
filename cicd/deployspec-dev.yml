@@ -8,6 +8,7 @@ env:
   parameter-store:
     S3_DEPLOY_BUCKET_DEV: "/mathm/dev/s3-websites/NAME"
     CDN_ID_DEV: "/mathm/dev/CLOUDFRONT_DISTRIBUTION_ID"
+    REACT_APP_GQL_SECRET: "/mathmeridio/dev/gql_secret"
 
 phases:
   install:

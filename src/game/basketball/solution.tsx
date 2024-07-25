@@ -137,12 +137,11 @@ export function SolutionComponent(props: {
     title: string;
     isEnabled: (value: any) => boolean;
     value?: string;
-    forceShow?: boolean
+    forceShow?: boolean;
   }): JSX.Element {
     const { isEnabled } = props;
     const data =
-      gameStateData[props.dataKey] ||
-      myPlayerStateData[props.dataKey];
+      gameStateData[props.dataKey] || myPlayerStateData[props.dataKey];
     const [revealed, setRevealed] = React.useState(data && isEnabled(data));
     const value =
       props.value ||
@@ -215,8 +214,8 @@ export function SolutionComponent(props: {
             data[props.dataKey] = value;
             if (
               (data[INSIDE_SHOT_PERCENT] || 0) +
-              (data[MID_SHOT_PERCENT] || 0) +
-              (data[OUTSIDE_SHOT_PERCENT] || 0) <=
+                (data[MID_SHOT_PERCENT] || 0) +
+                (data[OUTSIDE_SHOT_PERCENT] || 0) <=
               NUMBER_OF_SHOTS
             ) {
               controller.newPlayerStateData([
@@ -263,9 +262,7 @@ export function SolutionComponent(props: {
           display: revealed ? '' : 'none',
         }}
       >
-        <Typography className={classes.boxText}>
-          {icon}
-        </Typography>
+        <Typography className={classes.boxText}>{icon}</Typography>
       </Card>
     );
   }
@@ -296,7 +293,15 @@ export function SolutionComponent(props: {
         />
         <RevealingIcon
           reveal={understandsMultiplication}
-          icon={<Typography className={classes.boxText} style={{ color: "#C96049" }}> * </Typography>}
+          icon={
+            <Typography
+              className={classes.boxText}
+              style={{ color: '#C96049' }}
+            >
+              {' '}
+              *{' '}
+            </Typography>
+          }
         />
         <EditableVariable
           dataKey={INSIDE_SHOT_PERCENT}
@@ -304,7 +309,15 @@ export function SolutionComponent(props: {
         />
         <RevealingIcon
           reveal={understandsMultiplication}
-          icon={<Typography className={classes.boxText} style={{ color: "#C96049" }}> * </Typography>}
+          icon={
+            <Typography
+              className={classes.boxText}
+              style={{ color: '#C96049' }}
+            >
+              {' '}
+              *{' '}
+            </Typography>
+          }
         />
         <Variable
           dataKey={UNDERSTANDS_SUCCESS_SHOTS}
@@ -315,7 +328,12 @@ export function SolutionComponent(props: {
       </div>
       <RevealingIcon
         reveal={understandsAddition}
-        icon={<Typography className={classes.boxText} style={{ color: "#C96049" }}> + </Typography>}
+        icon={
+          <Typography className={classes.boxText} style={{ color: '#C96049' }}>
+            {' '}
+            +{' '}
+          </Typography>
+        }
       />
       <div className="row center-div">
         <Variable
@@ -326,12 +344,28 @@ export function SolutionComponent(props: {
         />
         <RevealingIcon
           reveal={understandsMultiplication}
-          icon={<Typography className={classes.boxText} style={{ color: "#C96049" }}> * </Typography>}
+          icon={
+            <Typography
+              className={classes.boxText}
+              style={{ color: '#C96049' }}
+            >
+              {' '}
+              *{' '}
+            </Typography>
+          }
         />
         <EditableVariable dataKey={MID_SHOT_PERCENT} title="# of mid shots" />
         <RevealingIcon
           reveal={understandsMultiplication}
-          icon={<Typography className={classes.boxText} style={{ color: "#C96049" }}> * </Typography>}
+          icon={
+            <Typography
+              className={classes.boxText}
+              style={{ color: '#C96049' }}
+            >
+              {' '}
+              *{' '}
+            </Typography>
+          }
         />
         <Variable
           isEnabled={() => understandsSuccess}
@@ -342,7 +376,12 @@ export function SolutionComponent(props: {
       </div>
       <RevealingIcon
         reveal={understandsAddition}
-        icon={<Typography className={classes.boxText} style={{ color: "#C96049" }}> + </Typography>}
+        icon={
+          <Typography className={classes.boxText} style={{ color: '#C96049' }}>
+            {' '}
+            +{' '}
+          </Typography>
+        }
       />
       <div className="row center-div">
         <Variable
@@ -353,7 +392,15 @@ export function SolutionComponent(props: {
         />
         <RevealingIcon
           reveal={understandsMultiplication}
-          icon={<Typography className={classes.boxText} style={{ color: "#C96049" }}> * </Typography>}
+          icon={
+            <Typography
+              className={classes.boxText}
+              style={{ color: '#C96049' }}
+            >
+              {' '}
+              *{' '}
+            </Typography>
+          }
         />
         <EditableVariable
           dataKey={OUTSIDE_SHOT_PERCENT}
@@ -361,7 +408,15 @@ export function SolutionComponent(props: {
         />
         <RevealingIcon
           reveal={understandsMultiplication}
-          icon={<Typography className={classes.boxText} style={{ color: "#C96049" }}> * </Typography>}
+          icon={
+            <Typography
+              className={classes.boxText}
+              style={{ color: '#C96049' }}
+            >
+              {' '}
+              *{' '}
+            </Typography>
+          }
         />
         <Variable
           dataKey={UNDERSTANDS_SUCCESS_SHOTS}
