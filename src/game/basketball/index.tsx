@@ -34,6 +34,9 @@ const keyConceptsConvoDiscussionStage = '5421ef02-3cca-4281-a832-69ce040ed848';
 const selectStrategyDiscussionStage = '3095c6cd-d377-4660-aa4d-e79409592210';
 const discussNewStrategyDiscussionStage =
   '9265f1ef-2a2e-4a14-b98f-5bbf6fd879d8';
+const discussBestStrategyDiscussionStage =
+  'e11d3273-e0e8-4b15-a5f0-3b80e5665e01';
+const finishedDiscussionStage = 'bdf123b5-1fd1-4de9-bc4e-74a53623475a';
 
 export interface CurrentStage {
   id: string;
@@ -85,13 +88,22 @@ export class BasketballStateHandler extends GameStateHandler {
     const discussNewStrategyStage = this.stages.find(
       (s) => s.clientId === discussNewStrategyDiscussionStage
     );
+    const discussBestStrategyStage = this.stages.find(
+      (s) => s.clientId === discussBestStrategyDiscussionStage
+    );
+    const finishedStage = this.stages.find(
+      (s) => s.clientId === finishedDiscussionStage
+    );
+
     if (
       !introDiscussionStage ||
       !collectVariablesStage ||
       !explainConceptsStage ||
       !keyConceptsConvoStage ||
       !selectStrategyStage ||
-      !discussNewStrategyStage
+      !discussNewStrategyStage ||
+      !discussBestStrategyStage ||
+      !finishedStage
     ) {
       throw new Error('missing stage');
     }
@@ -186,11 +198,38 @@ export class BasketballStateHandler extends GameStateHandler {
       {
         id: 'discuss-new-strategy',
         stage: discussNewStrategyStage,
+        onStageFinished: (data) => {
+          if (data['best_strategy_found'] === 'false') {
+            this.currentStage = this.stageList.find(
+              (s) => s.id === 'discuss-best-strategy'
+            );
+            this.handleCurrentStage();
+          } else {
+            this.currentStage = this.stageList.find((s) => s.id === 'finished');
+            this.handleCurrentStage();
+          }
+        },
+      },
+      {
+        id: 'discuss-best-strategy',
+        stage: discussBestStrategyStage,
+        onStageFinished: (data) => {
+          if (data['best_strategy_found'] === 'false') {
+            this.currentStage = this.stageList.find(
+              (s) => s.id === 'discuss-best-strategy'
+            );
+            this.handleCurrentStage();
+          } else {
+            this.currentStage = this.stageList.find((s) => s.id === 'finished');
+            this.handleCurrentStage();
+          }
+        },
+      },
+      {
+        id: 'finished',
+        stage: finishedStage,
         onStageFinished: () => {
-          this.currentStage = this.stageList.find(
-            (s) => s.id === 'discuss-new-strategy'
-          );
-          this.handleCurrentStage();
+          // nothing
         },
       },
     ];
