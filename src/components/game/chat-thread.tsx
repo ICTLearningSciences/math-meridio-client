@@ -9,6 +9,7 @@ import { makeStyles } from 'tss-react/mui';
 import { useAppSelector } from '../../store/hooks';
 import { ListItem, Typography } from '@mui/material';
 import { SenderType } from '../../store/slices/game';
+import { FadingText } from '../fading-text';
 
 const useStyles = makeStyles()(() => ({
   chatThread: {
@@ -71,15 +72,29 @@ const useStyles = makeStyles()(() => ({
   },
 }));
 
-export default function ChatThread(): JSX.Element {
+export default function ChatThread(props: {
+  responsePending: boolean;
+}): JSX.Element {
+  const { responsePending } = props;
   const { classes } = useStyles();
   const { player } = useAppSelector((state) => state.playerData);
   const messages = useAppSelector(
     (state) => state.gameData.room?.gameData.chat || []
   );
 
+  React.useEffect(() => {
+    const objDiv = document.getElementById('chat-thread');
+    if (objDiv) {
+      objDiv.scroll({
+        top: objDiv.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+  }, [messages.length]);
+
   return (
     <div
+      id="chat-thread"
       className={classes.chatThread}
       style={{ maxHeight: window.innerHeight - 80 }}
     >
@@ -94,6 +109,7 @@ export default function ChatThread(): JSX.Element {
             msgStyles.borderTopLeftRadius = 5;
           }
         }
+
         const myMessage =
           msg.sender === SenderType.PLAYER && msg.senderId === player?.clientId;
         return (
@@ -129,6 +145,15 @@ export default function ChatThread(): JSX.Element {
           </ListItem>
         );
       })}
+      {responsePending && (
+        <ListItem
+          className={`${classes.chatItem} ${'other'} ${SenderType.SYSTEM}`}
+        >
+          <FadingText
+            strings={['Thinking...', 'Dribbling...', 'Analyzing...']}
+          />
+        </ListItem>
+      )}
     </div>
   );
 }

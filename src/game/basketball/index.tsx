@@ -6,26 +6,247 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React from 'react';
 import {
+  CollectedDiscussionData,
   GameStateHandler,
   GameStateHandlerArgs,
 } from '../../classes/game-state-handler';
 import { Game } from '../types';
-import { SolutionSpace } from './SolutionSpace';
 import { SimulationScene } from './SimulationScene';
+
+import { GameStateData } from '../../store/slices/game';
+import {
+  DiscussionStage,
+  isDiscussionStage,
+  IStage,
+  SimulationStage,
+} from '../../components/discussion-stage-builder/types';
+import { DiscussionStageHandler } from '../../classes/discussion-stage-handler';
 
 import { ProblemComponent } from './problem';
 import { SolutionComponent } from './solution';
 import { SimulationComponent } from './simulation';
 import { ResultComponent } from './results';
 
+const introductionDiscussionStage = 'de0b94b9-1fc2-4ea1-995e-21a75670c16d';
+const collectVariablesDiscussionStage = '86587083-9279-4c27-8470-836f992670fc';
+const explainConceptsDiscussionStage = '909a0d5a-345d-4f6e-8d9c-2e7f6cfa4714';
+const keyConceptsConvoDiscussionStage = '5421ef02-3cca-4281-a832-69ce040ed848';
+const selectStrategyDiscussionStage = '3095c6cd-d377-4660-aa4d-e79409592210';
+const discussNewStrategyDiscussionStage =
+  '9265f1ef-2a2e-4a14-b98f-5bbf6fd879d8';
+
+export interface CurrentStage {
+  id: string;
+  stage: IStage;
+  action?: () => void;
+  beforeStart?: () => void;
+  onStageFinished: (collectedData: CollectedDiscussionData) => void;
+}
+
 export class BasketballStateHandler extends GameStateHandler {
-  // todo
+  currentStage: CurrentStage | undefined;
+  currentStageId: string | undefined;
+  currentStepId: string | undefined;
+  discussionStageHandler: DiscussionStageHandler;
+
+  stageList: CurrentStage[] = [];
+
   constructor(args: GameStateHandlerArgs) {
     super({ ...args, defaultStageId: 'de0b94b9-1fc2-4ea1-995e-21a75670c16d' });
+
+    this.discussionStageHandler = new DiscussionStageHandler(
+      args.sendMessage,
+      args.setResponsePending,
+      args.executePrompt,
+      undefined,
+      undefined,
+      this.newPlayerStateData.bind(this)
+    );
+
+    this.initializeGame = this.initializeGame.bind(this);
+    this.handleCurrentStage = this.handleCurrentStage.bind(this);
+    this.simulationEnded = this.simulationEnded.bind(this);
+
+    const introDiscussionStage = this.stages.find(
+      (s) => s.clientId === introductionDiscussionStage
+    );
+    const collectVariablesStage = this.stages.find(
+      (s) => s.clientId === collectVariablesDiscussionStage
+    );
+    const explainConceptsStage = this.stages.find(
+      (s) => s.clientId === explainConceptsDiscussionStage
+    );
+    const keyConceptsConvoStage = this.stages.find(
+      (s) => s.clientId === keyConceptsConvoDiscussionStage
+    );
+    const selectStrategyStage = this.stages.find(
+      (s) => s.clientId === selectStrategyDiscussionStage
+    );
+    const discussNewStrategyStage = this.stages.find(
+      (s) => s.clientId === discussNewStrategyDiscussionStage
+    );
+    if (
+      !introDiscussionStage ||
+      !collectVariablesStage ||
+      !explainConceptsStage ||
+      !keyConceptsConvoStage ||
+      !selectStrategyStage ||
+      !discussNewStrategyStage
+    ) {
+      throw new Error('missing stage');
+    }
+
+    const stageList: CurrentStage[] = [
+      {
+        id: 'intro-discussion',
+        stage: introDiscussionStage,
+        onStageFinished: () => {
+          this.currentStage = this.stageList.find(
+            (s) => s.id === 'collect-variables'
+          );
+          this.handleCurrentStage();
+        },
+      },
+      {
+        id: 'collect-variables',
+        stage: collectVariablesStage,
+        onStageFinished: () => {
+          this.currentStage = this.stageList.find(
+            (s) => s.id === 'explain-concepts'
+          );
+          this.handleCurrentStage();
+        },
+      },
+      {
+        id: 'explain-concepts',
+        stage: explainConceptsStage,
+        onStageFinished: (data) => {
+          if (data['understands_algorithm'] !== 'true') {
+            this.currentStage = this.stageList.find(
+              (s) => s.id === 'key-concepts-convo'
+            );
+            this.handleCurrentStage();
+          } else {
+            this.currentStage = this.stageList.find(
+              (s) => s.id === 'select-strategy'
+            );
+            this.handleCurrentStage();
+          }
+        },
+      },
+      {
+        id: 'key-concepts-convo',
+        stage: keyConceptsConvoStage,
+        beforeStart: () => {
+          this.discussionStageHandler.exitEarlyCondition = (
+            data: CollectedDiscussionData
+          ) => {
+            return data['understands_algorithm'] === 'true';
+          };
+        },
+        onStageFinished: (data) => {
+          this.discussionStageHandler.exitEarlyCondition = undefined;
+          if (data['understands_algorithm'] !== 'true') {
+            this.currentStage = this.stageList.find(
+              (s) => s.id === 'key-concepts-convo'
+            );
+            this.handleCurrentStage();
+          } else {
+            this.currentStage = this.stageList.find(
+              (s) => s.id === 'select-strategy'
+            );
+            this.handleCurrentStage();
+          }
+        },
+      },
+      {
+        id: 'select-strategy',
+        stage: selectStrategyStage,
+        onStageFinished: () => {
+          this.currentStage = this.stageList.find(
+            (s) => s.id === 'wait-for-simulation'
+          );
+          this.handleCurrentStage();
+        },
+      },
+      {
+        id: 'wait-for-simulation',
+        stage: {
+          _id: 'wait-for-simulation',
+          clientId: 'wait-for-simulation',
+          stageType: 'simulation',
+        } as SimulationStage,
+        onStageFinished: () => {
+          this.currentStage = this.stageList.find(
+            (s) => s.id === 'discuss-new-strategy'
+          );
+          this.handleCurrentStage();
+        },
+      },
+      {
+        id: 'discuss-new-strategy',
+        stage: discussNewStrategyStage,
+        onStageFinished: () => {
+          this.currentStage = this.stageList.find(
+            (s) => s.id === 'discuss-new-strategy'
+          );
+          this.handleCurrentStage();
+        },
+      },
+    ];
+    this.stageList = stageList;
+    this.currentStage = this.stageList[0];
+  }
+
+  handleCurrentStage() {
+    if (!this.currentStage) {
+      return;
+    }
+    if (isDiscussionStage(this.currentStage.stage)) {
+      const stage = this.stageList.find(
+        (s) => s.stage?.clientId === this.currentStage?.stage.clientId
+      );
+      if (!stage) {
+        throw new Error('missing stage');
+      }
+      this.discussionStageHandler.setCurrentDiscussion(
+        stage.stage as DiscussionStage
+      );
+      this.discussionStageHandler.onDiscussionFinished = stage.onStageFinished;
+      if (stage.beforeStart) {
+        stage.beforeStart();
+      }
+      this.discussionStageHandler.initializeActivity();
+    } else if (this.currentStage.stage.stageType === 'simulation') {
+      // wait for simulation to end
+    } else {
+      throw new Error(
+        `unhandled stage type: ${this.currentStage.stage.stageType}`
+      );
+    }
+  }
+
+  initializeGame() {
+    if (!this.currentStage) {
+      return;
+    }
+    this.handleCurrentStage();
+  }
+
+  simulationEnded(): void {
+    if (this.currentStage?.stage.stageType === 'simulation') {
+      const stage = this.stageList.find(
+        (s) => s.stage?.clientId === this.currentStage?.stage.clientId
+      );
+      if (!stage) {
+        throw new Error('missing stage');
+      }
+      stage.onStageFinished({});
+    }
   }
 
   async handleNewUserMessage(message: string) {
-    super.handleNewUserMessage(message);
+    // super.handleNewUserMessage(message);
     // todo (not hard-coded)
     const msg = message.toLowerCase();
     if (msg.includes('outside shot')) {
@@ -82,7 +303,7 @@ export class BasketballStateHandler extends GameStateHandler {
 const BasketballGame: Game = {
   id: 'basketball',
   name: 'NBA Analyst',
-  problem: `We need you and the analyst team to figure out why we're losing and what we need to change in our strategy to be winners! From what you're seeing right now, what do you think we're doing wrong?`,
+  problem: `We need you and the analyst team to figure out why we're losing and what we need to change in our strategy to be winners! From what you're seeing right now, what do you think we're doing wrong? Out of 100 shots, how many should be inside, outside, or mid lane? Inside and mid lane shots are worth 2 points, and outside shots are worth 3 points. Outside shots have a lower success rate, however.`,
   config: {
     type: Phaser.CANVAS,
     backgroundColor: '#282c34',

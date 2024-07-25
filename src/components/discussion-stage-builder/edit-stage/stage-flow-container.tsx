@@ -7,7 +7,6 @@ The full terms of this copyright and license should always be found in the root 
 import React, { useState } from 'react';
 import { Box, Tab, Tabs } from '@mui/material';
 import { FlowStepsBuilderTab } from './flow-steps-builder-tab';
-import { getPromptStepById } from '../helpers';
 import { ColumnDiv } from '../../../styled-components';
 import { PromptStepBuilder } from './step-builder/prompt-step-builder';
 import {
@@ -15,6 +14,7 @@ import {
   DiscussionStageStep,
   PromptStageStep,
 } from '../types';
+import { getStepFromFlowList } from '../helpers';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -57,7 +57,7 @@ export function StageFlowContainer(props: {
     setValue(newValue);
   };
   const [previewPromptId, setPreviewPromptId] = React.useState<string>('');
-  const previewPrompt: PromptStageStep | undefined = getPromptStepById(
+  const previewPrompt: PromptStageStep | undefined = getStepFromFlowList(
     previewPromptId,
     flowsList
   ) as PromptStageStep;

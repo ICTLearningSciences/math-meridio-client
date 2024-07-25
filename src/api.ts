@@ -192,14 +192,15 @@ export function convertGqlToDiscussionStage(
 }
 
 export async function addOrUpdateDiscussionStage(
-  stage: DiscussionStage
+  stage: DiscussionStage,
+  password: string
 ): Promise<DiscussionStage> {
   const res = await execGql<DiscussionStage>(
     {
       query: `mutation AddOrUpdateDiscussionStage($stage: DiscussionStageInputType!) {
         addOrUpdateDiscussionStage(stage: $stage) {
-            ${fullDiscussionStageQueryData}
-            }
+          ${fullDiscussionStageQueryData}
+        }
        }`,
       variables: {
         stage: convertDiscussionStageToGQl(stage),
@@ -207,6 +208,7 @@ export async function addOrUpdateDiscussionStage(
     },
     {
       dataPath: 'addOrUpdateDiscussionStage',
+      accessToken: password,
     }
   );
   return convertGqlToDiscussionStage(res);
@@ -217,9 +219,9 @@ export async function fetchDiscussionStages(): Promise<DiscussionStage[]> {
     {
       query: `query FetchDiscussionStages{
         fetchDiscussionStages { 
-            ${fullDiscussionStageQueryData}
+          ${fullDiscussionStageQueryData}
         }
-}`,
+      }`,
     },
     {
       dataPath: 'fetchDiscussionStages',

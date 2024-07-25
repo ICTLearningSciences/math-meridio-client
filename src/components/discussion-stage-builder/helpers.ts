@@ -4,6 +4,8 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
+import { CollectedDiscussionData } from '../../classes/discussion-stage-handler';
+import { GameStateData, PlayerStateData } from '../../store/slices/game';
 import {
   DiscussionStage,
   FlowItem,
@@ -165,7 +167,7 @@ export function sortMessagesByResponseWeight(
   return sortedMessages;
 }
 
-export function getPromptStepById(stepId: string, flowsList: FlowItem[]) {
+export function getStepFromFlowList(stepId: string, flowsList: FlowItem[]) {
   for (const flow of flowsList) {
     const step = flow.steps.find((s) => s.stepId === stepId);
     if (step) {
@@ -197,4 +199,30 @@ export function recursiveUpdateAdditionalInfo(
     }
   }
   return copy;
+}
+
+export function convertCollectedDataToGSData(
+  data: CollectedDiscussionData
+): GameStateData[] {
+  return Object.entries(data).map(([key, value]) => {
+    return {
+      key,
+      value,
+    };
+  });
+}
+
+export function checkGameAndPlayerStateForValue(
+  globalGameStateData: GameStateData[],
+  playerGameStateData: GameStateData[],
+  key: string,
+  value: any
+) {
+  const gameDataValue = globalGameStateData.find(
+    (data) => data.key === key
+  )?.value;
+  const playerDataValue = playerGameStateData.find(
+    (data) => data.key === key
+  )?.value;
+  return playerDataValue === value || gameDataValue === value;
 }

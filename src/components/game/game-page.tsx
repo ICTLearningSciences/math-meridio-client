@@ -6,8 +6,13 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { makeStyles } from 'tss-react/mui';
-import { Card, CircularProgress, Grid, Typography } from '@mui/material';
+import {
+  Button,
+  Card,
+  CircularProgress,
+  Grid,
+  Typography,
+} from '@mui/material';
 
 import ChatThread from './chat-thread';
 import ChatForm from './chat-form';
@@ -16,6 +21,7 @@ import { useAppSelector } from '../../store/hooks';
 import { useWithGame } from '../../store/slices/game/use-with-game-state';
 import { GameStateHandler } from '../../classes/game-state-handler';
 import withAuthorizationOnly from '../../wrap-with-authorization-only';
+import { v4 as uuid } from 'uuid';
 
 function ProblemSpace(props: {
   game: Game;
@@ -27,6 +33,7 @@ function ProblemSpace(props: {
       style={{
         overflowY: 'auto',
         height: 150,
+        minHeight: 200,
         margin: 10,
         borderTopRightRadius: 20,
         borderBottomLeftRadius: 20,
@@ -68,6 +75,7 @@ function SimulationSpace(props: {
     <Card
       className="scroll box"
       style={{
+        overflowY: 'auto',
         flexGrow: 1,
         margin: 10,
         borderTopLeftRadius: 20,
@@ -88,6 +96,7 @@ function ResultsSpace(props: {
     <Card
       className="scroll box"
       style={{
+        overflowY: 'auto',
         flexGrow: 1,
         margin: 10,
         borderTopLeftRadius: 20,
@@ -102,26 +111,36 @@ function ResultsSpace(props: {
 
 function GamePage(): JSX.Element {
   const { room, simulation } = useAppSelector((state) => state.gameData);
-  const { game, gameStateHandler, launchGame, leaveRoom } = useWithGame();
+  const { game, gameStateHandler, launchGame, leaveRoom, responsePending } =
+    useWithGame();
+  const [stableUuid] = React.useState(uuid());
   const navigate = useNavigate();
 
   React.useEffect(() => {
     if (!room) {
       navigate('/');
-    } else if (!gameStateHandler) {
-      launchGame();
     }
-    return () => {
-      if (gameStateHandler && room) {
-        leaveRoom();
-      }
-    };
-  }, [room?._id]);
+    // return () => {
+    //   if (gameStateHandler && room) {
+    //     leaveRoom();
+    //   }
+    // };
+  }, [Boolean(room)]);
 
-  if (!room || !gameStateHandler || !game) {
+  if (!room) {
     return (
       <div className="root center-div">
         <CircularProgress />
+      </div>
+    );
+  }
+
+  if (!gameStateHandler || !game) {
+    return (
+      <div className="root center-div">
+        <Button onClick={launchGame} disabled={Boolean(gameStateHandler)}>
+          Begin
+        </Button>
       </div>
     );
   }
@@ -151,14 +170,14 @@ function GamePage(): JSX.Element {
           display: 'flex',
           flexDirection: 'column',
           height: '100%',
-          width: 400,
+          width: 600,
           padding: 10,
           marginTop: 10,
           marginBottom: 10,
           boxSizing: 'border-box',
         }}
       >
-        <ChatThread />
+        <ChatThread responsePending={responsePending} />
         <ChatForm />
       </div>
     </div>

@@ -29,15 +29,9 @@ export function Header() {
       style={{ justifyContent: 'space-between' }}
     >
       <div style={{ marginLeft: 20, width: 150 }}>
-        {pathname === '/discussion-builder' ? (
-          <IconButton onClick={() => navigate('/')}>
-            <Home style={{ color: 'white' }} />
-          </IconButton>
-        ) : (
-          <IconButton onClick={() => navigate('/discussion-builder')}>
-            <Create style={{ color: 'white' }} />
-          </IconButton>
-        )}
+        <IconButton onClick={() => navigate('/')}>
+          <Home style={{ color: 'white' }} />
+        </IconButton>
       </div>
       <div className="row center-div">
         {isEditing ? (

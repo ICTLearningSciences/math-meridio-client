@@ -14,7 +14,7 @@ export function ProblemComponent(props: {
   controller: GameStateHandler;
 }): JSX.Element {
   return (
-    <div>
+    <div className="row">
       <Typography>{BasketballGame.problem}</Typography>
       <img style={{ width: '100%', height: 200 }} src={shotChart}></img>
     </div>

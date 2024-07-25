@@ -15,7 +15,7 @@ export function OverlayBox(props: {
     <div
       className="column center-div"
       style={{
-        position: 'relative',
+        position: 'absolute',
         top: 0,
         left: '50%',
         transform: 'translate(-50%, 50%)',

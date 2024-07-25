@@ -7,8 +7,9 @@ The full terms of this copyright and license should always be found in the root 
 import React from 'react';
 import { SelectCreateStage } from './select-create-stage';
 import { EditDiscussionStage } from './edit-stage/edit-stage';
-import { defaultDicussionStage, DiscussionStage } from './types';
+import { DiscussionStage } from './types';
 import { useWithStages } from '../../store/slices/stages/use-with-stages';
+import { Button, TextField } from '@mui/material';
 
 export function StageBuilderPage(props: {
   goToStage: (stage: DiscussionStage) => void;
@@ -23,10 +24,32 @@ export function StageBuilderPage(props: {
 
   const [selectedStageClientId, setSelectedStageClientId] =
     React.useState<string>('');
+  const [password, setPassword] = React.useState<string>('');
+  const [authorized, setAuthorized] = React.useState<boolean>(false);
+
   const selectedStage = existingStages.find(
     (stage) => stage.clientId === selectedStageClientId
   );
 
+  if (!authorized) {
+    return (
+      <>
+        <TextField
+          label="Password"
+          variant="filled"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <Button
+          disabled={password !== process.env.REACT_APP_GQL_SECRET}
+          onClick={() => setAuthorized(true)}
+        >
+          Login
+        </Button>
+      </>
+    );
+  }
   if (!selectedStage) {
     return (
       <SelectCreateStage
@@ -50,7 +73,7 @@ export function StageBuilderPage(props: {
         goToStage={goToStage}
         stage={selectedStage}
         saveStage={async (stage) => {
-          return await addOrUpdateDiscussionStage(stage);
+          return await addOrUpdateDiscussionStage(stage, password);
         }}
       />
     );

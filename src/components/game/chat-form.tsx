@@ -90,6 +90,7 @@ export default function ChatForm(props: {
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => onKeyPress(e)}
           style={{ backgroundColor: 'white' }}
+          multiline
           endAdornment={
             <InputAdornment position="end">
               <IconButton

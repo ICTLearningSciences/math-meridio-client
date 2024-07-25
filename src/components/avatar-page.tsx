@@ -148,7 +148,7 @@ function AvatarPage(): JSX.Element {
         id="game-container"
         ref={gameContainerRef}
         style={{
-          height: window.innerHeight - 100,
+          height: window.innerHeight - 150,
           width: window.innerWidth,
         }}
       />

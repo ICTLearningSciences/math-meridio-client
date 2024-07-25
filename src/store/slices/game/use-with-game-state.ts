@@ -29,9 +29,12 @@ import { CancelToken } from 'axios';
 import { syncLlmRequest } from '../../../hooks/use-with-synchronous-polling';
 import { useWithStages } from '../stages/use-with-stages';
 import { Player } from '../player';
+import { equals } from '../../../helpers';
+import EventSystem from '../../../game/event-system';
 
 export abstract class Subscriber {
   abstract newChatLogReceived(chatLog: ChatMessage[]): void;
+  abstract simulationEnded(): void;
   abstract globalStateUpdated(newState: GlobalStateData): void;
   abstract playerStateUpdated(newState: PlayerStateData[]): void;
   abstract playersUpdated(newState: Player[]): void;
@@ -41,6 +44,7 @@ export function useWithGame() {
   const dispatch = useAppDispatch();
   const { player } = useAppSelector((state) => state.playerData);
   const { room, loadStatus } = useAppSelector((state) => state.gameData);
+  const [responsePending, setResponsePending] = React.useState<boolean>(false);
   const { loadDiscussionStages } = useWithStages();
   const poll = React.useRef<any>(null);
 
@@ -51,11 +55,12 @@ export function useWithGame() {
     React.useState<GlobalStateData>();
   const [lastPlayerState, setLastPlayerState] =
     React.useState<PlayerStateData[]>();
+  const [lastPlayers, setLastPlayers] = React.useState<Player[]>();
   const [gameStateHandler, setGameStateHandler] =
     React.useState<GameStateHandler>();
 
   React.useEffect(() => {
-    if (!room) return;
+    if (!room || equals(lastChatLog, room.gameData.chat)) return;
     for (let i = 0; i < subscribers.length; i++) {
       const updateFunction = subscribers[i].newChatLogReceived.bind(
         subscribers[i]
@@ -66,7 +71,7 @@ export function useWithGame() {
   }, [room?.gameData.chat]);
 
   React.useEffect(() => {
-    if (!room) return;
+    if (!room || equals(lastGlobalState, room.gameData.globalStateData)) return;
     for (let i = 0; i < subscribers.length; i++) {
       const updateFunction = subscribers[i].globalStateUpdated.bind(
         subscribers[i]
@@ -77,7 +82,7 @@ export function useWithGame() {
   }, [room?.gameData.globalStateData]);
 
   React.useEffect(() => {
-    if (!room) return;
+    if (!room || equals(lastPlayerState, room.gameData.playerStateData)) return;
     for (let i = 0; i < subscribers.length; i++) {
       const updateFunction = subscribers[i].playerStateUpdated.bind(
         subscribers[i]
@@ -88,11 +93,12 @@ export function useWithGame() {
   }, [room?.gameData.playerStateData]);
 
   React.useEffect(() => {
-    if (!room) return;
+    if (!room || equals(lastPlayers, room.gameData.players)) return;
     for (let i = 0; i < subscribers.length; i++) {
       const updateFunction = subscribers[i].playersUpdated.bind(subscribers[i]);
       updateFunction(room.gameData.players);
     }
+    setLastPlayers(room.gameData.players);
   }, [room?.gameData.players]);
 
   React.useEffect(() => {
@@ -100,6 +106,17 @@ export function useWithGame() {
       clearInterval(poll.current);
     }
   }, [room, loadStatus]);
+
+  React.useEffect(() => {
+    EventSystem.on('simulate', () => {
+      for (let i = 0; i < subscribers.length; i++) {
+        const updateFunction = subscribers[i].simulationEnded.bind(
+          subscribers[i]
+        );
+        updateFunction();
+      }
+    });
+  }, [subscribers.length]);
 
   React.useEffect(() => {
     return () => {
@@ -122,9 +139,7 @@ export function useWithGame() {
       player: player,
       sendMessage: _sendMessage,
       updateRoomGameData: _updateRoomGameData,
-      setResponsePending: (pending: boolean) => {
-        // todo
-      },
+      setResponsePending: setResponsePending,
       executePrompt: (
         llmRequest: GenericLlmRequest,
         cancelToken?: CancelToken
@@ -140,6 +155,7 @@ export function useWithGame() {
     addNewSubscriber(controller);
     setGame(game);
     setGameStateHandler(controller);
+    controller.initializeGame();
   }
 
   function addNewSubscriber(subscriber: Subscriber) {
@@ -211,5 +227,6 @@ export function useWithGame() {
     renameRoom: _renameRoom,
     sendMessage: _sendMessage,
     updateRoomGameData: _updateRoomGameData,
+    responsePending,
   };
 }
