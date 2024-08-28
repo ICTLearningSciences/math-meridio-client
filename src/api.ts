@@ -405,8 +405,8 @@ export async function leaveRoom(
   return data;
 }
 
-export async function deleteRoom(roomId: string): Promise<boolean> {
-  const data = await execGql<boolean>(
+export async function deleteRoom(roomId: string): Promise<Room> {
+  const data = await execGql<Room>(
     {
       query: `
         mutation DeleteRoom($roomId: ID!) {

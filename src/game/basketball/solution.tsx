@@ -299,7 +299,7 @@ export function SolutionComponent(props: {
               style={{ color: '#C96049' }}
             >
               {' '}
-              *{' '}
+              x{' '}
             </Typography>
           }
         />
@@ -315,7 +315,7 @@ export function SolutionComponent(props: {
               style={{ color: '#C96049' }}
             >
               {' '}
-              *{' '}
+              x{' '}
             </Typography>
           }
         />
@@ -350,7 +350,7 @@ export function SolutionComponent(props: {
               style={{ color: '#C96049' }}
             >
               {' '}
-              *{' '}
+              x{' '}
             </Typography>
           }
         />
@@ -363,7 +363,7 @@ export function SolutionComponent(props: {
               style={{ color: '#C96049' }}
             >
               {' '}
-              *{' '}
+              x{' '}
             </Typography>
           }
         />
@@ -398,7 +398,7 @@ export function SolutionComponent(props: {
               style={{ color: '#C96049' }}
             >
               {' '}
-              *{' '}
+              x{' '}
             </Typography>
           }
         />
@@ -414,7 +414,7 @@ export function SolutionComponent(props: {
               style={{ color: '#C96049' }}
             >
               {' '}
-              *{' '}
+              x{' '}
             </Typography>
           }
         />

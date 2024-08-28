@@ -117,7 +117,7 @@ export const leaveRoom = createAsyncThunk(
 
 export const deleteRoom = createAsyncThunk(
   'gameData/deleteRoom',
-  async (args: { roomId: string }): Promise<boolean> => {
+  async (args: { roomId: string }): Promise<Room> => {
     return api.deleteRoom(args.roomId);
   }
 );

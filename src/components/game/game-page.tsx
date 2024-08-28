@@ -11,6 +11,7 @@ import {
   Card,
   CircularProgress,
   Grid,
+  Stack,
   Typography,
 } from '@mui/material';
 
@@ -165,21 +166,21 @@ function GamePage(): JSX.Element {
           </div>
         </Grid>
       </Grid>
-      <div
+      <Stack spacing={2}
         style={{
           display: 'flex',
           flexDirection: 'column',
           height: '100%',
           width: 600,
           padding: 10,
-          marginTop: 10,
-          marginBottom: 10,
+          // marginTop: 10,
+          // marginBottom: 10,
           boxSizing: 'border-box',
         }}
       >
         <ChatThread responsePending={responsePending} />
         <ChatForm />
-      </div>
+      </Stack>
     </div>
   );
 }

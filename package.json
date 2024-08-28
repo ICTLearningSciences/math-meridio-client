@@ -35,6 +35,7 @@
   },
   "scripts": {
     "start": "PORT=80 react-scripts start",
+    "start-windows": "set PORT=82  && react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "test:unit": "npx jest --config=./src/unit-tests/jest.config.js",
