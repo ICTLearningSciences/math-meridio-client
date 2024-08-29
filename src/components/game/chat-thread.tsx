@@ -22,7 +22,6 @@ const useStyles = makeStyles()(() => ({
     //backgroundColor: myBGColor,
     // borderTopRightRadius: 20,
     // borderBottomLeftRadius: 20,
-    spacing:3
     spacing: 3,
   },
   chatItem: {
