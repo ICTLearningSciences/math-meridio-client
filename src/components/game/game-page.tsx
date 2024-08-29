@@ -174,8 +174,6 @@ function GamePage(): JSX.Element {
           height: '100%',
           width: 600,
           padding: 10,
-          // marginTop: 10,
-          // marginBottom: 10,
           boxSizing: 'border-box',
         }}
       >

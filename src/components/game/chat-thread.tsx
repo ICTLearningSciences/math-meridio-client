@@ -4,14 +4,20 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
 import { makeStyles } from 'tss-react/mui';
 import { useAppSelector } from '../../store/hooks';
-import { Avatar, Box, Paper, Stack, styled, Typography } from '@mui/material';
+import {
+  Avatar,
+  AvatarProps,
+  Box,
+  Paper,
+  Stack,
+  styled,
+  Typography,
+} from '@mui/material';
 import { SenderType } from '../../store/slices/game';
 import { FadingText } from '../fading-text';
-
-const myBGColor = 'white';
+import React from 'react';
 
 const useStyles = makeStyles()(() => ({
   chatThread: {
@@ -19,9 +25,6 @@ const useStyles = makeStyles()(() => ({
     flexDirection: 'column',
     flexGrow: 1,
     overflowY: 'auto',
-    //backgroundColor: myBGColor,
-    // borderTopRightRadius: 20,
-    // borderBottomLeftRadius: 20,
     spacing: 3,
   },
   chatItem: {
@@ -30,7 +33,6 @@ const useStyles = makeStyles()(() => ({
     borderRadius: 30,
     alignItems: 'center',
     fontFamily: 'Helvetica, Arial, sans-serif',
-    // maxWidth: '80%',
     textAlign: 'left',
     '&.mine': {
       alignSelf: 'flex-end',
@@ -89,7 +91,6 @@ export default function ChatThread(props: {
     (state) => state.gameData.room?.gameData.players
   );
 
-  player?.avatar;
   enum PlayerColors {
     Blue = 'info.main',
     Green = 'success.main',
@@ -110,15 +111,9 @@ export default function ChatThread(props: {
   //setting only 3 colors as we have 4 players max. Blue is reserved for Self and Grey is for System.
 
   const GetUnusedColor = (): string => {
-    console.log('Used Colors', usedColors);
-
     let retColor = PlayerColors.Red.toString();
-    // eslint-disable-next-line prefer-const
-    for (let myKey of usedColors.keys()) {
-      console.log(`Checking if key color ${myKey} is unused`);
+    for (const myKey of usedColors.keys()) {
       if (usedColors.get(myKey) == false) {
-        console.log(`Found key color ${myKey} is unused and set to used`);
-
         usedColors.set(myKey, true);
         retColor = myKey;
         break;
@@ -145,8 +140,9 @@ export default function ChatThread(props: {
   const BorderedAvatar = styled(Avatar)`
     border: 3px solid lightseagreen;
   `;
-  const stringAvatar = (name: string, id: string) => {
-    if (name == undefined || name == '')
+
+  const stringAvatar = (name: string, id: string): AvatarProps => {
+    if (!name) {
       return {
         alt: 'System',
 
@@ -155,7 +151,7 @@ export default function ChatThread(props: {
         },
         children: 'S',
       };
-
+    }
     if (name.split(' ').length > 1) {
       return {
         alt: name,
@@ -200,7 +196,6 @@ export default function ChatThread(props: {
         maxHeight: window.innerHeight - 100,
       }}
     >
-      {}
       <Stack direction="column">
         {messages.map((msg, idx) => {
           const myMessage =
@@ -212,14 +207,12 @@ export default function ChatThread(props: {
           } else {
             currMessageOwner = msg.senderId ?? '';
           }
-          console.log(`Prev ${prevMessageOwner} Curr ${currMessageOwner}`);
           if (prevMessageOwner == currMessageOwner) {
             skipAvatar = true;
           } else {
             skipAvatar = false;
             prevMessageOwner = currMessageOwner;
           }
-          console.log(skipAvatar ? 'Skipping' : 'Not Skipping');
           const bubbleColor =
             msg.sender === SenderType.PLAYER
               ? playerColorMap.get(msg.senderId ?? '')
@@ -242,7 +235,7 @@ export default function ChatThread(props: {
                   width={46}
                   sx={{
                     flexGrow: 0,
-                    flexShrink: 0, //"polygon(100% 0%, 50% 0%, 100% 20%)": "polygon(0% 0%, 50% 0%, 0% 20%)" //"path(M23 0 L46 10 l46 0 Z)"
+                    flexShrink: 0,
                   }}
                 ></Box>
               )}
@@ -302,14 +295,6 @@ export default function ChatThread(props: {
               </Typography>
             </Paper>
           </Stack>
-
-          // <ListItem
-          //   className={`${classes.chatItem} ${'other'} ${SenderType.SYSTEM}`}
-          // >
-          //   <FadingText
-          //     strings={['Thinking...', 'Dribbling...', 'Analyzing...']}
-          //   />
-          // </ListItem>
         )}
       </Stack>
     </div>
