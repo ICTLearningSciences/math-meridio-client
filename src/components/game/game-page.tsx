@@ -166,7 +166,8 @@ function GamePage(): JSX.Element {
           </div>
         </Grid>
       </Grid>
-      <Stack spacing={2}
+      <Stack
+        spacing={2}
         style={{
           display: 'flex',
           flexDirection: 'column',

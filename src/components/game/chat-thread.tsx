@@ -11,7 +11,7 @@ import { Avatar, Box, Paper, Stack, styled, Typography } from '@mui/material';
 import { SenderType } from '../../store/slices/game';
 import { FadingText } from '../fading-text';
 
-     const myBGColor = 'white'
+const myBGColor = 'white';
 
 const useStyles = makeStyles()(() => ({
   chatThread: {
@@ -23,6 +23,7 @@ const useStyles = makeStyles()(() => ({
     // borderTopRightRadius: 20,
     // borderBottomLeftRadius: 20,
     spacing:3
+    spacing: 3,
   },
   chatItem: {
     position: 'relative',
@@ -85,112 +86,99 @@ export default function ChatThread(props: {
     (state) => state.gameData.room?.gameData.chat || []
   );
 
-  const players = useAppSelector((state) => state.gameData.room?.gameData.players);
-  
-player?.avatar
+  const players = useAppSelector(
+    (state) => state.gameData.room?.gameData.players
+  );
+
+  player?.avatar;
   enum PlayerColors {
-    Blue = 'info.main', 
-    Green = 'success.main', 
-    Orange = 'warning.main', 
+    Blue = 'info.main',
+    Green = 'success.main',
+    Orange = 'warning.main',
     Lavender = 'secondary.main',
     Grey = 'text.secondary',
-    Red = 'error.main'
+    Red = 'error.main',
   }
   // eslint-disable-next-line prefer-const
-  let playerColorMap : Map<string, string> =  new Map([])
-  
+  let playerColorMap: Map<string, string> = new Map([]);
+
   // eslint-disable-next-line prefer-const
-  let usedColors : Map<string, boolean> =  new Map([
-  
-    [PlayerColors.Green, false], 
+  let usedColors: Map<string, boolean> = new Map([
+    [PlayerColors.Green, false],
     [PlayerColors.Lavender, false],
     [PlayerColors.Orange, false],
-  ]
-  );
+  ]);
   //setting only 3 colors as we have 4 players max. Blue is reserved for Self and Grey is for System.
 
-  const GetUnusedColor = ():string => {
-    console.log("Used Colors", usedColors)
-  
-    let retColor = PlayerColors.Red.toString()
+  const GetUnusedColor = (): string => {
+    console.log('Used Colors', usedColors);
+
+    let retColor = PlayerColors.Red.toString();
     // eslint-disable-next-line prefer-const
-    for(let myKey of usedColors.keys())
-    {
-      console.log (`Checking if key color ${myKey} is unused`)
-      if (usedColors.get(myKey)  == false) 
-      {
-        console.log (`Found key color ${myKey} is unused and set to used`)
+    for (let myKey of usedColors.keys()) {
+      console.log(`Checking if key color ${myKey} is unused`);
+      if (usedColors.get(myKey) == false) {
+        console.log(`Found key color ${myKey} is unused and set to used`);
 
         usedColors.set(myKey, true);
-        retColor = myKey
+        retColor = myKey;
         break;
       }
     }
-    return retColor
-  }
-  const GetMyColor = (id:string, isPlayer:boolean) : string =>
-  {
-    if (id != "")
-    {
-      if (! (id in playerColorMap))
-      {
-        if (isPlayer) 
-        {
-          playerColorMap.set(id, PlayerColors.Blue)
-        } 
-        else {
-  
-          const unusedColor = GetUnusedColor()
-          playerColorMap.set(id, unusedColor)
+    return retColor;
+  };
+  const GetMyColor = (id: string, isPlayer: boolean): string => {
+    if (id != '') {
+      if (!(id in playerColorMap)) {
+        if (isPlayer) {
+          playerColorMap.set(id, PlayerColors.Blue);
+        } else {
+          const unusedColor = GetUnusedColor();
+          playerColorMap.set(id, unusedColor);
         }
-  
       }
-      return playerColorMap.get(id) as string
-  
-    } 
-    
-    return PlayerColors.Red
-  
-  }
-
-  const BorderedAvatar = styled(Avatar)` border: 3px solid lightseagreen;`;
-  const stringAvatar = (name: string , id:string ) => {
-    if (name == undefined || name == "")
-    return {
-      alt:"System",
-
-      sx: {
-        bgcolor: 'text.secondary',
-      },
-      children: "S",
+      return playerColorMap.get(id) as string;
     }
 
-    if (name.split(' ').length > 1)
-    {
+    return PlayerColors.Red;
+  };
+
+  const BorderedAvatar = styled(Avatar)`
+    border: 3px solid lightseagreen;
+  `;
+  const stringAvatar = (name: string, id: string) => {
+    if (name == undefined || name == '')
       return {
-        alt:name,
+        alt: 'System',
+
+        sx: {
+          bgcolor: 'text.secondary',
+        },
+        children: 'S',
+      };
+
+    if (name.split(' ').length > 1) {
+      return {
+        alt: name,
         sx: {
           bgcolor: playerColorMap.get(id),
         },
         children: `${name.split(' ')[0][0]}${name.split(' ')[1][0]}`,
-        
-      }
-    } else 
-    {
+      };
+    } else {
       return {
-        alt:name,
+        alt: name,
         sx: {
           bgcolor: playerColorMap.get(id),
         },
         children: `${name.split(' ')[0][0]}`,
       };
     }
-  }
-  
-  players?.forEach((iterPlayer: { clientId: string; }) => {
-    GetMyColor(iterPlayer.clientId, iterPlayer.clientId == player?.clientId )
-    
-  })
+  };
+
+  players?.forEach((iterPlayer: { clientId: string }) => {
+    GetMyColor(iterPlayer.clientId, iterPlayer.clientId == player?.clientId);
+  });
   React.useEffect(() => {
     const objDiv = document.getElementById('chat-thread');
     if (objDiv) {
@@ -201,88 +189,130 @@ player?.avatar
     }
   }, [messages.length]);
 
-  let prevMessageOwner = ""
-  let currMessageOwner = ""
-  let skipAvatar = false
+  let prevMessageOwner = '';
+  let currMessageOwner = '';
+  let skipAvatar = false;
   return (
     <div
       id="chat-thread"
       className={classes.chatThread}
-      style={{ backgroundColor:PlayerColors.Grey, maxHeight: window.innerHeight - 100 }}
+      style={{
+        backgroundColor: PlayerColors.Grey,
+        maxHeight: window.innerHeight - 100,
+      }}
     >
-      {
-      }
-      <Stack direction = "column" >
-      {messages.map((msg, idx) => {
-        const myMessage =
-          msg.sender === SenderType.PLAYER && msg.senderId === player?.clientId;
-        
-        if (msg.sender == SenderType.SYSTEM)
-        {
-          currMessageOwner = "System"
-        } else {
-          currMessageOwner = msg.senderId ?? ""
-        }
-        console.log(`Prev ${prevMessageOwner} Curr ${currMessageOwner}`)
-        if (prevMessageOwner == currMessageOwner)
-        {
-            skipAvatar = true
-        } else {
-          skipAvatar = false
-          prevMessageOwner = currMessageOwner
-        }
-        console.log(skipAvatar? "Skipping": "Not Skipping")
-        const bubbleColor = msg.sender === SenderType.PLAYER ? playerColorMap.get(msg.senderId ?? "") : PlayerColors.Grey
-   
-        return (
-          <Stack p={1} direction={myMessage?'row':'row-reverse'} key={`chat-msg-container-${idx}`}  justifyContent={myMessage?'left':'right'}>
-            { !skipAvatar && <BorderedAvatar {...stringAvatar(msg.senderName ?? "", msg.senderId?? "")}></BorderedAvatar> }
-            {skipAvatar && 
-            <Box width={46} sx={{ flexGrow:0, flexShrink:0 //"polygon(100% 0%, 50% 0%, 100% 20%)": "polygon(0% 0%, 50% 0%, 0% 20%)" //"path(M23 0 L46 10 l46 0 Z)"
-            }}></Box> }
-            <Paper square elevation={0}  sx={{ p:3, whiteSpace: 'normal', wordWrap:"break-word",  backgroundColor: bubbleColor, paddingLeft: myMessage? '10%': '5%', paddingRight: myMessage? '5%': '10%', 
-              clipPath: myMessage ? "polygon(0% 0%, 100% 0%, 100% 100%, calc(0% + 1em) 100%, calc(0% + 1em) calc(0% + 1em), 0% 0%)": "polygon(0% 0%, 100% 0%, calc(100% - 1em) calc(0% + 1em), calc(100% - 1em) 100%, 0% 100%, 0% 0%)",
-              borderBottomLeftRadius: myMessage? 0: '1em',
-              borderTopLeftRadius: myMessage? 0: '1em',
-              borderBottomRightRadius: myMessage? '1em': 0,
-              borderTopRightRadius: myMessage? '1em': 0
-            }}>
-              <Typography color={'white'} >
-                {msg.message}
+      {}
+      <Stack direction="column">
+        {messages.map((msg, idx) => {
+          const myMessage =
+            msg.sender === SenderType.PLAYER &&
+            msg.senderId === player?.clientId;
+
+          if (msg.sender == SenderType.SYSTEM) {
+            currMessageOwner = 'System';
+          } else {
+            currMessageOwner = msg.senderId ?? '';
+          }
+          console.log(`Prev ${prevMessageOwner} Curr ${currMessageOwner}`);
+          if (prevMessageOwner == currMessageOwner) {
+            skipAvatar = true;
+          } else {
+            skipAvatar = false;
+            prevMessageOwner = currMessageOwner;
+          }
+          console.log(skipAvatar ? 'Skipping' : 'Not Skipping');
+          const bubbleColor =
+            msg.sender === SenderType.PLAYER
+              ? playerColorMap.get(msg.senderId ?? '')
+              : PlayerColors.Grey;
+
+          return (
+            <Stack
+              p={1}
+              direction={myMessage ? 'row' : 'row-reverse'}
+              key={`chat-msg-container-${idx}`}
+              justifyContent={myMessage ? 'left' : 'right'}
+            >
+              {!skipAvatar && (
+                <BorderedAvatar
+                  {...stringAvatar(msg.senderName ?? '', msg.senderId ?? '')}
+                ></BorderedAvatar>
+              )}
+              {skipAvatar && (
+                <Box
+                  width={46}
+                  sx={{
+                    flexGrow: 0,
+                    flexShrink: 0, //"polygon(100% 0%, 50% 0%, 100% 20%)": "polygon(0% 0%, 50% 0%, 0% 20%)" //"path(M23 0 L46 10 l46 0 Z)"
+                  }}
+                ></Box>
+              )}
+              <Paper
+                square
+                elevation={0}
+                sx={{
+                  p: 3,
+                  whiteSpace: 'normal',
+                  wordWrap: 'break-word',
+                  backgroundColor: bubbleColor,
+                  paddingLeft: myMessage ? '10%' : '5%',
+                  paddingRight: myMessage ? '5%' : '10%',
+                  clipPath: myMessage
+                    ? 'polygon(0% 0%, 100% 0%, 100% 100%, calc(0% + 1em) 100%, calc(0% + 1em) calc(0% + 1em), 0% 0%)'
+                    : 'polygon(0% 0%, 100% 0%, calc(100% - 1em) calc(0% + 1em), calc(100% - 1em) 100%, 0% 100%, 0% 0%)',
+                  borderBottomLeftRadius: myMessage ? 0 : '1em',
+                  borderTopLeftRadius: myMessage ? 0 : '1em',
+                  borderBottomRightRadius: myMessage ? '1em' : 0,
+                  borderTopRightRadius: myMessage ? '1em' : 0,
+                }}
+              >
+                <Typography color={'white'}>{msg.message}</Typography>
+              </Paper>
+            </Stack>
+          );
+        })}
+        {responsePending && (
+          <Stack
+            direction="row-reverse"
+            key={`fading-text`}
+            sx={{ p: 1 }}
+            spacing={2}
+            justifyContent="right"
+          >
+            <Paper
+              square
+              elevation={0}
+              sx={{
+                p: 3,
+                whiteSpace: 'normal',
+                wordWrap: 'break-word',
+                backgroundColor: PlayerColors.Grey,
+                paddingLeft: '5%',
+                paddingRight: '10%',
+                clipPath:
+                  'polygon(0% 0%, 100% 0%, calc(100% - 1em) calc(0% + 1em), calc(100% - 1em) 100%, 0% 100%, 0% 0%)',
+                borderBottomLeftRadius: '1em',
+                borderTopLeftRadius: '1em',
+              }}
+            >
+              {' '}
+              <Typography color={'white'}>
+                <FadingText
+                  strings={['Thinking...', 'Dribbling...', 'Analyzing...']}
+                />
               </Typography>
             </Paper>
           </Stack>
-        );
-      })}
-      {responsePending && (
 
-
-        <Stack direction='row-reverse' key={`fading-text`} sx = {{p:1}} spacing={2} justifyContent='right'>
-            <Paper square elevation={0}  sx={{ p:3, whiteSpace: 'normal', wordWrap:"break-word",  backgroundColor: PlayerColors.Grey, paddingLeft: '5%', paddingRight:'10%', 
-              clipPath:  "polygon(0% 0%, 100% 0%, calc(100% - 1em) calc(0% + 1em), calc(100% - 1em) 100%, 0% 100%, 0% 0%)",
-              borderBottomLeftRadius:  '1em',
-              borderTopLeftRadius: '1em',
-            }}>          <Typography color={'white'} >
-          <FadingText
-                    strings={['Thinking...', 'Dribbling...', 'Analyzing...']}
-                  />
-          </Typography>
-        </Paper>
-        </Stack>
-
-        // <ListItem
-        //   className={`${classes.chatItem} ${'other'} ${SenderType.SYSTEM}`}
-        // >
-        //   <FadingText
-        //     strings={['Thinking...', 'Dribbling...', 'Analyzing...']}
-        //   />
-        // </ListItem>
-      )}
+          // <ListItem
+          //   className={`${classes.chatItem} ${'other'} ${SenderType.SYSTEM}`}
+          // >
+          //   <FadingText
+          //     strings={['Thinking...', 'Dribbling...', 'Analyzing...']}
+          //   />
+          // </ListItem>
+        )}
       </Stack>
     </div>
   );
 }
-
-
-
-
