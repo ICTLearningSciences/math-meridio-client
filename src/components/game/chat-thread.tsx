@@ -18,6 +18,7 @@ import {
 import { SenderType } from '../../store/slices/game';
 import { FadingText } from '../fading-text';
 import React from 'react';
+import AvatarSprite from '../avatar-sprite';
 
 const useStyles = makeStyles()(() => ({
   chatThread: {
@@ -225,11 +226,17 @@ export default function ChatThread(props: {
               key={`chat-msg-container-${idx}`}
               justifyContent={myMessage ? 'left' : 'right'}
             >
-              {!skipAvatar && (
-                <BorderedAvatar
-                  {...stringAvatar(msg.senderName ?? '', msg.senderId ?? '')}
-                ></BorderedAvatar>
-              )}
+              {!skipAvatar &&
+                (msg.sender === SenderType.PLAYER ? (
+                  <AvatarSprite
+                    player={players?.find((p) => p.clientId === msg.senderId)}
+                    bgColor={bubbleColor}
+                  />
+                ) : (
+                  <BorderedAvatar
+                    {...stringAvatar(msg.senderName ?? '', msg.senderId ?? '')}
+                  ></BorderedAvatar>
+                ))}
               {skipAvatar && (
                 <Box
                   width={46}
