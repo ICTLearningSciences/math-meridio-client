@@ -156,7 +156,6 @@ export function ResultComponent(props: {
       player4MissedData: player4MissedData,
       playerLabels: playerLabels,
     });
-    console.log(myChartData);
   }
   function GetShotChartFor(
     playerData: number[],
@@ -186,7 +185,6 @@ export function ResultComponent(props: {
       </Stack>
     );
   }
-  console.log('MyChartData', myChartData);
   return (
     <Stack sx={{ width: resultsWidth }} direction="column" alignItems="center">
       <Stack direction="column" alignItems="center">
