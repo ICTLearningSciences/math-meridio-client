@@ -4,7 +4,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { BarChart } from '@mui/x-charts/BarChart';
 import { GameStateHandler } from '../../classes/game-state-handler';
 import { BasketballSimulationData } from './SimulationScene';
@@ -15,7 +15,6 @@ import {
   OUTSIDE_SHOT_POINTS_VALUE,
 } from './solution';
 import { Stack, Typography } from '@mui/material';
-import { JsxElement } from 'typescript';
 
 export function ResultComponent(props: {
   controller: GameStateHandler;
@@ -24,36 +23,72 @@ export function ResultComponent(props: {
   const [simulationData, setSimulationData] = React.useState<
     Record<string, BasketballSimulationData>
   >({});
-
   React.useEffect(() => {
     EventSystem.on('simulationEnded', simulationEnded);
   }, []);
-
   const chartHeight = 300;
   const resultsWidth = 900;
   const scoreChartWidth = resultsWidth / 2;
   const shotsChartWidth = resultsWidth / controller.players.length;
 
-  const [insideScores, setInsideScores] = useState<number[]>([]);
-  const [midScores, setMidScores] = useState<number[]>([]);
-  const [outsideScores, setOutsideScores] = useState<number[]>([]);
+  interface ChartData {
+    insideScores: number[];
+    midScores: number[];
+    outsideScores: number[];
 
-  const [player1Data, setPlayer1Data] = useState<number[]>([]);
-  const [player2Data, setPlayer2Data] = useState<number[]>([]);
-  const [player3Data, setPlayer3Data] = useState<number[]>([]);
-  const [player4Data, setPlayer4Data] = useState<number[]>([]);
+    player1Data: number[];
+    player1MissedData: number[];
 
-  const [player1MissedData, setPlayer1MissedData] = useState<number[]>([]);
-  const [player2MissedData, setPlayer2MissedData] = useState<number[]>([]);
-  const [player3MissedData, setPlayer3MissedData] = useState<number[]>([]);
-  const [player4MissedData, setPlayer4MissedData] = useState<number[]>([]);
+    player2Data: number[];
+    player2MissedData: number[];
+
+    player3Data: number[];
+    player3MissedData: number[];
+
+    player4Data: number[];
+    player4MissedData: number[];
+
+    playerLabels: string[];
+  }
+
+  const [myChartData, setMyChartData] = useState<ChartData>({
+    insideScores: [],
+    midScores: [],
+    outsideScores: [],
+    player1Data: [],
+    player1MissedData: [],
+    player2Data: [],
+    player2MissedData: [],
+    player3Data: [],
+    player3MissedData: [],
+    player4Data: [],
+    player4MissedData: [],
+    playerLabels: [],
+  });
 
   const scoreLabels = ['In', 'Mid', '3pt'];
-  const [playerLabels, setPlayerLabels] = useState<string[]>([]);
 
   function simulationEnded(data: BasketballSimulationData): void {
     simulationData[data.player] = data;
     setSimulationData({ ...simulationData });
+    let insideScores: number[] = [];
+    let midScores: number[] = [];
+    let outsideScores: number[] = [];
+
+    let player1Data: number[] = [];
+    let player1MissedData: number[] = [];
+
+    let player2Data: number[] = [];
+    let player2MissedData: number[] = [];
+
+    let player3Data: number[] = [];
+    let player3MissedData: number[] = [];
+
+    let player4Data: number[] = [];
+    let player4MissedData: number[] = [];
+
+    let playerLabels: string[] = [];
+
     for (let index = 0; index < controller.players.length; index++) {
       const player = controller.players[index];
       const playerMade = [
@@ -69,61 +104,69 @@ export function ResultComponent(props: {
         simulationData[player.clientId]?.outsideShots -
           simulationData[player.clientId]?.outsideShotsMade,
       ];
+
       switch (index) {
         case 0:
-          setPlayer1Data(playerMade);
-          setPlayer1MissedData(playerMissed);
+          player1Data = playerMade;
+          player1MissedData = playerMissed;
           break;
         case 1:
-          setPlayer2Data(playerMade);
-          setPlayer2MissedData(playerMissed);
+          player2Data = playerMade;
+          player2MissedData = playerMissed;
           break;
         case 2:
-          setPlayer3Data(playerMade);
-          setPlayer3MissedData(playerMissed);
+          player3Data = playerMade;
+          player3MissedData = playerMissed;
           break;
         case 3:
-          setPlayer4Data(playerMade);
-          setPlayer4MissedData(playerMissed);
+          player4Data = playerMade;
+          player4MissedData = playerMissed;
           break;
       }
     }
-
-    setInsideScores(
-      controller.players.map(
-        (player) =>
-          (simulationData[player.clientId]?.insideShotsMade || 0) *
-          INSIDE_SHOT_POINTS_VALUE
-      )
+    insideScores = controller.players.map(
+      (player) =>
+        (simulationData[player.clientId]?.insideShotsMade || 0) *
+        INSIDE_SHOT_POINTS_VALUE
     );
 
-    setMidScores(
-      controller.players.map(
-        (player) =>
-          (simulationData[player.clientId]?.midShotsMade || 0) *
-          MID_SHOT_POINTS_VALUE
-      )
+    midScores = controller.players.map(
+      (player) =>
+        (simulationData[player.clientId]?.midShotsMade || 0) *
+        MID_SHOT_POINTS_VALUE
     );
 
-    setOutsideScores(
-      controller.players.map(
-        (player) =>
-          (simulationData[player.clientId]?.outsideShotsMade || 0) *
-          OUTSIDE_SHOT_POINTS_VALUE
-      )
+    outsideScores = controller.players.map(
+      (player) =>
+        (simulationData[player.clientId]?.outsideShotsMade || 0) *
+        OUTSIDE_SHOT_POINTS_VALUE
     );
-
-    setPlayerLabels(controller.players.map((player) => player.name));
+    playerLabels = controller.players.map((player) => player.name);
+    setMyChartData({
+      insideScores: insideScores,
+      midScores: midScores,
+      outsideScores: outsideScores,
+      player1Data: player1Data,
+      player1MissedData: player1MissedData,
+      player2Data: player2Data,
+      player2MissedData: player2MissedData,
+      player3Data: player3Data,
+      player3MissedData: player3MissedData,
+      player4Data: player4Data,
+      player4MissedData: player4MissedData,
+      playerLabels: playerLabels,
+    });
+    console.log(myChartData);
   }
-
   function GetShotChartFor(
     playerData: number[],
     playerMissedData: number[],
     playerName: string,
-    bHideLegend: boolean
+    bHideLegend: boolean,
+    index: number
   ) {
     return (
-      <Stack direction="column" alignItems="center">
+      <Stack key={index} direction="column" alignItems="center">
         <BarChart
           width={shotsChartWidth}
           height={chartHeight}
@@ -143,7 +186,7 @@ export function ResultComponent(props: {
       </Stack>
     );
   }
-
+  console.log('MyChartData', myChartData);
   return (
     <Stack sx={{ width: resultsWidth }} direction="column" alignItems="center">
       <Stack direction="column" alignItems="center">
@@ -154,25 +197,25 @@ export function ResultComponent(props: {
           height={chartHeight}
           series={[
             {
-              data: insideScores,
+              data: myChartData.insideScores,
               label: 'In',
               stack: 'mademissedshots',
               color: '#e15759',
             },
             {
-              data: midScores,
+              data: myChartData.midScores,
               label: 'Mid',
               stack: 'mademissedshots',
               color: '#ff9da7',
             },
             {
-              data: outsideScores,
+              data: myChartData.outsideScores,
               label: '3pt',
               stack: 'mademissedshots',
               color: '#af7aa1',
             },
           ]}
-          xAxis={[{ data: playerLabels, scaleType: 'band' }]}
+          xAxis={[{ data: myChartData.playerLabels, scaleType: 'band' }]}
         />
       </Stack>
       <Typography variant="h6">Shots</Typography>
@@ -182,31 +225,35 @@ export function ResultComponent(props: {
           <>
             {index === 0 &&
               GetShotChartFor(
-                player1Data,
-                player1MissedData,
+                myChartData.player1Data,
+                myChartData.player1MissedData,
                 player.name,
-                true
+                true,
+                index
               )}
             {index === 1 &&
               GetShotChartFor(
-                player2Data,
-                player2MissedData,
+                myChartData.player2Data,
+                myChartData.player2MissedData,
                 player.name,
-                true
+                true,
+                index
               )}
             {index === 2 &&
               GetShotChartFor(
-                player3Data,
-                player3MissedData,
+                myChartData.player3Data,
+                myChartData.player3MissedData,
                 player.name,
-                true
+                true,
+                index
               )}
             {index === 3 &&
               GetShotChartFor(
-                player4Data,
-                player4MissedData,
+                myChartData.player4Data,
+                myChartData.player4MissedData,
                 player.name,
-                true
+                true,
+                index
               )}
           </>
         ))}
