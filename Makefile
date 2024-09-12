@@ -4,6 +4,9 @@ TEST_E2E_DOCKER_COMPOSE=docker-compose
 develop:
 	npm run start
 
+develop-win:
+	npm run start-windows
+
 PHONY: test-all
 test-all:
 	$(MAKE) test-format

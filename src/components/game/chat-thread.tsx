@@ -220,54 +220,71 @@ export default function ChatThread(props: {
               : PlayerColors.Grey;
 
           return (
-            <Stack
-              p={1}
-              direction={myMessage ? 'row' : 'row-reverse'}
-              key={`chat-msg-container-${idx}`}
-              justifyContent={myMessage ? 'left' : 'right'}
-            >
-              {!skipAvatar &&
-                (msg.sender === SenderType.PLAYER ? (
-                  <AvatarSprite
-                    player={players?.find((p) => p.clientId === msg.senderId)}
-                    bgColor={bubbleColor}
-                  />
-                ) : (
-                  <BorderedAvatar
-                    {...stringAvatar(msg.senderName ?? '', msg.senderId ?? '')}
-                  ></BorderedAvatar>
-                ))}
-              {skipAvatar && (
-                <Box
-                  width={46}
-                  sx={{
-                    flexGrow: 0,
-                    flexShrink: 0,
-                  }}
-                ></Box>
+            <>
+              {!skipAvatar && (
+                <Typography
+                  color="teal"
+                  textAlign={myMessage ? 'left' : 'right'}
+                >
+                  {msg.sender === SenderType.PLAYER
+                    ? msg.senderId === player?.clientId
+                      ? 'You'
+                      : msg.senderName
+                    : 'System'}
+                </Typography>
               )}
-              <Paper
-                square
-                elevation={0}
-                sx={{
-                  p: 3,
-                  whiteSpace: 'normal',
-                  wordWrap: 'break-word',
-                  backgroundColor: bubbleColor,
-                  paddingLeft: myMessage ? '10%' : '5%',
-                  paddingRight: myMessage ? '5%' : '10%',
-                  clipPath: myMessage
-                    ? 'polygon(0% 0%, 100% 0%, 100% 100%, calc(0% + 1em) 100%, calc(0% + 1em) calc(0% + 1em), 0% 0%)'
-                    : 'polygon(0% 0%, 100% 0%, calc(100% - 1em) calc(0% + 1em), calc(100% - 1em) 100%, 0% 100%, 0% 0%)',
-                  borderBottomLeftRadius: myMessage ? 0 : '1em',
-                  borderTopLeftRadius: myMessage ? 0 : '1em',
-                  borderBottomRightRadius: myMessage ? '1em' : 0,
-                  borderTopRightRadius: myMessage ? '1em' : 0,
-                }}
+
+              <Stack
+                p={1}
+                direction={myMessage ? 'row' : 'row-reverse'}
+                justifyContent={myMessage ? 'left' : 'right'}
               >
-                <Typography color={'white'}>{msg.message}</Typography>
-              </Paper>
-            </Stack>
+                {!skipAvatar &&
+                  (msg.sender === SenderType.PLAYER ? (
+                    <AvatarSprite
+                      player={players?.find((p) => p.clientId === msg.senderId)}
+                      bgColor={bubbleColor}
+                    />
+                  ) : (
+                    <BorderedAvatar
+                      {...stringAvatar(
+                        msg.senderName ?? '',
+                        msg.senderId ?? ''
+                      )}
+                    ></BorderedAvatar>
+                  ))}
+                {skipAvatar && (
+                  <Box
+                    width={46}
+                    sx={{
+                      flexGrow: 0,
+                      flexShrink: 0,
+                    }}
+                  ></Box>
+                )}
+                <Paper
+                  square
+                  elevation={0}
+                  sx={{
+                    p: 3,
+                    whiteSpace: 'normal',
+                    wordWrap: 'break-word',
+                    backgroundColor: bubbleColor,
+                    paddingLeft: myMessage ? '10%' : '5%',
+                    paddingRight: myMessage ? '5%' : '10%',
+                    clipPath: myMessage
+                      ? 'polygon(0% 0%, 100% 0%, 100% 100%, calc(0% + 1em) 100%, calc(0% + 1em) calc(0% + 1em), 0% 0%)'
+                      : 'polygon(0% 0%, 100% 0%, calc(100% - 1em) calc(0% + 1em), calc(100% - 1em) 100%, 0% 100%, 0% 0%)',
+                    borderBottomLeftRadius: myMessage ? 0 : '1em',
+                    borderTopLeftRadius: myMessage ? 0 : '1em',
+                    borderBottomRightRadius: myMessage ? '1em' : 0,
+                    borderTopRightRadius: myMessage ? '1em' : 0,
+                  }}
+                >
+                  <Typography color={'white'}>{msg.message}</Typography>
+                </Paper>
+              </Stack>
+            </>
           );
         })}
         {responsePending && (
