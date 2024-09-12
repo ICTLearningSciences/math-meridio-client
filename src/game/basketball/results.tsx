@@ -15,6 +15,7 @@ import {
   OUTSIDE_SHOT_POINTS_VALUE,
 } from './solution';
 import { Stack, Typography } from '@mui/material';
+import { JsxElement } from 'typescript';
 
 export function ResultComponent(props: {
   controller: GameStateHandler;
@@ -55,7 +56,6 @@ export function ResultComponent(props: {
     setSimulationData({ ...simulationData });
     for (let index = 0; index < controller.players.length; index++) {
       const player = controller.players[index];
-      console.log(index);
       const playerMade = [
         simulationData[player.clientId]?.insideShotsMade,
         simulationData[player.clientId]?.midShotsMade,
@@ -116,6 +116,34 @@ export function ResultComponent(props: {
     setPlayerLabels(controller.players.map((player) => player.name));
   }
 
+  function GetShotChartFor(
+    playerData: number[],
+    playerMissedData: number[],
+    playerName: string,
+    bHideLegend: boolean
+  ) {
+    return (
+      <Stack direction="column" alignItems="center">
+        <BarChart
+          width={shotsChartWidth}
+          height={chartHeight}
+          series={[
+            { data: playerData, label: 'made', stack: 'shots' },
+            {
+              data: playerMissedData,
+              label: 'missed',
+              stack: 'shots',
+            },
+          ]}
+          slotProps={{ legend: { hidden: bHideLegend } }}
+          xAxis={[{ data: scoreLabels, scaleType: 'band' }]}
+          yAxis={[{ disableLine: true, disableTicks: true, tickFontSize: 0 }]}
+        />
+        <Typography variant="subtitle1">{playerName}</Typography>
+      </Stack>
+    );
+  }
+
   return (
     <Stack sx={{ width: resultsWidth }} direction="column" alignItems="center">
       <Stack direction="column" alignItems="center">
@@ -152,100 +180,34 @@ export function ResultComponent(props: {
       <Stack direction="row" alignItems="center">
         {controller.players.map((player, index) => (
           <>
-            {index === 0 && (
-              <Stack direction="column" alignItems="center">
-                <BarChart
-                  width={shotsChartWidth}
-                  height={chartHeight}
-                  series={[
-                    { data: player1Data, label: 'made', stack: 'shots' },
-                    {
-                      data: player1MissedData,
-                      label: 'missed',
-                      stack: 'shots',
-                    },
-                  ]}
-                  xAxis={[{ data: scoreLabels, scaleType: 'band' }]}
-                />
-                <Typography variant="subtitle1">{player.name}</Typography>
-              </Stack>
-            )}
-
-            {index === 1 && (
-              <Stack direction="column" alignItems="center">
-                <BarChart
-                  width={shotsChartWidth}
-                  height={chartHeight}
-                  series={[
-                    {
-                      data: player2Data,
-                      label: 'made',
-                      stack: 'shots',
-                    },
-                    {
-                      data: player2MissedData,
-                      label: 'missed',
-                      stack: 'shots',
-                    },
-                  ]}
-                  yAxis={[
-                    { disableLine: true, disableTicks: true, tickFontSize: 0 },
-                  ]}
-                  xAxis={[
-                    {
-                      data: scoreLabels,
-                      scaleType: 'band',
-                    },
-                  ]}
-                  slotProps={{ legend: { hidden: true } }}
-                />
-                <Typography variant="subtitle1">{player.name}</Typography>
-              </Stack>
-            )}
-            {index === 2 && (
-              <Stack direction="column" alignItems="center">
-                <BarChart
-                  width={shotsChartWidth}
-                  height={chartHeight}
-                  series={[
-                    { data: player3Data, label: 'made', stack: 'shots' },
-                    {
-                      data: player3MissedData,
-                      label: 'missed',
-                      stack: 'shots',
-                    },
-                  ]}
-                  slotProps={{ legend: { hidden: true } }}
-                  xAxis={[{ data: scoreLabels, scaleType: 'band' }]}
-                  yAxis={[
-                    { disableLine: true, disableTicks: true, tickFontSize: 0 },
-                  ]}
-                />
-                <Typography variant="subtitle1">{player.name}</Typography>
-              </Stack>
-            )}
-            {index === 3 && (
-              <Stack direction="column" alignItems="center">
-                <BarChart
-                  width={shotsChartWidth}
-                  slotProps={{ legend: { hidden: true } }}
-                  height={chartHeight}
-                  series={[
-                    { data: player4Data, label: 'made', stack: 'shots' },
-                    {
-                      data: player4MissedData,
-                      label: 'missed',
-                      stack: 'shots',
-                    },
-                  ]}
-                  yAxis={[
-                    { disableLine: true, disableTicks: true, tickFontSize: 0 },
-                  ]}
-                  xAxis={[{ data: scoreLabels, scaleType: 'band' }]}
-                />
-                <Typography variant="subtitle1">{player.name}</Typography>
-              </Stack>
-            )}
+            {index === 0 &&
+              GetShotChartFor(
+                player1Data,
+                player1MissedData,
+                player.name,
+                true
+              )}
+            {index === 1 &&
+              GetShotChartFor(
+                player2Data,
+                player2MissedData,
+                player.name,
+                true
+              )}
+            {index === 2 &&
+              GetShotChartFor(
+                player3Data,
+                player3MissedData,
+                player.name,
+                true
+              )}
+            {index === 3 &&
+              GetShotChartFor(
+                player4Data,
+                player4MissedData,
+                player.name,
+                true
+              )}
           </>
         ))}
       </Stack>

@@ -100,11 +100,10 @@ export default function ChatThread(props: {
     Grey = 'text.secondary',
     Red = 'error.main',
   }
-  // eslint-disable-next-line prefer-const
-  let playerColorMap: Map<string, string> = new Map([]);
 
-  // eslint-disable-next-line prefer-const
-  let usedColors: Map<string, boolean> = new Map([
+  const playerColorMap: Map<string, string> = new Map([]);
+
+  const usedColors: Map<string, boolean> = new Map([
     [PlayerColors.Green, false],
     [PlayerColors.Lavender, false],
     [PlayerColors.Orange, false],
@@ -220,7 +219,7 @@ export default function ChatThread(props: {
               : PlayerColors.Grey;
 
           return (
-            <>
+            <Stack key={`chat-msg-container-${idx}`} direction="column">
               {!skipAvatar && (
                 <Typography
                   color="teal"
@@ -284,7 +283,7 @@ export default function ChatThread(props: {
                   <Typography color={'white'}>{msg.message}</Typography>
                 </Paper>
               </Stack>
-            </>
+            </Stack>
           );
         })}
         {responsePending && (
