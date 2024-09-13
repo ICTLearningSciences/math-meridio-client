@@ -11,6 +11,7 @@ import { Create, Home, Save } from '@mui/icons-material';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { clearPlayer } from '../store/slices/player';
 import { useWithGame } from '../store/slices/game/use-with-game-state';
+import AvatarSprite from './avatar-sprite';
 
 export function Header() {
   const dispatch = useAppDispatch();
@@ -63,12 +64,12 @@ export function Header() {
           </IconButton>
         ) : undefined}
       </div>
-      <div style={{ marginRight: 20, width: 150 }}>
+      <div style={{ display: 'flex', width: 150, alignItems: 'center' }}>
         {pathname.startsWith('/game/') ? (
           <Button
             variant="outlined"
             disabled={!player || !room}
-            style={{ height: 'fit-content', color: 'white' }}
+            style={{ height: 'fit-content', color: 'white', marginRight: 5 }}
             onClick={leaveRoom}
           >
             Leave Room
@@ -77,12 +78,13 @@ export function Header() {
           <Button
             variant="outlined"
             disabled={!player}
-            style={{ height: 'fit-content', color: 'white' }}
+            style={{ height: 'fit-content', color: 'white', marginRight: 5 }}
             onClick={() => dispatch(clearPlayer())}
           >
             Logout
           </Button>
         )}
+        {player && <AvatarSprite player={player} />}
       </div>
     </header>
   );

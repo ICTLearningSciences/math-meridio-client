@@ -4,12 +4,21 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
 import { makeStyles } from 'tss-react/mui';
 import { useAppSelector } from '../../store/hooks';
-import { ListItem, Typography } from '@mui/material';
+import {
+  Avatar,
+  AvatarProps,
+  Box,
+  Paper,
+  Stack,
+  styled,
+  Typography,
+} from '@mui/material';
 import { SenderType } from '../../store/slices/game';
 import { FadingText } from '../fading-text';
+import React from 'react';
+import AvatarSprite from '../avatar-sprite';
 
 const useStyles = makeStyles()(() => ({
   chatThread: {
@@ -17,9 +26,7 @@ const useStyles = makeStyles()(() => ({
     flexDirection: 'column',
     flexGrow: 1,
     overflowY: 'auto',
-    backgroundColor: 'white',
-    borderTopRightRadius: 20,
-    borderBottomLeftRadius: 20,
+    spacing: 3,
   },
   chatItem: {
     position: 'relative',
@@ -27,7 +34,6 @@ const useStyles = makeStyles()(() => ({
     borderRadius: 30,
     alignItems: 'center',
     fontFamily: 'Helvetica, Arial, sans-serif',
-    maxWidth: '80%',
     textAlign: 'left',
     '&.mine': {
       alignSelf: 'flex-end',
@@ -82,6 +88,92 @@ export default function ChatThread(props: {
     (state) => state.gameData.room?.gameData.chat || []
   );
 
+  const players = useAppSelector(
+    (state) => state.gameData.room?.gameData.players
+  );
+
+  enum PlayerColors {
+    Blue = 'info.main',
+    Green = 'success.main',
+    Orange = 'warning.main',
+    Lavender = 'secondary.main',
+    Grey = 'text.secondary',
+    Red = 'error.main',
+  }
+
+  const playerColorMap: Map<string, string> = new Map([]);
+
+  const usedColors: Map<string, boolean> = new Map([
+    [PlayerColors.Green, false],
+    [PlayerColors.Lavender, false],
+    [PlayerColors.Orange, false],
+  ]);
+  //setting only 3 colors as we have 4 players max. Blue is reserved for Self and Grey is for System.
+
+  const GetUnusedColor = (): string => {
+    let retColor = PlayerColors.Red.toString();
+    for (const myKey of usedColors.keys()) {
+      if (usedColors.get(myKey) == false) {
+        usedColors.set(myKey, true);
+        retColor = myKey;
+        break;
+      }
+    }
+    return retColor;
+  };
+  const GetMyColor = (id: string, isPlayer: boolean): string => {
+    if (id != '') {
+      if (!(id in playerColorMap)) {
+        if (isPlayer) {
+          playerColorMap.set(id, PlayerColors.Blue);
+        } else {
+          const unusedColor = GetUnusedColor();
+          playerColorMap.set(id, unusedColor);
+        }
+      }
+      return playerColorMap.get(id) as string;
+    }
+
+    return PlayerColors.Red;
+  };
+
+  const BorderedAvatar = styled(Avatar)`
+    border: 3px solid lightseagreen;
+  `;
+
+  const stringAvatar = (name: string, id: string): AvatarProps => {
+    if (!name) {
+      return {
+        alt: 'System',
+
+        sx: {
+          bgcolor: 'text.secondary',
+        },
+        children: 'S',
+      };
+    }
+    if (name.split(' ').length > 1) {
+      return {
+        alt: name,
+        sx: {
+          bgcolor: playerColorMap.get(id),
+        },
+        children: `${name.split(' ')[0][0]}${name.split(' ')[1][0]}`,
+      };
+    } else {
+      return {
+        alt: name,
+        sx: {
+          bgcolor: playerColorMap.get(id),
+        },
+        children: `${name.split(' ')[0][0]}`,
+      };
+    }
+  };
+
+  players?.forEach((iterPlayer: { clientId: string }) => {
+    GetMyColor(iterPlayer.clientId, iterPlayer.clientId == player?.clientId);
+  });
   React.useEffect(() => {
     const objDiv = document.getElementById('chat-thread');
     if (objDiv) {
@@ -92,68 +184,142 @@ export default function ChatThread(props: {
     }
   }, [messages.length]);
 
+  let prevMessageOwner = '';
+  let currMessageOwner = '';
+  let skipAvatar = false;
   return (
     <div
       id="chat-thread"
       className={classes.chatThread}
-      style={{ maxHeight: window.innerHeight - 80 }}
+      style={{
+        backgroundColor: PlayerColors.Grey,
+        maxHeight: window.innerHeight - 100,
+      }}
     >
-      {messages.map((msg, idx) => {
-        const msgStyles: Record<string, number> = {};
-        if (idx > 0) {
-          if (msg.senderId !== messages[idx - 1].senderId) {
-            msgStyles.marginTop = 10;
-          } else if (msg.senderId === player?.clientId) {
-            msgStyles.borderTopRightRadius = 5;
-          } else {
-            msgStyles.borderTopLeftRadius = 5;
-          }
-        }
+      <Stack direction="column">
+        {messages.map((msg, idx) => {
+          const myMessage =
+            msg.sender === SenderType.PLAYER &&
+            msg.senderId === player?.clientId;
 
-        const myMessage =
-          msg.sender === SenderType.PLAYER && msg.senderId === player?.clientId;
-        return (
-          <ListItem
-            key={`chat-msg-${idx}`}
-            className={`${classes.chatItem} ${myMessage ? 'mine' : 'other'} ${
-              msg.sender
-            }`}
-            style={msgStyles}
+          if (msg.sender == SenderType.SYSTEM) {
+            currMessageOwner = 'System';
+          } else {
+            currMessageOwner = msg.senderId ?? '';
+          }
+          if (prevMessageOwner == currMessageOwner) {
+            skipAvatar = true;
+          } else {
+            skipAvatar = false;
+            prevMessageOwner = currMessageOwner;
+          }
+          const bubbleColor =
+            msg.sender === SenderType.PLAYER
+              ? playerColorMap.get(msg.senderId ?? '')
+              : PlayerColors.Grey;
+
+          return (
+            <Stack key={`chat-msg-container-${idx}`} direction="column">
+              {!skipAvatar && (
+                <Typography
+                  color="teal"
+                  textAlign={myMessage ? 'left' : 'right'}
+                >
+                  {msg.sender === SenderType.PLAYER
+                    ? msg.senderId === player?.clientId
+                      ? 'You'
+                      : msg.senderName
+                    : 'System'}
+                </Typography>
+              )}
+
+              <Stack
+                p={1}
+                direction={myMessage ? 'row' : 'row-reverse'}
+                justifyContent={myMessage ? 'left' : 'right'}
+              >
+                {!skipAvatar &&
+                  (msg.sender === SenderType.PLAYER ? (
+                    <AvatarSprite
+                      player={players?.find((p) => p.clientId === msg.senderId)}
+                      bgColor={bubbleColor}
+                    />
+                  ) : (
+                    <BorderedAvatar
+                      {...stringAvatar(
+                        msg.senderName ?? '',
+                        msg.senderId ?? ''
+                      )}
+                    ></BorderedAvatar>
+                  ))}
+                {skipAvatar && (
+                  <Box
+                    width={46}
+                    sx={{
+                      flexGrow: 0,
+                      flexShrink: 0,
+                    }}
+                  ></Box>
+                )}
+                <Paper
+                  square
+                  elevation={0}
+                  sx={{
+                    p: 3,
+                    whiteSpace: 'normal',
+                    wordWrap: 'break-word',
+                    backgroundColor: bubbleColor,
+                    paddingLeft: myMessage ? '10%' : '5%',
+                    paddingRight: myMessage ? '5%' : '10%',
+                    clipPath: myMessage
+                      ? 'polygon(0% 0%, 100% 0%, 100% 100%, calc(0% + 1em) 100%, calc(0% + 1em) calc(0% + 1em), 0% 0%)'
+                      : 'polygon(0% 0%, 100% 0%, calc(100% - 1em) calc(0% + 1em), calc(100% - 1em) 100%, 0% 100%, 0% 0%)',
+                    borderBottomLeftRadius: myMessage ? 0 : '1em',
+                    borderTopLeftRadius: myMessage ? 0 : '1em',
+                    borderBottomRightRadius: myMessage ? '1em' : 0,
+                    borderTopRightRadius: myMessage ? '1em' : 0,
+                  }}
+                >
+                  <Typography color={'white'}>{msg.message}</Typography>
+                </Paper>
+              </Stack>
+            </Stack>
+          );
+        })}
+        {responsePending && (
+          <Stack
+            direction="row-reverse"
+            key={`fading-text`}
+            sx={{ p: 1 }}
+            spacing={2}
+            justifyContent="right"
           >
-            <Typography
-              style={{
-                position: 'absolute',
-                fontSize: 12,
-                bottom: -15,
-                right: myMessage ? 20 : undefined,
-                left: myMessage ? undefined : 20,
+            <Paper
+              square
+              elevation={0}
+              sx={{
+                p: 3,
+                whiteSpace: 'normal',
+                wordWrap: 'break-word',
+                backgroundColor: PlayerColors.Grey,
+                paddingLeft: '5%',
+                paddingRight: '10%',
+                clipPath:
+                  'polygon(0% 0%, 100% 0%, calc(100% - 1em) calc(0% + 1em), calc(100% - 1em) 100%, 0% 100%, 0% 0%)',
+                borderBottomLeftRadius: '1em',
+                borderTopLeftRadius: '1em',
               }}
             >
-              {msg.senderName}
-            </Typography>
-            <Typography
-              style={{
-                color:
-                  msg.sender === SenderType.PLAYER &&
-                  msg.senderId === player?.clientId
-                    ? 'white'
-                    : 'black',
-              }}
-            >
-              {msg.message}
-            </Typography>
-          </ListItem>
-        );
-      })}
-      {responsePending && (
-        <ListItem
-          className={`${classes.chatItem} ${'other'} ${SenderType.SYSTEM}`}
-        >
-          <FadingText
-            strings={['Thinking...', 'Dribbling...', 'Analyzing...']}
-          />
-        </ListItem>
-      )}
+              {' '}
+              <Typography color={'white'}>
+                <FadingText
+                  strings={['Thinking...', 'Dribbling...', 'Analyzing...']}
+                />
+              </Typography>
+            </Paper>
+          </Stack>
+        )}
+      </Stack>
     </div>
   );
 }
