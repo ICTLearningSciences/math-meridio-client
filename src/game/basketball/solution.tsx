@@ -38,21 +38,21 @@ export const UNDERSTANDS_ADDITION = 'understands_addition';
 
 import courtBg from './court.png';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type GameStateData = Record<string, any>;
+
 export function SolutionComponent(props: {
   controller: GameStateHandler;
 }): JSX.Element {
   const { controller } = props;
   const { classes } = useStyles();
-  const [gameStateData, setGameStateData] = React.useState<Record<string, any>>(
-    {}
-  );
+  const [gameStateData, setGameStateData] = React.useState<GameStateData>({});
   const [players, setPlayers] = React.useState<Player[]>([]);
   const [playerStateData, setPlayerStateData] = React.useState<
     PlayerStateData[]
   >([]);
-  const [myPlayerStateData, setMyPlayerStateData] = React.useState<
-    Record<string, any>
-  >({});
+  const [myPlayerStateData, setMyPlayerStateData] =
+    React.useState<GameStateData>({});
   const curPlayerStateData = playerStateData.find(
     (p) => p.player === controller.player.clientId
   );
@@ -110,7 +110,7 @@ export function SolutionComponent(props: {
   }, [controller.players]);
 
   React.useEffect(() => {
-    const data: Record<string, any> = {};
+    const data: GameStateData = {};
     controller.globalStateData.gameStateData.forEach((d) => {
       data[d.key] = d.value;
     });
@@ -122,7 +122,7 @@ export function SolutionComponent(props: {
   }, [controller.playerStateData]);
 
   React.useEffect(() => {
-    const data: Record<string, any> = {};
+    const data: GameStateData = {};
     const gameState =
       playerStateData.find((p) => p.player === controller.player.clientId)
         ?.gameStateData || [];
@@ -135,6 +135,7 @@ export function SolutionComponent(props: {
   function Variable(props: {
     dataKey: string;
     title: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     isEnabled: (value: any) => boolean;
     value?: string;
     forceShow?: boolean;

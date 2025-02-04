@@ -10,6 +10,7 @@ import { GameStateHandler } from '../../classes/game-state-handler';
 import BasketballGame from '.';
 import shotChart from './shot-chart.png';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function ProblemComponent(props: {
   controller: GameStateHandler;
 }): JSX.Element {

@@ -7,7 +7,7 @@ The full terms of this copyright and license should always be found in the root 
 import { v4 as uuid } from 'uuid';
 import { Avatar, savePlayer } from '.';
 import { jsonLlmRequest } from '../../../classes/api-helpers';
-import { AzureServiceModel, OpenAiServiceModel } from '../../../classes/types';
+import { AzureServiceModel } from '../../../classes/types';
 import {
   GenericLlmRequest,
   PromptOutputTypes,
@@ -85,7 +85,7 @@ export function useWithPlayer() {
         const avatar: Avatar[] = [];
         const bodies = sprites.filter((s) => s.type.endsWith('body'));
         const body = {
-          ...(bodies[i % bodies.length] || arrayGetRandom(SPRITE_BODY)),
+          ...(bodies[i % bodies.length] || arrayGetRandom<Avatar>(SPRITE_BODY)),
         };
         body.variant = body.variants
           ? randomInt(body.variants.length)
@@ -98,7 +98,7 @@ export function useWithPlayer() {
         );
         const top = {
           ...(tops[i % tops.length] ||
-            arrayGetRandom(
+            arrayGetRandom<Avatar>(
               SPRITE_CLOTHES.filter(
                 (s) =>
                   s.type.endsWith('clothes_top') ||
@@ -115,7 +115,7 @@ export function useWithPlayer() {
           );
           const bottom = {
             ...(bottoms[i % bottoms.length] ||
-              arrayGetRandom(
+              arrayGetRandom<Avatar>(
                 SPRITE_CLOTHES.filter((s) => s.type.endsWith('clothes_bottom'))
               )),
           };
@@ -127,7 +127,8 @@ export function useWithPlayer() {
 
         const hairStyles = sprites.filter((s) => s.type.endsWith('hair'));
         const hair = {
-          ...(hairStyles[i % hairStyles.length] || arrayGetRandom(SPRITE_HAIR)),
+          ...(hairStyles[i % hairStyles.length] ||
+            arrayGetRandom<Avatar>(SPRITE_HAIR)),
         };
         hair.variant = hair.variants
           ? randomInt(hair.variants.length)

@@ -13,7 +13,6 @@ import {
 import { Game } from '../types';
 import { SimulationScene } from './SimulationScene';
 
-import { GameStateData } from '../../store/slices/game';
 import {
   DiscussionStage,
   isDiscussionStage,

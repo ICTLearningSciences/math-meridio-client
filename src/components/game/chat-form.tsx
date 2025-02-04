@@ -10,7 +10,6 @@ import SpeechRecognition, {
 } from 'react-speech-recognition';
 import { v4 as uuid } from 'uuid';
 import {
-  Button,
   Fab,
   FormControl,
   IconButton,

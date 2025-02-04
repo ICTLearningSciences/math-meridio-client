@@ -46,6 +46,7 @@ export interface GameData {
 
 export interface GameStateData {
   key: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   value: any;
 }
 
@@ -152,7 +153,7 @@ export const dataSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(fetchRooms.pending, (state, action) => {
+      .addCase(fetchRooms.pending, (state) => {
         state.roomsLoadStatus.status = LoadStatus.IN_PROGRESS;
         state.roomsLoadStatus.startedAt = Date.now.toString();
         state.roomsLoadStatus.error = undefined;
@@ -169,7 +170,7 @@ export const dataSlice = createSlice({
         state.roomsLoadStatus.error = action.error.message;
       })
 
-      .addCase(fetchRoom.pending, (state, action) => {
+      .addCase(fetchRoom.pending, (state) => {
         state.loadStatus.status = LoadStatus.IN_PROGRESS;
         state.loadStatus.startedAt = Date.now.toString();
         state.loadStatus.error = undefined;
@@ -188,7 +189,7 @@ export const dataSlice = createSlice({
         state.loadStatus.error = action.error.message;
       })
 
-      .addCase(createAndJoinRoom.pending, (state, action) => {
+      .addCase(createAndJoinRoom.pending, (state) => {
         state.loadStatus.status = LoadStatus.IN_PROGRESS;
         state.loadStatus.startedAt = Date.now.toString();
         state.loadStatus.error = undefined;
@@ -205,7 +206,7 @@ export const dataSlice = createSlice({
         state.loadStatus.error = action.error.message;
       })
 
-      .addCase(joinRoom.pending, (state, action) => {
+      .addCase(joinRoom.pending, (state) => {
         state.loadStatus.status = LoadStatus.IN_PROGRESS;
         state.loadStatus.startedAt = Date.now.toString();
         state.loadStatus.error = undefined;
@@ -222,12 +223,12 @@ export const dataSlice = createSlice({
         state.loadStatus.error = action.error.message;
       })
 
-      .addCase(leaveRoom.pending, (state, action) => {
+      .addCase(leaveRoom.pending, (state) => {
         state.loadStatus.status = LoadStatus.IN_PROGRESS;
         state.loadStatus.startedAt = Date.now.toString();
         state.loadStatus.error = undefined;
       })
-      .addCase(leaveRoom.fulfilled, (state, action) => {
+      .addCase(leaveRoom.fulfilled, (state) => {
         state.room = undefined;
         state.loadStatus.status = LoadStatus.DONE;
         state.loadStatus.endedAt = Date.now.toString();
@@ -239,12 +240,12 @@ export const dataSlice = createSlice({
         state.loadStatus.error = action.error.message;
       })
 
-      .addCase(deleteRoom.pending, (state, action) => {
+      .addCase(deleteRoom.pending, (state) => {
         state.loadStatus.status = LoadStatus.IN_PROGRESS;
         state.loadStatus.startedAt = Date.now.toString();
         state.loadStatus.error = undefined;
       })
-      .addCase(deleteRoom.fulfilled, (state, action) => {
+      .addCase(deleteRoom.fulfilled, (state) => {
         state.room = undefined;
         state.loadStatus.status = LoadStatus.DONE;
         state.loadStatus.endedAt = Date.now.toString();
@@ -256,7 +257,7 @@ export const dataSlice = createSlice({
         state.loadStatus.error = action.error.message;
       })
 
-      .addCase(renameRoom.pending, (state, action) => {
+      .addCase(renameRoom.pending, (state) => {
         state.loadStatus.status = LoadStatus.IN_PROGRESS;
         state.loadStatus.startedAt = Date.now.toString();
         state.loadStatus.error = undefined;
@@ -273,7 +274,7 @@ export const dataSlice = createSlice({
         state.loadStatus.error = action.error.message;
       })
 
-      .addCase(updateRoomGameData.pending, (state, action) => {
+      .addCase(updateRoomGameData.pending, (state) => {
         state.loadStatus.status = LoadStatus.IN_PROGRESS;
         state.loadStatus.startedAt = Date.now.toString();
         state.loadStatus.error = undefined;
@@ -290,7 +291,7 @@ export const dataSlice = createSlice({
         state.loadStatus.error = action.error.message;
       })
 
-      .addCase(sendMessage.pending, (state, action) => {
+      .addCase(sendMessage.pending, (state) => {
         state.loadStatus.status = LoadStatus.IN_PROGRESS;
         state.loadStatus.startedAt = Date.now.toString();
         state.loadStatus.error = undefined;

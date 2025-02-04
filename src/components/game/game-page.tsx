@@ -22,7 +22,6 @@ import { useAppSelector } from '../../store/hooks';
 import { useWithGame } from '../../store/slices/game/use-with-game-state';
 import { GameStateHandler } from '../../classes/game-state-handler';
 import withAuthorizationOnly from '../../wrap-with-authorization-only';
-import { v4 as uuid } from 'uuid';
 
 function ProblemSpace(props: {
   game: Game;
@@ -112,9 +111,7 @@ function ResultsSpace(props: {
 
 function GamePage(): JSX.Element {
   const { room, simulation } = useAppSelector((state) => state.gameData);
-  const { game, gameStateHandler, launchGame, leaveRoom, responsePending } =
-    useWithGame();
-  const [stableUuid] = React.useState(uuid());
+  const { game, gameStateHandler, launchGame, responsePending } = useWithGame();
   const navigate = useNavigate();
 
   React.useEffect(() => {

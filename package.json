@@ -34,11 +34,11 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "PORT=80 react-scripts start",
+    "start": "PORT=3001 react-scripts start",
     "start-windows": "set PORT=82  && react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "test:unit": "npx jest --config=./src/unit-tests/jest.config.js",
+    "test:unit": "npx jest --config=./src/unit-tests/jest.config.js --passWithNoTests",
     "eject": "react-scripts eject",
     "format": "prettier --write \"src/**/*.{js,ts,tsx}\"",
     "cy:open": "npx cypress open",

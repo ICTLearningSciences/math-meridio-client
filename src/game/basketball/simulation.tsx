@@ -10,7 +10,7 @@ import { GameStateHandler } from '../../classes/game-state-handler';
 import { useWithPhaserGame } from '../../hooks/use-with-phaser-game';
 import { PlayerStateData } from '../../store/slices/game';
 import EventSystem from '../event-system';
-import { Button, Card, CardActionArea, Typography } from '@mui/material';
+import { Button, Typography } from '@mui/material';
 import { BasketballSimulationData } from './SimulationScene';
 import {
   INSIDE_SHOT_PERCENT,

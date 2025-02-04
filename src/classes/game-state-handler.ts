@@ -6,11 +6,7 @@ The full terms of this copyright and license should always be found in the root 
 */
 
 import { AiServicesResponseTypes } from '../ai-services/ai-service-types';
-import {
-  DiscussionStage,
-  IStage,
-  StageBuilderStep,
-} from '../components/discussion-stage-builder/types';
+import { DiscussionStage } from '../components/discussion-stage-builder/types';
 import {
   ChatMessage,
   GameData,
@@ -24,7 +20,6 @@ import { CancelToken } from 'axios';
 import { Subscriber } from '../store/slices/game/use-with-game-state';
 import { Player } from '../store/slices/player';
 import { DiscussionStageHandler } from './discussion-stage-handler';
-import { convertCollectedDataToGSData } from '../components/discussion-stage-builder/helpers';
 import { CurrentStage } from '../game/basketball';
 
 interface UserResponseHandleState {
@@ -90,7 +85,6 @@ export abstract class GameStateHandler implements Subscriber {
   updateRoomGameData: (gameData: Partial<GameData>) => void;
 
   constructor(args: GameStateHandlerArgs) {
-    const id = args.gameData.globalStateData.curStageId || args.defaultStageId;
     this.player = args.player;
     this.players = args.gameData.players;
     this.chatLog = args.gameData.chat;
