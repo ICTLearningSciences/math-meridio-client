@@ -5,7 +5,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import { CollectedDiscussionData } from '../../classes/discussion-stage-handler';
-import { GameStateData, PlayerStateData } from '../../store/slices/game';
+import { GameStateData } from '../../store/slices/game';
 import {
   DiscussionStage,
   FlowItem,
@@ -216,6 +216,7 @@ export function checkGameAndPlayerStateForValue(
   globalGameStateData: GameStateData[],
   playerGameStateData: GameStateData[],
   key: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   value: any
 ) {
   const gameDataValue = globalGameStateData.find(

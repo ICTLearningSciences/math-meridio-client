@@ -17,7 +17,7 @@ export function TtsSpeak({ children, message }: SpeakProps): JSX.Element {
     return <div>{children}</div>;
   }
 
-  const { ttsChildren, state } = useTts({
+  const { ttsChildren } = useTts({
     children,
     markTextAsSpoken: true,
     markColor: 'white',

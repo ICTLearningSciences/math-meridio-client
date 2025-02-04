@@ -31,7 +31,7 @@ import { GenericLlmRequest, PromptOutputTypes, PromptRoles } from '../types';
 import { CancelToken } from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import { chatLogToString, isJsonString } from '../helpers';
-import { AzureServiceModel, OpenAiServiceModel } from './types';
+import { AzureServiceModel } from './types';
 import {
   ChatMessage,
   SenderType,
@@ -537,14 +537,14 @@ export class DiscussionStageHandler implements Subscriber {
   }
 
   globalStateUpdated(newState: GlobalStateData): void {
-    console.log('global state updated');
+    console.log('global state updated', newState);
   }
 
   playerStateUpdated(newState: PlayerStateData[]): void {
-    console.log('player state updated');
+    console.log('player state updated', newState);
   }
 
   playersUpdated(newState: Player[]): void {
-    console.log('players updated');
+    console.log('players updated', newState);
   }
 }

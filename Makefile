@@ -7,6 +7,10 @@ develop:
 develop-win:
 	npm run start-windows
 
+.PHONY: cypress
+cypress:
+	cd cypress && npm run cy:open
+
 PHONY: test-all
 test-all:
 	$(MAKE) test-format

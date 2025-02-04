@@ -30,6 +30,7 @@ export function isJsonString(str: string): boolean {
   return true;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function arrayNRandom(arr: any[], n: number): any[] {
   let len = arr.length;
   const result = new Array(n),
@@ -48,11 +49,11 @@ export function randomInt(n: number): number {
   return Math.floor(Math.random() * n);
 }
 
-export function arrayGetRandom(arr: any[]): any {
+export function arrayGetRandom<T>(arr: T[]): T | undefined {
   if (arr.length === 0) return undefined;
   return arr[randomInt(arr.length)];
 }
 
-export function isEqual(obj1: any, obj2: any): boolean {
+export function isEqual<T>(obj1: T, obj2: T): boolean {
   return JSON.stringify(obj1) !== JSON.stringify(obj2);
 }

@@ -6,7 +6,6 @@ The full terms of this copyright and license should always be found in the root 
 */
 import Validator, { Schema } from 'jsonschema';
 import { GenericLlmRequest } from '../types';
-import { execHttp } from '../api-helpers';
 import { syncLlmRequest } from '../hooks/use-with-synchronous-polling';
 import { CancelToken } from 'axios';
 

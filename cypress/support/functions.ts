@@ -44,6 +44,7 @@ interface MockGraphQLQuery {
   data: any | any[];
   params?: { statusCode: number };
 }
+export type CypressGlobal = Cypress.cy & CyEventEmitter;
 
 function staticResponse(s: StaticResponse): StaticResponse {
   return {
@@ -57,7 +58,7 @@ function staticResponse(s: StaticResponse): StaticResponse {
   };
 }
 
-export function cySetup(cy) {
+export function cySetup(cy: CypressGlobal) {
   cy.viewport(1280, 720);
   cy.clearLocalStorage();
 }
@@ -74,12 +75,12 @@ export function mockGQL(
   };
 }
 
-export function cyInterceptGraphQL(cy, mocks: MockGraphQLQuery[]): void {
+export function cyInterceptGraphQL(cy: CypressGlobal, mocks: MockGraphQLQuery[]): void {
   const queryCalls: any = {};
   for (const mock of mocks) {
     queryCalls[mock.query] = 0;
   }
-  cy.intercept("/graphql/graphql", (req) => {
+  cy.intercept("/graphql/graphql", (req: any) => {
     const { body } = req;
     const queryBody = body.query.replace(/\s+/g, " ").replace("\n", "").trim();
     let handled = false;
@@ -113,7 +114,7 @@ export function cyInterceptGraphQL(cy, mocks: MockGraphQLQuery[]): void {
 }
 
 export function cyMockDefault(
-  cy,
+  cy: CypressGlobal,
   args: {
     gqlQueries?: MockGraphQLQuery[];
   } = {}
@@ -131,13 +132,13 @@ interface MockedResData<T> {
 }
 
 export function cyMockMultipleResponses<T>(
-  cy,
+  cy: CypressGlobal,
   urlRegex: string,
   alias: string,
   res: MockedResData<T>[]
 ) {
   let numCalls = 0;
-  cy.intercept(urlRegex, (req) => {
+  cy.intercept(urlRegex, (req: any) => {
     const {
       statusCode: _statusCode,
       contentType,

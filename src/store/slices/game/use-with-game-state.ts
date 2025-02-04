@@ -46,7 +46,7 @@ export function useWithGame() {
   const { room, loadStatus } = useAppSelector((state) => state.gameData);
   const [responsePending, setResponsePending] = React.useState<boolean>(false);
   const { loadDiscussionStages } = useWithStages();
-  const poll = React.useRef<any>(null);
+  const poll = React.useRef<NodeJS.Timeout | null>(null);
 
   const [game, setGame] = React.useState<Game>();
   const [subscribers, setSubscribers] = React.useState<Subscriber[]>([]);

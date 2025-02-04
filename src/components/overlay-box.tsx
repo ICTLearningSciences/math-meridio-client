@@ -9,6 +9,7 @@ import { Typography } from '@mui/material';
 
 export function OverlayBox(props: {
   message: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   styles?: Record<string, any>;
 }): JSX.Element {
   return (
