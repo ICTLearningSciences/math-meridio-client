@@ -4,26 +4,6 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import BasketballGame from './basketball';
-import SoccerGame from './soccer';
-import {
-  GameStateHandler,
-  GameStateHandlerArgs,
-} from '../classes/game-state-handler';
+import GameScene from '../game-scene';
 
-export interface Game {
-  id: 'basketball' | 'soccer';
-  name: string;
-  problem: string;
-  config: Phaser.Types.Core.GameConfig;
-  showProblem: (controller: GameStateHandler) => JSX.Element;
-  showSolution: (controller: GameStateHandler) => JSX.Element;
-  showSimulation: (
-    controller: GameStateHandler,
-    simulation?: string
-  ) => JSX.Element;
-  showResult: (controller: GameStateHandler) => JSX.Element;
-  createController: (args: GameStateHandlerArgs) => GameStateHandler;
-}
-
-export const GAMES: Game[] = [BasketballGame, SoccerGame];
+export class SolutionSpace extends GameScene {}

@@ -4,26 +4,20 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import BasketballGame from './basketball';
-import SoccerGame from './soccer';
-import {
-  GameStateHandler,
-  GameStateHandlerArgs,
-} from '../classes/game-state-handler';
+import React from 'react';
+import { Typography } from '@mui/material';
+import { GameStateHandler } from '../../classes/game-state-handler';
+import SoccerGame from '.';
+import shotChart from './shot-chart.png';
 
-export interface Game {
-  id: 'basketball' | 'soccer';
-  name: string;
-  problem: string;
-  config: Phaser.Types.Core.GameConfig;
-  showProblem: (controller: GameStateHandler) => JSX.Element;
-  showSolution: (controller: GameStateHandler) => JSX.Element;
-  showSimulation: (
-    controller: GameStateHandler,
-    simulation?: string
-  ) => JSX.Element;
-  showResult: (controller: GameStateHandler) => JSX.Element;
-  createController: (args: GameStateHandlerArgs) => GameStateHandler;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function ProblemComponent(props: {
+  controller: GameStateHandler;
+}): JSX.Element {
+  return (
+    <div className="row">
+      <Typography>{SoccerGame.problem}</Typography>
+      <img style={{ width: '100%', height: 200 }} src={shotChart}></img>
+    </div>
+  );
 }
-
-export const GAMES: Game[] = [BasketballGame, SoccerGame];

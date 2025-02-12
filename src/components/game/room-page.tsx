@@ -137,6 +137,7 @@ function RoomPage(): JSX.Element {
                 key={g.id}
                 style={{
                   width: 300,
+                  minHeight: 300,
                   marginLeft: 5,
                   marginRight: 5,
                   backgroundColor: selectedGame === g.id ? '#D2EBFE' : '',
