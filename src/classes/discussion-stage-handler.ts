@@ -32,6 +32,7 @@ import { CancelToken } from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import { chatLogToString, isJsonString } from '../helpers';
 import { AzureServiceModel } from './types';
+import { OpenAiServiceModel } from './types';
 import {
   ChatMessage,
   SenderType,
@@ -510,7 +511,8 @@ export class DiscussionStageHandler implements Subscriber {
     const llmRequest: GenericLlmRequest = {
       prompts: [],
       outputDataType: step.outputDataType,
-      targetAiServiceModel: AzureServiceModel,
+      // targetAiServiceModel: AzureServiceModel,
+      targetAiServiceModel: OpenAiServiceModel,
       responseFormat: responseFormat,
       systemRole: customSystemRole,
     };
@@ -543,6 +545,12 @@ export class DiscussionStageHandler implements Subscriber {
 
     const requestFunction = async () => {
       const _response = await this.executePrompt(llmRequest);
+
+      // show the content of _response in the terminal if there's content in it
+      if (_response) {
+        console.log('AI Service Response:', _response);
+      }
+
       const response = extractServiceStepResponse(_response, 0);
 
       if (step.outputDataType === PromptOutputTypes.JSON) {
