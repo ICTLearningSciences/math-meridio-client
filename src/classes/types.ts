@@ -14,12 +14,12 @@ export interface GameObjects {
 
 export const OpenAiServiceModel: TargetAiModelServiceType = {
   serviceName: 'OPEN_AI',
-  model: 'gpt-3.5-turbo-16k',
+  model: 'gpt-4o-mini',
 };
 
 export const AzureServiceModel: TargetAiModelServiceType = {
   serviceName: 'AZURE_OPEN_AI',
-  model: 'ABE-GPT-3_5_turbo_16k',
+  model: 'ABE-gpt-35-turbo',
 };
 
 export const GeminiServiceModel: TargetAiModelServiceType = {
