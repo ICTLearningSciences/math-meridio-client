@@ -6,10 +6,11 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React from 'react';
 import { DiscussionStage } from './types';
-import { Button } from '@mui/material';
+import { Button, IconButton } from '@mui/material';
 import { isStageRunnable } from './helpers';
 import { RowDiv, ColumnDiv } from '../../styled-components';
-
+import { Download } from '@mui/icons-material';
+import { useWithDownloadActivities } from '../../hooks/use-with-download-activities';
 export function ExistingStageItem(props: {
   stage: DiscussionStage;
   goToStage: () => void;
@@ -80,6 +81,7 @@ export function SelectCreateStage(props: {
   onCreateStage: () => void;
 }): JSX.Element {
   const { existingStages, onEditStage, onCreateStage, goToStage } = props;
+  const { downloadDiscussionStages } = useWithDownloadActivities();
   return (
     <ColumnDiv
       style={{
@@ -90,7 +92,12 @@ export function SelectCreateStage(props: {
         position: 'relative',
       }}
     >
-      <h1>Discussion Stage Builder</h1>
+      <h1>
+        Discussion Stage Builder{' '}
+        <IconButton onClick={downloadDiscussionStages}>
+          <Download />
+        </IconButton>
+      </h1>
       <ExistingStages
         goToStage={goToStage}
         stages={existingStages}
