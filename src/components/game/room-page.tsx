@@ -100,6 +100,11 @@ function RoomPage(): JSX.Element {
   const [selectedGame, setSelectedGame] = React.useState<string>();
   const navigate = useNavigate();
 
+  const gameRoutes: Record<string, string> = {
+    soccer: '/game-soccer',
+    basketball: '/game-basketball',
+  };
+
   React.useEffect(() => {
     if (selectedGame) {
       reloadRooms(selectedGame);
@@ -107,10 +112,11 @@ function RoomPage(): JSX.Element {
   }, [selectedGame]);
 
   React.useEffect(() => {
-    if (room) {
-      navigate(`/game/${room._id}`);
+    if (room && selectedGame) {
+      const route = gameRoutes[selectedGame] || '/game';
+      navigate(`${route}/${room._id}`);
     }
-  }, [room]);
+  }, [room]);  
 
   async function reloadRooms(gameId: string) {
     dispatch(fetchRooms({ gameId }));

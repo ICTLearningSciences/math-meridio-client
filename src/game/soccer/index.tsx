@@ -1,9 +1,3 @@
-/*
-This software is Copyright ©️ 2020 The University of Southern California. All Rights Reserved. 
-Permission to use, copy, modify, and distribute this software and its documentation for educational, research and non-profit purposes, without fee, and without a written agreement is hereby granted, provided that the above copyright notice and subject to the full license file found in the root of this software deliverable. Permission to make commercial use of this software may be obtained by contacting:  USC Stevens Center for Innovation University of Southern California 1150 S. Olive Street, Suite 2300, Los Angeles, CA 90115, USA Email: accounting@stevens.usc.edu
-
-The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
-*/
 import React from 'react';
 import {
   CollectedDiscussionData,
@@ -11,7 +5,7 @@ import {
   GameStateHandlerArgs,
 } from '../../classes/game-state-handler';
 import { Game } from '../types';
-import { SimulationScene } from './SimulationScene';
+import SimulationScene from './SimulationScene';
 
 import {
   DiscussionStage,
@@ -26,16 +20,14 @@ import { SolutionComponent } from './solution';
 import { SimulationComponent } from './simulation';
 import { ResultComponent } from './results';
 
-// [QUESTION] what's stage id for soccer ball?
+// [Question] stage IDs for soccer?
 const introductionDiscussionStage = 'de0b94b9-1fc2-4ea1-995e-21a75670c16d';
 const collectVariablesDiscussionStage = '86587083-9279-4c27-8470-836f992670fc';
 const explainConceptsDiscussionStage = '909a0d5a-345d-4f6e-8d9c-2e7f6cfa4714';
 const keyConceptsConvoDiscussionStage = '5421ef02-3cca-4281-a832-69ce040ed848';
 const selectStrategyDiscussionStage = '3095c6cd-d377-4660-aa4d-e79409592210';
-const discussNewStrategyDiscussionStage =
-  '9265f1ef-2a2e-4a14-b98f-5bbf6fd879d8';
-const discussBestStrategyDiscussionStage =
-  'e11d3273-e0e8-4b15-a5f0-3b80e5665e01';
+const discussNewStrategyDiscussionStage = '9265f1ef-2a2e-4a14-b98f-5bbf6fd879d8';
+const discussBestStrategyDiscussionStage = 'e11d3273-e0e8-4b15-a5f0-3b80e5665e01';
 const finishedDiscussionStage = 'bdf123b5-1fd1-4de9-bc4e-74a53623475a';
 
 export interface CurrentStage {
@@ -55,7 +47,7 @@ export class SoccerStateHandler extends GameStateHandler {
   stageList: CurrentStage[] = [];
 
   constructor(args: GameStateHandlerArgs) {
-    super({ ...args, defaultStageId: 'de0b94b9-1fc2-4ea1-995e-21a75670c16d' }); // [QUESTION] what's stage id for soccer ball?
+    super({ ...args, defaultStageId: 'de0b94b9-1fc2-4ea1-995e-21a75670c16d' }); // [Question] stage ID for soccer?
 
     this.discussionStageHandler = new DiscussionStageHandler(
       args.sendMessage,
@@ -285,54 +277,51 @@ export class SoccerStateHandler extends GameStateHandler {
   }
 
   async handleNewUserMessage(message: string) {
-    // super.handleNewUserMessage(message);
-    // todo (not hard-coded)
-    // TODO: modify here once user story finished.
     const msg = message.toLowerCase();
-    if (msg.includes('outside shot')) {
-      const value = msg.includes('3') || msg.includes('three') ? 3 : undefined;
+    if (msg.includes('free kick')) {
+      const value = 1; // 1 point per goal in soccer
       this.updateRoomGameData({
         globalStateData: {
           ...this.globalStateData,
-          gameStateData: [{ key: 'Points per outside shot', value: value }],
+          gameStateData: [{ key: 'Points per free kick', value: value }],
         },
         playerStateData: [
           {
             player: this.player.clientId,
             animation: '',
-            gameStateData: [{ key: 'Points per outside shot', value: value }],
+            gameStateData: [{ key: 'Points per free kick', value: value }],
           },
         ],
       });
     }
-    if (msg.includes('inside shot')) {
-      const value = msg.includes('2') || msg.includes('two') ? 2 : undefined;
+    if (msg.includes('penalty kick')) {
+      const value = 1; // 1 point per goal in soccer
       this.updateRoomGameData({
         globalStateData: {
           ...this.globalStateData,
-          gameStateData: [{ key: 'Points per inside shot', value: value }],
+          gameStateData: [{ key: 'Points per penalty kick', value: value }],
         },
         playerStateData: [
           {
             player: this.player.clientId,
             animation: '',
-            gameStateData: [{ key: 'Points per inside shot', value: value }],
+            gameStateData: [{ key: 'Points per penalty kick', value: value }],
           },
         ],
       });
     }
-    if (msg.includes('mid shot')) {
-      const value = msg.includes('2') || msg.includes('two') ? 2 : undefined;
+    if (msg.includes('open play shot')) {
+      const value = 1; // 1 point per goal in soccer
       this.updateRoomGameData({
         globalStateData: {
           ...this.globalStateData,
-          gameStateData: [{ key: 'Points per mid shot', value: value }],
+          gameStateData: [{ key: 'Points per open play shot', value: value }],
         },
         playerStateData: [
           {
             player: this.player.clientId,
             animation: '',
-            gameStateData: [{ key: 'Points per mid shot', value: value }],
+            gameStateData: [{ key: 'Points per open play shot', value: value }],
           },
         ],
       });
@@ -359,7 +348,6 @@ const SoccerGame: Game = {
       // Center vertically and horizontally
       autoCenter: Phaser.Scale.CENTER_BOTH,
     },
-
     scene: [SimulationScene],
   },
   showProblem: (controller: GameStateHandler) => {

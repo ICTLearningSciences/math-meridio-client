@@ -1,183 +1,91 @@
-/*
-This software is Copyright ©️ 2020 The University of Southern California. All Rights Reserved. 
-Permission to use, copy, modify, and distribute this software and its documentation for educational, research and non-profit purposes, without fee, and without a written agreement is hereby granted, provided that the above copyright notice and subject to the full license file found in the root of this software deliverable. Permission to make commercial use of this software may be obtained by contacting:  USC Stevens Center for Innovation University of Southern California 1150 S. Olive Street, Suite 2300, Los Angeles, CA 90115, USA Email: accounting@stevens.usc.edu
-
-The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
-*/
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BarChart } from '@mui/x-charts/BarChart';
 import { GameStateHandler } from '../../classes/game-state-handler';
-import { BasketballSimulationData } from './SimulationScene';
 import EventSystem from '../event-system';
-import {
-  INSIDE_SHOT_POINTS_VALUE,
-  MID_SHOT_POINTS_VALUE,
-  OUTSIDE_SHOT_POINTS_VALUE,
-} from './solution';
 import { Stack, Typography } from '@mui/material';
+
+interface SoccerSimulationData {
+  player: string;
+  kickLeft: number;
+  kickRight: number;
+  kickLeftMade: number;
+  kickRightMade: number;
+  totalPoints: number;
+}
+
+const KICK_LEFT_POINTS_VALUE = 2;
+const KICK_RIGHT_POINTS_VALUE = 3;
 
 export function ResultComponent(props: {
   controller: GameStateHandler;
 }): JSX.Element {
   const { controller } = props;
-  const [simulationData, setSimulationData] = React.useState<
-    Record<string, BasketballSimulationData>
-  >({});
-  React.useEffect(() => {
-    EventSystem.on('simulationEnded', simulationEnded);
-  }, []);
+  const [simulationData, setSimulationData] = useState<Record<string, SoccerSimulationData>>({});
   const chartHeight = 300;
   const resultsWidth = 900;
   const scoreChartWidth = resultsWidth / 2;
   const shotsChartWidth = resultsWidth / controller.players.length;
 
-  interface ChartData {
-    insideScores: number[];
-    midScores: number[];
-    outsideScores: number[];
+  const [playerChartData, setPlayerChartData] = useState(
+    controller.players.map(() => ({ made: [0, 0], missed: [0, 0] }))
+  );
 
-    player1Data: number[];
-    player1MissedData: number[];
+  const [kickLeftScores, setKickLeftScores] = useState<number[]>([]);
+  const [kickRightScores, setKickRightScores] = useState<number[]>([]);
+  const [playerLabels, setPlayerLabels] = useState<string[]>([]);
 
-    player2Data: number[];
-    player2MissedData: number[];
+  const scoreLabels = ['Kick Left', 'Kick Right'];
 
-    player3Data: number[];
-    player3MissedData: number[];
+  useEffect(() => {
+    EventSystem.on('simulationEnded', simulationEnded);
+  }, []);
 
-    player4Data: number[];
-    player4MissedData: number[];
-
-    playerLabels: string[];
-  }
-
-  const [myChartData, setMyChartData] = useState<ChartData>({
-    insideScores: [],
-    midScores: [],
-    outsideScores: [],
-    player1Data: [],
-    player1MissedData: [],
-    player2Data: [],
-    player2MissedData: [],
-    player3Data: [],
-    player3MissedData: [],
-    player4Data: [],
-    player4MissedData: [],
-    playerLabels: [],
-  });
-
-  const scoreLabels = ['In', 'Mid', '3pt'];
-
-  function simulationEnded(data: BasketballSimulationData): void {
+  function simulationEnded(data: SoccerSimulationData): void {
     simulationData[data.player] = data;
     setSimulationData({ ...simulationData });
-    let insideScores: number[] = [];
-    let midScores: number[] = [];
-    let outsideScores: number[] = [];
 
-    let player1Data: number[] = [];
-    let player1MissedData: number[] = [];
+    const updatedChartData = [...playerChartData];
 
-    let player2Data: number[] = [];
-    let player2MissedData: number[] = [];
-
-    let player3Data: number[] = [];
-    let player3MissedData: number[] = [];
-
-    let player4Data: number[] = [];
-    let player4MissedData: number[] = [];
-
-    let playerLabels: string[] = [];
-
-    for (let index = 0; index < controller.players.length; index++) {
-      const player = controller.players[index];
-      const playerMade = [
-        simulationData[player.clientId]?.insideShotsMade,
-        simulationData[player.clientId]?.midShotsMade,
-        simulationData[player.clientId]?.outsideShotsMade,
-      ];
-      const playerMissed = [
-        simulationData[player.clientId]?.insideShots -
-          simulationData[player.clientId]?.insideShotsMade,
-        simulationData[player.clientId]?.midShots -
-          simulationData[player.clientId]?.midShotsMade,
-        simulationData[player.clientId]?.outsideShots -
-          simulationData[player.clientId]?.outsideShotsMade,
-      ];
-
-      switch (index) {
-        case 0:
-          player1Data = playerMade;
-          player1MissedData = playerMissed;
-          break;
-        case 1:
-          player2Data = playerMade;
-          player2MissedData = playerMissed;
-          break;
-        case 2:
-          player3Data = playerMade;
-          player3MissedData = playerMissed;
-          break;
-        case 3:
-          player4Data = playerMade;
-          player4MissedData = playerMissed;
-          break;
+    controller.players.forEach((player, index) => {
+      const sim = simulationData[player.clientId];
+      if (sim) {
+        const made = [sim.kickLeftMade, sim.kickRightMade];
+        const missed = [sim.kickLeft - sim.kickLeftMade, sim.kickRight - sim.kickRightMade];
+        updatedChartData[index] = { made, missed };
       }
-    }
-    insideScores = controller.players.map(
-      (player) =>
-        (simulationData[player.clientId]?.insideShotsMade || 0) *
-        INSIDE_SHOT_POINTS_VALUE
-    );
-
-    midScores = controller.players.map(
-      (player) =>
-        (simulationData[player.clientId]?.midShotsMade || 0) *
-        MID_SHOT_POINTS_VALUE
-    );
-
-    outsideScores = controller.players.map(
-      (player) =>
-        (simulationData[player.clientId]?.outsideShotsMade || 0) *
-        OUTSIDE_SHOT_POINTS_VALUE
-    );
-    playerLabels = controller.players.map((player) => player.name);
-    setMyChartData({
-      insideScores: insideScores,
-      midScores: midScores,
-      outsideScores: outsideScores,
-      player1Data: player1Data,
-      player1MissedData: player1MissedData,
-      player2Data: player2Data,
-      player2MissedData: player2MissedData,
-      player3Data: player3Data,
-      player3MissedData: player3MissedData,
-      player4Data: player4Data,
-      player4MissedData: player4MissedData,
-      playerLabels: playerLabels,
     });
+
+    setPlayerChartData(updatedChartData);
+
+    setKickLeftScores(
+      controller.players.map(
+        (player) => (simulationData[player.clientId]?.kickLeftMade || 0) * KICK_LEFT_POINTS_VALUE
+      )
+    );
+
+    setKickRightScores(
+      controller.players.map(
+        (player) => (simulationData[player.clientId]?.kickRightMade || 0) * KICK_RIGHT_POINTS_VALUE
+      )
+    );
+
+    setPlayerLabels(controller.players.map((p) => p.name));
   }
-  function GetShotChartFor(
-    playerData: number[],
-    playerMissedData: number[],
-    playerName: string,
-    bHideLegend: boolean,
-    index: number
-  ) {
+
+  function GetShotChart(playerIndex: number, playerName: string) {
+    const playerData = playerChartData[playerIndex]?.made || [0, 0];
+    const playerMissedData = playerChartData[playerIndex]?.missed || [0, 0];
+
     return (
-      <Stack key={index} direction="column" alignItems="center">
+      <Stack key={playerIndex} direction="column" alignItems="center">
         <BarChart
           width={shotsChartWidth}
           height={chartHeight}
           series={[
             { data: playerData, label: 'made', stack: 'shots' },
-            {
-              data: playerMissedData,
-              label: 'missed',
-              stack: 'shots',
-            },
+            { data: playerMissedData, label: 'missed', stack: 'shots' },
           ]}
-          slotProps={{ legend: { hidden: bHideLegend } }}
+          slotProps={{ legend: { hidden: true } }}
           xAxis={[{ data: scoreLabels, scaleType: 'band' }]}
           yAxis={[{ disableLine: true, disableTicks: true, tickFontSize: 0 }]}
         />
@@ -185,6 +93,7 @@ export function ResultComponent(props: {
       </Stack>
     );
   }
+
   return (
     <Stack sx={{ width: resultsWidth }} direction="column" alignItems="center">
       <Stack direction="column" alignItems="center">
@@ -195,66 +104,24 @@ export function ResultComponent(props: {
           height={chartHeight}
           series={[
             {
-              data: myChartData.insideScores,
-              label: 'In',
+              data: kickLeftScores,
+              label: 'Kick Left',
               stack: 'mademissedshots',
               color: '#e15759',
             },
             {
-              data: myChartData.midScores,
-              label: 'Mid',
+              data: kickRightScores,
+              label: 'Kick Right',
               stack: 'mademissedshots',
               color: '#ff9da7',
             },
-            {
-              data: myChartData.outsideScores,
-              label: '3pt',
-              stack: 'mademissedshots',
-              color: '#af7aa1',
-            },
           ]}
-          xAxis={[{ data: myChartData.playerLabels, scaleType: 'band' }]}
+          xAxis={[{ data: playerLabels, scaleType: 'band' }]}
         />
       </Stack>
       <Typography variant="h6">Shots</Typography>
-
       <Stack direction="row" alignItems="center">
-        {controller.players.map((player, index) => (
-          <>
-            {index === 0 &&
-              GetShotChartFor(
-                myChartData.player1Data,
-                myChartData.player1MissedData,
-                player.name,
-                true,
-                index
-              )}
-            {index === 1 &&
-              GetShotChartFor(
-                myChartData.player2Data,
-                myChartData.player2MissedData,
-                player.name,
-                true,
-                index
-              )}
-            {index === 2 &&
-              GetShotChartFor(
-                myChartData.player3Data,
-                myChartData.player3MissedData,
-                player.name,
-                true,
-                index
-              )}
-            {index === 3 &&
-              GetShotChartFor(
-                myChartData.player4Data,
-                myChartData.player4MissedData,
-                player.name,
-                true,
-                index
-              )}
-          </>
-        ))}
+        {controller.players.map((player, index) => GetShotChart(index, player.name))}
       </Stack>
     </Stack>
   );

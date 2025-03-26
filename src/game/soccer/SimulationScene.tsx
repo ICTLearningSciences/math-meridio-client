@@ -1,211 +1,110 @@
-/*
-This software is Copyright ©️ 2020 The University of Southern California. All Rights Reserved. 
-Permission to use, copy, modify, and distribute this software and its documentation for educational, research and non-profit purposes, without fee, and without a written agreement is hereby granted, provided that the above copyright notice and subject to the full license file found in the root of this software deliverable. Permission to make commercial use of this software may be obtained by contacting:  USC Stevens Center for Innovation University of Southern California 1150 S. Olive Street, Suite 2300, Los Angeles, CA 90115, USA Email: accounting@stevens.usc.edu
-
-The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
-*/
-import GameScene from '../game-scene';
-import { GameStateHandler } from '../../classes/game-state-handler';
-import { addBackground, addImage } from '../phaser-helpers';
+import Phaser from 'phaser';
 import EventSystem from '../event-system';
-import {
-  INSIDE_SHOT_SUCCESS_VALUE,
-  MID_SHOT_SUCCESS_VALUE,
-  NUMBER_OF_SHOTS,
-  OUTSIDE_SHOT_SUCCESS_VALUE,
-} from './solution';
-import { SenderType } from '../../store/slices/game';
+import goalImg from './assets/goal.png';
+import ballImg from './assets/ball.png';
+import keeperImg from './assets/keeper.png';
+import boy1Img from './assets/boy_2.png';
+import boy2Img from './assets/boy_3.png';
+import boy3Img from './assets/boy_4.png';
+import boy4Img from './assets/boy_5.png';
 
-export interface BasketballSimulationData {
-  player: string;
-
-  outsideShots: number;
-  midShots: number;
-  insideShots: number;
-
-  outsideShotsMade: number;
-  midShotsMade: number;
-  insideShotsMade: number;
-
-  totalPoints: number;
+interface PlayerData {
+  id: number;
+  avatar: string;
+  name: string;
+  score: string;
+  containerId: string;
+  direction?: 'left' | 'right'; // optional for static mode
 }
 
-export interface BasketballShot {
-  position: 'outside' | 'mid' | 'inside';
-  success: boolean;
-}
+class SoccerGame extends Phaser.Scene {
+  containerId: string;
+  ball!: Phaser.Physics.Arcade.Image;
+  keeper!: Phaser.Physics.Arcade.Image;
+  resultText?: Phaser.GameObjects.Text;
+  direction?: 'left' | 'right';
+  playerId: number;
+  avatar: string;
+  name: string;
 
-export class SimulationScene extends GameScene {
-  simulation: BasketballSimulationData | undefined;
-  shots: BasketballShot[];
-  curShot: number;
-
-  constructor() {
-    super('Simulation');
-    this.simulation = undefined;
-    this.shots = [];
-    this.curShot = 0;
+  constructor(config: Phaser.Types.Scenes.SettingsConfig & {
+    containerId: string;
+    direction?: 'left' | 'right';
+    playerId: number;
+    avatar: string;
+    name: string;
+  }) {
+    super({ key: `SoccerGame-${config.containerId}` });
+    this.containerId = config.containerId;
+    this.direction = config.direction;
+    this.playerId = config.playerId;
+    this.avatar = config.avatar;
+    this.name = config.name;
   }
 
   preload() {
-    super.preload();
-    //  Load the assets for the game - Replace with your own assets
-    this.load.setPath('assets/basketball');
-    this.load.image('court', 'court_side.jpg');
-    this.load.image('hoop', 'court_hoop.jpg');
-    this.load.image('basketball', 'basketball.png');
+    this.load.image('goal', goalImg);
+    this.load.image('ball', ballImg);
+    this.load.image('keeper', keeperImg);
+    this.load.image('boy_1', boy1Img);
+    this.load.image('boy_2', boy2Img);
+    this.load.image('boy_3', boy3Img);
+    this.load.image('boy_4', boy4Img);
   }
 
-  create(handler: GameStateHandler) {
-    super.create(handler);
-    EventSystem.on('simulate', this.simulate, this);
-    this.createScene();
-  }
+  create() {
+    this.add.image(125, 100, 'goal').setScale(0.15);
+    this.ball = this.physics.add.image(127, 170, 'ball').setScale(0.028);
+    this.keeper = this.physics.add.image(125, 105, 'keeper').setScale(0.04);
+    this.ball.setDepth(1);
+    this.keeper.setDepth(0);
 
-  update() {
-    super.update();
-  }
+    this.add.image(125, 190, this.avatar).setScale(0.015);
+    this.add.text(95, 200, this.name, {
+      fontSize: '9px', color: '#ffffff'
+    } as Phaser.Types.GameObjects.Text.TextStyle);
 
-  createScene() {
-    this.bg = addBackground(this, 'court');
-    this.chatWindow?.setY(this.bg.displayHeight / 2);
-    this.addChatMessage({
-      id: '',
-      sender: SenderType.SYSTEM,
-      message: 'Select a strategy first to see simulation',
-    });
-    super.createScene();
-  }
+    this.resultText = this.add.text(110, 8, '', {
+      fontSize: '11px', color: '#ffffff'
+    } as Phaser.Types.GameObjects.Text.TextStyle);
 
-  simulate(simulation: BasketballSimulationData) {
-    if (!this.gameStateHandler || !this.bg) return;
-    this.chatMsgText?.setAlpha(0);
-    this.chatWindow?.setAlpha(0);
-    this.simulation = simulation;
-    this.destroySprite(this.mySprite);
-    this.mySprite = this.renderSpriteAvatar(
-      this.gameStateHandler.players.find(
-        (p) => p.clientId === simulation.player
-      )!.avatar,
-      {
-        x: this.bg.displayWidth / 2,
-        y: 500,
-      }
-    );
-    this.shots = [];
-    this.curShot = 0;
-
-    for (
-      let i = 0;
-      i < Math.ceil(simulation.outsideShots / (NUMBER_OF_SHOTS / 10));
-      i++
-    ) {
-      this.shots.push({
-        position: 'outside',
-        success: Math.random() <= OUTSIDE_SHOT_SUCCESS_VALUE,
-      });
-    }
-    for (
-      let i = 0;
-      i < Math.ceil(simulation.midShots / (NUMBER_OF_SHOTS / 10));
-      i++
-    ) {
-      this.shots.push({
-        position: 'mid',
-        success: Math.random() <= MID_SHOT_SUCCESS_VALUE,
-      });
-    }
-    for (
-      let i = 0;
-      i < Math.ceil(simulation.insideShots / (NUMBER_OF_SHOTS / 10));
-      i++
-    ) {
-      this.shots.push({
-        position: 'inside',
-        success: Math.random() <= INSIDE_SHOT_SUCCESS_VALUE,
-      });
-    }
-
-    this.shootBall();
-  }
-
-  shootBall() {
-    if (this.curShot >= this.shots.length) {
-      EventSystem.emit('simulationEnded', this.simulation);
-      return;
-    }
-    const shot = this.shots[this.curShot];
-    const x =
-      shot.position === 'outside'
-        ? this.bg!.displayWidth * 0.6
-        : shot.position === 'mid'
-        ? this.bg!.displayWidth * 0.7
-        : this.bg!.displayWidth * 0.8;
-    let direction = '';
-    if (x > this.mySprite[0].x) {
-      direction = '_right';
-    } else if (x < this.mySprite[0].x) {
-      direction = '_left';
-    }
-    this.playSpriteAnim(this.mySprite, `walk${direction}`);
-
-    if (x === this.mySprite[0].x) {
-      this._shoot(shot);
+    if (this.direction) {
+      this.shootBall(this.direction);
     } else {
-      this._runAndShoot(shot, x);
+      this.resultText?.setText('');
     }
   }
 
-  _runAndShoot(shot: BasketballShot, x: number) {
-    this.tweens.add({
-      targets: this.mySprite,
-      x: x,
-      duration: 500,
-      onComplete: () => {
-        this._shoot(shot);
-      },
-    });
-  }
+  shootBall(direction: 'left' | 'right') {
+    const targetX = direction === 'left' ? 90 : 160;
+    let targetY = 60;
+    const keeperDirection = Math.random() < 0.5 ? 'left' : 'right';
+    const keeperMove = keeperDirection === 'left' ? 90 : 160;
+    targetY = keeperDirection !== direction ? 60 : 100;
 
-  _shoot(shot: BasketballShot) {
-    // jump
-    this.playSpriteAnim(this.mySprite, `jump_right`);
-    const hoop = addImage(this, 'hoop', undefined, {
-      bg: this.bg,
-      heightRel: 1,
-    }).setAlpha(0);
-    const ball = addImage(this, 'basketball', undefined, {
-      bg: this.bg,
-      height: this.mySprite[0].displayHeight / 2,
-    });
-    ball.setX(this.mySprite[0].x);
-    ball.setY(this.mySprite[0].y);
-    // throw ball
-    this.tweens.add({
-      targets: ball,
-      x: this.bg!.displayWidth * 0.9,
-      y: 320,
-      duration: 1000,
-      onComplete: () => {
-        // show whether shot made or not
-        hoop.setAlpha(1);
-        ball.displayHeight = 200;
-        ball.displayWidth = 200;
-        ball.setX(this.bg!.displayWidth / 2);
-        ball.setY(0);
-        this.tweens.add({
-          targets: ball,
-          x: shot.success ? this.bg!.displayWidth / 2 : 0,
-          y: this.bg!.displayHeight,
-          duration: 500,
-          onComplete: () => {
-            ball.destroy();
-            hoop.destroy();
-            this.curShot++;
-            this.shootBall();
-          },
-        });
-      },
+    this.physics.moveTo(this.ball, targetX, targetY, 300);
+    this.keeper.setX(keeperMove);
+    const distance = Phaser.Math.Distance.Between(this.ball.x, this.ball.y, targetX, targetY);
+    const travelTime = (distance / 300) * 1000;
+
+    this.time.delayedCall(travelTime, () => {
+      this.ball.setVelocity(0, 0);
+      this.ball.setPosition(targetX, targetY);
+      this.tweens.add({ targets: this.ball, y: 140, duration: 800, ease: 'Linear' });
+
+      const result = keeperDirection !== direction ? 'Score' : 'Saved';
+      this.resultText?.setText(result);
+
+      EventSystem.emit('simulationEnded', {
+        player: String(this.playerId),
+        kickLeft: direction === 'left' ? 1 : 0,
+        kickRight: direction === 'right' ? 1 : 0,
+        kickLeftMade: direction === 'left' && result === 'Score' ? 1 : 0,
+        kickRightMade: direction === 'right' && result === 'Score' ? 1 : 0,
+        totalPoints: result === 'Score' ? (direction === 'left' ? 1 : 1) : 0,
+      });
     });
   }
 }
+
+export default SoccerGame;

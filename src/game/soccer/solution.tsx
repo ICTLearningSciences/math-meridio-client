@@ -13,30 +13,20 @@ import { Player } from '../../store/slices/player';
 import { checkGameAndPlayerStateForValue } from '../../components/discussion-stage-builder/helpers';
 
 export const NUMBER_OF_SHOTS = 100;
-// export const INSIDE_SHOT_POINTS = 'inside_shot_points';
-// export const INSIDE_SHOT_SUCCESS = 'inside_shot_success';
-export const INSIDE_SHOT_PERCENT = 'inside_shot_percent';
-export const INSIDE_SHOT_POINTS_VALUE = 2;
-export const INSIDE_SHOT_SUCCESS_VALUE = 0.5;
+export const KICK_LEFT_PERCENT = 'kick_left_percent';
+export const KICK_LEFT_POINTS_VALUE = 1;
+export const KICK_LEFT_SUCCESS_VALUE = 0.5;
 
-// export const MID_SHOT_POINTS = 'mid_shot_points';
-// export const MID_SHOT_SUCCESS = 'mid_shot_success';
-export const MID_SHOT_PERCENT = 'middle_shot_percent';
-export const MID_SHOT_POINTS_VALUE = 2;
-export const MID_SHOT_SUCCESS_VALUE = 0.4;
-
-// export const OUTSIDE_SHOT_POINTS = 'outside_shot_points';
-// export const OUTSIDE_SHOT_SUCCESS = 'outside_shot_success';
-export const OUTSIDE_SHOT_PERCENT = 'outside_shot_percent';
-export const OUTSIDE_SHOT_POINTS_VALUE = 3;
-export const OUTSIDE_SHOT_SUCCESS_VALUE = 0.36;
+export const KICK_RIGHT_PERCENT = 'kick_right_percent';
+export const KICK_RIGHT_POINTS_VALUE = 1;
+export const KICK_RIGHT_SUCCESS_VALUE = 0.4;
 
 export const UNDERSTANDS_SUCCESS_SHOTS = 'understands_success_shots';
 export const UNDERSTANDS_SHOT_POINTS = 'understands_shot_points';
 export const UNDERSTANDS_MULTIPLICATION = 'understands_multiplication';
 export const UNDERSTANDS_ADDITION = 'understands_addition';
 
-import courtBg from './court.png';
+import courtBg from './court.jpeg';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type GameStateData = Record<string, any>;
@@ -135,7 +125,6 @@ export function SolutionComponent(props: {
   function Variable(props: {
     dataKey: string;
     title: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     isEnabled: (value: any) => boolean;
     value?: string;
     forceShow?: boolean;
@@ -214,9 +203,8 @@ export function SolutionComponent(props: {
             const data = { ...myPlayerStateData };
             data[props.dataKey] = value;
             if (
-              (data[INSIDE_SHOT_PERCENT] || 0) +
-                (data[MID_SHOT_PERCENT] || 0) +
-                (data[OUTSIDE_SHOT_PERCENT] || 0) <=
+              (data[KICK_LEFT_PERCENT] || 0) +
+                (data[KICK_RIGHT_PERCENT] || 0) <=
               NUMBER_OF_SHOTS
             ) {
               controller.newPlayerStateData([
@@ -232,9 +220,6 @@ export function SolutionComponent(props: {
     );
   }
 
-  /**
-   * A component that will reveal the icon when reveal is true, and never hide it again.
-   */
   function RevealingIcon(props: {
     reveal: boolean;
     icon: JSX.Element;
@@ -269,165 +254,76 @@ export function SolutionComponent(props: {
   }
 
   return (
-    <div
-      className="column center-div"
-      style={{
-        height: window.innerHeight - 400,
-        backgroundImage: `url(${courtBg})`,
-        backgroundSize: 'cover',
-        backgroundRepeat: 'no-repeat',
-      }}
-    >
-      <Variable
-        title="# of shots"
-        dataKey=""
-        isEnabled={() => true}
-        value={String(NUMBER_OF_SHOTS)}
-        forceShow={true}
-      />
+      <div
+        className="column center-div"
+        style={{
+          height: window.innerHeight - 400,
+          backgroundImage: `url(${courtBg})`,
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'center',
+          width: '100%', // ensure full width
+        }}
+      >
+
+      {/* Kick Left Row */}
       <div className="row center-div">
         <Variable
           dataKey={UNDERSTANDS_SHOT_POINTS}
           isEnabled={() => understandsPoints}
-          title="Points per inside shot"
-          value={String(INSIDE_SHOT_POINTS_VALUE)}
+          title="Points per kick left"
+          value={String(KICK_LEFT_POINTS_VALUE)}
         />
         <RevealingIcon
           reveal={understandsMultiplication}
-          icon={
-            <Typography
-              className={classes.boxText}
-              style={{ color: '#C96049' }}
-            >
-              {' '}
-              x{' '}
-            </Typography>
-          }
+          icon={<Typography className={classes.boxText} style={{ color: '#C96049' }}> x </Typography>}
         />
         <EditableVariable
-          dataKey={INSIDE_SHOT_PERCENT}
-          title="# of inside shots"
+          dataKey={KICK_LEFT_PERCENT}
+          title="# of kicks left"
         />
         <RevealingIcon
           reveal={understandsMultiplication}
-          icon={
-            <Typography
-              className={classes.boxText}
-              style={{ color: '#C96049' }}
-            >
-              {' '}
-              x{' '}
-            </Typography>
-          }
+          icon={<Typography className={classes.boxText} style={{ color: '#C96049' }}> x </Typography>}
         />
         <Variable
           dataKey={UNDERSTANDS_SUCCESS_SHOTS}
           isEnabled={() => understandsSuccess}
-          title="Success% of inside shots"
-          value={String(INSIDE_SHOT_SUCCESS_VALUE)}
+          title="Success% of kicks left"
+          value={String(KICK_LEFT_SUCCESS_VALUE)}
         />
       </div>
+  
       <RevealingIcon
         reveal={understandsAddition}
-        icon={
-          <Typography className={classes.boxText} style={{ color: '#C96049' }}>
-            {' '}
-            +{' '}
-          </Typography>
-        }
+        icon={<Typography className={classes.boxText} style={{ color: '#C96049' }}> + </Typography>}
       />
+  
+      {/* Kick Right Row */}
       <div className="row center-div">
         <Variable
           isEnabled={() => understandsPoints}
           dataKey={UNDERSTANDS_SHOT_POINTS}
-          title="Points per mid shot"
-          value={String(MID_SHOT_POINTS_VALUE)}
+          title="Points per kick right"
+          value={String(KICK_RIGHT_POINTS_VALUE)}
         />
         <RevealingIcon
           reveal={understandsMultiplication}
-          icon={
-            <Typography
-              className={classes.boxText}
-              style={{ color: '#C96049' }}
-            >
-              {' '}
-              x{' '}
-            </Typography>
-          }
+          icon={<Typography className={classes.boxText} style={{ color: '#C96049' }}> x </Typography>}
         />
-        <EditableVariable dataKey={MID_SHOT_PERCENT} title="# of mid shots" />
+        <EditableVariable dataKey={KICK_RIGHT_PERCENT} title="# of kicks right" />
         <RevealingIcon
           reveal={understandsMultiplication}
-          icon={
-            <Typography
-              className={classes.boxText}
-              style={{ color: '#C96049' }}
-            >
-              {' '}
-              x{' '}
-            </Typography>
-          }
+          icon={<Typography className={classes.boxText} style={{ color: '#C96049' }}> x </Typography>}
         />
         <Variable
           isEnabled={() => understandsSuccess}
           dataKey={UNDERSTANDS_SUCCESS_SHOTS}
-          title="Success% of mid shots"
-          value={String(MID_SHOT_SUCCESS_VALUE)}
-        />
-      </div>
-      <RevealingIcon
-        reveal={understandsAddition}
-        icon={
-          <Typography className={classes.boxText} style={{ color: '#C96049' }}>
-            {' '}
-            +{' '}
-          </Typography>
-        }
-      />
-      <div className="row center-div">
-        <Variable
-          dataKey={UNDERSTANDS_SHOT_POINTS}
-          isEnabled={() => understandsPoints}
-          title="Points per outside shot"
-          value={String(OUTSIDE_SHOT_POINTS_VALUE)}
-        />
-        <RevealingIcon
-          reveal={understandsMultiplication}
-          icon={
-            <Typography
-              className={classes.boxText}
-              style={{ color: '#C96049' }}
-            >
-              {' '}
-              x{' '}
-            </Typography>
-          }
-        />
-        <EditableVariable
-          dataKey={OUTSIDE_SHOT_PERCENT}
-          title="# of 3 pointers"
-        />
-        <RevealingIcon
-          reveal={understandsMultiplication}
-          icon={
-            <Typography
-              className={classes.boxText}
-              style={{ color: '#C96049' }}
-            >
-              {' '}
-              x{' '}
-            </Typography>
-          }
-        />
-        <Variable
-          dataKey={UNDERSTANDS_SUCCESS_SHOTS}
-          isEnabled={() => understandsSuccess}
-          title="Success% of outside shots"
-          value={String(OUTSIDE_SHOT_SUCCESS_VALUE)}
+          title="Success% of kicks right"
+          value={String(KICK_RIGHT_SUCCESS_VALUE)}
         />
       </div>
     </div>
-  );
+  );  
 }
 
 const useStyles = makeStyles()(() => ({

@@ -11,7 +11,8 @@ import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { Header } from './components/header';
 import LoginPage from './components/login-page';
 import AvatarPage from './components/avatar-page';
-import GamePage from './components/game/game-page';
+import GamePageSoccer from './components/game/game-page-soccer';
+import GamePageBasketball from './components/game/game-page-basketball';
 import RoomPage from './components/game/room-page';
 import PhaserTestPage from './components/phaser-test-page';
 import { StageBuilderPage } from './components/discussion-stage-builder/stage-builder-page';
@@ -20,7 +21,8 @@ import { store } from './store';
 import { useWithHydrateRedux } from './store/use-with-hydrate-redux';
 
 function MainApp() {
-  useWithHydrateRedux(); // NOTE: make sure to have this at the earliest point w/ store
+  useWithHydrateRedux();
+
   const router = createBrowserRouter([
     {
       path: '/',
@@ -56,23 +58,23 @@ function MainApp() {
       ),
     },
     {
-      path: '/game',
+      path: '/game-soccer/:roomId',
       element: (
         <>
           <Header />
           <div className="page">
-            <GamePage />
+            <GamePageSoccer />
           </div>
         </>
       ),
     },
     {
-      path: '/game/:roomId',
+      path: '/game-basketball/:roomId',
       element: (
         <>
           <Header />
           <div className="page">
-            <GamePage />
+            <GamePageBasketball />
           </div>
         </>
       ),
@@ -83,16 +85,11 @@ function MainApp() {
         <>
           <Header />
           <div className="page">
-            <StageBuilderPage
-              goToStage={() => {
-                console.log('');
-              }}
-            />
+            <StageBuilderPage goToStage={() => console.log('')} />
           </div>
         </>
       ),
     },
-    // test stuff only remove later
     {
       path: '/phaser',
       element: (
@@ -105,8 +102,10 @@ function MainApp() {
       ),
     },
   ]);
+
   return <RouterProvider router={router} />;
 }
+
 
 function App(): JSX.Element {
   return (
