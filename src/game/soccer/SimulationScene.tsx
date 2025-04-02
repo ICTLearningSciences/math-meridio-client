@@ -1,3 +1,9 @@
+/*
+This software is Copyright ©️ 2020 The University of Southern California. All Rights Reserved. 
+Permission to use, copy, modify, and distribute this software and its documentation for educational, research and non-profit purposes, without fee, and without a written agreement is hereby granted, provided that the above copyright notice and subject to the full license file found in the root of this software deliverable. Permission to make commercial use of this software may be obtained by contacting:  USC Stevens Center for Innovation University of Southern California 1150 S. Olive Street, Suite 2300, Los Angeles, CA 90115, USA Email: accounting@stevens.usc.edu
+
+The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
+*/
 import Phaser from 'phaser';
 import EventSystem from '../event-system';
 import goalImg from './assets/goal.png';
@@ -22,24 +28,30 @@ class SoccerGame extends Phaser.Scene {
   ball!: Phaser.Physics.Arcade.Image;
   keeper!: Phaser.Physics.Arcade.Image;
   resultText?: Phaser.GameObjects.Text;
+  historyText?: Phaser.GameObjects.Text;
   direction?: 'left' | 'right';
   playerId: number;
   avatar: string;
   name: string;
+  goalHistory: ('Score' | 'Saved')[] = [];
 
-  constructor(config: Phaser.Types.Scenes.SettingsConfig & {
-    containerId: string;
-    direction?: 'left' | 'right';
-    playerId: number;
-    avatar: string;
-    name: string;
-  }) {
+  constructor(
+    config: Phaser.Types.Scenes.SettingsConfig & {
+      containerId: string;
+      direction?: 'left' | 'right';
+      playerId: number;
+      avatar: string;
+      name: string;
+      goalHistory?: ('Score' | 'Saved')[];
+    }
+  ) {
     super({ key: `SoccerGame-${config.containerId}` });
     this.containerId = config.containerId;
     this.direction = config.direction;
     this.playerId = config.playerId;
     this.avatar = config.avatar;
     this.name = config.name;
+    this.goalHistory = config.goalHistory || [];
   }
 
   preload() {
@@ -61,11 +73,18 @@ class SoccerGame extends Phaser.Scene {
 
     this.add.image(125, 190, this.avatar).setScale(0.015);
     this.add.text(95, 200, this.name, {
-      fontSize: '9px', color: '#ffffff'
+      fontSize: '9px',
+      color: '#ffffff',
     } as Phaser.Types.GameObjects.Text.TextStyle);
 
     this.resultText = this.add.text(110, 8, '', {
-      fontSize: '11px', color: '#ffffff'
+      fontSize: '11px',
+      color: '#ffffff',
+    } as Phaser.Types.GameObjects.Text.TextStyle);
+
+    this.historyText = this.add.text(10, 8, '', {
+      fontSize: '11px',
+      color: '#ffffff',
     } as Phaser.Types.GameObjects.Text.TextStyle);
 
     if (this.direction) {
@@ -84,16 +103,34 @@ class SoccerGame extends Phaser.Scene {
 
     this.physics.moveTo(this.ball, targetX, targetY, 300);
     this.keeper.setX(keeperMove);
-    const distance = Phaser.Math.Distance.Between(this.ball.x, this.ball.y, targetX, targetY);
+    const distance = Phaser.Math.Distance.Between(
+      this.ball.x,
+      this.ball.y,
+      targetX,
+      targetY
+    );
     const travelTime = (distance / 300) * 1000;
 
     this.time.delayedCall(travelTime, () => {
       this.ball.setVelocity(0, 0);
       this.ball.setPosition(targetX, targetY);
-      this.tweens.add({ targets: this.ball, y: 140, duration: 800, ease: 'Linear' });
+      this.tweens.add({
+        targets: this.ball,
+        y: 140,
+        duration: 800,
+        ease: 'Linear',
+      });
 
       const result = keeperDirection !== direction ? 'Score' : 'Saved';
       this.resultText?.setText(result);
+
+      this.goalHistory.push(result);
+      if (this.goalHistory.length > 5) this.goalHistory.shift();
+
+      const dots = this.goalHistory
+        .map((r) => (r === 'Score' ? '●' : '○'))
+        .join(' ');
+      this.historyText?.setText(dots);
 
       EventSystem.emit('simulationEnded', {
         player: String(this.playerId),

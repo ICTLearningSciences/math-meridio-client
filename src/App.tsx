@@ -106,7 +106,6 @@ function MainApp() {
   return <RouterProvider router={router} />;
 }
 
-
 function App(): JSX.Element {
   return (
     <Provider store={store}>

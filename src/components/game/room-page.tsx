@@ -116,7 +116,7 @@ function RoomPage(): JSX.Element {
       const route = gameRoutes[selectedGame] || '/game';
       navigate(`${route}/${room._id}`);
     }
-  }, [room]);  
+  }, [room]);
 
   async function reloadRooms(gameId: string) {
     dispatch(fetchRooms({ gameId }));

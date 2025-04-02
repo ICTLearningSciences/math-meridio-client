@@ -15,6 +15,7 @@ import {
   Typography,
 } from '@mui/material';
 import EventSystem from '../../game/event-system';
+import courtBg from '../../game/soccer/court.jpeg';
 
 import ChatThread from './chat-thread';
 import ChatForm from './chat-form';
@@ -50,7 +51,15 @@ function ProblemSpace(props: {
 function SolutionSpace(props: {
   game: Game;
   controller: GameStateHandler;
-}): JSX.Element {
+  userVotes: { name: string; direction: 'left' | 'right' }[];
+  cumulativeShotData: {
+    totalShots: number;
+    leftShots: number;
+    rightShots: number;
+  };
+}) {
+  const { totalShots, leftShots, rightShots } = props.cumulativeShotData;
+
   return (
     <Card
       className="scroll box"
@@ -58,27 +67,62 @@ function SolutionSpace(props: {
         overflowY: 'auto',
         flexGrow: 1,
         margin: 8,
-        marginLeft:10,
-        marginTop:10
+        marginLeft: 10,
+        marginTop: 10,
+        position: 'relative',
       }}
     >
-      <Typography fontWeight="bold">Approach</Typography>
-      {props.game.showSolution(props.controller)}
+      <Typography fontWeight="bold" sx={{ mb: 1 }}>
+        Approach
+      </Typography>
+
+      <div
+        style={{
+          backgroundImage: `url(${courtBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          height: 250,
+          borderRadius: 5,
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexDirection: 'column',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: 18,
+          textShadow: '1px 1px 3px rgba(0,0,0,0.7)',
+        }}
+      >
+        <div>Total Shots Available: {totalShots}</div>
+        <div>Left Shots Made: {leftShots}</div>
+        <div>Right Shots Made: {rightShots}</div>
+      </div>
     </Card>
   );
 }
+
 function SimulationSpace(props: {
   game: Game;
   controller: GameStateHandler;
   simulation?: string;
   style?: React.CSSProperties;
   userVotes: { name: string; direction: 'left' | 'right' }[];
+  goalHistories: Record<string, ('Score' | 'Saved')[]>;
 }) {
   useEffect(() => {
     props.userVotes.forEach((player, index) => {
       const containerId = `phaser-container-${index}`;
+      const instanceKey = `phaserInstance-${containerId}`;
+      const existingInstance = (window as any)[instanceKey];
+
+      if (existingInstance) {
+        // Properly destroy the previous Phaser game
+        existingInstance.destroy(true);
+        delete (window as any)[instanceKey];
+      }
+
       if (!document.getElementById(containerId)) return;
-      if ((window as any)[`phaserInstance-${containerId}`]) return;
 
       const config = {
         type: Phaser.AUTO,
@@ -92,11 +136,12 @@ function SimulationSpace(props: {
           playerId: index + 1,
           avatar: `boy_${(index % 4) + 1}`,
           name: player.name,
+          goalHistory: props.goalHistories[player.name] ?? [],
         }),
       };
 
       const game = new Phaser.Game(config);
-      (window as any)[`phaserInstance-${containerId}`] = game;
+      (window as any)[instanceKey] = game;
     });
   }, [props.userVotes]);
 
@@ -107,8 +152,7 @@ function SimulationSpace(props: {
         overflowY: 'auto',
         flexGrow: 1,
         margin: 10,
-        borderTopLeftRadius: 20,
-        borderBottomRightRadius: 20,
+        borderRadius: 10,
         padding: 10,
         ...props.style,
       }}
@@ -143,7 +187,6 @@ function SimulationSpace(props: {
   );
 }
 
-
 function Scoreboard(props: {
   style?: React.CSSProperties;
   players: {
@@ -151,12 +194,25 @@ function Scoreboard(props: {
     direction: 'left' | 'right' | null;
     outcome: 'Score' | 'Saved' | null;
     score: number;
+    leftVotes: number;
+    rightVotes: number;
+    leftGoals: number;
+    rightGoals: number;
   }[];
 }) {
   const sorted = [...props.players].sort((a, b) => b.score - a.score);
 
   return (
-    <Card sx={{ p: 2, borderRadius: 2, flexGrow: 1, ...props.style }}>
+    <Card
+      sx={{
+        p: 2,
+        borderRadius: 2,
+        flexGrow: 1,
+        marginLeft: 5,
+        marginRight: 5,
+        ...props.style,
+      }}
+    >
       <Typography fontWeight="bold" textAlign="left" sx={{ mb: 1 }}>
         Scoreboard
       </Typography>
@@ -172,19 +228,13 @@ function Scoreboard(props: {
         >
           <Typography sx={{ flex: 1, fontWeight: 'bold' }}>Place</Typography>
           <Typography sx={{ flex: 2, fontWeight: 'bold' }}>Player</Typography>
-          <Typography
-            sx={{ flex: 3, fontWeight: 'bold', textAlign: 'center' }}
-          >
-            Last Kick Direction
+          <Typography sx={{ flex: 3, fontWeight: 'bold', textAlign: 'center' }}>
+            Left / Right Votes
           </Typography>
-          <Typography
-            sx={{ flex: 2, fontWeight: 'bold', textAlign: 'center' }}
-          >
-            Outcome
+          <Typography sx={{ flex: 3, fontWeight: 'bold', textAlign: 'center' }}>
+            Left / Right Goals
           </Typography>
-          <Typography
-            sx={{ flex: 1, fontWeight: 'bold', textAlign: 'right' }}
-          >
+          <Typography sx={{ flex: 1, fontWeight: 'bold', textAlign: 'right' }}>
             Score
           </Typography>
         </Card>
@@ -204,10 +254,10 @@ function Scoreboard(props: {
             <Typography sx={{ flex: 1 }}>{index + 1}</Typography>
             <Typography sx={{ flex: 2 }}>{player.name}</Typography>
             <Typography sx={{ flex: 3, textAlign: 'center' }}>
-              {player.direction ?? 'N/A'}
+              {player.leftVotes} / {player.rightVotes}
             </Typography>
-            <Typography sx={{ flex: 2, textAlign: 'center' }}>
-              {player.outcome ?? 'N/A'}
+            <Typography sx={{ flex: 3, textAlign: 'center' }}>
+              {player.leftGoals} / {player.rightGoals}
             </Typography>
             <Typography sx={{ flex: 1, textAlign: 'right' }}>
               {player.score}
@@ -252,8 +302,7 @@ function Timer({ secondsLeft }: { secondsLeft: number }): JSX.Element {
           variant="h3"
           color="error"
           fontWeight="bold"
-        >
-        </Typography>
+        ></Typography>
       </Typography>
       <Typography variant="body2" textAlign="center">
         MINUTES SECONDS
@@ -280,7 +329,6 @@ function DirectionControls({
       justifyContent="center"
       alignItems="center"
       sx={{
-        mt: 2,
         backgroundColor: 'white',
         p: 2,
         borderRadius: 2,
@@ -346,6 +394,10 @@ function GamePage(): JSX.Element {
   const [rightVotes, setRightVotes] = React.useState(0);
   const [voteCount, setVoteCount] = React.useState(0);
   const [secondsLeft, setSecondsLeft] = React.useState(15);
+  const [simulationEndedCount, setSimulationEndedCount] = React.useState(0);
+  const [goalHistories, setGoalHistories] = React.useState<
+    Record<string, ('Score' | 'Saved')[]>
+  >({});
 
   const [userVotes, setUserVotes] = React.useState<
     { name: string; direction: 'left' | 'right' }[]
@@ -354,8 +406,23 @@ function GamePage(): JSX.Element {
   const [showSimulation, setShowSimulation] = React.useState(false);
 
   const [scoreData, setScoreData] = React.useState<
-  { name: string; direction: 'left' | 'right' | null; outcome: 'Score' | 'Saved' | null; score: number }[]
->([]);
+    {
+      name: string;
+      direction: 'left' | 'right' | null;
+      outcome: 'Score' | 'Saved' | null;
+      score: number;
+      leftVotes: number;
+      rightVotes: number;
+      leftGoals: number;
+      rightGoals: number;
+    }[]
+  >([]);
+
+  const [cumulativeShotData, setCumulativeShotData] = React.useState({
+    totalShots: 0, // this will be 10 * number of players
+    leftShots: 0,
+    rightShots: 0,
+  });
 
   // Initialize players with only names`
   useEffect(() => {
@@ -365,44 +432,99 @@ function GamePage(): JSX.Element {
         direction: null,
         outcome: null,
         score: 0,
-      }));         
-        
+        leftVotes: 0,
+        rightVotes: 0,
+        leftGoals: 0,
+        rightGoals: 0,
+      }));
+
       setScoreData(initialScoreData);
+
+      setCumulativeShotData({
+        totalShots: gameStateHandler.players.length * 10,
+        leftShots: 0,
+        rightShots: 0,
+      });
     }
   }, [gameStateHandler]);
 
+  const handleSimulationEnded = (data: {
+    player: string;
+    kickLeft: number;
+    kickRight: number;
+    kickLeftMade: number;
+    kickRightMade: number;
+    totalPoints: number;
+  }) => {
+    if (!gameStateHandler) return;
+
+    const direction = data.kickLeft ? 'left' : 'right';
+    const outcome: 'Score' | 'Saved' = data.totalPoints > 0 ? 'Score' : 'Saved';
+    const playerIndex = parseInt(data.player, 10) - 1;
+
+    setScoreData((prev) => {
+      const updated = [...prev];
+      if (updated[playerIndex]) {
+        updated[playerIndex] = {
+          ...updated[playerIndex],
+          direction,
+          outcome,
+          score: data.totalPoints,
+          leftVotes:
+            direction === 'left'
+              ? updated[playerIndex].leftVotes + 1
+              : updated[playerIndex].leftVotes,
+          rightVotes:
+            direction === 'right'
+              ? updated[playerIndex].rightVotes + 1
+              : updated[playerIndex].rightVotes,
+          leftGoals: updated[playerIndex].leftGoals + (data.kickLeftMade ?? 0),
+          rightGoals:
+            updated[playerIndex].rightGoals + (data.kickRightMade ?? 0),
+        };
+      }
+      return updated;
+    });
+
+    setGoalHistories((prev) => {
+      const name = gameStateHandler.players[playerIndex]?.name;
+      if (!name) return prev;
+
+      const prevHistory = prev[name] || [];
+      const updatedHistory = [...prevHistory, outcome].slice(-5);
+
+      return {
+        ...prev,
+        [name]: updatedHistory,
+      };
+    });
+
+    setSimulationEndedCount((prev) => prev + 1);
+  };
+
   useEffect(() => {
-    const handleSimulationEnded = (data: {
-      player: string;
-      kickLeft: number;
-      kickRight: number;
-      kickLeftMade: number;
-      kickRightMade: number;
-      totalPoints: number;
-    }) => {
-      const direction = data.kickLeft ? 'left' : 'right';
-      const outcome = data.totalPoints > 0 ? 'Score' : 'Saved';
-      const playerIndex = parseInt(data.player, 10) - 1;
-  
-      setScoreData((prev) => {
-        const updated = [...prev];
-        if (updated[playerIndex]) {
-          updated[playerIndex] = {
-            ...updated[playerIndex],
-            direction,
-            outcome,
-            score: data.totalPoints,
-          };
-        }
-        return updated;
-      });
-    };
-  
     EventSystem.on('simulationEnded', handleSimulationEnded);
     return () => {
       EventSystem.off('simulationEnded', handleSimulationEnded);
     };
-  }, []);  
+  }, [handleSimulationEnded]);
+
+  useEffect(() => {
+    if (voteCount > 0 && simulationEndedCount === voteCount) {
+      const delayBeforeNextRound = 6000; // 3 seconds pause before restarting
+
+      setTimeout(() => {
+        // Reset everything for next round
+        setLeftVotes(0);
+        setRightVotes(0);
+        setVoteCount(0);
+        setSecondsLeft(15);
+        setShowSimulation(false);
+        setUserVotes([]);
+        setSimulationEndedCount(0);
+      }, delayBeforeNextRound);
+    }
+  }, [simulationEndedCount, voteCount]);
 
   // countdown timer
   React.useEffect(() => {
@@ -429,8 +551,19 @@ function GamePage(): JSX.Element {
     const newVote = { name: userName, direction };
     setUserVotes((prev) => [...prev, newVote]);
 
-    if (direction === 'left') setLeftVotes((prev) => prev + 1);
-    else setRightVotes((prev) => prev + 1);
+    if (direction === 'left') {
+      setLeftVotes((prev) => prev + 1);
+      setCumulativeShotData((prev) => ({
+        ...prev,
+        leftShots: prev.leftShots + 1,
+      }));
+    } else {
+      setRightVotes((prev) => prev + 1);
+      setCumulativeShotData((prev) => ({
+        ...prev,
+        rightShots: prev.rightShots + 1,
+      }));
+    }
 
     setVoteCount((prev) => prev + 1);
   };
@@ -471,6 +604,9 @@ function GamePage(): JSX.Element {
                   width: '100%',
                 }}
               >
+                <Typography fontWeight="bold" sx={{ mb: 1 }}>
+                  Vote Area
+                </Typography>
                 <Timer secondsLeft={secondsLeft} />
                 <DirectionControls
                   leftVotes={leftVotes}
@@ -478,11 +614,15 @@ function GamePage(): JSX.Element {
                   onVote={handleVote}
                   disabled={secondsLeft <= 0 || voteCount >= 4}
                 />
-
               </Card>
             </div>
 
-            <SolutionSpace game={game} controller={gameStateHandler} />
+            <SolutionSpace
+              game={game}
+              controller={gameStateHandler}
+              userVotes={userVotes}
+              cumulativeShotData={cumulativeShotData}
+            />
           </div>
         </Grid>
 
@@ -503,9 +643,12 @@ function GamePage(): JSX.Element {
                 simulation={simulation}
                 userVotes={userVotes}
                 style={{ flex: 1 }}
+                goalHistories={goalHistories}
               />
             ) : (
-              <Card sx={{ flex: 1, m: 2, p: 2 }}>Waiting for simulation...</Card>
+              <Card sx={{ flex: 1, m: 2, p: 2 }}>
+                Waiting for simulation...
+              </Card>
             )}
 
             <Scoreboard

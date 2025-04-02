@@ -4,22 +4,29 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from "react";
-import { Typography } from "@mui/material";
-import { GameStateHandler } from "../../classes/game-state-handler";
-import SoccerGame from ".";
-import shotChart from "./shot-chart.jpg";
+import React from 'react';
+import { Typography } from '@mui/material';
+import { GameStateHandler } from '../../classes/game-state-handler';
+import SoccerGame from '.';
+import shotChart from './shot-chart.jpg';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function ProblemComponent(props: {
   controller: GameStateHandler;
 }): JSX.Element {
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '16px',
+      }}
+    >
       <Typography>{SoccerGame.problem}</Typography>
-      <div style={{ width: "100%", maxWidth: "800px", aspectRatio: "16/9" }}>
+      <div style={{ width: '100%', maxWidth: '800px', aspectRatio: '16/9' }}>
         <iframe
-          style={{ width: "100%", height: "100%" }}
+          style={{ width: '100%', height: '100%' }}
           src="https://www.youtube.com/embed/OTs5JX6Tut4"
           title="Game Theory Introduction"
           frameBorder="0"
@@ -30,4 +37,3 @@ export function ProblemComponent(props: {
     </div>
   );
 }
-

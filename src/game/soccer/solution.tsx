@@ -254,17 +254,16 @@ export function SolutionComponent(props: {
   }
 
   return (
-      <div
-        className="column center-div"
-        style={{
-          height: window.innerHeight - 400,
-          backgroundImage: `url(${courtBg})`,
-          backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'center',
-          width: '100%', // ensure full width
-        }}
-      >
-
+    <div
+      className="column center-div"
+      style={{
+        height: window.innerHeight - 400,
+        backgroundImage: `url(${courtBg})`,
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center',
+        width: '100%', // ensure full width
+      }}
+    >
       {/* Kick Left Row */}
       <div className="row center-div">
         <Variable
@@ -275,15 +274,28 @@ export function SolutionComponent(props: {
         />
         <RevealingIcon
           reveal={understandsMultiplication}
-          icon={<Typography className={classes.boxText} style={{ color: '#C96049' }}> x </Typography>}
+          icon={
+            <Typography
+              className={classes.boxText}
+              style={{ color: '#C96049' }}
+            >
+              {' '}
+              x{' '}
+            </Typography>
+          }
         />
-        <EditableVariable
-          dataKey={KICK_LEFT_PERCENT}
-          title="# of kicks left"
-        />
+        <EditableVariable dataKey={KICK_LEFT_PERCENT} title="# of kicks left" />
         <RevealingIcon
           reveal={understandsMultiplication}
-          icon={<Typography className={classes.boxText} style={{ color: '#C96049' }}> x </Typography>}
+          icon={
+            <Typography
+              className={classes.boxText}
+              style={{ color: '#C96049' }}
+            >
+              {' '}
+              x{' '}
+            </Typography>
+          }
         />
         <Variable
           dataKey={UNDERSTANDS_SUCCESS_SHOTS}
@@ -292,12 +304,17 @@ export function SolutionComponent(props: {
           value={String(KICK_LEFT_SUCCESS_VALUE)}
         />
       </div>
-  
+
       <RevealingIcon
         reveal={understandsAddition}
-        icon={<Typography className={classes.boxText} style={{ color: '#C96049' }}> + </Typography>}
+        icon={
+          <Typography className={classes.boxText} style={{ color: '#C96049' }}>
+            {' '}
+            +{' '}
+          </Typography>
+        }
       />
-  
+
       {/* Kick Right Row */}
       <div className="row center-div">
         <Variable
@@ -308,12 +325,31 @@ export function SolutionComponent(props: {
         />
         <RevealingIcon
           reveal={understandsMultiplication}
-          icon={<Typography className={classes.boxText} style={{ color: '#C96049' }}> x </Typography>}
+          icon={
+            <Typography
+              className={classes.boxText}
+              style={{ color: '#C96049' }}
+            >
+              {' '}
+              x{' '}
+            </Typography>
+          }
         />
-        <EditableVariable dataKey={KICK_RIGHT_PERCENT} title="# of kicks right" />
+        <EditableVariable
+          dataKey={KICK_RIGHT_PERCENT}
+          title="# of kicks right"
+        />
         <RevealingIcon
           reveal={understandsMultiplication}
-          icon={<Typography className={classes.boxText} style={{ color: '#C96049' }}> x </Typography>}
+          icon={
+            <Typography
+              className={classes.boxText}
+              style={{ color: '#C96049' }}
+            >
+              {' '}
+              x{' '}
+            </Typography>
+          }
         />
         <Variable
           isEnabled={() => understandsSuccess}
@@ -323,7 +359,7 @@ export function SolutionComponent(props: {
         />
       </div>
     </div>
-  );  
+  );
 }
 
 const useStyles = makeStyles()(() => ({
