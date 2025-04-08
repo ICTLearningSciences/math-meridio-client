@@ -112,17 +112,17 @@ function SimulationSpace(props: {
 }) {
   useEffect(() => {
     props.userVotes.forEach((player, index) => {
-      const containerId = `phaser-container-${index}`;
+      const containerId = `phaser-container-${player.name}`;
+
+      const container = document.getElementById(containerId);
+      if (!container) return;
+
       const instanceKey = `phaserInstance-${containerId}`;
       const existingInstance = (window as any)[instanceKey];
-
       if (existingInstance) {
-        // Properly destroy the previous Phaser game
         existingInstance.destroy(true);
         delete (window as any)[instanceKey];
       }
-
-      if (!document.getElementById(containerId)) return;
 
       const config = {
         type: Phaser.AUTO,
@@ -140,8 +140,7 @@ function SimulationSpace(props: {
         }),
       };
 
-      const game = new Phaser.Game(config);
-      (window as any)[instanceKey] = game;
+      (window as any)[instanceKey] = new Phaser.Game(config);
     });
   }, [props.userVotes]);
 
@@ -161,15 +160,15 @@ function SimulationSpace(props: {
         Simulation
       </Typography>
       <Grid container spacing={2} style={{ height: '100%' }}>
-        {props.userVotes.map((_, index) => (
+        {props.userVotes.map((player, index) => (
           <Grid
-            key={index}
+            key={player.name}
             item
             xs={12 / Math.min(2, props.userVotes.length)}
             style={{ height: '50%' }}
           >
             <div
-              id={`phaser-container-${index}`}
+              id={`phaser-container-${player.name}`}
               style={{
                 width: '100%',
                 height: '100%',
@@ -292,17 +291,17 @@ function ResultsSpace(props: {
 
 function Timer({ secondsLeft }: { secondsLeft: number }): JSX.Element {
   const displaySeconds = String(secondsLeft % 60).padStart(2, '0');
+  const isCritical = secondsLeft <= 5;
 
   return (
     <>
-      <Typography variant="h3" fontWeight="bold" textAlign="center">
+      <Typography
+        variant="h3"
+        fontWeight="bold"
+        textAlign="center"
+        color={isCritical ? 'error' : 'textPrimary'}
+      >
         00 : {displaySeconds}
-        <Typography
-          component="span"
-          variant="h3"
-          color="error"
-          fontWeight="bold"
-        ></Typography>
       </Typography>
       <Typography variant="body2" textAlign="center">
         MINUTES SECONDS
@@ -469,7 +468,7 @@ function GamePage(): JSX.Element {
           ...updated[playerIndex],
           direction,
           outcome,
-          score: data.totalPoints,
+          score: updated[playerIndex].score + data.totalPoints,
           leftVotes:
             direction === 'left'
               ? updated[playerIndex].leftVotes + 1
@@ -511,7 +510,7 @@ function GamePage(): JSX.Element {
 
   useEffect(() => {
     if (voteCount > 0 && simulationEndedCount === voteCount) {
-      const delayBeforeNextRound = 6000; // 3 seconds pause before restarting
+      const delayBeforeNextRound = 5000;
 
       setTimeout(() => {
         // Reset everything for next round
