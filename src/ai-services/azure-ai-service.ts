@@ -11,19 +11,14 @@ import {
   AiServiceStepDataTypes,
 } from './ai-service-types';
 import {
-  ChatRequestMessageUnion,
-  GetChatCompletionsOptions,
-  ChatCompletions,
-} from '@azure/openai';
+  ResponseCreateParamsNonStreaming,
+  Response,
+} from 'openai/resources/responses/responses';
 
-export interface AzureOpenAiReqType {
-  deploymentName: string;
-  messages: ChatRequestMessageUnion[];
-  options?: GetChatCompletionsOptions;
-}
+export type AzureOpenAiReqType = ResponseCreateParamsNonStreaming;
 
 // The typing for params sent to open ai and the response received
-export type AzureOpenAiResType = ChatCompletions;
+export type AzureOpenAiResType = Response;
 
 // The data sent to/received from the AI service, unprocessed
 export type AzureOpenAiStepDataType = AiStepData<
@@ -41,5 +36,5 @@ export type AzureOpenAiServiceJobStatusResponseType =
 export function isAzureOpenAiData(
   stepData: AiServiceStepDataTypes
 ): stepData is AzureOpenAiStepDataType {
-  return 'choices' in stepData.aiServiceResponse;
+  return 'output_text' in stepData.aiServiceResponse;
 }

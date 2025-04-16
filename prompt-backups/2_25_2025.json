@@ -1,0 +1,555 @@
+[{
+  "_id": {
+    "$oid": "66901fd2895f740300e66ac9"
+  },
+  "__v": 0,
+  "clientId": "de0b94b9-1fc2-4ea1-995e-21a75670c16d",
+  "createdAt": {
+    "$date": "2024-07-11T18:09:22.918Z"
+  },
+  "description": "",
+  "flowsList": [
+    {
+      "name": "Flow 1",
+      "clientId": "bc5b2fda-f987-49e6-b71f-bdb84224c4ec",
+      "steps": [
+        {
+          "stepId": "a1690a34-3f6a-4780-94b6-3097984ebdf2",
+          "stepType": "SYSTEM_MESSAGE",
+          "jumpToStepId": "",
+          "lastStep": false,
+          "message": "Hello everyone, we're having a real problem with our expansion team, the LA Rivers.",
+          "_id": {
+            "$oid": "66a298d13820936ef3d6d4ab"
+          },
+          "predefinedResponses": []
+        },
+        {
+          "stepId": "f96268f3-b099-4b5a-851a-ba68005869ee",
+          "stepType": "SYSTEM_MESSAGE",
+          "jumpToStepId": "",
+          "lastStep": false,
+          "message": "We keep losing even though our players are just as good as anybody else's.",
+          "_id": {
+            "$oid": "66a298d13820936ef3d6d4ac"
+          },
+          "predefinedResponses": []
+        },
+        {
+          "stepId": "75113839-c41a-4e6f-930c-4ccbf25845dc",
+          "stepType": "SYSTEM_MESSAGE",
+          "jumpToStepId": "",
+          "lastStep": false,
+          "message": "We need you and the analyst team to figure out why we're losing and what we need to change in our strategy to be winners!",
+          "_id": {
+            "$oid": "66a298d13820936ef3d6d4ad"
+          },
+          "predefinedResponses": []
+        },
+        {
+          "stepId": "6aac9c5b-34fe-40b5-b2e9-02b4b3fcc223",
+          "stepType": "SYSTEM_MESSAGE",
+          "jumpToStepId": "",
+          "lastStep": false,
+          "message": "We're losing by about 10 points per game.",
+          "_id": {
+            "$oid": "66a298d13820936ef3d6d4ae"
+          },
+          "predefinedResponses": []
+        },
+        {
+          "stepId": "560499fd-eacd-411d-b52e-2c1ac2ec2246",
+          "stepType": "SYSTEM_MESSAGE",
+          "jumpToStepId": "",
+          "lastStep": true,
+          "message": "We can't change out players, but we can give the strategy for what shots to try to take.",
+          "_id": {
+            "$oid": "66a298d13820936ef3d6d4af"
+          },
+          "predefinedResponses": []
+        }
+      ],
+      "_id": {
+        "$oid": "66a298d13820936ef3d6d4aa"
+      },
+      "createdAt": {
+        "$date": "2024-07-25T18:26:25.598Z"
+      },
+      "updatedAt": {
+        "$date": "2024-07-25T18:26:25.598Z"
+      }
+    }
+  ],
+  "stageType": "discussion",
+  "title": "Basketball Game - Intro messages",
+  "updatedAt": {
+    "$date": "2024-07-25T18:26:25.598Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "669ee07c4815905b32891e9c"
+  },
+  "__v": 0,
+  "clientId": "86587083-9279-4c27-8470-836f992670fc",
+  "createdAt": {
+    "$date": "2024-07-22T22:43:08.215Z"
+  },
+  "description": "",
+  "flowsList": [
+    {
+      "name": "Flow 1",
+      "clientId": "be7a9940-5723-461c-a959-6693b3f6687d",
+      "steps": [
+        {
+          "stepId": "d8741382-e1a9-457f-898e-e3062c23832a",
+          "stepType": "REQUEST_USER_INPUT",
+          "jumpToStepId": null,
+          "lastStep": false,
+          "message": "From what you're seeing right now, what do you think we're doing wrong? Can you think of a better shooting strategy?",
+          "saveResponseVariableName": "user_hypothesis",
+          "disableFreeInput": false,
+          "predefinedResponses": [],
+          "_id": {
+            "$oid": "66a9662cfbd11cbbbbb6fede"
+          }
+        },
+        {
+          "stepId": "53b0b249-057b-407b-8dca-37724b5cd97e",
+          "stepType": "PROMPT",
+          "jumpToStepId": "",
+          "lastStep": false,
+          "promptText": "Context: Basketball Team Performance analysis.\nThe student is trying to determine the best shooting strategy for their basketball team in order to make the most points. In their strategy, we are primarily looking for the percent of shots they want to make on the inside, middle, and outside, but we may also take note if they understand the multiplicative or additive portions of the below equation:\n\n(number of middle shots taken) * (% middle shot success) * (# points per middle shot)\n+\n(number of inside shots taken) * (% inside shot success) * (# inside per inside shot)\n+\n(number of outside shots taken) * (% outside shot success) * (# points per outside shot)\n\nDo NOT reveal the equation to the student.\n\nHere is the students strategy: {{user_hypothesis}}",
+          "responseFormat": "",
+          "includeChatLogContext": false,
+          "outputDataType": "JSON",
+          "jsonResponseData": "[{\"clientId\":\"60787e11-b513-4602-98c0-df1d663a02bc\",\"name\":\"inside_shot_percent\",\"type\":\"string\",\"isRequired\":true,\"additionalInfo\":\"the users desired percent of inside shots for their team to take. do NOT include the % symbol\"},{\"clientId\":\"5b7df8e0-f877-4b41-93cf-c84615c7aa31\",\"name\":\"middle_shot_percent\",\"type\":\"string\",\"isRequired\":true,\"additionalInfo\":\"the users desired percent of middle shots for their team to take. do NOT include the % symbol\"},{\"clientId\":\"34e1bd09-0d1c-4f55-96c4-4885e5bf0889\",\"name\":\"outside_shot_percent\",\"type\":\"string\",\"isRequired\":true,\"additionalInfo\":\"the users desired percent of outside shots for their team to take. do NOT include the % symbol\"},{\"clientId\":\"177770d8-0788-4b4d-8e1e-a2b9edc96e17\",\"name\":\"understands_success_shots\",\"type\":\"string\",\"isRequired\":true,\"additionalInfo\":\"true/false string. Set to true if the user mentions anything about the chance of making a shot, the probability of making a shot, the % chance of making a shot, or anything similar.\"},{\"clientId\":\"6e71d584-0683-4b8b-b5e6-6dedcdb0b56b\",\"name\":\"understands_shot_points\",\"type\":\"string\",\"isRequired\":true,\"additionalInfo\":\"true/false string. Set to true if the user mentions anything about the number of points made per shot.\"},{\"clientId\":\"89b4b546-df97-4ecd-b2a9-88595afc4600\",\"name\":\"understands_multiplication\",\"type\":\"string\",\"isRequired\":true,\"additionalInfo\":\"true/false string, whether or not the user understand they must multiply the variables together. Only true if they understand you must multiply ALL three variables: (number of middle shots taken) * (% middle shot success) * (# points per middle shot)\"},{\"clientId\":\"5d923150-2fa3-48ff-9821-6f918fc041a7\",\"name\":\"understands_addition\",\"type\":\"string\",\"isRequired\":true,\"additionalInfo\":\"true/false string, whether or not the user understands they must add the resulting points of the 3 different shot types together to get the total points for the game. The user MUST mention adding up all the 3 different shot types, or something similar\"}]",
+          "customSystemRole": "",
+          "_id": {
+            "$oid": "66a9662cfbd11cbbbbb6fedf"
+          },
+          "predefinedResponses": []
+        },
+        {
+          "stepId": "65089eb5-ce4b-4a45-9178-4673dd4eb10f",
+          "stepType": "REQUEST_USER_INPUT",
+          "jumpToStepId": null,
+          "lastStep": false,
+          "message": "Why would this strategy be better?",
+          "saveResponseVariableName": "why_their_strategy",
+          "disableFreeInput": false,
+          "predefinedResponses": [],
+          "_id": {
+            "$oid": "66a9662cfbd11cbbbbb6fee0"
+          }
+        },
+        {
+          "stepId": "3da1be40-0080-4586-b2c3-67951a50bfe8",
+          "stepType": "PROMPT",
+          "jumpToStepId": "",
+          "lastStep": false,
+          "promptText": "Context: Basketball Team Performance analysis.\n\nFormula for total points made in a basketball game:\n(number of middle shots taken) * (% middle shot success) * (# points per middle shot)\n+\n(number of inside shots taken) * (% inside shot success) * (# inside per inside shot).\n+\n(number of outside shots taken) * (% outside shot success) * (# points per outside shot).\n\n\nThe student has provided you with their strategy and an explanation for their strategy. Please review their strategy and explanation and provide some feedback on how well their strategy might perform given the formula for calculating points made in a basketball game.\n\nDo NOT reveal the formula to the student.\n\nHere is the students strategy: {{user_hypothesis}}\nHere is the students explanation for their strategy: {{why_their_strategy}}",
+          "responseFormat": "",
+          "includeChatLogContext": false,
+          "outputDataType": "JSON",
+          "jsonResponseData": "[{\"clientId\":\"0f4c18ee-932a-4f54-9143-29d86ab3ba71\",\"name\":\"ai_response_strategy\",\"type\":\"string\",\"isRequired\":true,\"additionalInfo\":\"your response to the student. Please keep down to 1-2 sentences. Do NOT reveal the equation. Simply give some feedback on their strategy and explanation and if it might be a good strategy or not. You are responding directly to the student in the first person.\"},{\"clientId\":\"933ce5bb-afed-4048-9392-c831c2b21ddd\",\"name\":\"understands_success_shots\",\"type\":\"string\",\"isRequired\":true,\"additionalInfo\":\"true/false string. Set to true if the user mentions anything about the chance of making a shot, the probability of making a shot, the % chance of making a shot, or anything similar.\"},{\"clientId\":\"2071b358-4d54-4430-b324-75be2b064552\",\"name\":\"understands_shot_points\",\"type\":\"string\",\"isRequired\":true,\"additionalInfo\":\"true/false string. Set to true if the user mentions anything about the number of points for a shot\"},{\"clientId\":\"6d9ad98d-279a-4773-ae4e-d8d5dbc52e93\",\"name\":\"understands_multiplication\",\"type\":\"string\",\"isRequired\":true,\"additionalInfo\":\"true/false string, whether or not the user understand they must multiply the variables together. Only true if they understand you must multiply ALL three variables: (number of middle shots taken) * (% middle shot success) * (# points per middle shot)\"},{\"clientId\":\"2370b351-63e5-4c15-9224-b1cbb2488146\",\"name\":\"understands_addition\",\"type\":\"string\",\"isRequired\":true,\"additionalInfo\":\"true/false string, whether or not the user understands they must add the resulting points of the 3 different shot types together to get the total points for the game. The user MUST mention adding up all the 3 different shot types, or something similar\"}]",
+          "customSystemRole": "",
+          "_id": {
+            "$oid": "66a9662cfbd11cbbbbb6fee1"
+          },
+          "predefinedResponses": []
+        },
+        {
+          "stepId": "607ae4b5-987a-4d85-b4d1-bb6c9efaf06c",
+          "stepType": "SYSTEM_MESSAGE",
+          "jumpToStepId": "",
+          "lastStep": true,
+          "message": "{{ai_response_strategy}}",
+          "_id": {
+            "$oid": "66a9662cfbd11cbbbbb6fee2"
+          },
+          "predefinedResponses": []
+        }
+      ],
+      "_id": {
+        "$oid": "66a9662cfbd11cbbbbb6fedd"
+      },
+      "createdAt": {
+        "$date": "2024-07-30T22:16:12.218Z"
+      },
+      "updatedAt": {
+        "$date": "2024-07-30T22:16:12.218Z"
+      }
+    }
+  ],
+  "stageType": "discussion",
+  "title": "Basketball Game - Collect Variables",
+  "updatedAt": {
+    "$date": "2024-07-30T22:16:12.218Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "669ff64815910984d28a3fb1"
+  },
+  "__v": 0,
+  "clientId": "909a0d5a-345d-4f6e-8d9c-2e7f6cfa4714",
+  "createdAt": {
+    "$date": "2024-07-23T18:28:24.199Z"
+  },
+  "description": "",
+  "flowsList": [
+    {
+      "name": "Flow 1",
+      "clientId": "5234ef34-7815-45e6-a2bc-1d05fb4fcac1",
+      "steps": [
+        {
+          "stepId": "235ad4fa-b6c0-4e92-a4b3-e292b89e0472",
+          "stepType": "REQUEST_USER_INPUT",
+          "jumpToStepId": null,
+          "lastStep": false,
+          "message": "Please explain what variables we are able to freely change.",
+          "saveResponseVariableName": "",
+          "disableFreeInput": false,
+          "predefinedResponses": [],
+          "_id": {
+            "$oid": "66a9677b15828107efa39792"
+          }
+        },
+        {
+          "stepId": "b04c586a-59b8-49ac-96fc-3f2fd7754540",
+          "stepType": "PROMPT",
+          "jumpToStepId": "",
+          "lastStep": false,
+          "promptText": "You are discussing basketball shooting strategy with the user. The equation for determining the amount of points you get in a game for a single shot type is: (number of shots taken) * (% shot success) * (# points per shot). We are trying to get the user to understand that the only variable that you can freely change is the number of shots taken. Do NOT reveal the equation to the user. Do NOT reveal the answer to the user. The users last message is their attempt at determining what variable we can change. Please respond to that message with either an affirmation that they are correct, or with a response that might get them thinking about how the only variable we can change is the number of shots taken.",
+          "responseFormat": "you are speaking with the student in the first person. Please keep your response short, 1-2 sentences max.",
+          "includeChatLogContext": true,
+          "outputDataType": "TEXT",
+          "jsonResponseData": "[]",
+          "customSystemRole": "",
+          "_id": {
+            "$oid": "66a9677b15828107efa39793"
+          },
+          "predefinedResponses": []
+        },
+        {
+          "stepId": "5a72338d-4039-4e14-b8a0-d5d6fb2a08d8",
+          "stepType": "REQUEST_USER_INPUT",
+          "jumpToStepId": null,
+          "lastStep": false,
+          "message": "Please explain the algorithm for determining the number of points we make in a game for a single shot type.",
+          "saveResponseVariableName": "algorithm_explanation",
+          "disableFreeInput": false,
+          "predefinedResponses": [],
+          "_id": {
+            "$oid": "66a9677b15828107efa39794"
+          }
+        },
+        {
+          "stepId": "ea99c1b9-5b23-4e70-b959-51e438463f36",
+          "stepType": "PROMPT",
+          "jumpToStepId": "",
+          "lastStep": true,
+          "promptText": "Context: basketball total points evaluation. We are testing the user to see if they know each part of this algorithm for determining the total points made in a game of basketball:\n\n(number of middle shots taken) * (% middle shot success) * (# points per middle shot)\n+\n(number of inside shots taken) * (% inside shot success) * (# inside per inside shot)\n+\n(number of outside shots taken) * (% outside shot success) * (# points per outside shot)\n\nHere is the users understanding: {{algorithm_explanation}}",
+          "responseFormat": "",
+          "includeChatLogContext": false,
+          "outputDataType": "JSON",
+          "jsonResponseData": "[{\"clientId\":\"03d7a43d-4b19-45cf-86d1-a73de27922e2\",\"name\":\"understands_algorithm\",\"type\":\"string\",\"isRequired\":true,\"additionalInfo\":\"true/false, string, whether or not the user fully understand the algorithm based on their response\"},{\"clientId\":\"8935d910-9d40-4265-a492-b1bfb60a5c70\",\"name\":\"understands_multiplication\",\"type\":\"string\",\"isRequired\":true,\"additionalInfo\":\"true/false string, whether or not the user understand they must multiply the variables together. Only true if they understand you must multiply ALL three variables: (number of middle shots taken) * (% middle shot success) * (# points per middle shot)\"},{\"clientId\":\"34da17b7-813b-4d49-a1ad-0f51ce295070\",\"name\":\"understands_addition\",\"type\":\"string\",\"isRequired\":true,\"additionalInfo\":\"true/false string, whether or not the user understands they must add the resulting points of the 3 different shot types together to get the total points for the game. The user MUST mention adding up all the 3 different shot types, or something similar\"},{\"clientId\":\"0e0ff462-fa97-4e32-9d15-f608a05d0e30\",\"name\":\"understands_success_shots\",\"type\":\"string\",\"isRequired\":true,\"additionalInfo\":\"true/false string. Set to true if the user mentions anything about the chance of making a shot, the probability of making a shot, the % chance of making a shot, or anything similar.\"},{\"clientId\":\"91aebe5a-b216-4b9f-84b3-049963fd21ce\",\"name\":\"understands_shot_points\",\"type\":\"string\",\"isRequired\":true,\"additionalInfo\":\"true/false string. Set to true if the user mentions anything about the number of points made per shot.\"}]",
+          "customSystemRole": "",
+          "_id": {
+            "$oid": "66a9677b15828107efa39795"
+          },
+          "predefinedResponses": []
+        }
+      ],
+      "_id": {
+        "$oid": "66a9677b15828107efa39791"
+      },
+      "createdAt": {
+        "$date": "2024-07-30T22:21:47.847Z"
+      },
+      "updatedAt": {
+        "$date": "2024-07-30T22:21:47.847Z"
+      }
+    }
+  ],
+  "stageType": "discussion",
+  "title": "Basketball Game - Explain Concepts",
+  "updatedAt": {
+    "$date": "2024-07-30T22:21:47.847Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "669ff81985d0cb7d4446281b"
+  },
+  "__v": 0,
+  "clientId": "5421ef02-3cca-4281-a832-69ce040ed848",
+  "createdAt": {
+    "$date": "2024-07-23T18:36:09.123Z"
+  },
+  "description": "",
+  "flowsList": [
+    {
+      "name": "Flow 1",
+      "clientId": "75949ebd-3f77-43e3-a76e-cde51507820c",
+      "steps": [
+        {
+          "stepId": "fabcb24d-7961-4147-8f0c-fff858f8cec5",
+          "stepType": "PROMPT",
+          "jumpToStepId": "",
+          "lastStep": false,
+          "promptText": "You are a basketball Game Master having a discussion with a student about the algorithm for determining the number of points made per game for the 3 different shot types:\n(number of middle shots taken) * (% middle shot success) * (# points per middle shot)\n+\n(number of inside shots taken) * (% inside shot success) * (# inside per inside shot).\n+\n(number of outside shots taken) * (% outside shot success) * (# points per outside shot).\n\nDO NOT reveal/discuss the full equation to the user until they have figured it out. You may reveal/discuss parts of the equation that they have already figured out. Assist the user in figuring out all the different parts to the equation, do not ask about parts of the equation that the user has already mentioned in the chat log.",
+          "responseFormat": "",
+          "includeChatLogContext": true,
+          "outputDataType": "JSON",
+          "jsonResponseData": "[{\"clientId\":\"2c753335-bcbc-4631-bea4-b48bd9b0d5e5\",\"name\":\"understands_algorithm\",\"type\":\"string\",\"isRequired\":true,\"additionalInfo\":\"true/false, string, whether or not the user fully understand the algorithm based on their responses in this conversation\"},{\"clientId\":\"e5cd1e53-0c43-4a0b-8272-481ecce29e2e\",\"name\":\"key_concept_ai_response\",\"type\":\"string\",\"isRequired\":true,\"additionalInfo\":\"your response to the students last message\"},{\"clientId\":\"b61b2fab-46e2-44ef-abff-6992ba612721\",\"name\":\"understands_multiplication\",\"type\":\"string\",\"isRequired\":true,\"additionalInfo\":\"true/false string, whether or not the user understand they must multiply the variables together. Only true if they understand you must multiply ALL three variables: (number of middle shots taken) * (% middle shot success) * (# points per middle shot)\"},{\"clientId\":\"5d322fa9-72db-401f-b668-285372ee028e\",\"name\":\"understands_addition\",\"type\":\"string\",\"isRequired\":true,\"additionalInfo\":\"true/false string, whether or not the user understands they must add the resulting points of the different shot types together to get the total points for the game. The user MUST mention adding up all the different shot types, or something similar\"},{\"clientId\":\"0a6235e1-7c5f-42d8-bdbc-b5472e940e01\",\"name\":\"understands_success_shots\",\"type\":\"string\",\"isRequired\":true,\"additionalInfo\":\"true/false string. Set to true if the user mentions anything about the chance of making a shot, the probability of making a shot, the % chance of making a shot, or anything similar.\"},{\"clientId\":\"13f76ca4-653c-4124-a980-4650974987e9\",\"name\":\"understands_shot_points\",\"type\":\"string\",\"isRequired\":true,\"additionalInfo\":\"true/false string. Set to true if the user mentions anything about the number of points made per shot.\"}]",
+          "customSystemRole": "You are a basketball Game Master and you are assisting a student in understanding the algorithm for determining the number of points made per game for a single shot type: (number of shots taken) * (% shot success) * (# points per shot).",
+          "_id": {
+            "$oid": "66a18e4b14b2baa6de59770d"
+          },
+          "predefinedResponses": []
+        },
+        {
+          "stepId": "363ceba5-a96c-44b4-983a-e70e7b91644e",
+          "stepType": "REQUEST_USER_INPUT",
+          "jumpToStepId": "",
+          "lastStep": true,
+          "message": "{{key_concept_ai_response}}",
+          "saveResponseVariableName": "",
+          "disableFreeInput": false,
+          "predefinedResponses": [],
+          "_id": {
+            "$oid": "66a18e4b14b2baa6de59770e"
+          }
+        }
+      ],
+      "_id": {
+        "$oid": "66a18e4b14b2baa6de59770c"
+      },
+      "createdAt": {
+        "$date": "2024-07-24T23:29:15.255Z"
+      },
+      "updatedAt": {
+        "$date": "2024-07-24T23:29:15.255Z"
+      }
+    }
+  ],
+  "stageType": "discussion",
+  "title": "Basketball Game - LLM Key Concepts Conversation",
+  "updatedAt": {
+    "$date": "2024-07-24T23:29:15.255Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "669ffad86846a2c0e2387c57"
+  },
+  "__v": 0,
+  "clientId": "3095c6cd-d377-4660-aa4d-e79409592210",
+  "createdAt": {
+    "$date": "2024-07-23T18:47:52.549Z"
+  },
+  "description": "",
+  "flowsList": [
+    {
+      "name": "Flow 1",
+      "clientId": "99741b46-f62c-46b6-aad9-4959873d580c",
+      "steps": [
+        {
+          "stepId": "b202321c-6b13-46c2-9bd9-affc2185c844",
+          "stepType": "SYSTEM_MESSAGE",
+          "jumpToStepId": "",
+          "lastStep": true,
+          "message": "Please select a strategy from the bottom of the \"Approach\" section to view a simulation.",
+          "_id": {
+            "$oid": "669ffad86846a2c0e2387c59"
+          },
+          "predefinedResponses": []
+        }
+      ],
+      "_id": {
+        "$oid": "669ffad86846a2c0e2387c58"
+      },
+      "createdAt": {
+        "$date": "2024-07-23T18:47:52.549Z"
+      },
+      "updatedAt": {
+        "$date": "2024-07-23T18:47:52.549Z"
+      }
+    }
+  ],
+  "stageType": "discussion",
+  "title": "Basketball Game - Select Strategy",
+  "updatedAt": {
+    "$date": "2024-07-23T18:47:52.549Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "669ffb0915910984d28a4471"
+  },
+  "__v": 0,
+  "clientId": "9265f1ef-2a2e-4a14-b98f-5bbf6fd879d8",
+  "createdAt": {
+    "$date": "2024-07-23T18:48:41.819Z"
+  },
+  "description": "",
+  "flowsList": [
+    {
+      "name": "Flow 1",
+      "clientId": "5350cbf7-4b2d-49fc-9acf-e5bd24e44cdb",
+      "steps": [
+        {
+          "stepId": "5db586aa-1341-439e-a6f2-90dcab764b74",
+          "stepType": "REQUEST_USER_INPUT",
+          "jumpToStepId": null,
+          "lastStep": false,
+          "message": "Can we do even better than this? What strategy should we try next?",
+          "saveResponseVariableName": "user_hypothesis",
+          "disableFreeInput": false,
+          "predefinedResponses": [],
+          "_id": {
+            "$oid": "66a2aae4d687949c9745efc5"
+          }
+        },
+        {
+          "stepId": "b9eaf4b9-a9fb-4499-8e9a-24da5c182baa",
+          "stepType": "PROMPT",
+          "jumpToStepId": "",
+          "lastStep": true,
+          "promptText": "Context: Basketball Team Performance analysis.\nThe user is trying to determine the best shooting strategy for their basketball team in order to make the most points.\n\nIn their response, we are looking to see if they understand that the best strategy to be 100 outside shots (3 pointers). We are also looking for percentage of inside shots, middle shots, and outside shots. We are also looking for the number of points given for a single inside shot, middle shot, and outside shot.\n\nHere is the users strategy: {{user_hypothesis}}",
+          "responseFormat": "",
+          "includeChatLogContext": false,
+          "outputDataType": "JSON",
+          "jsonResponseData": "[{\"clientId\":\"7c776956-b4dd-45cb-8893-e264e6a173e8\",\"name\":\"inside_shot_percent\",\"type\":\"string\",\"isRequired\":false,\"additionalInfo\":\"the users desired percent of inside shots for their team to take. ONLY include this variable in your response if the user explicitly states the number/percent of any of the three shots types (middle_shot_percent, outside_shot_percent, inside_shot_percent). The three MUST not summate above 100.\"},{\"clientId\":\"73567cc0-f0d9-4bdd-bad0-2d282aa64c2c\",\"name\":\"inside_shot_points\",\"type\":\"string\",\"isRequired\":true,\"additionalInfo\":\"the number of points the user thinks their team should receive for an inside shot. If none provided by user, leave as 0.\"},{\"clientId\":\"eae4efeb-bd42-47c8-bfec-236bbd0d8749\",\"name\":\"middle_shot_percent\",\"type\":\"string\",\"isRequired\":false,\"additionalInfo\":\"the users desired percent of middle shots for their team to take. ONLY include this variable in your response if the user explicitly states the number/percent of any of the three shots types (middle_shot_percent, outside_shot_percent, inside_shot_percent). The three MUST not summate above 100.\"},{\"clientId\":\"3a90eca3-f52c-47d8-bc77-4356e09629db\",\"name\":\"mid_shot_points\",\"type\":\"string\",\"isRequired\":true,\"additionalInfo\":\"the number of points the user thinks their team should receive for a middle shot. If none provided by user, leave as 0.\"},{\"clientId\":\"d9797216-47e8-4136-94c3-89543ce6c0f4\",\"name\":\"outside_shot_percent\",\"type\":\"string\",\"isRequired\":false,\"additionalInfo\":\"the users desired percent of outside shots for their team to take. ONLY include this variable in your response if the user explicitly states the number/percent of any of the three shots types (middle_shot_percent, outside_shot_percent, inside_shot_percent). The three MUST not summate above 100.\"},{\"clientId\":\"c775465a-45e5-4ff3-adad-c00ddc542620\",\"name\":\"outside_shot_points\",\"type\":\"string\",\"isRequired\":true,\"additionalInfo\":\"the number of points the user thinks their team should receive for an outside shot. If none provided by user, leave as 0.\"},{\"clientId\":\"dcd4db2c-7443-4bf7-97cc-709060f26801\",\"name\":\"best_strategy_found\",\"type\":\"string\",\"isRequired\":true,\"additionalInfo\":\"true/false string, set to true if the users strategy involves doing all 100 shots as outside shots (3 pointers)\"}]",
+          "customSystemRole": "",
+          "_id": {
+            "$oid": "66a2aae4d687949c9745efc6"
+          },
+          "predefinedResponses": []
+        }
+      ],
+      "_id": {
+        "$oid": "66a2aae4d687949c9745efc4"
+      },
+      "createdAt": {
+        "$date": "2024-07-25T19:43:32.468Z"
+      },
+      "updatedAt": {
+        "$date": "2024-07-25T19:43:32.468Z"
+      }
+    }
+  ],
+  "stageType": "discussion",
+  "title": "Basketball Game - Discuss New Strategy",
+  "updatedAt": {
+    "$date": "2024-07-25T19:43:32.468Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "66a29af5a6746072a0133a9c"
+  },
+  "__v": 0,
+  "clientId": "e11d3273-e0e8-4b15-a5f0-3b80e5665e01",
+  "createdAt": {
+    "$date": "2024-07-25T18:35:33.656Z"
+  },
+  "description": "",
+  "flowsList": [
+    {
+      "name": "Flow 1",
+      "clientId": "00705c2b-cbbe-420d-bd33-d66c0ed91a7a",
+      "steps": [
+        {
+          "stepId": "ca66c3cc-66d0-454a-b56e-b2f3088c041c",
+          "stepType": "PROMPT",
+          "jumpToStepId": "",
+          "lastStep": false,
+          "promptText": "Algorithm for determining the number of points made per basketball game for the 3 different shot types:\n\n(number of middle shots taken) * 40% (% middle shot success) * 2 (# points per middle shot)\n+\n(number of inside shots taken) * 50% (% inside shot success) * 2 (# inside per inside shot).\n+\n(number of outside shots taken) * 36% (% outside shot success) * 3 (# points per outside shot)\n\nNote that the only variable that the player can freely change is the number of shots they do per shot type.\n\nThe player has a max of 100 shots total across the 3 shot types.\n\nBest Shooting Strategy: 100 outside shots (3 pointers).\n\nExplanation: Statistically, outside shots are worth the most points. If you were to plug in 100 shots into each of the shot types separately, 100 outside shots (3 pointers) would result in the most points.\n\n\nYour task: You are having a discussion with a student who is trying to figure out the Best Shooting Strategy to make the most points in a basketball game (the Best Shooting Strategy is noted above.) Please do not give the student the answer, instead, try to lead the user to the correct answer using clues from the Explanation above. Please continue from the conversation provided. In your response, do NOT include any response indicators like \"System:\"",
+          "responseFormat": "",
+          "includeChatLogContext": true,
+          "outputDataType": "JSON",
+          "jsonResponseData": "[{\"clientId\":\"a0489998-4523-451c-9d72-ca673523b879\",\"name\":\"best_strategy_found\",\"type\":\"string\",\"isRequired\":true,\"additionalInfo\":\"true/false string, set to true if the users strategy involves doing all 100 shots as outside shots (3 pointers)\"},{\"clientId\":\"322c6b24-853b-4dfb-b445-a837404e3424\",\"name\":\"response_to_strategy\",\"type\":\"string\",\"isRequired\":true,\"additionalInfo\":\"your response, keep short, 1-3 sentences.\"},{\"clientId\":\"3d181548-98a6-41f2-99a8-6c0f978faf64\",\"name\":\"inside_shot_percent\",\"type\":\"string\",\"isRequired\":false,\"additionalInfo\":\"The number/percent of inside shots the student wants to do. ONLY include this variable in your response if the user explicitly states the number/percent of any of the three shots types (middle_shot_percent, outside_shot_percent, inside_shot_percent). The three MUST not summate above 100.\"},{\"clientId\":\"25a9e4b7-1636-48cc-8a4c-23cf729fdb2f\",\"name\":\"middle_shot_percent\",\"type\":\"string\",\"isRequired\":false,\"additionalInfo\":\"The number/percent of middle shots the student wants to do. ONLY include this variable in your response if the user explicitly states the number/percent of any of the three shots types (middle_shot_percent, outside_shot_percent, inside_shot_percent). The three MUST not summate above 100.\"},{\"clientId\":\"6417e179-2069-405c-ae71-2a2ddcbfe06b\",\"name\":\"outside_shot_percent\",\"type\":\"string\",\"isRequired\":false,\"additionalInfo\":\"The number/percent of outside shots the student wants to do. ONLY include this variable in your response if the user explicitly states the number/percent of any of the three shots types (middle_shot_percent, outside_shot_percent, inside_shot_percent). The three MUST not summate above 100.\"}]",
+          "customSystemRole": "You are a basketball game master having a discussion with a student about the Best Shooting Strategy in a basketball game.",
+          "_id": {
+            "$oid": "66a2aaf1d687949c9745efd9"
+          },
+          "predefinedResponses": []
+        },
+        {
+          "stepId": "74ed93f6-6884-4a07-bb66-394d2da254de",
+          "stepType": "REQUEST_USER_INPUT",
+          "jumpToStepId": "ca66c3cc-66d0-454a-b56e-b2f3088c041c",
+          "lastStep": false,
+          "message": "{{response_to_strategy}}",
+          "saveResponseVariableName": "",
+          "disableFreeInput": false,
+          "predefinedResponses": [],
+          "_id": {
+            "$oid": "66a2aaf1d687949c9745efda"
+          }
+        }
+      ],
+      "_id": {
+        "$oid": "66a2aaf1d687949c9745efd8"
+      },
+      "createdAt": {
+        "$date": "2024-07-25T19:43:45.766Z"
+      },
+      "updatedAt": {
+        "$date": "2024-07-25T19:43:45.766Z"
+      }
+    }
+  ],
+  "stageType": "discussion",
+  "title": "Basketball Game - Discuss Best Strategy",
+  "updatedAt": {
+    "$date": "2024-07-25T19:43:45.766Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "66a2a5b10707adab799e3ea6"
+  },
+  "__v": 0,
+  "clientId": "bdf123b5-1fd1-4de9-bc4e-74a53623475a",
+  "createdAt": {
+    "$date": "2024-07-25T19:21:21.679Z"
+  },
+  "description": "",
+  "flowsList": [
+    {
+      "name": "Flow 1",
+      "clientId": "db1d632f-911b-488a-bc45-853f57626df8",
+      "steps": [
+        {
+          "stepId": "bd288a89-e52b-4d9a-8d32-cd0ea6517b92",
+          "stepType": "SYSTEM_MESSAGE",
+          "jumpToStepId": "",
+          "lastStep": true,
+          "message": "Congratulations! You found the best strategy.",
+          "_id": {
+            "$oid": "66a2a5b10707adab799e3ea8"
+          },
+          "predefinedResponses": []
+        }
+      ],
+      "_id": {
+        "$oid": "66a2a5b10707adab799e3ea7"
+      },
+      "createdAt": {
+        "$date": "2024-07-25T19:21:21.679Z"
+      },
+      "updatedAt": {
+        "$date": "2024-07-25T19:21:21.679Z"
+      }
+    }
+  ],
+  "stageType": "discussion",
+  "title": "Basketball Stage - Finished",
+  "updatedAt": {
+    "$date": "2024-07-25T19:21:21.679Z"
+  }
+}]

@@ -7,7 +7,7 @@ The full terms of this copyright and license should always be found in the root 
 
 import { AzureOpenAiStepDataType, isAzureOpenAiData } from './azure-ai-service';
 import { GeminiStepDataType, isGeminiData } from './gemini-ai-service';
-import { OpenAiStepDataType } from './open-ai-service';
+import { isOpenAiData, OpenAiStepDataType } from './open-ai-service';
 
 export interface AiStepData<ReqType, ResType> {
   aiServiceRequestParams: ReqType; // OpenAI.Chat.Completions.ChatCompletionCreateParams for OpenAi
@@ -42,11 +42,13 @@ export function extractServiceStepResponse(
   stepNumber: number
 ): string {
   const currentStep = aiServiceResponse.aiAllStepsData[stepNumber];
-  if (isGeminiData(currentStep)) {
+  if (isAzureOpenAiData(currentStep)) {
+    return currentStep.aiServiceResponse.output_text || '';
+  } else if (isOpenAiData(currentStep)) {
+    return currentStep.aiServiceResponse.output_text || '';
+  } else if (isGeminiData(currentStep)) {
     return currentStep.aiServiceResponse.text || '';
-  } else if (isAzureOpenAiData(currentStep)) {
-    return currentStep.aiServiceResponse.choices[0].message?.content || '';
   } else {
-    return currentStep.aiServiceResponse[0].message.content || '';
+    throw new Error('Invalid step data');
   }
 }
