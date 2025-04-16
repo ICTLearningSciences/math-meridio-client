@@ -25,7 +25,7 @@ export async function asyncLlmRequest(
 ): Promise<OpenAiJobId> {
   const res = await execHttp<OpenAiJobId>(
     'POST',
-    `${LLM_API_ENDPOINT}/generic_llm_request/`,
+    `${LLM_API_ENDPOINT}/generic_llm_request/?api-version=2025-03-01-preview`,
     {
       dataPath: ['response', 'jobId'],
       axiosConfig: {
@@ -39,22 +39,103 @@ export async function asyncLlmRequest(
   return res;
 }
 
+// MODIFIED
+
+// export async function asyncLlmRequestStatus(
+//   jobId: string,
+//   cancelToken?: CancelToken
+// ): Promise<AiServicesJobStatusResponseTypes> {
+//   const res = await execHttp<AiServicesJobStatusResponseTypes>(
+//     'POST',
+//     `${LLM_API_ENDPOINT}/generic_llm_request_status/?jobId=${jobId}`,
+//     {
+//       dataPath: ['response'],
+//       axiosConfig: {
+//         cancelToken: cancelToken,
+//       },
+//     }
+//   );
+//   return res;
+// }
+
+// export async function asyncLlmRequestStatus(
+//   jobId: string,
+//   cancelToken?: CancelToken
+// ): Promise<AiServicesJobStatusResponseTypes> {
+//   let res: AiServicesJobStatusResponseTypes;
+//   do {
+//     try {
+//       res = await execHttp<AiServicesJobStatusResponseTypes>(
+//         'POST',
+//         `${LLM_API_ENDPOINT}/generic_llm_request_status/?jobId=${jobId}&api-version=2025-03-01-preview`,
+//         {
+//           dataPath: ['response'],
+//           axiosConfig: { cancelToken: cancelToken },
+//         }
+//       );
+//     } catch (e: any) {
+//       // Instead of logging to console, update an element or alert the user.
+//       const resultElement = document.getElementById('result');
+//       if (resultElement) {
+//         resultElement.textContent =
+//           "Error during job status polling: " + e.message;
+//       } else {
+//         alert("Error during job status polling: " + e.message);
+//       }
+//       throw e; // or return an error object if you want to handle it gracefully
+//     }
+
+//     // Update the webpage with the current result.
+//     const resultElement = document.getElementById('result');
+//     if (resultElement) {
+//       resultElement.textContent = JSON.stringify(res, null, 2);
+//     } else {
+//       alert("Result: " + JSON.stringify(res, null, 2));
+//     }
+
+//     // Wait 2 seconds before polling again if the job is still in progress.
+//     if (res.jobStatus === "IN_PROGRESS") {
+//       await new Promise(resolve => setTimeout(resolve, 2000));
+//     }
+//   } while (res.jobStatus === "IN_PROGRESS");
+
+//   return res;
+// }
+
 export async function asyncLlmRequestStatus(
   jobId: string,
   cancelToken?: CancelToken
 ): Promise<AiServicesJobStatusResponseTypes> {
-  const res = await execHttp<AiServicesJobStatusResponseTypes>(
-    'POST',
-    `${LLM_API_ENDPOINT}/generic_llm_request_status/?jobId=${jobId}`,
-    {
-      dataPath: ['response'],
-      axiosConfig: {
-        cancelToken: cancelToken,
-      },
+  let res: AiServicesJobStatusResponseTypes;
+  do {
+    try {
+      res = await execHttp<AiServicesJobStatusResponseTypes>(
+        'POST',
+        `${LLM_API_ENDPOINT}/generic_llm_request_status/?jobId=${jobId}&api-version=2025-03-01-preview`,
+        {
+          dataPath: ['response'],
+          axiosConfig: { cancelToken: cancelToken },
+        }
+      );
+    } catch (e: any) {
+      console.error("Error during job status polling:", e.message);
+      throw e;
     }
-  );
+
+    // Log the JSON response to the console for debugging.
+    console.log("Full AI Service Response:", JSON.stringify(res, null, 2));
+
+    // Wait 2 seconds before polling again if the job is still in progress.
+    if (res.jobStatus === "IN_PROGRESS") {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+  } while (res.jobStatus === "IN_PROGRESS");
+
   return res;
 }
+
+
+// MODIFIED END
 
 export const fullDiscussionStageQueryData = `
   _id
