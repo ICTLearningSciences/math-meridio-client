@@ -118,22 +118,21 @@ export async function asyncLlmRequestStatus(
         }
       );
     } catch (e: any) {
-      console.error("Error during job status polling:", e.message);
+      console.error('Error during job status polling:', e.message);
       throw e;
     }
 
     // Log the JSON response to the console for debugging.
-    console.log("Full AI Service Response:", JSON.stringify(res, null, 2));
+    console.log('Full AI Service Response:', JSON.stringify(res, null, 2));
 
     // Wait 2 seconds before polling again if the job is still in progress.
-    if (res.jobStatus === "IN_PROGRESS") {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+    if (res.jobStatus === 'IN_PROGRESS') {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
     }
-  } while (res.jobStatus === "IN_PROGRESS");
+  } while (res.jobStatus === 'IN_PROGRESS');
 
   return res;
 }
-
 
 // MODIFIED END
 
