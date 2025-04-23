@@ -69,6 +69,7 @@
   },
   "devDependencies": {
     "@simonsmith/cypress-image-snapshot": "^8.1.1",
+    "@types/leo-profanity": "^1.5.4",
     "@types/lodash": "^4.17.6",
     "@types/node": "^20.11.19",
     "@types/react": "^18.2.55",
