@@ -6,6 +6,7 @@ The full terms of this copyright and license should always be found in the root 
 */
 
 import { ChatMessage } from './store/slices/game';
+import { GameStateData } from './game/basketball/solution';
 import axios from 'axios';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function equals<T>(val1: T, val2: T): boolean {
@@ -80,4 +81,11 @@ export function extractErrorMessageFromError(err: any | unknown): string {
       return 'Cannot stringify error, unknown error structure';
     }
   }
+}
+
+export function didGameStateDataChange(
+  prevGameStateData: GameStateData,
+  newGameStateData: GameStateData
+): boolean {
+  return JSON.stringify(prevGameStateData) !== JSON.stringify(newGameStateData);
 }
