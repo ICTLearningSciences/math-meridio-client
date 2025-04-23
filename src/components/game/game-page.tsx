@@ -96,7 +96,7 @@ function ResultsSpace(props: {
     <Card
       className="scroll box"
       style={{
-        overflowY: 'auto',
+        overflow: 'auto',
         flexGrow: 1,
         margin: 10,
         borderTopLeftRadius: 20,

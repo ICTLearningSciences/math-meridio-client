@@ -361,7 +361,7 @@
           "stepType": "SYSTEM_MESSAGE",
           "jumpToStepId": "",
           "lastStep": true,
-          "message": "Please select a strategy from the bottom of the \"Approach\" section to view a simulation.",
+          "message": "Please select a strategy from the bottom of the \"Simulation\" section to view a simulation.",
           "_id": {
             "$oid": "669ffad86846a2c0e2387c59"
           },
