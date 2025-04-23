@@ -4,9 +4,7 @@ env:
   variables:
     STAGE: 'prod'
     REACT_APP_GRAPHQL_ENDPOINT: "https://api.meridiomath.org/graphql/graphql"
-
-    # MODIFIED
-    REACT_APP_LLM_API_ENDPOINT: "https://api.openai.com/v1/chat/completions" #"https://api.abewriting.org/docs"
+    REACT_APP_LLM_API_ENDPOINT: "https://api.abewriting.org/docs"
   parameter-store:
     S3_DEPLOY_BUCKET_PROD: "/mathm/prod/s3-websites/NAME"
     CDN_ID_PROD: "/mathm/prod/CLOUDFRONT_DISTRIBUTION_ID"

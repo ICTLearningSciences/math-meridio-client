@@ -25,10 +25,7 @@ export async function asyncLlmRequest(
 ): Promise<OpenAiJobId> {
   const res = await execHttp<OpenAiJobId>(
     'POST',
-
-    // MODIFIED
-    // `${LLM_API_ENDPOINT}/generic_llm_request/`,
-    LLM_API_ENDPOINT,
+    `${LLM_API_ENDPOINT}/generic_llm_request/`,
     {
       dataPath: ['response', 'jobId'],
       axiosConfig: {
@@ -48,10 +45,7 @@ export async function asyncLlmRequestStatus(
 ): Promise<AiServicesJobStatusResponseTypes> {
   const res = await execHttp<AiServicesJobStatusResponseTypes>(
     'POST',
-
-    // MODIFIED
-    // `${LLM_API_ENDPOINT}/generic_llm_request_status/?jobId=${jobId}`,
-    LLM_API_ENDPOINT,
+    `${LLM_API_ENDPOINT}/generic_llm_request_status/?jobId=${jobId}`,
     {
       dataPath: ['response'],
       axiosConfig: {

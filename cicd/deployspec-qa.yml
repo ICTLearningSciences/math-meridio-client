@@ -4,10 +4,7 @@ env:
   variables:
     STAGE: 'qa'
     REACT_APP_GRAPHQL_ENDPOINT: "https://api-qa.meridiomath.org/graphql/graphql"
-    
-    ## MODIFIED
-    REACT_APP_LLM_API_ENDPOINT: "https://api.openai.com/v1/chat/completions" #"https://api-qa.abewriting.org/docs"
-    
+    REACT_APP_LLM_API_ENDPOINT: "https://api-qa.abewriting.org/docs"
   parameter-store:
     S3_DEPLOY_BUCKET_QA: "/mathm/qa/s3-websites/NAME"
     CDN_ID_QA: "/mathm/qa/CLOUDFRONT_DISTRIBUTION_ID"
