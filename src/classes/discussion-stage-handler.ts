@@ -42,54 +42,6 @@ import {
 } from '../store/slices/game';
 import { Subscriber } from '../store/slices/game/use-with-game-state';
 import { Player } from '../store/slices/player';
-
-//MODIFIED
-/**
- * Checks if a given message contains profanity/offensive language
- * by using the OpenAI Chat API.
- *
- * The prompt instructs the model to answer with a single word:
- * "Yes" if profanity is present and "No" if not.
- *
- * @param message - The message to be checked.
- * @returns A promise that resolves to true if profanity is detected.
- */
-async function checkProfanity(message: string): Promise<boolean> {
-  const prompt = `Check if the following text contains any profanity or offensive language. Answer with a single word: 'Yes' if it does, and 'No' if it does not.
-
-Text: "${message}"
-
-Answer:`;
-
-  try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        // Make sure to set REACT_APP_OPENAI_API_KEY in your environment variables.
-        Authorization: `Bearer ${process.env.REACT_APP_OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 5,
-        temperature: 0,
-      }),
-    });
-    const data = await response.json();
-    if (!response.ok) {
-      console.error('OpenAI API error:', data);
-      return false;
-    }
-    const answer = data.choices[0].message.content.trim().toLowerCase();
-    return answer.startsWith('yes');
-  } catch (error) {
-    console.error('Error checking profanity:', error);
-    // In case of error, you may choose to allow the message.
-    return false;
-  }
-}
-
 interface UserResponseHandleState {
   responseNavigations: {
     response: string;
@@ -404,19 +356,17 @@ export class DiscussionStageHandler implements Subscriber {
   }
 
   async handleNewUserMessage(message: string) {
-    // MODIFIED
     // check the user's message for profanity
-    const isProfane = await checkProfanity(message);
-    if (isProfane) {
-      this.sendMessage({
-        id: uuidv4(),
-        message:
-          'Your message contains prohibited language. Please revise your input.',
-        sender: SenderType.SYSTEM,
-      });
-      return;
-    }
-    // END OF MODIFICATION
+    // const isProfane = await checkProfanity(message);
+    // if (isProfane) {
+    //   this.sendMessage({
+    //     id: uuidv4(),
+    //     message:
+    //       'Your message contains prohibited language. Please revise your input.',
+    //     sender: SenderType.SYSTEM,
+    //   });
+    //   return;
+    // }
 
     if (!this.curStep) {
       throw new Error('No current step found');

@@ -15,6 +15,7 @@ import {
 import { GenericLlmRequest } from './types';
 import { Player } from './store/slices/player';
 import { ChatMessage, GameData, Room } from './store/slices/game';
+import { extractErrorMessageFromError } from './helpers';
 
 type OpenAiJobId = string;
 export const LLM_API_ENDPOINT =
@@ -117,8 +118,11 @@ export async function asyncLlmRequestStatus(
           axiosConfig: { cancelToken: cancelToken },
         }
       );
-    } catch (e: any) {
-      console.error('Error during job status polling:', e.message);
+    } catch (e) {
+      console.error(
+        'Error during job status polling:',
+        extractErrorMessageFromError(e)
+      );
       throw e;
     }
 

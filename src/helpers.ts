@@ -6,7 +6,7 @@ The full terms of this copyright and license should always be found in the root 
 */
 
 import { ChatMessage } from './store/slices/game';
-
+import axios from 'axios';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function equals<T>(val1: T, val2: T): boolean {
   return JSON.stringify(val1) === JSON.stringify(val2);
@@ -56,4 +56,28 @@ export function arrayGetRandom<T>(arr: T[]): T | undefined {
 
 export function isEqual<T>(obj1: T, obj2: T): boolean {
   return JSON.stringify(obj1) !== JSON.stringify(obj2);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function extractErrorMessageFromError(err: any | unknown): string {
+  if (err?.response?.data) {
+    try {
+      const error = JSON.stringify(err.response.data);
+      return error;
+    } catch (err) {
+      console.error(err);
+    }
+  }
+  if (err instanceof Error) {
+    return err.message;
+  } else if (axios.isAxiosError(err)) {
+    return err.response?.data || err.message;
+  } else {
+    try {
+      const error = JSON.stringify(err);
+      return error;
+    } catch (err) {
+      return 'Cannot stringify error, unknown error structure';
+    }
+  }
 }
