@@ -51,14 +51,43 @@ function ProblemSpace(props: {
 function SolutionSpace(props: {
   game: Game;
   controller: GameStateHandler;
-  userVotes: { name: string; direction: 'left' | 'right' }[];
-  cumulativeShotData: {
-    totalShots: number;
-    leftShots: number;
-    rightShots: number;
-  };
+  scoreData: {
+    name: string;
+    shots: { direction: 'left' | 'right'; outcome: 'Score' | 'Saved' }[];
+  }[];
 }) {
-  const { totalShots, leftShots, rightShots } = props.cumulativeShotData;
+  const { scoreData } = props;
+
+  let totalShots = 0;
+  let leftShots = 0;
+  let rightShots = 0;
+
+  const scores = {
+    kickLeft_goalieLeft: [] as number[],
+    kickLeft_goalieRight: [] as number[],
+    kickRight_goalieLeft: [] as number[],
+    kickRight_goalieRight: [] as number[],
+  };
+
+  for (const player of scoreData) {
+    for (const shot of player.shots) {
+      totalShots++;
+      const { direction, outcome } = shot;
+      if (direction === 'left') leftShots++;
+      else if (direction === 'right') rightShots++;
+
+      const goalieDived =
+        outcome === 'Saved' ? direction : direction === 'left' ? 'right' : 'left';
+      const key = `kick${direction.charAt(0).toUpperCase() + direction.slice(1)}_goalie${goalieDived.charAt(0).toUpperCase() + goalieDived.slice(1)}` as keyof typeof scores;
+      scores[key].push(outcome === 'Score' ? 1 : 0);
+    }
+  }
+
+  const getAvg = (arr: number[]) =>
+    arr.length ? (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(2) : 'N/A';
+
+  const rightPercent = totalShots ? Math.round((rightShots / totalShots) * 100) : 0;
+  const leftPercent = totalShots ? 100 - rightPercent : 0;  
 
   return (
     <Card
@@ -70,10 +99,11 @@ function SolutionSpace(props: {
         marginLeft: 10,
         marginTop: 10,
         position: 'relative',
+        padding: 16,
       }}
     >
-      <Typography fontWeight="bold" sx={{ mb: 1 }}>
-        Approach
+      <Typography fontWeight="bold" sx={{ mb: 2 }}>
+        Approach Summary
       </Typography>
 
       <div
@@ -83,24 +113,68 @@ function SolutionSpace(props: {
           backgroundPosition: 'center',
           height: 250,
           borderRadius: 5,
-          position: 'relative',
+          padding: 20,
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
           flexDirection: 'column',
-          color: 'white',
-          fontWeight: 'bold',
-          fontSize: 18,
-          textShadow: '1px 1px 3px rgba(0,0,0,0.7)',
+          justifyContent: 'space-between',
         }}
       >
-        <div>Total Shots Available: {totalShots}</div>
-        <div>Left Shots Made: {leftShots}</div>
-        <div>Right Shots Made: {rightShots}</div>
+        <Card sx={{ p: 2, mb: 0, bgcolor: 'rgba(255,255,255,0.9)' }}>
+          <Typography align="center" fontWeight="bold">
+            Total Shots Taken: {totalShots}, Remaining: {10 - totalShots}
+          </Typography>
+        </Card>
+
+        <Grid container spacing={2}>
+          <Grid item xs={4}>
+            <Card sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.9)', height: '48px' }}>
+              <Typography align="center" fontWeight="bold">
+                {rightPercent}% Right
+              </Typography>
+            </Card>
+          </Grid>
+          <Grid item xs={4} >
+            <Card sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.9)' }}>
+              <Typography align="center" fontWeight="bold">
+                Score(Kick→, Goalie←): {getAvg(scores.kickRight_goalieLeft)}
+              </Typography>
+            </Card>
+          </Grid>
+          <Grid item xs={4}>
+            <Card sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.9)' }}>
+              <Typography align="center" fontWeight="bold">
+                Score(Kick→, Goalie→): {getAvg(scores.kickRight_goalieRight)}
+              </Typography>
+            </Card>
+          </Grid>
+
+          <Grid item xs={4}>
+            <Card sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.9)', height: '48px' }}>
+              <Typography align="center" fontWeight="bold">
+                {leftPercent}% Left
+              </Typography>
+            </Card>
+          </Grid>
+          <Grid item xs={4}>
+            <Card sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.9)' }}>
+              <Typography align="center" fontWeight="bold">
+                Score(Kick←, Goalie←): {getAvg(scores.kickLeft_goalieLeft)}
+              </Typography>
+            </Card>
+          </Grid>
+          <Grid item xs={4}>
+            <Card sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.9)' }}>
+              <Typography align="center" fontWeight="bold">
+                Score(Kick←, Goalie→): {getAvg(scores.kickLeft_goalieRight)}
+              </Typography>
+            </Card>
+          </Grid>
+        </Grid>
       </div>
     </Card>
   );
 }
+
 
 function SimulationSpace(props: {
   game: Game;
@@ -190,8 +264,7 @@ function Scoreboard(props: {
   style?: React.CSSProperties;
   players: {
     name: string;
-    direction: 'left' | 'right' | null;
-    outcome: 'Score' | 'Saved' | null;
+    shots: { direction: 'left' | 'right'; outcome: 'Score' | 'Saved' }[];
     score: number;
     leftVotes: number;
     rightVotes: number;
@@ -407,8 +480,7 @@ function GamePage(): JSX.Element {
   const [scoreData, setScoreData] = React.useState<
     {
       name: string;
-      direction: 'left' | 'right' | null;
-      outcome: 'Score' | 'Saved' | null;
+      shots: { direction: 'left' | 'right'; outcome: 'Score' | 'Saved' }[];
       score: number;
       leftVotes: number;
       rightVotes: number;
@@ -423,29 +495,30 @@ function GamePage(): JSX.Element {
     rightShots: 0,
   });
 
-  // Initialize players with only names`
+  const hasInitializedRef = React.useRef(false);
+
   useEffect(() => {
-    if (gameStateHandler?.players?.length) {
+    if (gameStateHandler?.players?.length && !hasInitializedRef.current) {
       const initialScoreData = gameStateHandler.players.map((player) => ({
         name: player.name,
-        direction: null,
-        outcome: null,
+        shots: [],
         score: 0,
         leftVotes: 0,
         rightVotes: 0,
         leftGoals: 0,
         rightGoals: 0,
       }));
-
       setScoreData(initialScoreData);
-
+  
       setCumulativeShotData({
         totalShots: gameStateHandler.players.length * 10,
         leftShots: 0,
         rightShots: 0,
       });
+  
+      hasInitializedRef.current = true;
     }
-  }, [gameStateHandler]);
+  }, [gameStateHandler]);  
 
   const handleSimulationEnded = (data: {
     player: string;
@@ -466,8 +539,10 @@ function GamePage(): JSX.Element {
       if (updated[playerIndex]) {
         updated[playerIndex] = {
           ...updated[playerIndex],
-          direction,
-          outcome,
+          shots: [
+            ...(updated[playerIndex].shots || []),
+            { direction, outcome },
+          ],
           score: updated[playerIndex].score + data.totalPoints,
           leftVotes:
             direction === 'left'
@@ -478,13 +553,12 @@ function GamePage(): JSX.Element {
               ? updated[playerIndex].rightVotes + 1
               : updated[playerIndex].rightVotes,
           leftGoals: updated[playerIndex].leftGoals + (data.kickLeftMade ?? 0),
-          rightGoals:
-            updated[playerIndex].rightGoals + (data.kickRightMade ?? 0),
+          rightGoals: updated[playerIndex].rightGoals + (data.kickRightMade ?? 0),
         };
       }
       return updated;
     });
-
+    
     setGoalHistories((prev) => {
       const name = gameStateHandler.players[playerIndex]?.name;
       if (!name) return prev;
@@ -510,7 +584,7 @@ function GamePage(): JSX.Element {
 
   useEffect(() => {
     if (voteCount > 0 && simulationEndedCount === voteCount) {
-      const delayBeforeNextRound = 5000;
+      const delayBeforeNextRound = 10000;
 
       setTimeout(() => {
         // Reset everything for next round
@@ -619,9 +693,9 @@ function GamePage(): JSX.Element {
             <SolutionSpace
               game={game}
               controller={gameStateHandler}
-              userVotes={userVotes}
-              cumulativeShotData={cumulativeShotData}
+              scoreData={scoreData}
             />
+
           </div>
         </Grid>
 
@@ -635,6 +709,7 @@ function GamePage(): JSX.Element {
               flexDirection: 'column',
             }}
           >
+            
             {showSimulation ? (
               <SimulationSpace
                 game={game}
@@ -676,4 +751,4 @@ function GamePage(): JSX.Element {
   );
 }
 
-export default withAuthorizationOnly(GamePage);
+export default withAuthorizationOnly(GamePage); 

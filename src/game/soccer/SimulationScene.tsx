@@ -9,10 +9,10 @@ import EventSystem from '../event-system';
 import goalImg from './assets/goal.png';
 import ballImg from './assets/ball.png';
 import keeperImg from './assets/keeper.png';
-import boy1Img from './assets/boy_2.png';
-import boy2Img from './assets/boy_3.png';
-import boy3Img from './assets/boy_4.png';
-import boy4Img from './assets/boy_5.png';
+import boy1Img from './assets/boy1.png';
+import boy2Img from './assets/boy2.png';
+import boy3Img from './assets/boy3.png';
+import boy4Img from './assets/boy4.png';
 
 interface PlayerData {
   id: number;
@@ -71,7 +71,7 @@ class SoccerGame extends Phaser.Scene {
     this.ball.setDepth(1);
     this.keeper.setDepth(0);
 
-    this.add.image(125, 190, this.avatar).setScale(0.015);
+    this.add.image(125, 150, this.avatar).setScale(0.15);
     this.add.text(95, 200, this.name, {
       fontSize: '9px',
       color: '#ffffff',
