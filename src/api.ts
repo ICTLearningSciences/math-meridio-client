@@ -494,7 +494,10 @@ export async function deleteRoom(roomId: string): Promise<Room> {
     {
       query: `
         mutation DeleteRoom($roomId: ID!) {
-          deleteRoom(roomId: $roomId)
+          deleteRoom(roomId: $roomId){
+            _id
+            deletedRoom
+          }
         }`,
       variables: {
         roomId,

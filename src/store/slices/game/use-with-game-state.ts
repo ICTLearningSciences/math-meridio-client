@@ -218,7 +218,6 @@ export function useWithGame() {
     launchGame,
     addNewSubscriber,
     removeAllSubscribers,
-
     loadRooms,
     joinRoom: _joinRoom,
     leaveRoom: _leaveRoom,
