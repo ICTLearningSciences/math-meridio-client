@@ -42,6 +42,8 @@ import {
 } from '../store/slices/game';
 import { Subscriber } from '../store/slices/game/use-with-game-state';
 import { Player } from '../store/slices/player';
+import { SESSION_ID } from '../store/local-storage';
+import { localStorageGet } from '../store/local-storage';
 interface UserResponseHandleState {
   responseNavigations: {
     response: string;
@@ -66,6 +68,7 @@ export class DiscussionStageHandler implements Subscriber {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   stateData: CollectedDiscussionData;
   chatLog: ChatMessage[] = [];
+  userId: string | undefined;
   errorMessage: string | null = null;
   sendMessage: (msg: ChatMessage) => void;
   setResponsePending: (pending: boolean) => void; // let parent component know when we are waiting for an async response
@@ -153,7 +156,8 @@ export class DiscussionStageHandler implements Subscriber {
     onDiscussionFinished?: (discussionData: CollectedDiscussionData) => void,
     currentDiscussion?: DiscussionStage,
     newPlayerStateData?: (data: GameStateData[]) => void,
-    exitEarlyCondition?: (data: CollectedDiscussionData) => boolean
+    exitEarlyCondition?: (data: CollectedDiscussionData) => boolean,
+    userId?: string
   ) {
     this.currentDiscussion = currentDiscussion;
     this.stateData = {};
@@ -165,6 +169,7 @@ export class DiscussionStageHandler implements Subscriber {
     this.onDiscussionFinished = onDiscussionFinished;
     this.newPlayerStateData = newPlayerStateData;
     this.exitEarlyCondition = exitEarlyCondition;
+    this.userId = userId;
 
     // bind functions to this
     this.exitEarlyCondition = this.exitEarlyCondition?.bind(this);
@@ -213,12 +218,14 @@ export class DiscussionStageHandler implements Subscriber {
     if (step.stepType === DiscussionStageStepType.REQUEST_USER_INPUT) {
       this.stepIdsSinceLastInput = [];
     }
+    const sessionId = localStorageGet(SESSION_ID);
     if (this.stepIdsSinceLastInput.includes(step.stepId)) {
       this.sendMessage({
         id: uuidv4(),
         message:
           'Oops! A loop was detected in this activity, we are halting the activity to prevent an infinite loop. Please contact the activity creator to fix this issue.',
         sender: SenderType.SYSTEM,
+        sessionId: sessionId as string,
       });
       return;
     }
@@ -252,10 +259,12 @@ export class DiscussionStageHandler implements Subscriber {
     // wait 1 second
     this.setResponsePending(true);
     await new Promise((resolve) => setTimeout(resolve, 1000));
+    const sessionId = localStorageGet(SESSION_ID);
     this.sendMessage({
       id: uuidv4(),
       message: replaceStoredDataInString(step.message, this.stateData),
       sender: SenderType.SYSTEM,
+      sessionId: sessionId as string,
     });
     this.setResponsePending(false);
     await this.goToNextStep();
@@ -269,6 +278,7 @@ export class DiscussionStageHandler implements Subscriber {
     // wait 1 second
     this.setResponsePending(true);
     await new Promise((resolve) => setTimeout(resolve, 1000));
+    const sessionId = localStorageGet(SESSION_ID);
     this.sendMessage({
       id: uuidv4(),
       message: replaceStoredDataInString(step.message, this.stateData),
@@ -276,6 +286,7 @@ export class DiscussionStageHandler implements Subscriber {
       displayType: MessageDisplayType.TEXT,
       disableUserInput: step.disableFreeInput,
       mcqChoices: this.handleExtractMcqChoices(processedPredefinedResponses),
+      sessionId: sessionId as string,
     });
     this.setResponsePending(false);
     // Will now wait for user input before progressing to next step
@@ -347,10 +358,12 @@ export class DiscussionStageHandler implements Subscriber {
   }
 
   sendErrorMessage(message: string) {
+    const sessionId = localStorageGet(SESSION_ID);
     this.sendMessage({
       id: uuidv4(),
       message,
       sender: SenderType.SYSTEM,
+      sessionId: sessionId as string,
       // disableUserInput: true,
     });
   }
@@ -468,7 +481,8 @@ export class DiscussionStageHandler implements Subscriber {
     if (step.includeChatLogContext) {
       llmRequest.prompts.push({
         promptText: `Current state of chat log between user and system: ${chatLogToString(
-          this.chatLog
+          this.chatLog,
+          this.userId
         )}`,
         promptRole: PromptRoles.USER,
       });
@@ -511,11 +525,13 @@ export class DiscussionStageHandler implements Subscriber {
           this.newPlayerStateData(convertCollectedDataToGSData(this.stateData));
       } else {
         // is a text response
+        const sessionId = localStorageGet(SESSION_ID);
         this.sendMessage({
           id: uuidv4(),
           message: response,
           sender: SenderType.SYSTEM,
           displayType: MessageDisplayType.TEXT,
+          sessionId: sessionId as string,
         });
       }
     };

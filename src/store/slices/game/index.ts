@@ -24,6 +24,7 @@ export interface ChatMessage {
   sender: SenderType;
   message: string;
   senderId?: string;
+  sessionId: string;
   senderName?: string;
   displayType?: MessageDisplayType;
   disableUserInput?: boolean;

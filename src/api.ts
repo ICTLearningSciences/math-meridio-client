@@ -126,9 +126,6 @@ export async function asyncLlmRequestStatus(
       throw e;
     }
 
-    // Log the JSON response to the console for debugging.
-    console.log('Full AI Service Response:', JSON.stringify(res, null, 2));
-
     // Wait 2 seconds before polling again if the job is still in progress.
     if (res.jobStatus === 'IN_PROGRESS') {
       await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -221,6 +218,7 @@ export const fullRoomQueryData = `
       displayType
       disableUserInput
       mcqChoices
+      sessionId
     }
     globalStateData {
       curStageId

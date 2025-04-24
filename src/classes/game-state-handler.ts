@@ -113,6 +113,7 @@ export abstract class GameStateHandler implements Subscriber {
 
   newChatLogReceived(chatLog: ChatMessage[]) {
     this.chatLog = chatLog;
+    console.log('newChatLogReceived', chatLog);
     const newMessages = chatLog.filter(
       (c) =>
         !this.acknowledgedChat.includes(c.id) &&

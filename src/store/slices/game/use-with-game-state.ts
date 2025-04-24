@@ -31,7 +31,12 @@ import { useWithStages } from '../stages/use-with-stages';
 import { Player } from '../player';
 import { equals } from '../../../helpers';
 import EventSystem from '../../../game/event-system';
-
+import { v4 as uuidv4 } from 'uuid';
+import {
+  localStorageClear,
+  localStorageStore,
+  SESSION_ID,
+} from '../../local-storage';
 export abstract class Subscriber {
   abstract newChatLogReceived(chatLog: ChatMessage[]): void;
   abstract simulationEnded(): void;
@@ -131,6 +136,8 @@ export function useWithGame() {
     const gameId = room.gameData.gameId;
     const game = GAMES.find((g) => g.id === gameId);
     if (!game) return undefined;
+    const sessionId = uuidv4();
+    localStorageStore(SESSION_ID, sessionId);
     const stages = await loadDiscussionStages();
     const controller = game.createController({
       stages: stages,
@@ -177,6 +184,7 @@ export function useWithGame() {
 
   function _leaveRoom() {
     if (!player || !room) return;
+    localStorageClear(SESSION_ID);
     dispatch(leaveRoom({ roomId: room._id, playerId: player.clientId }));
   }
 

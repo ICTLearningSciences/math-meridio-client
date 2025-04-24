@@ -22,6 +22,8 @@ import { Mic, MicOutlined, Send } from '@mui/icons-material';
 import { useAppSelector } from '../../store/hooks';
 import { ChatMessage, SenderType } from '../../store/slices/game';
 import { useWithGame } from '../../store/slices/game/use-with-game-state';
+import { SESSION_ID } from '../../store/local-storage';
+import { localStorageGet } from '../../store/local-storage';
 
 export default function ChatForm(props: {
   sendMessage?: (msg: ChatMessage) => void;
@@ -43,12 +45,14 @@ export default function ChatForm(props: {
   }, [transcript]);
 
   function onSend(): void {
+    const sessionId = localStorageGet(SESSION_ID);
     const msg: ChatMessage = {
       id: uuid(),
       sender: SenderType.PLAYER,
       senderId: player?.clientId,
       senderName: player?.name,
       message: input,
+      sessionId: sessionId as string,
     };
     if (props.sendMessage) {
       props.sendMessage(msg);

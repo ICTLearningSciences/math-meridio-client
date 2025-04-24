@@ -5,18 +5,35 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 
-import { ChatMessage } from './store/slices/game';
+import { ChatMessage, SenderType } from './store/slices/game';
 import { GameStateData } from './game/basketball/solution';
 import axios from 'axios';
+import { localStorageGet, SESSION_ID } from './store/local-storage';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function equals<T>(val1: T, val2: T): boolean {
   return JSON.stringify(val1) === JSON.stringify(val2);
 }
 
-export function chatLogToString(chatLog: ChatMessage[]) {
+export function chatLogToString(chatLog: ChatMessage[], userId?: string) {
   let chatLogString = '';
-  for (let i = 0; i < chatLog.length; i++) {
-    chatLogString += `${chatLog[i].sender}: ${chatLog[i].message}\n`;
+  const sessionId = localStorageGet(SESSION_ID);
+  console.log('chatLogToString', chatLog, userId, sessionId);
+  // Filter by sessionId if exists, also filter by userId if exists
+  const sessionChatLog = chatLog.filter((msg) => {
+    if (sessionId && msg.sessionId !== sessionId) {
+      return false;
+    }
+    return true;
+  });
+  const userChatLog = sessionChatLog.filter((msg) => {
+    if (msg.sender === SenderType.PLAYER && userId && msg.senderId !== userId) {
+      return false;
+    }
+    return true;
+  });
+  for (let i = 0; i < userChatLog.length; i++) {
+    const msg = userChatLog[i];
+    chatLogString += `${msg.senderName || msg.sender}: ${msg.message}\n`;
   }
   return chatLogString;
 }

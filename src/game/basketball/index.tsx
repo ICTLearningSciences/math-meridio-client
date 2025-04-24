@@ -62,7 +62,9 @@ export class BasketballStateHandler extends GameStateHandler {
       args.executePrompt,
       undefined,
       undefined,
-      this.newPlayerStateData.bind(this)
+      this.newPlayerStateData.bind(this),
+      undefined,
+      this.player.clientId
     );
 
     this.initializeGame = this.initializeGame.bind(this);
