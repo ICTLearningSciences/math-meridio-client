@@ -17,7 +17,6 @@ export function equals<T>(val1: T, val2: T): boolean {
 export function chatLogToString(chatLog: ChatMessage[], userId?: string) {
   let chatLogString = '';
   const sessionId = localStorageGet(SESSION_ID);
-  console.log('chatLogToString', chatLog, userId, sessionId);
   // Filter by sessionId if exists, also filter by userId if exists
   const sessionChatLog = chatLog.filter((msg) => {
     if (sessionId && msg.sessionId !== sessionId) {
