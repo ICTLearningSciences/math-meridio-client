@@ -72,9 +72,14 @@ export function Header() {
       <div style={{ display: 'flex', width: 150, alignItems: 'center' }}>
         {pathname.startsWith('/game/') ? (
           <Button
-            variant="outlined"
+            variant="text"
             disabled={!player || !room}
-            style={{ height: 'fit-content', color: 'white', marginRight: 5 }}
+            style={{
+              height: 'fit-content',
+              color: 'white',
+              marginRight: 5,
+              padding: 0,
+            }}
             onClick={leaveRoom}
           >
             Leave Room

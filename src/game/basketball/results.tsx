@@ -14,7 +14,7 @@ import {
   MID_SHOT_POINTS_VALUE,
   OUTSIDE_SHOT_POINTS_VALUE,
 } from './solution';
-import { Stack, Typography } from '@mui/material';
+import { Stack, Typography, Tabs, Tab, Box } from '@mui/material';
 
 export function ResultComponent(props: {
   controller: GameStateHandler;
@@ -27,7 +27,7 @@ export function ResultComponent(props: {
     EventSystem.on('simulationEnded', simulationEnded);
   }, []);
   const chartHeight = 300;
-  const resultsWidth = 900;
+  const resultsWidth = window.innerWidth / 2 - 300;
   const scoreChartWidth = resultsWidth / 2;
   const shotsChartWidth = resultsWidth / controller.players.length;
 
@@ -67,6 +67,12 @@ export function ResultComponent(props: {
   });
 
   const scoreLabels = ['In', 'Mid', '3pt'];
+
+  const [tabValue, setTabValue] = useState(0);
+
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setTabValue(newValue);
+  };
 
   function simulationEnded(data: BasketballSimulationData): void {
     simulationData[data.player] = data;
@@ -186,76 +192,88 @@ export function ResultComponent(props: {
     );
   }
   return (
-    <Stack sx={{ width: resultsWidth }} direction="column" alignItems="center">
-      <Stack direction="column" alignItems="center">
-        <Typography variant="h6">Score</Typography>
-        <BarChart
-          width={scoreChartWidth}
-          barLabel="value"
-          height={chartHeight}
-          series={[
-            {
-              data: myChartData.insideScores,
-              label: 'In',
-              stack: 'mademissedshots',
-              color: '#e15759',
-            },
-            {
-              data: myChartData.midScores,
-              label: 'Mid',
-              stack: 'mademissedshots',
-              color: '#ff9da7',
-            },
-            {
-              data: myChartData.outsideScores,
-              label: '3pt',
-              stack: 'mademissedshots',
-              color: '#af7aa1',
-            },
-          ]}
-          xAxis={[{ data: myChartData.playerLabels, scaleType: 'band' }]}
-        />
-      </Stack>
-      <Typography variant="h6">Shots</Typography>
-
-      <Stack direction="row" alignItems="center">
-        {controller.players.map((player, index) => (
-          <>
-            {index === 0 &&
-              GetShotChartFor(
-                myChartData.player1Data,
-                myChartData.player1MissedData,
-                player.name,
-                true,
-                index
-              )}
-            {index === 1 &&
-              GetShotChartFor(
-                myChartData.player2Data,
-                myChartData.player2MissedData,
-                player.name,
-                true,
-                index
-              )}
-            {index === 2 &&
-              GetShotChartFor(
-                myChartData.player3Data,
-                myChartData.player3MissedData,
-                player.name,
-                true,
-                index
-              )}
-            {index === 3 &&
-              GetShotChartFor(
-                myChartData.player4Data,
-                myChartData.player4MissedData,
-                player.name,
-                true,
-                index
-              )}
-          </>
-        ))}
-      </Stack>
+    <Stack
+      sx={{ width: resultsWidth }}
+      direction="column"
+      alignItems="center"
+      width={resultsWidth}
+    >
+      <Tabs value={tabValue} onChange={handleTabChange}>
+        <Tab label="Score" />
+        <Tab label="Shots" />
+      </Tabs>
+      <Box sx={{ width: '100%', mt: 2 }}>
+        {tabValue === 0 && (
+          <Stack direction="column" alignItems="center">
+            <BarChart
+              width={scoreChartWidth}
+              barLabel="value"
+              height={chartHeight}
+              series={[
+                {
+                  data: myChartData.insideScores,
+                  label: 'In',
+                  stack: 'mademissedshots',
+                  color: '#e15759',
+                },
+                {
+                  data: myChartData.midScores,
+                  label: 'Mid',
+                  stack: 'mademissedshots',
+                  color: '#ff9da7',
+                },
+                {
+                  data: myChartData.outsideScores,
+                  label: '3pt',
+                  stack: 'mademissedshots',
+                  color: '#af7aa1',
+                },
+              ]}
+              xAxis={[{ data: myChartData.playerLabels, scaleType: 'band' }]}
+            />
+          </Stack>
+        )}
+        {tabValue === 1 && (
+          <Stack direction="row" alignItems="center">
+            {controller.players.map((player, index) => (
+              <>
+                {index === 0 &&
+                  GetShotChartFor(
+                    myChartData.player1Data,
+                    myChartData.player1MissedData,
+                    player.name,
+                    true,
+                    index
+                  )}
+                {index === 1 &&
+                  GetShotChartFor(
+                    myChartData.player2Data,
+                    myChartData.player2MissedData,
+                    player.name,
+                    true,
+                    index
+                  )}
+                {index === 2 &&
+                  GetShotChartFor(
+                    myChartData.player3Data,
+                    myChartData.player3MissedData,
+                    player.name,
+                    true,
+                    index
+                  )}
+                {index === 3 &&
+                  GetShotChartFor(
+                    myChartData.player4Data,
+                    myChartData.player4MissedData,
+                    player.name,
+                    true,
+                    index
+                  )}
+              </>
+            ))}
+          </Stack>
+        )}
+      </Box>
     </Stack>
   );
 }
