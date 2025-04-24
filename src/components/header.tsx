@@ -24,13 +24,18 @@ export function Header() {
   const { leaveRoom, renameRoom } = useWithGame();
   const navigate = useNavigate();
 
+  function homeButtonClick() {
+    leaveRoom();
+    navigate('/');
+  }
+
   return (
     <header
       className="row center-div header"
       style={{ justifyContent: 'space-between' }}
     >
       <div style={{ marginLeft: 20, width: 150 }}>
-        <IconButton onClick={() => navigate('/')}>
+        <IconButton onClick={homeButtonClick}>
           <Home style={{ color: 'white' }} />
         </IconButton>
       </div>

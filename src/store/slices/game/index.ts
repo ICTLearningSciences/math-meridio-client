@@ -142,8 +142,16 @@ export const updateRoomGameData = createAsyncThunk(
 
 export const sendMessage = createAsyncThunk(
   'gameData/sendMessage',
-  async (args: { roomId: string; message: ChatMessage }): Promise<Room> => {
-    return api.sendMessage(args.roomId, args.message);
+  async (
+    args: { roomId: string; message: ChatMessage },
+    { getState }
+  ): Promise<Room> => {
+    const state = getState() as { gameData: Data };
+    const room = state.gameData.room;
+    if (!room) {
+      throw new Error('Not in room');
+    }
+    return api.sendMessage(room._id, args.message);
   }
 );
 
@@ -227,17 +235,20 @@ export const dataSlice = createSlice({
         state.loadStatus.status = LoadStatus.IN_PROGRESS;
         state.loadStatus.startedAt = Date.now.toString();
         state.loadStatus.error = undefined;
+        state.room = undefined;
       })
       .addCase(leaveRoom.fulfilled, (state) => {
         state.room = undefined;
         state.loadStatus.status = LoadStatus.DONE;
         state.loadStatus.endedAt = Date.now.toString();
         state.loadStatus.error = undefined;
+        state.room = undefined;
       })
       .addCase(leaveRoom.rejected, (state, action) => {
         state.loadStatus.status = LoadStatus.FAILED;
         state.loadStatus.failedAt = Date.now.toString();
         state.loadStatus.error = action.error.message;
+        state.room = undefined;
       })
 
       .addCase(deleteRoom.pending, (state) => {
