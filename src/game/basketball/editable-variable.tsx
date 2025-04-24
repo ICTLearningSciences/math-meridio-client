@@ -21,17 +21,25 @@ export const EditableVariable = React.memo(
     title: string;
     updatePlayerStateData: (value: number) => void;
     myPlayerStateData: GameStateData;
+    shouldDisable: boolean;
+    setEditingVariable: (variable: string) => void;
   }): JSX.Element {
-    const { updatePlayerStateData, myPlayerStateData, dataKey, title } = props;
+    const {
+      updatePlayerStateData,
+      myPlayerStateData,
+      dataKey,
+      title,
+      shouldDisable,
+      setEditingVariable,
+    } = props;
     const data = myPlayerStateData[dataKey];
     const otherKeys = [
       INSIDE_SHOT_PERCENT,
       MID_SHOT_PERCENT,
       OUTSIDE_SHOT_PERCENT,
     ].filter((key) => key !== dataKey);
-    const otherKeysTotal = otherKeys.reduce(
-      (acc, key) => acc + (myPlayerStateData[key] || 0),
-      0
+    const otherKeysTotal = Number(
+      otherKeys.reduce((acc, key) => acc + (myPlayerStateData[key] || 0), 0)
     );
     const [value, setValue] = React.useState(data || 0);
     const { classes } = useStyles();
@@ -41,12 +49,13 @@ export const EditableVariable = React.memo(
         (newValue: number, otherKeysTotal: number) => {
           const data = { ...myPlayerStateData };
           let newVal = newValue;
-          data[dataKey] = newValue;
           if (otherKeysTotal + newValue > 100) {
             newVal = 100 - otherKeysTotal;
           }
+          data[dataKey] = newValue;
           setValue(newVal);
           updatePlayerStateData(newVal);
+          setEditingVariable('');
         },
         [updatePlayerStateData, myPlayerStateData, dataKey]
       ),
@@ -73,6 +82,7 @@ export const EditableVariable = React.memo(
           value={value || 0}
           variant="standard"
           type="number"
+          disabled={shouldDisable}
           sx={{
             input: {
               color: '#c96049',
@@ -89,6 +99,7 @@ export const EditableVariable = React.memo(
           onChange={(e) => {
             const newValue = parseInt(e.target.value);
             setValue(newValue);
+            setEditingVariable(dataKey);
             debouncedUpdate(newValue, otherKeysTotal);
           }}
         />
@@ -102,7 +113,8 @@ export const EditableVariable = React.memo(
       !didGameStateDataChange(
         prevProps.myPlayerStateData,
         nextProps.myPlayerStateData
-      )
+      ) &&
+      prevProps.shouldDisable === nextProps.shouldDisable
     );
   }
 );

@@ -63,7 +63,7 @@ export function SolutionComponent(props: {
   const [understandsMultiplication, setUnderstandsMultiplication] =
     React.useState(false);
   const [understandsAddition, setUnderstandsAddition] = React.useState(false);
-
+  const [editingVariable, setEditingVariable] = React.useState('');
   React.useEffect(() => {
     !understandsPoints &&
       setUnderstandsPoints(
@@ -259,6 +259,10 @@ export function SolutionComponent(props: {
           dataKey={INSIDE_SHOT_PERCENT}
           title="# of inside shots"
           myPlayerStateData={myPlayerStateData}
+          shouldDisable={
+            Boolean(editingVariable) && editingVariable !== INSIDE_SHOT_PERCENT
+          }
+          setEditingVariable={setEditingVariable}
         />
         <RevealingIcon
           reveal={understandsMultiplication}
@@ -319,6 +323,10 @@ export function SolutionComponent(props: {
           dataKey={MID_SHOT_PERCENT}
           title="# of mid shots"
           myPlayerStateData={myPlayerStateData}
+          shouldDisable={
+            Boolean(editingVariable) && editingVariable !== MID_SHOT_PERCENT
+          }
+          setEditingVariable={setEditingVariable}
         />
         <RevealingIcon
           reveal={understandsMultiplication}
@@ -379,6 +387,10 @@ export function SolutionComponent(props: {
           dataKey={OUTSIDE_SHOT_PERCENT}
           title="# of 3 pointers"
           myPlayerStateData={myPlayerStateData}
+          shouldDisable={
+            Boolean(editingVariable) && editingVariable !== OUTSIDE_SHOT_PERCENT
+          }
+          setEditingVariable={setEditingVariable}
         />
         <RevealingIcon
           reveal={understandsMultiplication}
