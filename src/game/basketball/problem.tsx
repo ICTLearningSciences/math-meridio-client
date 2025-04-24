@@ -15,9 +15,17 @@ export function ProblemComponent(props: {
   controller: GameStateHandler;
 }): JSX.Element {
   return (
-    <div className="row">
+    <div>
+      <img
+        style={{
+          width: '50%',
+          height: 'auto',
+          float: 'right',
+          marginLeft: '10px',
+        }}
+        src={shotChart}
+      ></img>
       <Typography>{BasketballGame.problem}</Typography>
-      <img style={{ width: '100%', height: 200 }} src={shotChart}></img>
     </div>
   );
 }
