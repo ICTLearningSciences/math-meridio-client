@@ -19,6 +19,8 @@ import {
   sortMessagesByResponseWeight,
 } from '../components/discussion-stage-builder/helpers';
 import {
+  Checking,
+  ConditionalActivityStep,
   DiscussionStage,
   DiscussionStageStep,
   DiscussionStageStepType,
@@ -250,9 +252,92 @@ export class DiscussionStageHandler implements Subscriber {
       case DiscussionStageStepType.PROMPT:
         await this.handlePromptStep(step as PromptStageStep);
         break;
+      case DiscussionStageStepType.CONDITIONAL:
+        await this.handleLogicOperationStep(step as ConditionalActivityStep);
+        break;
       default:
         throw new Error(`Unknown step type: ${step}`);
     }
+  }
+
+  async handleLogicOperationStep(step: ConditionalActivityStep) {
+    this.setResponsePending(true);
+    this.stateData = {
+      ...this.stateData,
+    };
+    const conditionals = step.conditionals.map((c) => ({
+      ...c,
+      expectedValue: replaceStoredDataInString(c.expectedValue, this.stateData),
+    }));
+    this.setResponsePending(false);
+    for (let i = 0; i < conditionals.length; i++) {
+      const condition = conditionals[i];
+      const stateValue = this.stateData[condition.stateDataKey];
+      if (!stateValue) {
+        this.sendErrorMessage(
+          `An error occured during this activity. Could not find state value ${condition.stateDataKey}.`
+        );
+        return;
+      }
+
+      if (condition.checking === Checking.VALUE) {
+        const expression = `${String(stateValue)} ${condition.operation} ${
+          condition.expectedValue
+        }`;
+        const conditionTrue = new Function(`return ${expression};`)();
+        if (conditionTrue) {
+          const step = this.getStepById(condition.targetStepId);
+          if (!step) {
+            this.sendErrorMessage(
+              `An error occured during this activity. Could not find step: ${condition.targetStepId}`
+            );
+            return;
+          }
+          this.handleStep(step);
+          return;
+        }
+      } else if (condition.checking === Checking.LENGTH) {
+        if (!Array.isArray(stateValue) && typeof stateValue !== 'string') {
+          this.sendErrorMessage(
+            `Expected a string or array for state value ${
+              condition.stateDataKey
+            }, but got ${typeof stateValue}`
+          );
+          return;
+        }
+        const expression = `${stateValue.length} ${condition.operation} ${condition.expectedValue}`;
+        const conditionTrue = new Function(`return ${expression};`)();
+        if (conditionTrue) {
+          const step = this.getStepById(condition.targetStepId);
+          if (!step) {
+            this.sendErrorMessage(
+              `An error occured during this activity. Could not find step: ${condition.targetStepId}`
+            );
+            return;
+          }
+          this.handleStep(step);
+          return;
+        }
+      } else {
+        // Checking if array or string contains value
+        const conditionTrue = Array.isArray(stateValue)
+          ? stateValue.find((a) => String(a) === condition.expectedValue)
+          : (stateValue as string).includes(String(condition.expectedValue));
+        if (conditionTrue) {
+          const step = this.getStepById(condition.targetStepId);
+          if (!step) {
+            this.sendErrorMessage(
+              `An error occured during this activity. Could not find step: ${condition.targetStepId}`
+            );
+            return;
+          }
+          this.handleStep(step);
+          return;
+        }
+      }
+    }
+
+    await this.goToNextStep();
   }
 
   async handleSystemMessageStep(step: SystemMessageStageStep) {

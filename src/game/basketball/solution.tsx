@@ -211,7 +211,6 @@ export function SolutionComponent(props: {
     );
   }
 
-  
   return (
     <div
       className="column center-div"
