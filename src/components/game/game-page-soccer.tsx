@@ -77,17 +77,29 @@ function SolutionSpace(props: {
       else if (direction === 'right') rightShots++;
 
       const goalieDived =
-        outcome === 'Saved' ? direction : direction === 'left' ? 'right' : 'left';
-      const key = `kick${direction.charAt(0).toUpperCase() + direction.slice(1)}_goalie${goalieDived.charAt(0).toUpperCase() + goalieDived.slice(1)}` as keyof typeof scores;
+        outcome === 'Saved'
+          ? direction
+          : direction === 'left'
+          ? 'right'
+          : 'left';
+      const key = `kick${
+        direction.charAt(0).toUpperCase() + direction.slice(1)
+      }_goalie${
+        goalieDived.charAt(0).toUpperCase() + goalieDived.slice(1)
+      }` as keyof typeof scores;
       scores[key].push(outcome === 'Score' ? 1 : 0);
     }
   }
 
   const getAvg = (arr: number[]) =>
-    arr.length ? (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(2) : 'N/A';
+    arr.length
+      ? (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(2)
+      : 'N/A';
 
-  const rightPercent = totalShots ? Math.round((rightShots / totalShots) * 100) : 0;
-  const leftPercent = totalShots ? 100 - rightPercent : 0;  
+  const rightPercent = totalShots
+    ? Math.round((rightShots / totalShots) * 100)
+    : 0;
+  const leftPercent = totalShots ? 100 - rightPercent : 0;
 
   return (
     <Card
@@ -127,13 +139,15 @@ function SolutionSpace(props: {
 
         <Grid container spacing={2}>
           <Grid item xs={4}>
-            <Card sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.9)', height: '48px' }}>
+            <Card
+              sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.9)', height: '48px' }}
+            >
               <Typography align="center" fontWeight="bold">
                 {rightPercent}% Right
               </Typography>
             </Card>
           </Grid>
-          <Grid item xs={4} >
+          <Grid item xs={4}>
             <Card sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.9)' }}>
               <Typography align="center" fontWeight="bold">
                 Score(Kick→, Goalie←): {getAvg(scores.kickRight_goalieLeft)}
@@ -149,7 +163,9 @@ function SolutionSpace(props: {
           </Grid>
 
           <Grid item xs={4}>
-            <Card sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.9)', height: '48px' }}>
+            <Card
+              sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.9)', height: '48px' }}
+            >
               <Typography align="center" fontWeight="bold">
                 {leftPercent}% Left
               </Typography>
@@ -174,7 +190,6 @@ function SolutionSpace(props: {
     </Card>
   );
 }
-
 
 function SimulationSpace(props: {
   game: Game;
@@ -509,16 +524,16 @@ function GamePage(): JSX.Element {
         rightGoals: 0,
       }));
       setScoreData(initialScoreData);
-  
+
       setCumulativeShotData({
         totalShots: gameStateHandler.players.length * 10,
         leftShots: 0,
         rightShots: 0,
       });
-  
+
       hasInitializedRef.current = true;
     }
-  }, [gameStateHandler]);  
+  }, [gameStateHandler]);
 
   const handleSimulationEnded = (data: {
     player: string;
@@ -553,12 +568,13 @@ function GamePage(): JSX.Element {
               ? updated[playerIndex].rightVotes + 1
               : updated[playerIndex].rightVotes,
           leftGoals: updated[playerIndex].leftGoals + (data.kickLeftMade ?? 0),
-          rightGoals: updated[playerIndex].rightGoals + (data.kickRightMade ?? 0),
+          rightGoals:
+            updated[playerIndex].rightGoals + (data.kickRightMade ?? 0),
         };
       }
       return updated;
     });
-    
+
     setGoalHistories((prev) => {
       const name = gameStateHandler.players[playerIndex]?.name;
       if (!name) return prev;
@@ -695,7 +711,6 @@ function GamePage(): JSX.Element {
               controller={gameStateHandler}
               scoreData={scoreData}
             />
-
           </div>
         </Grid>
 
@@ -709,7 +724,6 @@ function GamePage(): JSX.Element {
               flexDirection: 'column',
             }}
           >
-            
             {showSimulation ? (
               <SimulationSpace
                 game={game}
@@ -751,4 +765,4 @@ function GamePage(): JSX.Element {
   );
 }
 
-export default withAuthorizationOnly(GamePage); 
+export default withAuthorizationOnly(GamePage);
