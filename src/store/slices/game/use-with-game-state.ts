@@ -11,6 +11,7 @@ import {
   GlobalStateData,
   PlayerStateData,
   Room,
+  SenderType,
   createAndJoinRoom,
   deleteRoom,
   fetchRoom,
@@ -63,7 +64,7 @@ export function useWithGame() {
   const [lastPlayers, setLastPlayers] = React.useState<Player[]>();
   const [gameStateHandler, setGameStateHandler] =
     React.useState<GameStateHandler>();
-
+  // console.log("room", room?.gameData.globalStateData.curStageId, room?.gameData.globalStateData.curStepId)
   React.useEffect(() => {
     if (!room || equals(lastChatLog, room.gameData.chat)) return;
     for (let i = 0; i < subscribers.length; i++) {
@@ -88,6 +89,7 @@ export function useWithGame() {
 
   React.useEffect(() => {
     if (!room || equals(lastPlayerState, room.gameData.playerStateData)) return;
+
     for (let i = 0; i < subscribers.length; i++) {
       const updateFunction = subscribers[i].playerStateUpdated.bind(
         subscribers[i]
@@ -146,7 +148,7 @@ export function useWithGame() {
       player: player,
       sendMessage: _sendMessage,
       updateRoomGameData: _updateRoomGameData,
-      setResponsePending: setResponsePending,
+      setResponsePending: _setResponsePending,
       executePrompt: (
         llmRequest: GenericLlmRequest,
         cancelToken?: CancelToken
@@ -197,6 +199,7 @@ export function useWithGame() {
         gameId: game.id,
         gameName: game.name,
         playerId: player.clientId,
+        persistTruthGlobalStateData: game.persistTruthGlobalStateData,
       })
     );
   }
@@ -210,8 +213,13 @@ export function useWithGame() {
     dispatch(renameRoom({ roomId: room._id, name }));
   }
 
+  function _setResponsePending(pending: boolean) {
+    setResponsePending(pending);
+  }
+
   function _sendMessage(msg: ChatMessage) {
     if (!player || !room) return;
+    if (msg.sender === SenderType.SYSTEM && !msg.message) return;
     dispatch(sendMessage({ roomId: room._id, message: msg }));
   }
 

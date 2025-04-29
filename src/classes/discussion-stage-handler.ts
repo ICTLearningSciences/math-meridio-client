@@ -82,7 +82,8 @@ export class DiscussionStageHandler implements Subscriber {
   onDiscussionFinished?: (discussionData: CollectedDiscussionData) => void;
   newPlayerStateData?: (data: GameStateData[]) => void;
   exitEarlyCondition?: (data: CollectedDiscussionData) => boolean;
-
+  updateRoomStageStepId: (stepId: string) => void;
+  initialStepId?: string;
   getStepById(stepId: string): DiscussionStageStep | undefined {
     if (
       !this.currentDiscussion ||
@@ -91,11 +92,13 @@ export class DiscussionStageHandler implements Subscriber {
     ) {
       throw new Error('No discussion data found');
     }
+    console.log('searching for step', stepId, this.currentDiscussion);
     for (let i = 0; i < this.currentDiscussion.flowsList.length; i++) {
       const flow = this.currentDiscussion.flowsList[i];
       for (let j = 0; j < flow.steps.length; j++) {
         const step = flow.steps[j];
         if (step.stepId === stepId) {
+          console.log('found step', stepId, step);
           return step;
         }
       }
@@ -153,11 +156,13 @@ export class DiscussionStageHandler implements Subscriber {
       llmRequest: GenericLlmRequest,
       cancelToken?: CancelToken
     ) => Promise<AiServicesResponseTypes>,
+    updateRoomStageStepId: (stepId: string) => void,
     onDiscussionFinished?: (discussionData: CollectedDiscussionData) => void,
     currentDiscussion?: DiscussionStage,
     newPlayerStateData?: (data: GameStateData[]) => void,
     exitEarlyCondition?: (data: CollectedDiscussionData) => boolean,
-    userId?: string
+    userId?: string,
+    initialStepId?: string
   ) {
     this.currentDiscussion = currentDiscussion;
     this.stateData = {};
@@ -170,7 +175,8 @@ export class DiscussionStageHandler implements Subscriber {
     this.newPlayerStateData = newPlayerStateData;
     this.exitEarlyCondition = exitEarlyCondition;
     this.userId = userId;
-
+    this.updateRoomStageStepId = updateRoomStageStepId;
+    this.initialStepId = initialStepId;
     // bind functions to this
     this.exitEarlyCondition = this.exitEarlyCondition?.bind(this);
     this.newPlayerStateData = this.newPlayerStateData?.bind(this);
@@ -188,6 +194,7 @@ export class DiscussionStageHandler implements Subscriber {
     this.addResponseNavigation = this.addResponseNavigation.bind(this);
     this.handleExtractMcqChoices = this.handleExtractMcqChoices.bind(this);
     this.onDiscussionFinished = this.onDiscussionFinished?.bind(this);
+    this.updateRoomStageStepId = this.updateRoomStageStepId.bind(this);
   }
 
   setCurrentDiscussion(currentDiscussion?: DiscussionStage, stepId?: string) {
@@ -206,15 +213,24 @@ export class DiscussionStageHandler implements Subscriber {
       throw new Error('No built activity data found');
     }
     this.curStep = this.currentDiscussion.flowsList[0].steps[0];
+    if (this.initialStepId) {
+      this.curStep = this.getStepById(this.initialStepId);
+      this.initialStepId = undefined;
+    }
+    if (!this.curStep) {
+      throw new Error('No initial step found');
+    }
     this.stepIdsSinceLastInput = [];
     this.userResponseHandleState = getDefaultUserResponseHandleState();
     this.handleStep(this.curStep);
   }
 
   async handleStep(step: DiscussionStageStep) {
+    console.log('handling step', step);
     if (this.curStep?.stepId !== step.stepId) {
       this.curStep = step;
     }
+    this.updateRoomStageStepId(step.stepId);
     if (step.stepType === DiscussionStageStepType.REQUEST_USER_INPUT) {
       this.stepIdsSinceLastInput = [];
     }
@@ -529,6 +545,7 @@ export class DiscussionStageHandler implements Subscriber {
         this.sendMessage({
           id: uuidv4(),
           message: response,
+          isPromptResponse: true,
           sender: SenderType.SYSTEM,
           displayType: MessageDisplayType.TEXT,
           sessionId: sessionId as string,

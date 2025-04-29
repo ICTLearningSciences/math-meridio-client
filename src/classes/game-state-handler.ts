@@ -48,7 +48,7 @@ export interface GameStateHandlerArgs {
     cancelToken?: CancelToken
   ) => Promise<AiServicesResponseTypes>;
   onDiscussionFinished?: (discussionData: CollectedDiscussionData) => void;
-  updateRoomGameData(gameData: Partial<GameData>): void;
+  updateRoomGameData: (gameData: Partial<GameData>) => void;
   defaultStageId?: string;
   stages?: DiscussionStage[];
   player: Player;
@@ -58,7 +58,6 @@ export interface GameStateHandlerArgs {
 
 export abstract class GameStateHandler implements Subscriber {
   abstract currentStage: CurrentStage | undefined;
-  abstract currentStepId: string | undefined;
   abstract discussionStageHandler: DiscussionStageHandler;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   stateData: CollectedDiscussionData;
@@ -150,6 +149,9 @@ export abstract class GameStateHandler implements Subscriber {
           gameStateData: newData,
         },
       ],
+      globalStateData: {
+        gameStateData: newData,
+      } as any,
     });
   }
 

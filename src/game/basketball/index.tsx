@@ -47,24 +47,23 @@ export interface CurrentStage {
 
 export class BasketballStateHandler extends GameStateHandler {
   currentStage: CurrentStage | undefined;
-  currentStageId: string | undefined;
-  currentStepId: string | undefined;
   discussionStageHandler: DiscussionStageHandler;
 
   stageList: CurrentStage[] = [];
 
   constructor(args: GameStateHandlerArgs) {
     super({ ...args, defaultStageId: 'de0b94b9-1fc2-4ea1-995e-21a75670c16d' });
-
     this.discussionStageHandler = new DiscussionStageHandler(
       args.sendMessage,
       args.setResponsePending,
       args.executePrompt,
+      this.updateRoomStageStepId.bind(this),
       undefined,
       undefined,
       this.newPlayerStateData.bind(this),
       undefined,
-      this.player.clientId
+      this.player.clientId,
+      this.globalStateData.curStepId
     );
 
     this.initializeGame = this.initializeGame.bind(this);
@@ -235,7 +234,53 @@ export class BasketballStateHandler extends GameStateHandler {
       },
     ];
     this.stageList = stageList;
-    this.currentStage = this.stageList[0];
+    this.setInitialStage();
+  }
+
+  // NOTE: sets the first stage to the globalStateData if it exists, otherwise sets it to the first stage in the stageList
+  setInitialStage() {
+    const firstStage = this.stageList[0];
+    let stageId: string;
+    let stepId: string;
+    if (this.globalStateData.curStageId && this.globalStateData.curStepId) {
+      stageId = this.globalStateData.curStageId;
+      stepId = this.globalStateData.curStepId;
+    } else {
+      stageId = firstStage.id;
+      stepId = isDiscussionStage(firstStage.stage)
+        ? (firstStage.stage as DiscussionStage).flowsList[0].steps[0].stepId
+        : firstStage.stage.clientId;
+    }
+    const targetStage = this.stageList.find((s) => s.id === stageId);
+    if (!targetStage) {
+      throw new Error('missing stage');
+    }
+    if (isDiscussionStage(targetStage.stage)) {
+      console.log(
+        'setting initial discussion stage',
+        targetStage.stage,
+        stepId
+      );
+      this.discussionStageHandler.setCurrentDiscussion(
+        targetStage.stage as DiscussionStage,
+        stepId
+      );
+    }
+    this.currentStage = targetStage;
+    console.log('current stage set', this.currentStage);
+  }
+
+  updateRoomStageStepId(stepId: string) {
+    if (!this.currentStage) {
+      return;
+    }
+
+    this.updateRoomGameData({
+      globalStateData: {
+        curStageId: this.currentStage.id,
+        curStepId: stepId,
+      } as any,
+    });
   }
 
   handleCurrentStage() {
@@ -258,6 +303,7 @@ export class BasketballStateHandler extends GameStateHandler {
       }
       this.discussionStageHandler.initializeActivity();
     } else if (this.currentStage.stage.stageType === 'simulation') {
+      this.updateRoomStageStepId(this.currentStage.stage.clientId);
       // wait for simulation to end
     } else {
       throw new Error(
@@ -293,9 +339,8 @@ export class BasketballStateHandler extends GameStateHandler {
       const value = msg.includes('3') || msg.includes('three') ? 3 : undefined;
       this.updateRoomGameData({
         globalStateData: {
-          ...this.globalStateData,
           gameStateData: [{ key: 'Points per outside shot', value: value }],
-        },
+        } as any,
         playerStateData: [
           {
             player: this.player.clientId,
@@ -309,9 +354,8 @@ export class BasketballStateHandler extends GameStateHandler {
       const value = msg.includes('2') || msg.includes('two') ? 2 : undefined;
       this.updateRoomGameData({
         globalStateData: {
-          ...this.globalStateData,
           gameStateData: [{ key: 'Points per inside shot', value: value }],
-        },
+        } as any,
         playerStateData: [
           {
             player: this.player.clientId,
@@ -325,9 +369,8 @@ export class BasketballStateHandler extends GameStateHandler {
       const value = msg.includes('2') || msg.includes('two') ? 2 : undefined;
       this.updateRoomGameData({
         globalStateData: {
-          ...this.globalStateData,
           gameStateData: [{ key: 'Points per mid shot', value: value }],
-        },
+        } as any,
         playerStateData: [
           {
             player: this.player.clientId,
@@ -344,6 +387,17 @@ const BasketballGame: Game = {
   id: 'basketball',
   name: 'NBA Analyst',
   problem: `We need you and the analyst team to figure out why we're losing and what we need to change in our strategy to be winners! From what you're seeing right now, what do you think we're doing wrong? Out of 100 shots, how many should be inside, outside, or mid lane? Inside and mid lane shots are worth 2 points, and outside shots are worth 3 points. Outside shots have a lower success rate, however.`,
+  persistTruthGlobalStateData: [
+    'Points per outside shot',
+    'Points per inside shot',
+    'Points per mid shot',
+    'understands_algorithm',
+    'understands_multiplication',
+    'understands_addition',
+    'understands_success_shots',
+    'understands_shot_points',
+    'best_strategy_found',
+  ],
   config: {
     type: Phaser.CANVAS,
     backgroundColor: '#282c34',
