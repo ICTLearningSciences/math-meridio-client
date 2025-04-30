@@ -515,7 +515,6 @@ export async function updateRoom(
   roomId: string,
   gameData: Partial<GameData>
 ): Promise<Room> {
-  console.log('updating room', roomId, gameData);
   const data = await execGql<Room>(
     {
       query: `

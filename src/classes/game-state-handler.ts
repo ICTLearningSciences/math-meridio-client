@@ -178,11 +178,6 @@ export abstract class GameStateHandler implements Subscriber {
     const oldGlobalState = JSON.parse(JSON.stringify(this.globalStateData));
     this.globalStateData = newGlobalState;
     if (this.newStageOrStep(oldGlobalState, newGlobalState)) {
-      console.log(
-        'global state updated with new step',
-        newGlobalState.curStageId,
-        newGlobalState.curStepId
-      );
       const newStage = this.stageList.find(
         (s) => s.id === newGlobalState.curStageId
       );
@@ -250,14 +245,8 @@ export abstract class GameStateHandler implements Subscriber {
 
   updateRoomStageStepId(stageId: string, stepId: string) {
     if (this.player.clientId !== this.globalStateData.roomOwnerId) {
-      console.log(
-        'not the room owner, skipping updateRoomStageStepId',
-        stageId,
-        stepId
-      );
       return;
     }
-    console.log('updating room stage step id', stageId, stepId);
     this.updateRoomGameData({
       globalStateData: {
         curStageId: stageId,
@@ -282,7 +271,6 @@ export abstract class GameStateHandler implements Subscriber {
       stepId !== this.globalStateData.curStepId
     ) {
       this.updateRoomStageStepId(stageId, stepId);
-      console.log('current stage set', this.globalStateData);
     }
   }
 

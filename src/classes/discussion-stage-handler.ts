@@ -94,13 +94,11 @@ export class DiscussionStageHandler {
     ) {
       throw new Error('No discussion data found');
     }
-    console.log('searching for step', stepId, discussionStage);
     for (let i = 0; i < discussionStage.stage.flowsList.length; i++) {
       const flow = discussionStage.stage.flowsList[i];
       for (let j = 0; j < flow.steps.length; j++) {
         const step = flow.steps[j];
         if (step.stepId === stepId) {
-          console.log('found step', stepId, step);
           return step;
         }
       }
@@ -112,7 +110,6 @@ export class DiscussionStageHandler {
     discussionStage: DiscussionCurrentStage,
     currentStep: DiscussionStageStep
   ): DiscussionStageStep {
-    console.log('current step', currentStep);
     if (currentStep.jumpToStepId) {
       const jumpStep = this.getStepById(
         discussionStage,
@@ -123,7 +120,6 @@ export class DiscussionStageHandler {
           `Unable to find target step ${currentStep.jumpToStepId}, maybe you deleted it and forgot to update this step?`
         );
       }
-      console.log('returning jump step', jumpStep);
       return jumpStep;
     } else {
       // go to next step in current flow
@@ -144,18 +140,12 @@ export class DiscussionStageHandler {
           `Unable to find requested step: ${currentStep.stepId} in flow ${currentStepFlowList.name}`
         );
       }
-      console.log('current step index', currentStepIndex);
       const nextStepIndex = currentStepIndex + 1;
-      console.log('next step index', nextStepIndex);
       if (nextStepIndex >= currentStepFlowList.steps.length) {
         throw new Error(
           'No next step found, maybe you forgot to add a jumpToStepId for the last step in a flow?'
         );
       } else {
-        console.log(
-          'returning next step',
-          currentStepFlowList.steps[nextStepIndex]
-        );
         return currentStepFlowList.steps[nextStepIndex];
       }
     }
@@ -240,7 +230,6 @@ export class DiscussionStageHandler {
     discussionStage: DiscussionCurrentStage,
     step: DiscussionStageStep
   ) {
-    console.log('handling step', step);
     if (step.stepType === DiscussionStageStepType.REQUEST_USER_INPUT) {
       this.stepIdsSinceLastInput = [];
     }
@@ -422,7 +411,6 @@ export class DiscussionStageHandler {
     //   });
     //   return;
     // }
-    console.log('handling new user message', message);
 
     if (!curStep) {
       throw new Error('No current step found');
@@ -436,10 +424,6 @@ export class DiscussionStageHandler {
     }
     const requestUserInputStep = curStep as RequestUserInputStageStep;
     if (requestUserInputStep.predefinedResponses.length > 0) {
-      console.log(
-        'checking predefined responses',
-        requestUserInputStep.predefinedResponses
-      );
       const predefinedResponseMatch =
         requestUserInputStep.predefinedResponses.find(
           (response) => response.message === message
@@ -495,7 +479,6 @@ export class DiscussionStageHandler {
     }
     // reset user response handle state since we handled the user response
     this.userResponseHandleState = getDefaultUserResponseHandleState();
-    console.log('returning next step');
     return this.updateRoomWithNextStep(curStage, curStep);
   }
 
