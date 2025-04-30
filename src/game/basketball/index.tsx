@@ -24,6 +24,8 @@ import { ProblemComponent } from './problem';
 import { SolutionComponent } from './solution';
 import { SimulationComponent } from './simulation';
 import { ResultComponent } from './results';
+import { PlayerStateData } from '../../store/slices/game';
+import { SIMULTAION_VIEWED_KEY } from '../../helpers';
 
 const introductionDiscussionStage = 'de0b94b9-1fc2-4ea1-995e-21a75670c16d';
 const collectVariablesDiscussionStage = '86587083-9279-4c27-8470-836f992670fc';
@@ -53,14 +55,15 @@ export class BasketballStateHandler extends GameStateHandler {
   constructor(args: GameStateHandlerArgs) {
     super({ ...args, defaultStageId: 'de0b94b9-1fc2-4ea1-995e-21a75670c16d' });
     this.discussionStageHandler = new DiscussionStageHandler(
+      this.player.clientId,
+      this.globalStateData,
       args.sendMessage,
       args.setResponsePending,
       args.executePrompt,
       this.updateRoomStageStepId.bind(this),
       undefined,
       this.newPlayerStateData.bind(this),
-      undefined,
-      this.player.clientId
+      undefined
     );
 
     this.initializeGame = this.initializeGame.bind(this);
@@ -200,7 +203,22 @@ export class BasketballStateHandler extends GameStateHandler {
     this.stageList = stageList;
   }
 
+  playerStateUpdated(newGameState: PlayerStateData[]): void {
+    super.playerStateUpdated(newGameState);
+    const curStage = this.getCurrentStage();
+    const anyPlayerViewedSimulation = newGameState.find((p) =>
+      p.gameStateData.find((g) => g.key === SIMULTAION_VIEWED_KEY)
+    );
+    if (
+      curStage?.stage.stageType === 'simulation' &&
+      anyPlayerViewedSimulation
+    ) {
+      this.simulationEnded();
+    }
+  }
+
   simulationEnded(): void {
+    super.simulationEnded();
     const curStage = this.getCurrentStage();
     if (curStage?.stage.stageType === 'simulation') {
       const stage = this.stageList.find(

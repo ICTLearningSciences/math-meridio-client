@@ -65,7 +65,7 @@ export class DiscussionStageHandler {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   stateData: CollectedDiscussionData;
   chatLog: ChatMessage[] = [];
-  userId: string | undefined;
+  playerId: string;
   errorMessage: string | null = null;
   sendMessage: (msg: ChatMessage) => void;
   setResponsePending: (pending: boolean) => void; // let parent component know when we are waiting for an async response
@@ -77,9 +77,10 @@ export class DiscussionStageHandler {
   stepIdsSinceLastInput: string[]; // used to prevent infinite loops, should never repeat a step until we've had some sort of user input.
   lastFailedStepId: string | null = null;
   onDiscussionFinished?: (discussionData: CollectedDiscussionData) => void;
-  newPlayerStateData?: (data: GameStateData[]) => void;
+  newPlayerStateData?: (data: GameStateData[], playerId: string) => void;
   exitEarlyCondition?: (data: CollectedDiscussionData) => boolean;
   updateRoomStageStepId: (stageId: string, stepId: string) => void;
+  globalStateData: GlobalStateData;
 
   getStepById(
     discussionStage: DiscussionCurrentStage,
@@ -152,6 +153,8 @@ export class DiscussionStageHandler {
   }
 
   constructor(
+    playerId: string,
+    globalStateData: GlobalStateData,
     sendMessage: (msg: ChatMessage) => void,
     setResponsePending: (pending: boolean) => void,
     executePrompt: (
@@ -160,10 +163,10 @@ export class DiscussionStageHandler {
     ) => Promise<AiServicesResponseTypes>,
     updateRoomStageStepId: (stageId: string, stepId: string) => void,
     onDiscussionFinished?: (discussionData: CollectedDiscussionData) => void,
-    newPlayerStateData?: (data: GameStateData[]) => void,
-    exitEarlyCondition?: (data: CollectedDiscussionData) => boolean,
-    userId?: string
+    newPlayerStateData?: (data: GameStateData[], playerId: string) => void,
+    exitEarlyCondition?: (data: CollectedDiscussionData) => boolean
   ) {
+    this.globalStateData = globalStateData;
     this.stateData = {};
     this.stepIdsSinceLastInput = [];
     this.userResponseHandleState = getDefaultUserResponseHandleState();
@@ -173,7 +176,7 @@ export class DiscussionStageHandler {
     this.onDiscussionFinished = onDiscussionFinished;
     this.newPlayerStateData = newPlayerStateData;
     this.exitEarlyCondition = exitEarlyCondition;
-    this.userId = userId;
+    this.playerId = playerId;
     this.updateRoomStageStepId = updateRoomStageStepId;
     // bind functions to this
     this.exitEarlyCondition = this.exitEarlyCondition?.bind(this);
@@ -451,7 +454,8 @@ export class DiscussionStageHandler {
         this.newPlayerStateData(
           convertCollectedDataToGSData({
             [userInputStep.saveResponseVariableName]: message,
-          })
+          }),
+          this.playerId
         );
     }
     if (this.userResponseHandleState.responseNavigations.length > 0) {
@@ -570,9 +574,13 @@ export class DiscussionStageHandler {
           }
         }
         const resData = JSON.parse(response);
+
         this.stateData = { ...this.stateData, ...resData };
         this.newPlayerStateData &&
-          this.newPlayerStateData(convertCollectedDataToGSData(resData));
+          this.newPlayerStateData(
+            convertCollectedDataToGSData(resData),
+            this.playerId
+          );
       } else {
         // is a text response
         const sessionId = localStorageGet(SESSION_ID);
@@ -616,6 +624,7 @@ export class DiscussionStageHandler {
 
   globalStateUpdated(newState: GlobalStateData): void {
     console.log('DSH: global state updated', newState);
+    this.globalStateData = newState;
     return;
   }
 

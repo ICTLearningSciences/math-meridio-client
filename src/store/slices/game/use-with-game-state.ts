@@ -30,7 +30,7 @@ import { CancelToken } from 'axios';
 import { syncLlmRequest } from '../../../hooks/use-with-synchronous-polling';
 import { useWithStages } from '../stages/use-with-stages';
 import { Player } from '../player';
-import { equals } from '../../../helpers';
+import { equals, SIMULTAION_VIEWED_KEY } from '../../../helpers';
 import EventSystem from '../../../game/event-system';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -171,6 +171,7 @@ export function useWithGame() {
       ) => {
         return syncLlmRequest(llmRequest, cancelToken);
       },
+      viewedSimulation: _viewedSimulation,
     });
     if (!poll.current) {
       poll.current = setInterval(() => {
@@ -246,7 +247,6 @@ export function useWithGame() {
       console.log('not the room owner, skipping message');
       return;
     }
-    console.log('sending message to backend', msg);
     operationQueue.current.push(() =>
       dispatch(sendMessage({ roomId: room._id, message: msg }))
     );
@@ -257,6 +257,27 @@ export function useWithGame() {
     if (!player || !room) return;
     operationQueue.current.push(() =>
       dispatch(updateRoomGameData({ roomId: room._id, gameData }))
+    );
+    processQueue();
+  }
+
+  function _viewedSimulation(playerId: string): void {
+    if (!room) return;
+    operationQueue.current.push(() =>
+      dispatch(
+        updateRoomGameData({
+          roomId: room._id,
+          gameData: {
+            playerStateData: [
+              {
+                player: playerId,
+                animation: '',
+                gameStateData: [{ key: SIMULTAION_VIEWED_KEY, value: true }],
+              },
+            ],
+          },
+        })
+      )
     );
     processQueue();
   }

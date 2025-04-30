@@ -249,12 +249,15 @@ export function SolutionComponent(props: {
         />
         <EditableVariable
           updatePlayerStateData={(newValue: number) => {
-            controller.newPlayerStateData([
-              {
-                key: INSIDE_SHOT_PERCENT,
-                value: newValue,
-              },
-            ]);
+            controller.newPlayerStateData(
+              [
+                {
+                  key: INSIDE_SHOT_PERCENT,
+                  value: newValue,
+                },
+              ],
+              controller.player.clientId
+            );
           }}
           dataKey={INSIDE_SHOT_PERCENT}
           title="# of inside shots"
@@ -313,12 +316,15 @@ export function SolutionComponent(props: {
         />
         <EditableVariable
           updatePlayerStateData={(newValue: number) => {
-            controller.newPlayerStateData([
-              {
-                key: MID_SHOT_PERCENT,
-                value: newValue,
-              },
-            ]);
+            controller.newPlayerStateData(
+              [
+                {
+                  key: MID_SHOT_PERCENT,
+                  value: newValue,
+                },
+              ],
+              controller.player.clientId
+            );
           }}
           dataKey={MID_SHOT_PERCENT}
           title="# of mid shots"
@@ -377,12 +383,15 @@ export function SolutionComponent(props: {
         />
         <EditableVariable
           updatePlayerStateData={(newValue: number) => {
-            controller.newPlayerStateData([
-              {
-                key: OUTSIDE_SHOT_PERCENT,
-                value: newValue,
-              },
-            ]);
+            controller.newPlayerStateData(
+              [
+                {
+                  key: OUTSIDE_SHOT_PERCENT,
+                  value: newValue,
+                },
+              ],
+              controller.player.clientId
+            );
           }}
           dataKey={OUTSIDE_SHOT_PERCENT}
           title="# of 3 pointers"

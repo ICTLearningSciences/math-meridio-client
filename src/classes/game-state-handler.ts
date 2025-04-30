@@ -60,6 +60,7 @@ export interface GameStateHandlerArgs {
   player: Player;
   game: Phaser.Types.Core.GameConfig;
   gameData: GameData;
+  viewedSimulation: (playerId: string) => void;
 }
 
 export abstract class GameStateHandler implements Subscriber {
@@ -79,6 +80,7 @@ export abstract class GameStateHandler implements Subscriber {
   ) => Promise<AiServicesResponseTypes>;
   dbDiscussionStages: DiscussionStage[];
   stageList: CurrentStage<IStage>[] = [];
+  viewedSimulation: (playerId: string) => void;
 
   player: Player;
   players: Player[] = [];
@@ -107,7 +109,7 @@ export abstract class GameStateHandler implements Subscriber {
     this.executePrompt = args.executePrompt;
     this.setResponsePending = args.setResponsePending;
     this.onDiscussionFinished = args.onDiscussionFinished;
-
+    this.viewedSimulation = args.viewedSimulation;
     // bind functions to this
     this.onDiscussionFinished = this.onDiscussionFinished?.bind(this);
   }
@@ -218,11 +220,11 @@ export abstract class GameStateHandler implements Subscriber {
     this.players = players;
   }
 
-  newPlayerStateData(newData: GameStateData[]): void {
+  newPlayerStateData(newData: GameStateData[], playerId: string): void {
     this.updateRoomGameData({
       playerStateData: [
         {
-          player: this.player.clientId,
+          player: playerId,
           animation: '',
           gameStateData: newData,
         },
@@ -274,5 +276,10 @@ export abstract class GameStateHandler implements Subscriber {
     }
   }
 
-  abstract simulationEnded(): void;
+  simulationEnded(): void {
+    const curStage = this.getCurrentStage();
+    if (curStage?.stage.stageType === 'simulation') {
+      this.viewedSimulation(this.player.clientId);
+    }
+  }
 }

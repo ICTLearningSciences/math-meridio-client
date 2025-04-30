@@ -11,6 +11,9 @@ import axios from 'axios';
 import { IStage } from './components/discussion-stage-builder/types';
 import { DiscussionStage } from './components/discussion-stage-builder/types';
 import { isDiscussionStage } from './components/discussion-stage-builder/types';
+
+export const SIMULTAION_VIEWED_KEY = 'viewed-simulation';
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function equals<T>(val1: T, val2: T): boolean {
   return JSON.stringify(val1) === JSON.stringify(val2);
