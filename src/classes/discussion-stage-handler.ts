@@ -464,7 +464,11 @@ export class DiscussionStageHandler {
     if (userInputStep.saveResponseVariableName) {
       this.stateData[userInputStep.saveResponseVariableName] = message;
       this.newPlayerStateData &&
-        this.newPlayerStateData(convertCollectedDataToGSData(this.stateData));
+        this.newPlayerStateData(
+          convertCollectedDataToGSData({
+            [userInputStep.saveResponseVariableName]: message,
+          })
+        );
     }
     if (this.userResponseHandleState.responseNavigations.length > 0) {
       for (
@@ -585,7 +589,7 @@ export class DiscussionStageHandler {
         const resData = JSON.parse(response);
         this.stateData = { ...this.stateData, ...resData };
         this.newPlayerStateData &&
-          this.newPlayerStateData(convertCollectedDataToGSData(this.stateData));
+          this.newPlayerStateData(convertCollectedDataToGSData(resData));
       } else {
         // is a text response
         const sessionId = localStorageGet(SESSION_ID);
