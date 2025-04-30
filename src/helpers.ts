@@ -9,6 +9,9 @@ import { ChatMessage, SenderType } from './store/slices/game';
 import { GameStateData } from './game/basketball/solution';
 import axios from 'axios';
 import { localStorageGet, SESSION_ID } from './store/local-storage';
+import { IStage } from './components/discussion-stage-builder/types';
+import { DiscussionStage } from './components/discussion-stage-builder/types';
+import { isDiscussionStage } from './components/discussion-stage-builder/types';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function equals<T>(val1: T, val2: T): boolean {
   return JSON.stringify(val1) === JSON.stringify(val2);
@@ -104,4 +107,11 @@ export function didGameStateDataChange(
   newGameStateData: GameStateData
 ): boolean {
   return JSON.stringify(prevGameStateData) !== JSON.stringify(newGameStateData);
+}
+
+export function getFirstStepId(stage: IStage): string {
+  if (isDiscussionStage(stage)) {
+    return (stage as DiscussionStage).flowsList[0].steps[0].stepId;
+  }
+  return stage.clientId;
 }

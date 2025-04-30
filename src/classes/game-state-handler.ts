@@ -6,7 +6,12 @@ The full terms of this copyright and license should always be found in the root 
 */
 
 import { AiServicesResponseTypes } from '../ai-services/ai-service-types';
-import { DiscussionStage } from '../components/discussion-stage-builder/types';
+import {
+  DiscussionStage,
+  DiscussionStageStep,
+  isDiscussionStage,
+  IStage,
+} from '../components/discussion-stage-builder/types';
 import {
   ChatMessage,
   GameData,
@@ -20,7 +25,8 @@ import { CancelToken } from 'axios';
 import { Subscriber } from '../store/slices/game/use-with-game-state';
 import { Player } from '../store/slices/player';
 import { DiscussionStageHandler } from './discussion-stage-handler';
-import { CurrentStage } from '../game/basketball';
+import { CurrentStage, DiscussionCurrentStage } from '../game/basketball';
+import { getFirstStepId } from '../helpers';
 
 interface UserResponseHandleState {
   responseNavigations: {
@@ -57,7 +63,6 @@ export interface GameStateHandlerArgs {
 }
 
 export abstract class GameStateHandler implements Subscriber {
-  abstract currentStage: CurrentStage | undefined;
   abstract discussionStageHandler: DiscussionStageHandler;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   stateData: CollectedDiscussionData;
@@ -72,7 +77,8 @@ export abstract class GameStateHandler implements Subscriber {
     llmRequest: GenericLlmRequest,
     cancelToken?: CancelToken
   ) => Promise<AiServicesResponseTypes>;
-  stages: DiscussionStage[];
+  dbDiscussionStages: DiscussionStage[];
+  stageList: CurrentStage<IStage>[] = [];
 
   player: Player;
   players: Player[] = [];
@@ -91,7 +97,7 @@ export abstract class GameStateHandler implements Subscriber {
     this.game = args.game;
     this.globalStateData = args.gameData.globalStateData;
     this.playerStateData = args.gameData.playerStateData;
-    this.stages = args.stages || [];
+    this.dbDiscussionStages = args.stages || [];
 
     this.stateData = {};
     this.stepIdsSinceLastInput = [];
@@ -106,7 +112,10 @@ export abstract class GameStateHandler implements Subscriber {
     this.onDiscussionFinished = this.onDiscussionFinished?.bind(this);
   }
 
-  abstract initializeGame(): void;
+  initializeGame(): void {
+    // Setting the stage should trigger global state update
+    this.setInitialStage();
+  }
 
   /** subscriber functions */
 
@@ -121,15 +130,92 @@ export abstract class GameStateHandler implements Subscriber {
     if (newMessages.length === 0) {
       return;
     }
-    this.discussionStageHandler.newChatLogReceived(chatLog);
+    const curStage = this.getCurrentStage();
+    if (curStage?.stage && isDiscussionStage(curStage.stage)) {
+      const curStep = this.getCurrentDiscussionStageStep();
+      if (!curStep) {
+        throw new Error('Current step not found');
+      }
+      this.discussionStageHandler.newChatLogReceived(
+        curStage as DiscussionCurrentStage,
+        curStep,
+        chatLog
+      );
+    }
     for (const newMessage of newMessages) {
       // TODO: notify handlers of new message
       this.acknowledgedChat.push(newMessage.id);
     }
   }
 
-  globalStateUpdated(newGlobalState: GlobalStateData): void {
+  getCurrentStage(): CurrentStage<IStage> | undefined {
+    return this.stageList.find((s) => s.id === this.globalStateData.curStageId);
+  }
+
+  getCurrentDiscussionStageStep(): DiscussionStageStep | undefined {
+    const curStage = this.getCurrentStage();
+    if (!curStage) {
+      return undefined;
+    }
+    if (isDiscussionStage(curStage.stage)) {
+      const curFlow = (curStage.stage as DiscussionStage).flowsList.find((f) =>
+        f.steps.find((s) => s.stepId === this.globalStateData.curStepId)
+      );
+      if (!curFlow) {
+        return undefined;
+      }
+      const curStep = curFlow.steps.find(
+        (s) => s.stepId === this.globalStateData.curStepId
+      );
+      if (!curStep) {
+        return undefined;
+      }
+      return curStep;
+    } else {
+      throw new Error('Current stage is not a discussion stage');
+    }
+  }
+
+  async globalStateUpdated(newGlobalState: GlobalStateData): Promise<void> {
+    console.log('global state updated', newGlobalState);
+    const oldGlobalState = JSON.parse(JSON.stringify(this.globalStateData));
     this.globalStateData = newGlobalState;
+    if (this.newStageOrStep(oldGlobalState, newGlobalState)) {
+      console.log(
+        'new stage or step found,',
+        newGlobalState.curStageId,
+        newGlobalState.curStepId
+      );
+      const newStage = this.stageList.find(
+        (s) => s.id === newGlobalState.curStageId
+      );
+      if (!newStage) {
+        throw new Error(`Unable to find stage ${newGlobalState.curStageId}`);
+      }
+      if (newStage.beforeStart) {
+        newStage.beforeStart();
+      }
+      if (isDiscussionStage(newStage.stage)) {
+        this.discussionStageHandler.onDiscussionFinished =
+          newStage.onStageFinished;
+        await this.discussionStageHandler.executeDiscussionStageStep(
+          newStage as CurrentStage<DiscussionStage>,
+          newGlobalState.curStepId
+        );
+      } else {
+        // Is a simulation stage, must wait for simulationEnded to be emitted
+      }
+    }
+  }
+
+  newStageOrStep(
+    oldGlobalState: GlobalStateData,
+    newGlobalState: GlobalStateData
+  ): boolean {
+    return (
+      oldGlobalState.curStageId !== newGlobalState.curStageId ||
+      oldGlobalState.curStepId !== newGlobalState.curStepId
+    );
   }
 
   playerStateUpdated(newGameState: PlayerStateData[]): void {
@@ -153,6 +239,44 @@ export abstract class GameStateHandler implements Subscriber {
         gameStateData: newData,
       } as any,
     });
+  }
+
+  updateStageByStageListId(newStageListId: string) {
+    const newStage = this.stageList.find((s) => s.id === newStageListId);
+    if (!newStage) {
+      throw new Error('missing stage');
+    }
+    const newStepId = getFirstStepId(newStage.stage);
+    this.updateRoomStageStepId(newStage.id, newStepId);
+  }
+
+  updateRoomStageStepId(stageId: string, stepId: string) {
+    console.log('updating room stage step id', stageId, stepId);
+    this.updateRoomGameData({
+      globalStateData: {
+        curStageId: stageId,
+        curStepId: stepId,
+      } as any,
+    });
+  }
+
+  setInitialStage() {
+    if (this.globalStateData.curStageId && this.globalStateData.curStepId) {
+      // first stage already set, or joined a game with a stage already set
+      return;
+    }
+    const firstStage = this.stageList[0];
+    const stageId: string = firstStage.id;
+    const stepId: string = isDiscussionStage(firstStage.stage)
+      ? (firstStage.stage as DiscussionStage).flowsList[0].steps[0].stepId
+      : firstStage.stage.clientId;
+    if (
+      stageId !== this.globalStateData.curStageId ||
+      stepId !== this.globalStateData.curStepId
+    ) {
+      this.updateRoomStageStepId(stageId, stepId);
+      console.log('current stage set', this.globalStateData);
+    }
   }
 
   abstract simulationEnded(): void;
