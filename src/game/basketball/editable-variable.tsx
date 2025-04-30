@@ -38,8 +38,9 @@ export const EditableVariable = React.memo(
       MID_SHOT_PERCENT,
       OUTSIDE_SHOT_PERCENT,
     ].filter((key) => key !== dataKey);
-    const otherKeysTotal = Number(
-      otherKeys.reduce((acc, key) => acc + (myPlayerStateData[key] || 0), 0)
+    const otherKeysTotal = otherKeys.reduce(
+      (acc, key) => acc + parseInt(myPlayerStateData[key] || 0, 10),
+      0
     );
     const [value, setValue] = React.useState(data || 0);
     const { classes } = useStyles();
@@ -50,9 +51,9 @@ export const EditableVariable = React.memo(
           const data = { ...myPlayerStateData };
           let newVal = newValue;
           if (otherKeysTotal + newValue > 100) {
-            newVal = 100 - otherKeysTotal;
+            newVal = Math.max(0, 100 - otherKeysTotal);
           }
-          data[dataKey] = newValue;
+          data[dataKey] = newVal;
           setValue(newVal);
           updatePlayerStateData(newVal);
           setEditingVariable('');
