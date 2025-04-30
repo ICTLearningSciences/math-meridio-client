@@ -26,6 +26,8 @@ import { SolutionComponent } from './solution';
 import { SimulationComponent } from './simulation';
 import { ResultComponent } from './results';
 
+// test
+
 // [Question] stage IDs for soccer?
 const introductionDiscussionStage = 'de0b94b9-1fc2-4ea1-995e-21a75670c16d';
 const collectVariablesDiscussionStage = '86587083-9279-4c27-8470-836f992670fc';
