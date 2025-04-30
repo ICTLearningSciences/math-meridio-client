@@ -222,6 +222,7 @@ export class BasketballStateHandler extends GameStateHandler {
       this.updateRoomGameData({
         globalStateData: {
           gameStateData: [{ key: 'Points per outside shot', value: value }],
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any,
         playerStateData: [
           {
@@ -237,6 +238,7 @@ export class BasketballStateHandler extends GameStateHandler {
       this.updateRoomGameData({
         globalStateData: {
           gameStateData: [{ key: 'Points per inside shot', value: value }],
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any,
         playerStateData: [
           {
@@ -252,6 +254,7 @@ export class BasketballStateHandler extends GameStateHandler {
       this.updateRoomGameData({
         globalStateData: {
           gameStateData: [{ key: 'Points per mid shot', value: value }],
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any,
         playerStateData: [
           {

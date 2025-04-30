@@ -19,7 +19,6 @@ import {
   sortMessagesByResponseWeight,
 } from '../components/discussion-stage-builder/helpers';
 import {
-  DiscussionStage,
   DiscussionStageStep,
   DiscussionStageStepType,
   PredefinedResponse,
@@ -40,11 +39,10 @@ import {
   PlayerStateData,
   GameStateData,
 } from '../store/slices/game';
-import { Subscriber } from '../store/slices/game/use-with-game-state';
 import { Player } from '../store/slices/player';
 import { SESSION_ID } from '../store/local-storage';
 import { localStorageGet } from '../store/local-storage';
-import { CurrentStage, DiscussionCurrentStage } from '../game/basketball';
+import { DiscussionCurrentStage } from '../game/basketball';
 interface UserResponseHandleState {
   responseNavigations: {
     response: string;
@@ -544,8 +542,7 @@ export class DiscussionStageHandler {
     if (curStep.includeChatLogContext) {
       llmRequest.prompts.push({
         promptText: `Current state of chat log between user and system: ${chatLogToString(
-          this.chatLog,
-          this.userId
+          this.chatLog
         )}`,
         promptRole: PromptRoles.USER,
       });
@@ -627,18 +624,21 @@ export class DiscussionStageHandler {
   }
 
   simulationEnded(): void {
-    console.log('simulation ended from discussion stage handler');
+    return;
   }
 
   globalStateUpdated(newState: GlobalStateData): void {
-    console.log('global state updated', newState);
+    console.log('DSH: global state updated', newState);
+    return;
   }
 
   playerStateUpdated(newState: PlayerStateData[]): void {
-    console.log('player state updated', newState);
+    console.log('DSH: player state updated', newState);
+    return;
   }
 
   playersUpdated(newState: Player[]): void {
-    console.log('players updated', newState);
+    console.log('DSH: players updated', newState);
+    return;
   }
 }

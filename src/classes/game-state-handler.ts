@@ -123,9 +123,7 @@ export abstract class GameStateHandler implements Subscriber {
     this.chatLog = chatLog;
     const newMessages = chatLog.filter(
       (c) =>
-        !this.acknowledgedChat.includes(c.id) &&
-        c.sender === SenderType.PLAYER &&
-        c.senderId === this.player.clientId
+        !this.acknowledgedChat.includes(c.id) && c.sender === SenderType.PLAYER
     );
     if (newMessages.length === 0) {
       return;
@@ -177,12 +175,11 @@ export abstract class GameStateHandler implements Subscriber {
   }
 
   async globalStateUpdated(newGlobalState: GlobalStateData): Promise<void> {
-    console.log('global state updated', newGlobalState);
     const oldGlobalState = JSON.parse(JSON.stringify(this.globalStateData));
     this.globalStateData = newGlobalState;
     if (this.newStageOrStep(oldGlobalState, newGlobalState)) {
       console.log(
-        'new stage or step found,',
+        'global state updated with new step',
         newGlobalState.curStageId,
         newGlobalState.curStepId
       );
@@ -237,6 +234,7 @@ export abstract class GameStateHandler implements Subscriber {
       ],
       globalStateData: {
         gameStateData: newData,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any,
     });
   }
@@ -251,11 +249,20 @@ export abstract class GameStateHandler implements Subscriber {
   }
 
   updateRoomStageStepId(stageId: string, stepId: string) {
+    if (this.player.clientId !== this.globalStateData.roomOwnerId) {
+      console.log(
+        'not the room owner, skipping updateRoomStageStepId',
+        stageId,
+        stepId
+      );
+      return;
+    }
     console.log('updating room stage step id', stageId, stepId);
     this.updateRoomGameData({
       globalStateData: {
         curStageId: stageId,
         curStepId: stepId,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any,
     });
   }

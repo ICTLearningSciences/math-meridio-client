@@ -53,6 +53,9 @@ export function useWithGame() {
   const [responsePending, setResponsePending] = React.useState<boolean>(false);
   const { loadDiscussionStages } = useWithStages();
   const poll = React.useRef<NodeJS.Timeout | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const operationQueue = React.useRef<(() => Promise<any>)[]>([]);
+  const isProcessing = React.useRef<boolean>(false);
 
   const [game, setGame] = React.useState<Game>();
   const [subscribers, setSubscribers] = React.useState<Subscriber[]>([]);
@@ -108,6 +111,19 @@ export function useWithGame() {
     setLastPlayers(room.gameData.players);
   }, [room?.gameData.players]);
 
+  // Function to process the next operation in the queue
+  const processQueue = React.useCallback(() => {
+    if (isProcessing.current || operationQueue.current.length === 0) return;
+    isProcessing.current = true;
+    const nextOperation = operationQueue.current.shift();
+    if (nextOperation) {
+      nextOperation().finally(() => {
+        isProcessing.current = false;
+        processQueue(); // Process the next operation
+      });
+    }
+  }, []);
+
   React.useEffect(() => {
     if (!room && poll.current) {
       clearInterval(poll.current);
@@ -158,7 +174,10 @@ export function useWithGame() {
     });
     if (!poll.current) {
       poll.current = setInterval(() => {
-        dispatch(fetchRoom({ roomId: room._id }));
+        operationQueue.current.push(() =>
+          dispatch(fetchRoom({ roomId: room._id }))
+        );
+        processQueue();
       }, 1000);
     }
     addNewSubscriber(controller);
@@ -220,12 +239,26 @@ export function useWithGame() {
   function _sendMessage(msg: ChatMessage) {
     if (!player || !room) return;
     if (msg.sender === SenderType.SYSTEM && !msg.message) return;
-    dispatch(sendMessage({ roomId: room._id, message: msg }));
+    if (
+      msg.sender === SenderType.SYSTEM &&
+      room.gameData.globalStateData.roomOwnerId !== player.clientId
+    ) {
+      console.log('not the room owner, skipping message');
+      return;
+    }
+    console.log('sending message to backend', msg);
+    operationQueue.current.push(() =>
+      dispatch(sendMessage({ roomId: room._id, message: msg }))
+    );
+    processQueue();
   }
 
   function _updateRoomGameData(gameData: Partial<GameData>): void {
     if (!player || !room) return;
-    dispatch(updateRoomGameData({ roomId: room._id, gameData }));
+    operationQueue.current.push(() =>
+      dispatch(updateRoomGameData({ roomId: room._id, gameData }))
+    );
+    processQueue();
   }
 
   return {
