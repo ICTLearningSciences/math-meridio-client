@@ -9,6 +9,7 @@ import { AiServicesResponseTypes } from '../ai-services/ai-service-types';
 import {
   DiscussionStage,
   DiscussionStageStep,
+  DiscussionStageStepType,
   isDiscussionStage,
   IStage,
 } from '../components/discussion-stage-builder/types';
@@ -261,6 +262,7 @@ export abstract class GameStateHandler implements Subscriber {
   setInitialStage() {
     if (this.globalStateData.curStageId && this.globalStateData.curStepId) {
       // first stage already set, or joined a game with a stage already set
+      this.returnToStage();
       return;
     }
     const firstStage = this.stageList[0];
@@ -273,6 +275,25 @@ export abstract class GameStateHandler implements Subscriber {
       stepId !== this.globalStateData.curStepId
     ) {
       this.updateRoomStageStepId(stageId, stepId);
+    }
+  }
+
+  returnToStage(): void {
+    const curStage = this.getCurrentStage();
+    const curStep = this.getCurrentDiscussionStageStep();
+    if (
+      curStage &&
+      curStep &&
+      isDiscussionStage(curStage.stage) &&
+      curStep.stepType !== DiscussionStageStepType.REQUEST_USER_INPUT
+    ) {
+      console.log('returning to step', curStep);
+      this.discussionStageHandler.onDiscussionFinished =
+        curStage.onStageFinished;
+      this.discussionStageHandler.executeDiscussionStageStep(
+        curStage as CurrentStage<DiscussionStage>,
+        curStep.stepId
+      );
     }
   }
 
