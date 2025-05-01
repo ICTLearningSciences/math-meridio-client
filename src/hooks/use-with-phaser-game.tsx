@@ -45,9 +45,17 @@ export function useWithPhaserGame(
     EventSystem.on('sceneCreated', onSceneStarted);
     // deconstructor
     return () => {
-      destroyPhaserGame();
+      destroyPhaserGame(pg);
     };
   }, [game]);
+
+  useEffect(() => {
+    return () => {
+      if (phaserGame) {
+        destroyPhaserGame(phaserGame);
+      }
+    };
+  }, []);
 
   function startPhaserGame(
     game: Phaser.Types.Core.GameConfig,
@@ -55,7 +63,7 @@ export function useWithPhaserGame(
     scene?: string
   ): void {
     if (phaserGame) {
-      destroyPhaserGame();
+      destroyPhaserGame(phaserGame);
     }
     setController(controller);
     setScene(scene);
@@ -67,8 +75,7 @@ export function useWithPhaserGame(
     setScene(scene);
     phaserGame.scene.start(scene, controller);
   }
-
-  function destroyPhaserGame(): void {
+  function destroyPhaserGame(phaserGame: Phaser.Game): void {
     if (phaserGame) {
       phaserGame.destroy(false);
       setGame(undefined);
