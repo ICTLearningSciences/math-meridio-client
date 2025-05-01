@@ -56,6 +56,12 @@ export function useWithGame() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const operationQueue = React.useRef<(() => Promise<any>)[]>([]);
   const isProcessing = React.useRef<boolean>(false);
+  const ownerIsPresent = React.useMemo(() => {
+    if (loadStatus.status === LoadStatus.IN_PROGRESS) return true;
+    return room?.gameData.players.some(
+      (p) => p.clientId === room?.gameData.globalStateData.roomOwnerId
+    );
+  }, [room, player, loadStatus]);
 
   const [game, setGame] = React.useState<Game>();
   const [subscribers, setSubscribers] = React.useState<Subscriber[]>([]);
@@ -68,7 +74,6 @@ export function useWithGame() {
   const [gameStateHandler, setGameStateHandler] =
     React.useState<GameStateHandler>();
   const chatLog = useAppSelector((state) => state.gameData.room?.gameData.chat);
-  // console.log("room", room?.gameData.globalStateData.curStageId, room?.gameData.globalStateData.curStepId)
   React.useEffect(() => {
     if (!room || equals(lastChatLog, room.gameData.chat)) return;
     for (let i = 0; i < subscribers.length; i++) {
@@ -304,5 +309,6 @@ export function useWithGame() {
     sendMessage: _sendMessage,
     updateRoomGameData: _updateRoomGameData,
     responsePending,
+    ownerIsPresent,
   };
 }
