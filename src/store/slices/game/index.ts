@@ -24,6 +24,7 @@ export interface ChatMessage {
   sender: SenderType;
   message: string;
   senderId?: string;
+  isPromptResponse?: boolean;
   sessionId: string;
   senderName?: string;
   displayType?: MessageDisplayType;
@@ -60,6 +61,7 @@ export interface PlayerStateData {
 export interface GlobalStateData {
   curStageId: string;
   curStepId: string;
+  roomOwnerId: string;
   gameStateData: GameStateData[];
 }
 
@@ -98,8 +100,14 @@ export const createAndJoinRoom = createAsyncThunk(
     gameId: string;
     gameName: string;
     playerId: string;
+    persistTruthGlobalStateData: string[];
   }): Promise<Room> => {
-    return api.createAndJoinRoom(args.playerId, args.gameId, args.gameName);
+    return api.createAndJoinRoom(
+      args.playerId,
+      args.gameId,
+      args.gameName,
+      args.persistTruthGlobalStateData
+    );
   }
 );
 

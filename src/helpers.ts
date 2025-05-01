@@ -5,33 +5,25 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 
-import { ChatMessage, SenderType } from './store/slices/game';
+import { ChatMessage } from './store/slices/game';
 import { GameStateData } from './game/basketball/solution';
 import axios from 'axios';
-import { localStorageGet, SESSION_ID } from './store/local-storage';
+import { IStage } from './components/discussion-stage-builder/types';
+import { DiscussionStage } from './components/discussion-stage-builder/types';
+import { isDiscussionStage } from './components/discussion-stage-builder/types';
+
+export const SIMULTAION_VIEWED_KEY = 'viewed-simulation';
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function equals<T>(val1: T, val2: T): boolean {
   return JSON.stringify(val1) === JSON.stringify(val2);
 }
 
-export function chatLogToString(chatLog: ChatMessage[], userId?: string) {
+export function chatLogToString(chatLog: ChatMessage[]) {
   let chatLogString = '';
-  const sessionId = localStorageGet(SESSION_ID);
-  // Filter by sessionId if exists, also filter by userId if exists
-  const sessionChatLog = chatLog.filter((msg) => {
-    if (sessionId && msg.sessionId !== sessionId) {
-      return false;
-    }
-    return true;
-  });
-  const userChatLog = sessionChatLog.filter((msg) => {
-    if (msg.sender === SenderType.PLAYER && userId && msg.senderId !== userId) {
-      return false;
-    }
-    return true;
-  });
-  for (let i = 0; i < userChatLog.length; i++) {
-    const msg = userChatLog[i];
+
+  for (let i = 0; i < chatLog.length; i++) {
+    const msg = chatLog[i];
     chatLogString += `${msg.senderName || msg.sender}: ${msg.message}\n`;
   }
   return chatLogString;
@@ -104,4 +96,11 @@ export function didGameStateDataChange(
   newGameStateData: GameStateData
 ): boolean {
   return JSON.stringify(prevGameStateData) !== JSON.stringify(newGameStateData);
+}
+
+export function getFirstStepId(stage: IStage): string {
+  if (isDiscussionStage(stage)) {
+    return (stage as DiscussionStage).flowsList[0].steps[0].stepId;
+  }
+  return stage.clientId;
 }

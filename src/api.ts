@@ -237,6 +237,7 @@ export const fullRoomQueryData = `
     globalStateData {
       curStageId
       curStepId
+      roomOwnerId
       gameStateData {
         key
         value
@@ -409,13 +410,14 @@ export async function fetchRoom(roomId: string): Promise<Room> {
 export async function createAndJoinRoom(
   playerId: string,
   gameId: string,
-  gameName: string
+  gameName: string,
+  persistTruthGlobalStateData: string[]
 ): Promise<Room> {
   const data = await execGql<Room>(
     {
       query: `
-        mutation CreateAndJoinRoom($playerId: String!, $gameId: String!, $gameName: String!) {
-          createAndJoinRoom(playerId: $playerId, gameId: $gameId, gameName: $gameName) {
+        mutation CreateAndJoinRoom($playerId: String!, $gameId: String!, $gameName: String!, $persistTruthGlobalStateData: [String]) {
+          createAndJoinRoom(playerId: $playerId, gameId: $gameId, gameName: $gameName, persistTruthGlobalStateData: $persistTruthGlobalStateData) {
             ${fullRoomQueryData}
           }
         }`,
@@ -423,6 +425,7 @@ export async function createAndJoinRoom(
         playerId,
         gameId,
         gameName,
+        persistTruthGlobalStateData,
       },
     },
     {
