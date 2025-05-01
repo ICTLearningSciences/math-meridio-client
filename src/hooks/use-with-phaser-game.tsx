@@ -80,6 +80,9 @@ export function useWithPhaserGame(
       phaserGame.destroy(false);
       setGame(undefined);
       setPhaserGame(undefined);
+      setScene(undefined);
+      setController(undefined);
+      EventSystem.removeAllListeners();
     }
     if (
       gameContainerRef.current &&
