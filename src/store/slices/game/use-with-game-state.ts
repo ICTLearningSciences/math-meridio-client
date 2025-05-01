@@ -67,6 +67,7 @@ export function useWithGame() {
   const [lastPlayers, setLastPlayers] = React.useState<Player[]>();
   const [gameStateHandler, setGameStateHandler] =
     React.useState<GameStateHandler>();
+  const chatLog = useAppSelector((state) => state.gameData.room?.gameData.chat);
   // console.log("room", room?.gameData.globalStateData.curStageId, room?.gameData.globalStateData.curStepId)
   React.useEffect(() => {
     if (!room || equals(lastChatLog, room.gameData.chat)) return;
@@ -240,6 +241,12 @@ export function useWithGame() {
   function _sendMessage(msg: ChatMessage) {
     if (!player || !room) return;
     if (msg.sender === SenderType.SYSTEM && !msg.message) return;
+    if (
+      msg.sender === SenderType.SYSTEM &&
+      msg.message === chatLog?.[chatLog.length - 1]?.message
+    ) {
+      return;
+    }
     if (
       msg.sender === SenderType.SYSTEM &&
       room.gameData.globalStateData.roomOwnerId !== player.clientId

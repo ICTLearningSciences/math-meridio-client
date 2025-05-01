@@ -9,7 +9,6 @@ import { AiServicesResponseTypes } from '../ai-services/ai-service-types';
 import {
   DiscussionStage,
   DiscussionStageStep,
-  DiscussionStageStepType,
   isDiscussionStage,
   IStage,
 } from '../components/discussion-stage-builder/types';
@@ -281,12 +280,7 @@ export abstract class GameStateHandler implements Subscriber {
   returnToStage(): void {
     const curStage = this.getCurrentStage();
     const curStep = this.getCurrentDiscussionStageStep();
-    if (
-      curStage &&
-      curStep &&
-      isDiscussionStage(curStage.stage) &&
-      curStep.stepType !== DiscussionStageStepType.REQUEST_USER_INPUT
-    ) {
+    if (curStage && curStep && isDiscussionStage(curStage.stage)) {
       console.log('returning to step', curStep);
       this.discussionStageHandler.onDiscussionFinished =
         curStage.onStageFinished;
