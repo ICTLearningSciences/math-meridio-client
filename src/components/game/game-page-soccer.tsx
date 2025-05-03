@@ -4,9 +4,10 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
+  Box,
   Button,
   Card,
   CircularProgress,
@@ -25,6 +26,7 @@ import { useWithGame } from '../../store/slices/game/use-with-game-state';
 import { GameStateHandler } from '../../classes/game-state-handler';
 import withAuthorizationOnly from '../../wrap-with-authorization-only';
 import SoccerGame from '../../game/soccer/SimulationScene';
+import { checkProfanity } from '../../../src/classes/discussion-stage-handler'; // adjust path if needed
 
 function ProblemSpace(props: {
   game: Game;
@@ -384,7 +386,7 @@ function Timer({ secondsLeft }: { secondsLeft: number }): JSX.Element {
   return (
     <>
       <Typography
-        variant="h3"
+        variant="h4"
         fontWeight="bold"
         textAlign="center"
         color={isCritical ? 'error' : 'textPrimary'}
@@ -398,81 +400,17 @@ function Timer({ secondsLeft }: { secondsLeft: number }): JSX.Element {
   );
 }
 
-function DirectionControls({
-  leftVotes,
-  rightVotes,
-  onVote,
-  disabled,
-}: {
-  leftVotes: number;
-  rightVotes: number;
-  onVote: (direction: 'left' | 'right') => void;
-  disabled: boolean;
-}) {
-  return (
-    <Stack
-      direction="row"
-      spacing={4}
-      justifyContent="center"
-      alignItems="center"
-      sx={{
-        backgroundColor: 'white',
-        p: 2,
-        borderRadius: 2,
-        width: '100%',
-        height: '70%',
-      }}
-    >
-      {/* Left Vote */}
-      <Stack alignItems="center">
-        <Typography variant="h4" fontWeight="bold">
-          {leftVotes}
-        </Typography>
-        <Button
-          variant="outlined"
-          disabled={disabled}
-          onClick={() => onVote('left')}
-          sx={{
-            width: 80,
-            height: 80,
-            borderRadius: 3,
-            borderWidth: 5,
-            borderColor: !disabled ? 'error.main' : 'grey.500',
-            color: !disabled ? 'error.main' : 'grey.500',
-            fontSize: 40,
-          }}
-        >
-          ←
-        </Button>
-      </Stack>
-
-      {/* Right Vote */}
-      <Stack alignItems="center">
-        <Typography variant="h4" fontWeight="bold">
-          {rightVotes}
-        </Typography>
-        <Button
-          variant="outlined"
-          disabled={disabled}
-          onClick={() => onVote('right')}
-          sx={{
-            width: 80,
-            height: 80,
-            borderRadius: 3,
-            borderWidth: 5,
-            borderColor: !disabled ? 'error.main' : 'grey.500',
-            color: !disabled ? 'error.main' : 'grey.500',
-            fontSize: 40,
-          }}
-        >
-          →
-        </Button>
-      </Stack>
-    </Stack>
-  );
-}
 
 function GamePage(): JSX.Element {
+  type PlayerState = {
+    name: string;
+    strategy: string;
+    currentIndex: number;
+    waiting: boolean;
+  };
+  
+  const [playerStates, setPlayerStates] = useState<PlayerState[]>([]);  
+  
   const { room, simulation } = useAppSelector((state) => state.gameData);
   const { game, gameStateHandler, launchGame, responsePending } = useWithGame();
   const navigate = useNavigate();
@@ -480,7 +418,7 @@ function GamePage(): JSX.Element {
   const [leftVotes, setLeftVotes] = React.useState(0);
   const [rightVotes, setRightVotes] = React.useState(0);
   const [voteCount, setVoteCount] = React.useState(0);
-  const [secondsLeft, setSecondsLeft] = React.useState(15);
+  const [secondsLeft, setSecondsLeft] = React.useState(5);
   const [simulationEndedCount, setSimulationEndedCount] = React.useState(0);
   const [goalHistories, setGoalHistories] = React.useState<
     Record<string, ('Score' | 'Saved')[]>
@@ -511,6 +449,72 @@ function GamePage(): JSX.Element {
   });
 
   const hasInitializedRef = React.useRef(false);
+  
+  const [userStrategyInput, setUserStrategyInput] = useState<string | undefined>(undefined);
+  const [currentVoteIndex, setCurrentVoteIndex] = useState(0);
+
+  const handleEngagementDetection = async () => {
+    if (!userStrategyInput) {
+      alert('No input to analyze.');
+      return;
+    }
+  
+    // Example logic: treat low length or repetitive input as disengaged (placeholder logic)
+    const engaged = userStrategyInput.length > 5 && /[LR]/i.test(userStrategyInput);
+    alert(`Engagement Detection Result: ${engaged ? 'Engaged' : 'Not Engaged'}`);
+  };
+  
+  const handleSwearDetection = async () => {
+    if (!userStrategyInput) {
+      alert('No input to analyze.');
+      return;
+    }
+  
+    const containsSwear = await checkProfanity(userStrategyInput);
+    alert(`Swear Detection Result: ${containsSwear ? 'Profanity Detected' : 'Clean'}`);
+  };  
+
+  useEffect(() => {
+    if (gameStateHandler?.players?.length && !hasInitializedRef.current && userStrategyInput) {
+      const initialScoreData = gameStateHandler.players.map((player) => ({
+        name: player.name,
+        shots: [],
+        score: 0,
+        leftVotes: 0,
+        rightVotes: 0,
+        leftGoals: 0,
+        rightGoals: 0,
+      }));
+      setScoreData(initialScoreData);
+  
+      const initialPlayerStates = gameStateHandler.players.map((p) => ({
+        name: p.name,
+        strategy: userStrategyInput,
+        currentIndex: 0,
+        waiting: false,
+      }));
+      setPlayerStates(initialPlayerStates);
+  
+      setCumulativeShotData({
+        totalShots: gameStateHandler.players.length * 10,
+        leftShots: 0,
+        rightShots: 0,
+      });
+  
+      hasInitializedRef.current = true;
+    }
+  }, [gameStateHandler, userStrategyInput]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const input = gameStateHandler?.globalStateData?.gameStateData?.find(
+        (d) => d.key === 'User Strategy Input'
+      )?.value;
+      setUserStrategyInput(input);
+    }, 1000); 
+
+    return () => clearInterval(interval);
+  }, [gameStateHandler]);
 
   useEffect(() => {
     if (gameStateHandler?.players?.length && !hasInitializedRef.current) {
@@ -547,7 +551,9 @@ function GamePage(): JSX.Element {
 
     const direction = data.kickLeft ? 'left' : 'right';
     const outcome: 'Score' | 'Saved' = data.totalPoints > 0 ? 'Score' : 'Saved';
-    const playerIndex = parseInt(data.player, 10) - 1;
+    const playerIndex = gameStateHandler.players.findIndex(
+      (p) => p.name === currentUserName
+    );    
 
     setScoreData((prev) => {
       const updated = [...prev];
@@ -588,6 +594,11 @@ function GamePage(): JSX.Element {
       };
     });
 
+    setCurrentVoteIndex(prev => prev + 1);
+    if (userStrategyInput && currentVoteIndex + 1 < userStrategyInput.length) {
+      setSecondsLeft(5);
+    }    
+
     setSimulationEndedCount((prev) => prev + 1);
   };
 
@@ -604,10 +615,11 @@ function GamePage(): JSX.Element {
 
       setTimeout(() => {
         // Reset everything for next round
+        setUserStrategyInput(undefined);
         setLeftVotes(0);
         setRightVotes(0);
         setVoteCount(0);
-        setSecondsLeft(15);
+        setSecondsLeft(5);
         setShowSimulation(false);
         setUserVotes([]);
         setSimulationEndedCount(0);
@@ -616,30 +628,52 @@ function GamePage(): JSX.Element {
   }, [simulationEndedCount, voteCount]);
 
   // countdown timer
-  React.useEffect(() => {
-    if (secondsLeft <= 0) return;
+  useEffect(() => {
+    if (
+      secondsLeft <= 0 ||
+      !userStrategyInput || 
+      currentVoteIndex >= userStrategyInput.length 
+    ) {
+      return;
+    }
+  
     const interval = setInterval(() => {
       setSecondsLeft((prev) => prev - 1);
     }, 1000);
+  
     return () => clearInterval(interval);
-  }, [secondsLeft]);
-
-  // show simulation after time ends
-  React.useEffect(() => {
-    if (secondsLeft === 0) {
-      setShowSimulation(true);
+  }, [secondsLeft, userStrategyInput, currentVoteIndex]); 
+  
+  useEffect(() => {
+    if (userStrategyInput && secondsLeft === 0 && currentVoteIndex === 0) {
+      setSecondsLeft(5); 
     }
-  }, [secondsLeft]);
+  }, [userStrategyInput]);
 
-  const handleVote = (direction: 'left' | 'right') => {
-    if (voteCount >= 4 || secondsLeft <= 0) return;
+  React.useEffect(() => {
+    if (
+      secondsLeft === 0 &&
+      userStrategyInput &&
+      currentVoteIndex < userStrategyInput.length
+    ) {
+      setShowSimulation(true);
+      triggerNextSimulations();
+    }
+  }, [secondsLeft, userStrategyInput, currentVoteIndex]);  
 
+  const handleVote = () => {
+    if (!userStrategyInput || currentVoteIndex >= userStrategyInput.length) return;
+  
+    const rawDirection = userStrategyInput[currentVoteIndex];
+    const direction = rawDirection === 'L' ? 'left' : 'right';
+  
     const mockUserNames = ['Logan', 'Charlie', 'Brian', 'Adam'];
     const userName = mockUserNames[voteCount]; // assign unique name per vote
+  
+    const newVote: { name: string; direction: 'left' | 'right' } = { name: userName, direction };
 
-    const newVote = { name: userName, direction };
     setUserVotes((prev) => [...prev, newVote]);
-
+  
     if (direction === 'left') {
       setLeftVotes((prev) => prev + 1);
       setCumulativeShotData((prev) => ({
@@ -653,10 +687,61 @@ function GamePage(): JSX.Element {
         rightShots: prev.rightShots + 1,
       }));
     }
-
+  
     setVoteCount((prev) => prev + 1);
-  };
+    setCurrentVoteIndex((prev) => prev + 1); // move to next input
+  };  
+  
+  const triggerNextSimulations = () => {
+    setPlayerStates((prevStates) =>
+      prevStates.map((player) => {
+        if (player.waiting || player.currentIndex >= player.strategy.length) return player;
+  
+        const direction: 'left' | 'right' =
+          player.strategy[player.currentIndex] === 'L' ? 'left' : 'right';
+  
+        const newVote = { name: player.name, direction };
+        setUserVotes((prev) => [...prev, newVote]);
+  
+        if (direction === 'left') {
+          setLeftVotes((v) => v + 1);
+          setCumulativeShotData((prev) => ({ ...prev, leftShots: prev.leftShots + 1 }));
+        } else {
+          setRightVotes((v) => v + 1);
+          setCumulativeShotData((prev) => ({ ...prev, rightShots: prev.rightShots + 1 }));
+        }
+  
+        // Set cooldown for this player
+        setTimeout(() => {
+          setPlayerStates((players) =>
+            players.map((p) =>
+              p.name === player.name ? { ...p, waiting: false } : p
+            )
+          );
+          triggerNextSimulations(); // try again after cooldown
+        }, 2000);
+  
+        return {
+          ...player,
+          currentIndex: player.currentIndex + 1,
+          waiting: true,
+        };
+      })
+    );
+  };  
 
+  const currentUserName =
+  useAppSelector((state) => state.playerData.player?.name) ||
+  localStorage.getItem('username') ||
+  'Player';
+
+  useEffect(() => {
+    if (secondsLeft === 0 && userStrategyInput && currentVoteIndex < userStrategyInput.length) {
+      const direction = userStrategyInput[currentVoteIndex] === 'L' ? 'left' : 'right';
+      setUserVotes([{ name: currentUserName, direction }]);
+    }
+  }, [secondsLeft, userStrategyInput, currentVoteIndex, gameStateHandler, currentUserName]);
+  
   if (!game || !gameStateHandler) {
     return (
       <div className="root center-div">
@@ -684,6 +769,25 @@ function GamePage(): JSX.Element {
               <ProblemSpace game={game} controller={gameStateHandler} />
             </div>
 
+            <Card sx={{ p: 2, mr: 1.2, ml: 1.2, mb: 1, bgcolor: 'rgba(255,255,255,0.95)' }}>
+              <Box display="flex" alignItems="center" justifyContent="space-between">
+                <Box>
+                  <Typography fontWeight="bold">User Strategy Input:</Typography>
+                  <Typography>{userStrategyInput || 'No input provided yet.'}</Typography>
+                </Box>
+
+                <Box display="flex" gap={1}>
+                  <Button variant="outlined" onClick={handleEngagementDetection}>
+                    ENGAGEMENT DETECT
+                  </Button>
+                  <Button variant="outlined" onClick={handleSwearDetection}>
+                    SWEAR DETECTION
+                  </Button>
+                </Box>
+              </Box>
+            </Card>
+
+
             <div style={{ flex: 'none', marginLeft: 10, marginRight: 42 }}>
               <Card
                 sx={{
@@ -694,15 +798,15 @@ function GamePage(): JSX.Element {
                 }}
               >
                 <Typography fontWeight="bold" sx={{ mb: 1 }}>
-                  Vote Area
+                  Countdown
                 </Typography>
                 <Timer secondsLeft={secondsLeft} />
-                <DirectionControls
+                {/* <DirectionControls
                   leftVotes={leftVotes}
                   rightVotes={rightVotes}
                   onVote={handleVote}
                   disabled={secondsLeft <= 0 || voteCount >= 4}
-                />
+                /> */}
               </Card>
             </div>
 
@@ -734,7 +838,7 @@ function GamePage(): JSX.Element {
                 goalHistories={goalHistories}
               />
             ) : (
-              <Card sx={{ flex: 1, m: 2, p: 2 }}>
+              <Card sx={{ flex: 1, m: 1.2, p: 2 }}>
                 Waiting for simulation...
               </Card>
             )}

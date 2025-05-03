@@ -54,7 +54,7 @@ import { Player } from '../store/slices/player';
  * @param message - The message to be checked.
  * @returns A promise that resolves to true if profanity is detected.
  */
-async function checkProfanity(message: string): Promise<boolean> {
+export async function checkProfanity(message: string): Promise<boolean> {
   const prompt = `Check if the following text contains any profanity or offensive language. Answer with a single word: 'Yes' if it does, and 'No' if it does not.
 
 Text: "${message}"
