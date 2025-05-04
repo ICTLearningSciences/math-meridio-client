@@ -228,5 +228,6 @@ export function useWithGame() {
     sendMessage: _sendMessage,
     updateRoomGameData: _updateRoomGameData,
     responsePending,
+    lastChatLog,
   };
 }
