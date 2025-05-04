@@ -4,7 +4,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -144,6 +144,11 @@ function SolutionSpace(
 
   const remainingShots = 10 - totalShots;
 
+  const currentUserName =
+    useAppSelector((state) => state.playerData.player?.name) ||
+    localStorage.getItem('username') ||
+    'Player';
+
   return (
     <Card
       className="scroll box"
@@ -175,7 +180,7 @@ function SolutionSpace(
           justifyContent: 'space-between',
         }}
       >
-        {remainingShots === 0 ? (
+        {totalShots % 10 === 0 && totalShots != 0 ? (
           <>
             <Card
               sx={{
@@ -212,7 +217,7 @@ function SolutionSpace(
                       fontWeight: 'bold',
                     }}
                   >
-                    Player: {scoreData[0]?.name ?? 'Player'}
+                    Player: {currentUserName}
                   </th>
                   <th
                     style={{
@@ -322,7 +327,7 @@ function SolutionSpace(
           <>
             <Card sx={{ p: 2, mb: 1, bgcolor: 'rgba(255,255,255,0.9)' }}>
               <Typography align="center" fontWeight="bold">
-                Total Shots Taken: {totalShots}, Remaining: {remainingShots}
+                Total Shots Taken: {totalShots}
               </Typography>
             </Card>
 
@@ -609,7 +614,8 @@ function GamePage(): JSX.Element {
   const [playerStates, setPlayerStates] = useState<PlayerState[]>([]);
 
   const { room, simulation } = useAppSelector((state) => state.gameData);
-  const { game, gameStateHandler, launchGame, responsePending } = useWithGame();
+  const { game, gameStateHandler, launchGame, responsePending, lastChatLog } =
+    useWithGame();
   const navigate = useNavigate();
 
   const [leftVotes, setLeftVotes] = React.useState(0);
@@ -652,31 +658,56 @@ function GamePage(): JSX.Element {
   >(undefined);
   const [currentVoteIndex, setCurrentVoteIndex] = useState(0);
 
+  const lastCheckedIdRef = useRef<string | null>(null); // to store the last checked message ID
+  const lastPlayerMsgTimeRef = useRef<number | null>(null);
+
+  // grab the whole chat log – adjust the selector if your slice name differs
+  const [allUserInput, setAllUserInput] = useState<string>('');
+
   const handleEngagementDetection = async () => {
-    if (!userStrategyInput) {
-      alert('No input to analyze.');
+    const lastTime = lastPlayerMsgTimeRef.current;
+
+    if (!lastTime) {
+      alert('No player messages yet → Not engaged.');
       return;
     }
 
-    const engaged =
-      userStrategyInput.length > 5 && /[LR]/i.test(userStrategyInput);
-    alert(
-      `Engagement Detection Result: ${engaged ? 'Engaged' : 'Not Engaged'}`
-    );
+    const diffMs = Date.now() - lastTime;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffSecs = Math.floor((diffMs % 60000) / 1000)
+      .toString()
+      .padStart(2, '0');
+
+    if (diffMs >= 5 * 60 * 1000) {
+      alert(`Not engaged. Last message was ${diffMins} m ${diffSecs}s ago.`);
+    } else {
+      alert(`Engaged. last message was ${diffMins} m ${diffSecs}s ago.`);
+    }
   };
 
+  const [profanityCount, setProfanityCount] = useState(0);
+
   const handleSwearDetection = async () => {
-    if (!userStrategyInput) {
-      alert('No input to analyze.');
+    if (!lastChatLog.length) {
+      alert('No chat messages to analyze.');
       return;
     }
+    const lastMsg = lastChatLog[lastChatLog.length - 1];
 
-    const containsSwear = await checkProfanity(userStrategyInput);
-    alert(
-      `Swear Detection Result: ${
-        containsSwear ? 'Profanity Detected' : 'Clean'
-      }`
-    );
+    // Check if the last message is new
+    if (lastMsg.id !== lastCheckedIdRef.current) {
+      const isProfane = await checkProfanity(lastMsg.message);
+
+      let newCount = profanityCount;
+      if (isProfane) {
+        newCount = profanityCount + 1;
+        setProfanityCount(newCount);
+      }
+
+      lastCheckedIdRef.current = lastMsg.id;
+      alert(`Profanity count: ${newCount}`);
+      return;
+    }
   };
 
   useEffect(() => {
@@ -694,7 +725,6 @@ function GamePage(): JSX.Element {
         leftGoals: 0,
         rightGoals: 0,
       }));
-      setScoreData(initialScoreData);
 
       const initialPlayerStates = gameStateHandler.players.map((p) => ({
         name: p.name,
@@ -713,6 +743,51 @@ function GamePage(): JSX.Element {
       hasInitializedRef.current = true;
     }
   }, [gameStateHandler, userStrategyInput]);
+
+  const prevUserStrategyRef = React.useRef<string | undefined>(undefined);
+
+  function cleanupSimulations() {
+    gameStateHandler?.players?.forEach((player) => {
+      const containerId = `phaser-container-${player.name}`;
+      const instanceKey = `phaserInstance-${containerId}`;
+      const existingInstance = (window as any)[instanceKey];
+      if (existingInstance) {
+        existingInstance.destroy(true);
+        delete (window as any)[instanceKey];
+      }
+    });
+  }
+
+  useEffect(() => {
+    const prev = prevUserStrategyRef.current;
+    const curr = userStrategyInput;
+
+    const isValidStrategy = curr && /^[LR]+$/.test(curr);
+
+    // 只有从空到有效的 strategy 时才触发初始化
+    if (!prev && isValidStrategy) {
+      console.log('Detected new user strategy. Resetting for new simulation.');
+
+      // 清除旧状态并准备新一轮
+      hasInitializedRef.current = false;
+      setPlayerStates([]);
+      setCumulativeShotData({ totalShots: 0, leftShots: 0, rightShots: 0 });
+      setCurrentVoteIndex(0);
+      setSimulationEndedCount(0);
+      cleanupSimulations();
+      setUserVotes([]);
+      setGoalHistories({});
+      setLeftVotes(0);
+      setRightVotes(0);
+      setVoteCount(0);
+      setShowSimulation(false);
+      setSecondsLeft(3); // 重置计时器
+
+      // 会触发上面另一个 useEffect 的初始化逻辑
+    }
+
+    prevUserStrategyRef.current = curr;
+  }, [userStrategyInput]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -973,6 +1048,15 @@ function GamePage(): JSX.Element {
     currentUserName,
   ]);
 
+  useEffect(() => {
+    if (!lastChatLog?.length) return;
+
+    const lastMsg = lastChatLog[lastChatLog.length - 1];
+    if (lastMsg.sender === 'PLAYER') {
+      lastPlayerMsgTimeRef.current = Date.now();
+    }
+  }, [lastChatLog]);
+
   if (!game || !gameStateHandler) {
     return (
       <div className="root center-div">
@@ -1031,7 +1115,7 @@ function GamePage(): JSX.Element {
                     ENGAGEMENT DETECT
                   </Button>
                   <Button variant="outlined" onClick={handleSwearDetection}>
-                    SWEAR DETECTION
+                    SWEAR DETECT
                   </Button>
                 </Box>
               </Box>

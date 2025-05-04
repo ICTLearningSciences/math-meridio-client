@@ -13,6 +13,7 @@ import boy1Img from './assets/boy1.png';
 import boy2Img from './assets/boy2.png';
 import boy3Img from './assets/boy3.png';
 import boy4Img from './assets/boy4.png';
+import GoalieAI from './goalieAI';
 
 interface PlayerData {
   id: number;
@@ -34,6 +35,7 @@ class SoccerGame extends Phaser.Scene {
   avatar: string;
   name: string;
   goalHistory: ('Score' | 'Saved')[] = [];
+  goalieAI: GoalieAI;
 
   constructor(
     config: Phaser.Types.Scenes.SettingsConfig & {
@@ -52,6 +54,7 @@ class SoccerGame extends Phaser.Scene {
     this.avatar = config.avatar;
     this.name = config.name;
     this.goalHistory = config.goalHistory || [];
+    this.goalieAI = new GoalieAI();
   }
 
   preload() {
@@ -97,7 +100,7 @@ class SoccerGame extends Phaser.Scene {
   shootBall(direction: 'left' | 'right') {
     const targetX = direction === 'left' ? 90 : 160;
     let targetY = 60;
-    const keeperDirection = Math.random() < 0.5 ? 'left' : 'right';
+    const keeperDirection = this.goalieAI.getDiveDecision();
     const keeperMove = keeperDirection === 'left' ? 90 : 160;
     targetY = keeperDirection !== direction ? 60 : 100;
 
@@ -121,7 +124,9 @@ class SoccerGame extends Phaser.Scene {
         ease: 'Linear',
       });
 
-      const result = keeperDirection !== direction ? 'Score' : 'Saved';
+      const scoreProb = this.goalieAI.payoffMatrix[direction][keeperDirection];
+      const result = Math.random() < scoreProb ? 'Score' : 'Saved';
+
       this.resultText?.setText(result);
 
       this.goalHistory.push(result);
@@ -131,6 +136,12 @@ class SoccerGame extends Phaser.Scene {
         .map((r) => (r === 'Score' ? '●' : '○'))
         .join(' ');
       this.historyText?.setText(dots);
+
+      this.goalieAI.recordKick(
+        direction,
+        result === 'Score' ? 'goal' : 'saved'
+      );
+      this.goalieAI.updateStrategy();
 
       EventSystem.emit('simulationEnded', {
         player: String(this.playerId),

@@ -30,6 +30,7 @@ export interface CurrentStage {
 
 const introductionDiscussionStage = '1543bf48-01c4-4b1c-93cf-db1e4dcf56b7';
 const selectStrategyDiscussionStage = '33a9f65d-92e6-441f-b512-1d4f2a53876b';
+const respondToFeedbackDiscussionStage = '4440db13-f5d4-4e48-be7f-bb869f68a055';
 
 export class SoccerStateHandler extends GameStateHandler {
   currentStage: CurrentStage | undefined;
@@ -64,6 +65,14 @@ export class SoccerStateHandler extends GameStateHandler {
       throw new Error('missing stage');
     }
 
+    const feedbackResponseStage = this.stages.find(
+      (s) => s.clientId === respondToFeedbackDiscussionStage
+    );
+
+    if (!feedbackResponseStage) {
+      throw new Error('missing feedback response stage');
+    }
+
     this.stageList = [
       {
         id: 'intro-discussion',
@@ -79,9 +88,7 @@ export class SoccerStateHandler extends GameStateHandler {
         id: 'select-strategy',
         stage: strategyStage,
         onStageFinished: (data) => {
-          console.log('✅ Received data from user:', data);
           const input = data['user_kicking_seq'];
-          console.log('✅ Received seq from user:', input);
           if (input) {
             this.updateRoomGameData({
               globalStateData: {
@@ -97,6 +104,35 @@ export class SoccerStateHandler extends GameStateHandler {
               ],
             });
           }
+          this.currentStage = this.stageList.find(
+            (s) => s.id === 'respond-feedback'
+          );
+          this.handleCurrentStage();
+        },
+      },
+      {
+        id: 'respond-feedback',
+        stage: feedbackResponseStage,
+        onStageFinished: (data) => {
+          // Loop back to Stage 2
+          this.currentStage = this.stageList.find(
+            (s) => s.id === 'select-strategy'
+          );
+          // this.initializeGame();
+          this.updateRoomGameData({
+            globalStateData: {
+              ...this.globalStateData,
+              gameStateData: [{ key: 'User Strategy Input', value: '' }],
+            },
+            playerStateData: [
+              {
+                player: this.player.clientId,
+                animation: '',
+                gameStateData: [{ key: 'User Strategy Input', value: '' }],
+              },
+            ],
+          });
+          this.handleCurrentStage();
         },
       },
     ];
@@ -125,7 +161,7 @@ export class SoccerStateHandler extends GameStateHandler {
   }
 
   initializeGame() {
-    // 🔥 Step 1: Clear old strategy input before starting
+    // Step 1: Clear old strategy input before starting
     this.updateRoomGameData({
       globalStateData: {
         ...this.globalStateData,
@@ -140,7 +176,7 @@ export class SoccerStateHandler extends GameStateHandler {
       ],
     });
 
-    // 🔥 Step 2: Begin the first discussion stage
+    // Step 2: Begin the first discussion stage
     if (!this.currentStage) return;
     this.handleCurrentStage();
   }
@@ -176,7 +212,7 @@ const SoccerGame: Game = {
   showProblem: (controller: GameStateHandler) => {
     return <ProblemComponent controller={controller} />;
   },
-  showSolution: () => <></>, // ✅ Avoid `null` in JSX returns
+  showSolution: () => <></>, // Avoid `null` in JSX returns
   showSimulation: () => <></>,
   showResult: () => <></>,
   createController: (args: GameStateHandlerArgs) =>
