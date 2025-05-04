@@ -50,7 +50,7 @@ function ProblemSpace(props: {
   );
 }
 
-function SolutionSpace(props: {
+function SolutionSpace(this: any, props: {
   game: Game;
   controller: GameStateHandler;
   scoreData: {
@@ -70,6 +70,38 @@ function SolutionSpace(props: {
     kickRight_goalieLeft: [] as number[],
     kickRight_goalieRight: [] as number[],
   };
+
+  const matrixCounts = {
+    kickLeft_goalieLeft: { total: 0, scored: 0 },
+    kickLeft_goalieRight: { total: 0, scored: 0 },
+    kickRight_goalieLeft: { total: 0, scored: 0 },
+    kickRight_goalieRight: { total: 0, scored: 0 },
+  };
+
+  for (const player of scoreData) {
+    for (const shot of player.shots) {
+      const { direction, outcome } = shot;
+      let goalieDived: 'left' | 'right';
+  
+      if (outcome === 'Saved') {
+        goalieDived = direction; // goalie guessed correctly
+      } else {
+        goalieDived = direction === 'left' ? 'right' : 'left';
+      }
+  
+      const key = `kick${direction.charAt(0).toUpperCase() + direction.slice(1)}_goalie${goalieDived.charAt(0).toUpperCase() + goalieDived.slice(1)}` as keyof typeof matrixCounts;
+      matrixCounts[key].total += 1;
+      if (outcome === 'Score') {
+        matrixCounts[key].scored += 1;
+      }
+    }
+  }  
+
+  function getPercentage({ total, scored }: { total: number; scored: number }) {
+    if (total === 0) return 'N/A';
+    const percent = Math.round((scored / total) * 100);
+    return `${percent}% Goal`;
+  }
 
   for (const player of scoreData) {
     for (const shot of player.shots) {
@@ -103,6 +135,8 @@ function SolutionSpace(props: {
     : 0;
   const leftPercent = totalShots ? 100 - rightPercent : 0;
 
+  const remainingShots = 10 - totalShots;
+
   return (
     <Card
       className="scroll box"
@@ -125,7 +159,8 @@ function SolutionSpace(props: {
           backgroundImage: `url(${courtBg})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          height: 250,
+          minHeight: 250,
+          height: 'auto',
           borderRadius: 5,
           padding: 20,
           display: 'flex',
@@ -133,61 +168,200 @@ function SolutionSpace(props: {
           justifyContent: 'space-between',
         }}
       >
-        <Card sx={{ p: 2, mb: 0, bgcolor: 'rgba(255,255,255,0.9)' }}>
-          <Typography align="center" fontWeight="bold">
-            Total Shots Taken: {totalShots}, Remaining: {10 - totalShots}
-          </Typography>
-        </Card>
-
-        <Grid container spacing={2}>
-          <Grid item xs={4}>
-            <Card
-              sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.9)', height: '48px' }}
+        {remainingShots === 0 ? (
+          <>
+          <Card
+            sx={{
+              mt: 1,
+              bgcolor: 'rgba(255,255,255,0.95)',
+              padding: 2,
+              border: '2px solid green',
+            }}
+          >
+            <Typography align="center" fontWeight="bold" color="green">
+              Here is your payoff matrix for the current round!
+            </Typography>
+          </Card>
+          <table
+          style={{
+            margin: '0 auto',
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            borderCollapse: 'collapse',
+            width: '80%',
+            fontFamily: 'Arial, sans-serif',
+            fontSize: 16,
+            boxShadow: '0 0 5px rgba(0,0,0,0.3)',
+            border: '2px solid #000',
+          }}
+        >
+        <thead>
+          <tr>
+          <th
+              style={{
+                padding: 8,
+                border: '1px solid black',
+                backgroundColor: '#f0f0f0',
+                textAlign: 'left',
+                fontWeight: 'bold',
+              }}
             >
-              <Typography align="center" fontWeight="bold">
-                {rightPercent}% Right
-              </Typography>
-            </Card>
-          </Grid>
-          <Grid item xs={4}>
-            <Card sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.9)' }}>
-              <Typography align="center" fontWeight="bold">
-                Score(Kick→, Goalie←): {getAvg(scores.kickRight_goalieLeft)}
-              </Typography>
-            </Card>
-          </Grid>
-          <Grid item xs={4}>
-            <Card sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.9)' }}>
-              <Typography align="center" fontWeight="bold">
-                Score(Kick→, Goalie→): {getAvg(scores.kickRight_goalieRight)}
-              </Typography>
-            </Card>
-          </Grid>
-
-          <Grid item xs={4}>
-            <Card
-              sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.9)', height: '48px' }}
+              Player: {scoreData[0]?.name ?? 'Player'}
+            </th>
+            <th
+              style={{
+                padding: 8,
+                border: '1px solid black',
+                backgroundColor: '#f0f0f0',
+                fontWeight: 'bold',
+              }}
             >
+              Goalie Dives to<br />Kicker’s Left
+            </th>
+            <th
+              style={{
+                padding: 8,
+                border: '1px solid black',
+                backgroundColor: '#f0f0f0',
+                fontWeight: 'bold',
+              }}
+            >
+              Goalie Dives<br />Kicker’s Right
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style={{ padding: 8, border: '1px solid black', fontWeight: 'bold' }}>
+              Kick Left (L)
+            </td>
+            <td
+              style={{
+                padding: 8,
+                border: '1px solid black',
+                color:
+                  matrixCounts.kickLeft_goalieLeft.total === 0
+                    ? 'darkred'
+                    : 'green',
+              }}
+            >
+              {getPercentage(matrixCounts.kickLeft_goalieLeft)}
+            </td>
+            <td
+              style={{
+                padding: 8,
+                border: '1px solid black',
+                color:
+                  matrixCounts.kickLeft_goalieRight.total === 0
+                    ? 'darkred'
+                    : 'green',
+              }}
+            >
+              {getPercentage(matrixCounts.kickLeft_goalieRight)}
+            </td>
+          </tr>
+          <tr>
+            <td style={{ padding: 8, border: '1px solid black', fontWeight: 'bold' }}>
+              Kick Right (R)
+            </td>
+            <td
+              style={{
+                padding: 8,
+                border: '1px solid black',
+                color:
+                  matrixCounts.kickRight_goalieLeft.total === 0
+                    ? 'darkred'
+                    : 'green',
+              }}
+            >
+              {getPercentage(matrixCounts.kickRight_goalieLeft)}
+            </td>
+            <td
+              style={{
+                padding: 8,
+                border: '1px solid black',
+                color:
+                  matrixCounts.kickRight_goalieRight.total === 0
+                    ? 'darkred'
+                    : matrixCounts.kickRight_goalieRight.scored /
+                        matrixCounts.kickRight_goalieRight.total >
+                      0.5
+                    ? 'green'
+                    : 'orange',
+              }}
+            >
+              {getPercentage(matrixCounts.kickRight_goalieRight)}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      </>
+        ) : (
+          <>
+            <Card sx={{ p: 2, mb: 1, bgcolor: 'rgba(255,255,255,0.9)' }}>
               <Typography align="center" fontWeight="bold">
-                {leftPercent}% Left
+                Total Shots Taken: {totalShots}, Remaining: {remainingShots}
               </Typography>
             </Card>
-          </Grid>
-          <Grid item xs={4}>
-            <Card sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.9)' }}>
-              <Typography align="center" fontWeight="bold">
-                Score(Kick←, Goalie←): {getAvg(scores.kickLeft_goalieLeft)}
-              </Typography>
-            </Card>
-          </Grid>
-          <Grid item xs={4}>
-            <Card sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.9)' }}>
-              <Typography align="center" fontWeight="bold">
-                Score(Kick←, Goalie→): {getAvg(scores.kickLeft_goalieRight)}
-              </Typography>
-            </Card>
-          </Grid>
-        </Grid>
+
+            <Grid container spacing={2}>
+              <Grid item xs={4}>
+                <Card
+                  sx={{
+                    p: 2,
+                    bgcolor: 'rgba(255,255,255,0.9)',
+                    height: '48px',
+                  }}
+                >
+                  <Typography align="center" fontWeight="bold">
+                    {rightPercent}% Right
+                  </Typography>
+                </Card>
+              </Grid>
+              <Grid item xs={4}>
+                <Card sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.9)' }}>
+                  <Typography align="center" fontWeight="bold">
+                    Score(Kick→, Goalie←): {getAvg(scores.kickRight_goalieLeft)}
+                  </Typography>
+                </Card>
+              </Grid>
+              <Grid item xs={4}>
+                <Card sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.9)' }}>
+                  <Typography align="center" fontWeight="bold">
+                    Score(Kick→, Goalie→): {getAvg(scores.kickRight_goalieRight)}
+                  </Typography>
+                </Card>
+              </Grid>
+
+              <Grid item xs={4}>
+                <Card
+                  sx={{
+                    p: 2,
+                    bgcolor: 'rgba(255,255,255,0.9)',
+                    height: '48px',
+                  }}
+                >
+                  <Typography align="center" fontWeight="bold">
+                    {leftPercent}% Left
+                  </Typography>
+                </Card>
+              </Grid>
+              <Grid item xs={4}>
+                <Card sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.9)' }}>
+                  <Typography align="center" fontWeight="bold">
+                    Score(Kick←, Goalie←): {getAvg(scores.kickLeft_goalieLeft)}
+                  </Typography>
+                </Card>
+              </Grid>
+              <Grid item xs={4}>
+                <Card sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.9)' }}>
+                  <Typography align="center" fontWeight="bold">
+                    Score(Kick←, Goalie→): {getAvg(scores.kickLeft_goalieRight)}
+                  </Typography>
+                </Card>
+              </Grid>
+            </Grid>
+          </>
+        )}
       </div>
     </Card>
   );
@@ -381,7 +555,7 @@ function ResultsSpace(props: {
 
 function Timer({ secondsLeft }: { secondsLeft: number }): JSX.Element {
   const displaySeconds = String(secondsLeft % 60).padStart(2, '0');
-  const isCritical = secondsLeft <= 5;
+  const isCritical = secondsLeft <= 3;
 
   return (
     <>
@@ -418,7 +592,7 @@ function GamePage(): JSX.Element {
   const [leftVotes, setLeftVotes] = React.useState(0);
   const [rightVotes, setRightVotes] = React.useState(0);
   const [voteCount, setVoteCount] = React.useState(0);
-  const [secondsLeft, setSecondsLeft] = React.useState(5);
+  const [secondsLeft, setSecondsLeft] = React.useState(3);
   const [simulationEndedCount, setSimulationEndedCount] = React.useState(0);
   const [goalHistories, setGoalHistories] = React.useState<
     Record<string, ('Score' | 'Saved')[]>
@@ -459,7 +633,6 @@ function GamePage(): JSX.Element {
       return;
     }
   
-    // Example logic: treat low length or repetitive input as disengaged (placeholder logic)
     const engaged = userStrategyInput.length > 5 && /[LR]/i.test(userStrategyInput);
     alert(`Engagement Detection Result: ${engaged ? 'Engaged' : 'Not Engaged'}`);
   };
@@ -596,7 +769,7 @@ function GamePage(): JSX.Element {
 
     setCurrentVoteIndex(prev => prev + 1);
     if (userStrategyInput && currentVoteIndex + 1 < userStrategyInput.length) {
-      setSecondsLeft(5);
+      setSecondsLeft(3);
     }    
 
     setSimulationEndedCount((prev) => prev + 1);
@@ -619,7 +792,7 @@ function GamePage(): JSX.Element {
         setLeftVotes(0);
         setRightVotes(0);
         setVoteCount(0);
-        setSecondsLeft(5);
+        setSecondsLeft(3);
         setShowSimulation(false);
         setUserVotes([]);
         setSimulationEndedCount(0);
@@ -646,7 +819,7 @@ function GamePage(): JSX.Element {
   
   useEffect(() => {
     if (userStrategyInput && secondsLeft === 0 && currentVoteIndex === 0) {
-      setSecondsLeft(5); 
+      setSecondsLeft(3); 
     }
   }, [userStrategyInput]);
 
@@ -769,7 +942,7 @@ function GamePage(): JSX.Element {
               <ProblemSpace game={game} controller={gameStateHandler} />
             </div>
 
-            <Card sx={{ p: 2, mr: 1.2, ml: 1.2, mb: 1, bgcolor: 'rgba(255,255,255,0.95)' }}>
+            <Card sx={{ p: 2,mr: 1.2, ml: 1.2, mb: 1, bgcolor: 'rgba(255,255,255,0.95)' }}>
               <Box display="flex" alignItems="center" justifyContent="space-between">
                 <Box>
                   <Typography fontWeight="bold">User Strategy Input:</Typography>
