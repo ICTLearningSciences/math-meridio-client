@@ -70,9 +70,9 @@ Answer:`;
         Authorization: `Bearer ${process.env.REACT_APP_OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-3.5-turbo',
         messages: [{ role: 'user', content: prompt }],
-        max_tokens: 50,
+        max_tokens: 5,
         temperature: 0,
       }),
     });

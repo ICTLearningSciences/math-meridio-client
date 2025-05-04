@@ -609,7 +609,7 @@ function GamePage(): JSX.Element {
   const [playerStates, setPlayerStates] = useState<PlayerState[]>([]);
 
   const { room, simulation } = useAppSelector((state) => state.gameData);
-  const { game, gameStateHandler, launchGame, responsePending, lastChatLog} = useWithGame();
+  const { game, gameStateHandler, launchGame, responsePending } = useWithGame();
   const navigate = useNavigate();
 
   const [leftVotes, setLeftVotes] = React.useState(0);
@@ -626,9 +626,6 @@ function GamePage(): JSX.Element {
   >([]);
 
   const [showSimulation, setShowSimulation] = React.useState(false);
-
-  // 1) new local state to gate the stats‐table
-  const [showStats, setShowStats] = useState(false);
 
   const [scoreData, setScoreData] = React.useState<
     {
@@ -976,20 +973,6 @@ function GamePage(): JSX.Element {
     currentUserName,
   ]);
 
-  // 2) when the user’s last message “asks” for stats, turn showStats on
-  useEffect(() => {
-    if (lastChatLog.length === 0) return;
-    const last = lastChatLog[lastChatLog.length - 1];
-    if (last.sender !== 'PLAYER') return;
-
-    // ✅ trigger words: stats, statistics, matrix (or payoff), table, 2x2
-    const statsRegex = /\b(stats|statistics|matrix|payoff|table|2x2|summary)\b/i;
-
-    if (statsRegex.test(last.message)) {
-      setShowStats(true);
-    }
-  }, [lastChatLog]);
-
   if (!game || !gameStateHandler) {
     return (
       <div className="root center-div">
@@ -1076,18 +1059,11 @@ function GamePage(): JSX.Element {
               </Card>
             </div>
 
-            {/* <SolutionSpace
+            <SolutionSpace
               game={game}
               controller={gameStateHandler}
               scoreData={scoreData}
-            /> */}
-            {showStats && (
-              <SolutionSpace
-                game={game}
-                controller={gameStateHandler}
-                scoreData={scoreData}
-              />
-            )}
+            />
           </div>
         </Grid>
 
