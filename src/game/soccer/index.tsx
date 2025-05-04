@@ -1,3 +1,9 @@
+/*
+This software is Copyright ©️ 2020 The University of Southern California. All Rights Reserved. 
+Permission to use, copy, modify, and distribute this software and its documentation for educational, research and non-profit purposes, without fee, and without a written agreement is hereby granted, provided that the above copyright notice and subject to the full license file found in the root of this software deliverable. Permission to make commercial use of this software may be obtained by contacting:  USC Stevens Center for Innovation University of Southern California 1150 S. Olive Street, Suite 2300, Los Angeles, CA 90115, USA Email: accounting@stevens.usc.edu
+
+The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
+*/
 import React from 'react';
 import {
   CollectedDiscussionData,
@@ -27,7 +33,7 @@ const selectStrategyDiscussionStage = '33a9f65d-92e6-441f-b512-1d4f2a53876b';
 
 export class SoccerStateHandler extends GameStateHandler {
   currentStage: CurrentStage | undefined;
-  currentStepId: string | undefined = undefined; 
+  currentStepId: string | undefined = undefined;
   discussionStageHandler: DiscussionStageHandler;
   stageList: CurrentStage[] = [];
 
@@ -63,7 +69,9 @@ export class SoccerStateHandler extends GameStateHandler {
         id: 'intro-discussion',
         stage: introDiscussionStage,
         onStageFinished: () => {
-          this.currentStage = this.stageList.find((s) => s.id === 'select-strategy');
+          this.currentStage = this.stageList.find(
+            (s) => s.id === 'select-strategy'
+          );
           this.handleCurrentStage();
         },
       },
@@ -90,7 +98,7 @@ export class SoccerStateHandler extends GameStateHandler {
             });
           }
         },
-      }      
+      },
     ];
 
     this.currentStage = this.stageList[0];
@@ -103,13 +111,16 @@ export class SoccerStateHandler extends GameStateHandler {
       this.discussionStageHandler.setCurrentDiscussion(
         this.currentStage.stage as DiscussionStage
       );
-      this.discussionStageHandler.onDiscussionFinished = this.currentStage.onStageFinished;
+      this.discussionStageHandler.onDiscussionFinished =
+        this.currentStage.onStageFinished;
       if (this.currentStage.beforeStart) {
         this.currentStage.beforeStart();
       }
       this.discussionStageHandler.initializeActivity();
     } else {
-      throw new Error(`Unhandled stage type: ${this.currentStage.stage.stageType}`);
+      throw new Error(
+        `Unhandled stage type: ${this.currentStage.stage.stageType}`
+      );
     }
   }
 
@@ -128,11 +139,11 @@ export class SoccerStateHandler extends GameStateHandler {
         },
       ],
     });
-  
+
     // 🔥 Step 2: Begin the first discussion stage
     if (!this.currentStage) return;
     this.handleCurrentStage();
-  }  
+  }
 
   simulationEnded(): void {
     // ✅ Implement abstract method (even if unused)
@@ -165,10 +176,11 @@ const SoccerGame: Game = {
   showProblem: (controller: GameStateHandler) => {
     return <ProblemComponent controller={controller} />;
   },
-  showSolution: () => <></>,        // ✅ Avoid `null` in JSX returns
+  showSolution: () => <></>, // ✅ Avoid `null` in JSX returns
   showSimulation: () => <></>,
   showResult: () => <></>,
-  createController: (args: GameStateHandlerArgs) => new SoccerStateHandler(args),
+  createController: (args: GameStateHandlerArgs) =>
+    new SoccerStateHandler(args),
 };
 
 export default SoccerGame;

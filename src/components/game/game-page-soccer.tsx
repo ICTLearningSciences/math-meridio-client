@@ -50,14 +50,17 @@ function ProblemSpace(props: {
   );
 }
 
-function SolutionSpace(this: any, props: {
-  game: Game;
-  controller: GameStateHandler;
-  scoreData: {
-    name: string;
-    shots: { direction: 'left' | 'right'; outcome: 'Score' | 'Saved' }[];
-  }[];
-}) {
+function SolutionSpace(
+  this: any,
+  props: {
+    game: Game;
+    controller: GameStateHandler;
+    scoreData: {
+      name: string;
+      shots: { direction: 'left' | 'right'; outcome: 'Score' | 'Saved' }[];
+    }[];
+  }
+) {
   const { scoreData } = props;
 
   let totalShots = 0;
@@ -82,20 +85,24 @@ function SolutionSpace(this: any, props: {
     for (const shot of player.shots) {
       const { direction, outcome } = shot;
       let goalieDived: 'left' | 'right';
-  
+
       if (outcome === 'Saved') {
         goalieDived = direction; // goalie guessed correctly
       } else {
         goalieDived = direction === 'left' ? 'right' : 'left';
       }
-  
-      const key = `kick${direction.charAt(0).toUpperCase() + direction.slice(1)}_goalie${goalieDived.charAt(0).toUpperCase() + goalieDived.slice(1)}` as keyof typeof matrixCounts;
+
+      const key = `kick${
+        direction.charAt(0).toUpperCase() + direction.slice(1)
+      }_goalie${
+        goalieDived.charAt(0).toUpperCase() + goalieDived.slice(1)
+      }` as keyof typeof matrixCounts;
       matrixCounts[key].total += 1;
       if (outcome === 'Score') {
         matrixCounts[key].scored += 1;
       }
     }
-  }  
+  }
 
   function getPercentage({ total, scored }: { total: number; scored: number }) {
     if (total === 0) return 'N/A';
@@ -170,131 +177,147 @@ function SolutionSpace(this: any, props: {
       >
         {remainingShots === 0 ? (
           <>
-          <Card
-            sx={{
-              mt: 1,
-              bgcolor: 'rgba(255,255,255,0.95)',
-              padding: 2,
-              border: '2px solid green',
-            }}
-          >
-            <Typography align="center" fontWeight="bold" color="green">
-              Here is your payoff matrix for the current round!
-            </Typography>
-          </Card>
-          <table
-          style={{
-            margin: '0 auto',
-            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-            borderCollapse: 'collapse',
-            width: '80%',
-            fontFamily: 'Arial, sans-serif',
-            fontSize: 16,
-            boxShadow: '0 0 5px rgba(0,0,0,0.3)',
-            border: '2px solid #000',
-          }}
-        >
-        <thead>
-          <tr>
-          <th
-              style={{
-                padding: 8,
-                border: '1px solid black',
-                backgroundColor: '#f0f0f0',
-                textAlign: 'left',
-                fontWeight: 'bold',
+            <Card
+              sx={{
+                mt: 1,
+                bgcolor: 'rgba(255,255,255,0.95)',
+                padding: 2,
+                border: '2px solid green',
               }}
             >
-              Player: {scoreData[0]?.name ?? 'Player'}
-            </th>
-            <th
+              <Typography align="center" fontWeight="bold" color="green">
+                Here is your payoff matrix for the current round!
+              </Typography>
+            </Card>
+            <table
               style={{
-                padding: 8,
-                border: '1px solid black',
-                backgroundColor: '#f0f0f0',
-                fontWeight: 'bold',
+                margin: '0 auto',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                borderCollapse: 'collapse',
+                width: '80%',
+                fontFamily: 'Arial, sans-serif',
+                fontSize: 16,
+                boxShadow: '0 0 5px rgba(0,0,0,0.3)',
+                border: '2px solid #000',
               }}
             >
-              Goalie Dives to<br />Kicker’s Left
-            </th>
-            <th
-              style={{
-                padding: 8,
-                border: '1px solid black',
-                backgroundColor: '#f0f0f0',
-                fontWeight: 'bold',
-              }}
-            >
-              Goalie Dives<br />Kicker’s Right
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td style={{ padding: 8, border: '1px solid black', fontWeight: 'bold' }}>
-              Kick Left (L)
-            </td>
-            <td
-              style={{
-                padding: 8,
-                border: '1px solid black',
-                color:
-                  matrixCounts.kickLeft_goalieLeft.total === 0
-                    ? 'darkred'
-                    : 'green',
-              }}
-            >
-              {getPercentage(matrixCounts.kickLeft_goalieLeft)}
-            </td>
-            <td
-              style={{
-                padding: 8,
-                border: '1px solid black',
-                color:
-                  matrixCounts.kickLeft_goalieRight.total === 0
-                    ? 'darkred'
-                    : 'green',
-              }}
-            >
-              {getPercentage(matrixCounts.kickLeft_goalieRight)}
-            </td>
-          </tr>
-          <tr>
-            <td style={{ padding: 8, border: '1px solid black', fontWeight: 'bold' }}>
-              Kick Right (R)
-            </td>
-            <td
-              style={{
-                padding: 8,
-                border: '1px solid black',
-                color:
-                  matrixCounts.kickRight_goalieLeft.total === 0
-                    ? 'darkred'
-                    : 'green',
-              }}
-            >
-              {getPercentage(matrixCounts.kickRight_goalieLeft)}
-            </td>
-            <td
-              style={{
-                padding: 8,
-                border: '1px solid black',
-                color:
-                  matrixCounts.kickRight_goalieRight.total === 0
-                    ? 'darkred'
-                    : matrixCounts.kickRight_goalieRight.scored /
-                        matrixCounts.kickRight_goalieRight.total >
-                      0.5
-                    ? 'green'
-                    : 'orange',
-              }}
-            >
-              {getPercentage(matrixCounts.kickRight_goalieRight)}
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      </>
+              <thead>
+                <tr>
+                  <th
+                    style={{
+                      padding: 8,
+                      border: '1px solid black',
+                      backgroundColor: '#f0f0f0',
+                      textAlign: 'left',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    Player: {scoreData[0]?.name ?? 'Player'}
+                  </th>
+                  <th
+                    style={{
+                      padding: 8,
+                      border: '1px solid black',
+                      backgroundColor: '#f0f0f0',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    Goalie Dives to
+                    <br />
+                    Kicker’s Left
+                  </th>
+                  <th
+                    style={{
+                      padding: 8,
+                      border: '1px solid black',
+                      backgroundColor: '#f0f0f0',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    Goalie Dives
+                    <br />
+                    Kicker’s Right
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td
+                    style={{
+                      padding: 8,
+                      border: '1px solid black',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    Kick Left (L)
+                  </td>
+                  <td
+                    style={{
+                      padding: 8,
+                      border: '1px solid black',
+                      color:
+                        matrixCounts.kickLeft_goalieLeft.total === 0
+                          ? 'darkred'
+                          : 'green',
+                    }}
+                  >
+                    {getPercentage(matrixCounts.kickLeft_goalieLeft)}
+                  </td>
+                  <td
+                    style={{
+                      padding: 8,
+                      border: '1px solid black',
+                      color:
+                        matrixCounts.kickLeft_goalieRight.total === 0
+                          ? 'darkred'
+                          : 'green',
+                    }}
+                  >
+                    {getPercentage(matrixCounts.kickLeft_goalieRight)}
+                  </td>
+                </tr>
+                <tr>
+                  <td
+                    style={{
+                      padding: 8,
+                      border: '1px solid black',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    Kick Right (R)
+                  </td>
+                  <td
+                    style={{
+                      padding: 8,
+                      border: '1px solid black',
+                      color:
+                        matrixCounts.kickRight_goalieLeft.total === 0
+                          ? 'darkred'
+                          : 'green',
+                    }}
+                  >
+                    {getPercentage(matrixCounts.kickRight_goalieLeft)}
+                  </td>
+                  <td
+                    style={{
+                      padding: 8,
+                      border: '1px solid black',
+                      color:
+                        matrixCounts.kickRight_goalieRight.total === 0
+                          ? 'darkred'
+                          : matrixCounts.kickRight_goalieRight.scored /
+                              matrixCounts.kickRight_goalieRight.total >
+                            0.5
+                          ? 'green'
+                          : 'orange',
+                    }}
+                  >
+                    {getPercentage(matrixCounts.kickRight_goalieRight)}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </>
         ) : (
           <>
             <Card sx={{ p: 2, mb: 1, bgcolor: 'rgba(255,255,255,0.9)' }}>
@@ -327,7 +350,8 @@ function SolutionSpace(this: any, props: {
               <Grid item xs={4}>
                 <Card sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.9)' }}>
                   <Typography align="center" fontWeight="bold">
-                    Score(Kick→, Goalie→): {getAvg(scores.kickRight_goalieRight)}
+                    Score(Kick→, Goalie→):{' '}
+                    {getAvg(scores.kickRight_goalieRight)}
                   </Typography>
                 </Card>
               </Grid>
@@ -574,7 +598,6 @@ function Timer({ secondsLeft }: { secondsLeft: number }): JSX.Element {
   );
 }
 
-
 function GamePage(): JSX.Element {
   type PlayerState = {
     name: string;
@@ -582,9 +605,9 @@ function GamePage(): JSX.Element {
     currentIndex: number;
     waiting: boolean;
   };
-  
-  const [playerStates, setPlayerStates] = useState<PlayerState[]>([]);  
-  
+
+  const [playerStates, setPlayerStates] = useState<PlayerState[]>([]);
+
   const { room, simulation } = useAppSelector((state) => state.gameData);
   const { game, gameStateHandler, launchGame, responsePending } = useWithGame();
   const navigate = useNavigate();
@@ -623,8 +646,10 @@ function GamePage(): JSX.Element {
   });
 
   const hasInitializedRef = React.useRef(false);
-  
-  const [userStrategyInput, setUserStrategyInput] = useState<string | undefined>(undefined);
+
+  const [userStrategyInput, setUserStrategyInput] = useState<
+    string | undefined
+  >(undefined);
   const [currentVoteIndex, setCurrentVoteIndex] = useState(0);
 
   const handleEngagementDetection = async () => {
@@ -632,23 +657,34 @@ function GamePage(): JSX.Element {
       alert('No input to analyze.');
       return;
     }
-  
-    const engaged = userStrategyInput.length > 5 && /[LR]/i.test(userStrategyInput);
-    alert(`Engagement Detection Result: ${engaged ? 'Engaged' : 'Not Engaged'}`);
+
+    const engaged =
+      userStrategyInput.length > 5 && /[LR]/i.test(userStrategyInput);
+    alert(
+      `Engagement Detection Result: ${engaged ? 'Engaged' : 'Not Engaged'}`
+    );
   };
-  
+
   const handleSwearDetection = async () => {
     if (!userStrategyInput) {
       alert('No input to analyze.');
       return;
     }
-  
+
     const containsSwear = await checkProfanity(userStrategyInput);
-    alert(`Swear Detection Result: ${containsSwear ? 'Profanity Detected' : 'Clean'}`);
-  };  
+    alert(
+      `Swear Detection Result: ${
+        containsSwear ? 'Profanity Detected' : 'Clean'
+      }`
+    );
+  };
 
   useEffect(() => {
-    if (gameStateHandler?.players?.length && !hasInitializedRef.current && userStrategyInput) {
+    if (
+      gameStateHandler?.players?.length &&
+      !hasInitializedRef.current &&
+      userStrategyInput
+    ) {
       const initialScoreData = gameStateHandler.players.map((player) => ({
         name: player.name,
         shots: [],
@@ -659,7 +695,7 @@ function GamePage(): JSX.Element {
         rightGoals: 0,
       }));
       setScoreData(initialScoreData);
-  
+
       const initialPlayerStates = gameStateHandler.players.map((p) => ({
         name: p.name,
         strategy: userStrategyInput,
@@ -667,13 +703,13 @@ function GamePage(): JSX.Element {
         waiting: false,
       }));
       setPlayerStates(initialPlayerStates);
-  
+
       setCumulativeShotData({
         totalShots: gameStateHandler.players.length * 10,
         leftShots: 0,
         rightShots: 0,
       });
-  
+
       hasInitializedRef.current = true;
     }
   }, [gameStateHandler, userStrategyInput]);
@@ -684,7 +720,7 @@ function GamePage(): JSX.Element {
         (d) => d.key === 'User Strategy Input'
       )?.value;
       setUserStrategyInput(input);
-    }, 1000); 
+    }, 1000);
 
     return () => clearInterval(interval);
   }, [gameStateHandler]);
@@ -726,7 +762,7 @@ function GamePage(): JSX.Element {
     const outcome: 'Score' | 'Saved' = data.totalPoints > 0 ? 'Score' : 'Saved';
     const playerIndex = gameStateHandler.players.findIndex(
       (p) => p.name === currentUserName
-    );    
+    );
 
     setScoreData((prev) => {
       const updated = [...prev];
@@ -767,10 +803,10 @@ function GamePage(): JSX.Element {
       };
     });
 
-    setCurrentVoteIndex(prev => prev + 1);
+    setCurrentVoteIndex((prev) => prev + 1);
     if (userStrategyInput && currentVoteIndex + 1 < userStrategyInput.length) {
       setSecondsLeft(3);
-    }    
+    }
 
     setSimulationEndedCount((prev) => prev + 1);
   };
@@ -804,22 +840,22 @@ function GamePage(): JSX.Element {
   useEffect(() => {
     if (
       secondsLeft <= 0 ||
-      !userStrategyInput || 
-      currentVoteIndex >= userStrategyInput.length 
+      !userStrategyInput ||
+      currentVoteIndex >= userStrategyInput.length
     ) {
       return;
     }
-  
+
     const interval = setInterval(() => {
       setSecondsLeft((prev) => prev - 1);
     }, 1000);
-  
+
     return () => clearInterval(interval);
-  }, [secondsLeft, userStrategyInput, currentVoteIndex]); 
-  
+  }, [secondsLeft, userStrategyInput, currentVoteIndex]);
+
   useEffect(() => {
     if (userStrategyInput && secondsLeft === 0 && currentVoteIndex === 0) {
-      setSecondsLeft(3); 
+      setSecondsLeft(3);
     }
   }, [userStrategyInput]);
 
@@ -832,21 +868,25 @@ function GamePage(): JSX.Element {
       setShowSimulation(true);
       triggerNextSimulations();
     }
-  }, [secondsLeft, userStrategyInput, currentVoteIndex]);  
+  }, [secondsLeft, userStrategyInput, currentVoteIndex]);
 
   const handleVote = () => {
-    if (!userStrategyInput || currentVoteIndex >= userStrategyInput.length) return;
-  
+    if (!userStrategyInput || currentVoteIndex >= userStrategyInput.length)
+      return;
+
     const rawDirection = userStrategyInput[currentVoteIndex];
     const direction = rawDirection === 'L' ? 'left' : 'right';
-  
+
     const mockUserNames = ['Logan', 'Charlie', 'Brian', 'Adam'];
     const userName = mockUserNames[voteCount]; // assign unique name per vote
-  
-    const newVote: { name: string; direction: 'left' | 'right' } = { name: userName, direction };
+
+    const newVote: { name: string; direction: 'left' | 'right' } = {
+      name: userName,
+      direction,
+    };
 
     setUserVotes((prev) => [...prev, newVote]);
-  
+
     if (direction === 'left') {
       setLeftVotes((prev) => prev + 1);
       setCumulativeShotData((prev) => ({
@@ -860,30 +900,37 @@ function GamePage(): JSX.Element {
         rightShots: prev.rightShots + 1,
       }));
     }
-  
+
     setVoteCount((prev) => prev + 1);
     setCurrentVoteIndex((prev) => prev + 1); // move to next input
-  };  
-  
+  };
+
   const triggerNextSimulations = () => {
     setPlayerStates((prevStates) =>
       prevStates.map((player) => {
-        if (player.waiting || player.currentIndex >= player.strategy.length) return player;
-  
+        if (player.waiting || player.currentIndex >= player.strategy.length)
+          return player;
+
         const direction: 'left' | 'right' =
           player.strategy[player.currentIndex] === 'L' ? 'left' : 'right';
-  
+
         const newVote = { name: player.name, direction };
         setUserVotes((prev) => [...prev, newVote]);
-  
+
         if (direction === 'left') {
           setLeftVotes((v) => v + 1);
-          setCumulativeShotData((prev) => ({ ...prev, leftShots: prev.leftShots + 1 }));
+          setCumulativeShotData((prev) => ({
+            ...prev,
+            leftShots: prev.leftShots + 1,
+          }));
         } else {
           setRightVotes((v) => v + 1);
-          setCumulativeShotData((prev) => ({ ...prev, rightShots: prev.rightShots + 1 }));
+          setCumulativeShotData((prev) => ({
+            ...prev,
+            rightShots: prev.rightShots + 1,
+          }));
         }
-  
+
         // Set cooldown for this player
         setTimeout(() => {
           setPlayerStates((players) =>
@@ -893,7 +940,7 @@ function GamePage(): JSX.Element {
           );
           triggerNextSimulations(); // try again after cooldown
         }, 2000);
-  
+
         return {
           ...player,
           currentIndex: player.currentIndex + 1,
@@ -901,20 +948,31 @@ function GamePage(): JSX.Element {
         };
       })
     );
-  };  
+  };
 
   const currentUserName =
-  useAppSelector((state) => state.playerData.player?.name) ||
-  localStorage.getItem('username') ||
-  'Player';
+    useAppSelector((state) => state.playerData.player?.name) ||
+    localStorage.getItem('username') ||
+    'Player';
 
   useEffect(() => {
-    if (secondsLeft === 0 && userStrategyInput && currentVoteIndex < userStrategyInput.length) {
-      const direction = userStrategyInput[currentVoteIndex] === 'L' ? 'left' : 'right';
+    if (
+      secondsLeft === 0 &&
+      userStrategyInput &&
+      currentVoteIndex < userStrategyInput.length
+    ) {
+      const direction =
+        userStrategyInput[currentVoteIndex] === 'L' ? 'left' : 'right';
       setUserVotes([{ name: currentUserName, direction }]);
     }
-  }, [secondsLeft, userStrategyInput, currentVoteIndex, gameStateHandler, currentUserName]);
-  
+  }, [
+    secondsLeft,
+    userStrategyInput,
+    currentVoteIndex,
+    gameStateHandler,
+    currentUserName,
+  ]);
+
   if (!game || !gameStateHandler) {
     return (
       <div className="root center-div">
@@ -942,15 +1000,34 @@ function GamePage(): JSX.Element {
               <ProblemSpace game={game} controller={gameStateHandler} />
             </div>
 
-            <Card sx={{ p: 2,mr: 1.2, ml: 1.2, mb: 1, bgcolor: 'rgba(255,255,255,0.95)' }}>
-              <Box display="flex" alignItems="center" justifyContent="space-between">
+            <Card
+              sx={{
+                p: 2,
+                mr: 1.2,
+                ml: 1.2,
+                mb: 1,
+                bgcolor: 'rgba(255,255,255,0.95)',
+              }}
+            >
+              <Box
+                display="flex"
+                alignItems="center"
+                justifyContent="space-between"
+              >
                 <Box>
-                  <Typography fontWeight="bold">User Strategy Input:</Typography>
-                  <Typography>{userStrategyInput || 'No input provided yet.'}</Typography>
+                  <Typography fontWeight="bold">
+                    User Strategy Input:
+                  </Typography>
+                  <Typography>
+                    {userStrategyInput || 'No input provided yet.'}
+                  </Typography>
                 </Box>
 
                 <Box display="flex" gap={1}>
-                  <Button variant="outlined" onClick={handleEngagementDetection}>
+                  <Button
+                    variant="outlined"
+                    onClick={handleEngagementDetection}
+                  >
                     ENGAGEMENT DETECT
                   </Button>
                   <Button variant="outlined" onClick={handleSwearDetection}>
@@ -959,7 +1036,6 @@ function GamePage(): JSX.Element {
                 </Box>
               </Box>
             </Card>
-
 
             <div style={{ flex: 'none', marginLeft: 10, marginRight: 42 }}>
               <Card
