@@ -47,10 +47,10 @@ export class SoccerStateHandler extends GameStateHandler {
       args.sendMessage,
       args.setResponsePending,
       args.executePrompt,
-      this.updateRoomStageStepId,
-      undefined, // onDiscussionFinished
+      this.updateRoomStageStepId.bind(this),
+      undefined,
       this.newPlayerStateData.bind(this),
-      undefined  // exitEarlyCondition
+      undefined
     );
     
     this.initializeGame = this.initializeGame.bind(this);
