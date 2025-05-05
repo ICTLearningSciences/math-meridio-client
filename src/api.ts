@@ -118,16 +118,6 @@ export async function asyncLlmRequestStatus(
           axiosConfig: { cancelToken: cancelToken },
         }
       );
-<<<<<<< HEAD
-    } catch (e: any) {
-      console.error('Error during job status polling:', e.message);
-      throw e;
-    }
-
-    // Log the JSON response to the console for debugging.
-    console.log('Full AI Service Response:', JSON.stringify(res, null, 2));
-
-=======
     } catch (e) {
       console.error(
         'Error during job status polling:',
@@ -136,7 +126,6 @@ export async function asyncLlmRequestStatus(
       throw e;
     }
 
->>>>>>> main
     // Wait 2 seconds before polling again if the job is still in progress.
     if (res.jobStatus === 'IN_PROGRESS') {
       await new Promise((resolve) => setTimeout(resolve, 2000));

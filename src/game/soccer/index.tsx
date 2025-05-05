@@ -19,6 +19,8 @@ import {
 } from '../../components/discussion-stage-builder/types';
 import { ProblemComponent } from './problem';
 import SimulationScene from './SimulationScene';
+import { PlayerStateData } from '../../store/slices/game';
+import { SIMULTAION_VIEWED_KEY } from '../../helpers';
 
 export interface CurrentStage {
   id: string;
@@ -34,30 +36,30 @@ const respondToFeedbackDiscussionStage = '4440db13-f5d4-4e48-be7f-bb869f68a055';
 
 export class SoccerStateHandler extends GameStateHandler {
   currentStage: CurrentStage | undefined;
-  currentStepId: string | undefined = undefined;
   discussionStageHandler: DiscussionStageHandler;
-  stageList: CurrentStage[] = [];
 
   constructor(args: GameStateHandlerArgs) {
     super({ ...args, defaultStageId: introductionDiscussionStage });
 
     this.discussionStageHandler = new DiscussionStageHandler(
+      this.player.clientId,
+      this.globalStateData,
       args.sendMessage,
       args.setResponsePending,
       args.executePrompt,
-      undefined,
-      undefined,
-      this.newPlayerStateData.bind(this)
+      this.updateRoomStageStepId,
+      undefined, // onDiscussionFinished
+      this.newPlayerStateData.bind(this),
+      undefined  // exitEarlyCondition
     );
-
-    this.handleCurrentStage = this.handleCurrentStage.bind(this);
+    
     this.initializeGame = this.initializeGame.bind(this);
     this.simulationEnded = this.simulationEnded.bind(this);
 
-    const introDiscussionStage = this.stages.find(
+    const introDiscussionStage = this.dbDiscussionStages.find(
       (s) => s.clientId === introductionDiscussionStage
     );
-    const strategyStage = this.stages.find(
+    const strategyStage = this.dbDiscussionStages.find(
       (s) => s.clientId === selectStrategyDiscussionStage
     );
 
@@ -65,7 +67,7 @@ export class SoccerStateHandler extends GameStateHandler {
       throw new Error('missing stage');
     }
 
-    const feedbackResponseStage = this.stages.find(
+    const feedbackResponseStage = this.dbDiscussionStages.find(
       (s) => s.clientId === respondToFeedbackDiscussionStage
     );
 
@@ -78,10 +80,7 @@ export class SoccerStateHandler extends GameStateHandler {
         id: 'intro-discussion',
         stage: introDiscussionStage,
         onStageFinished: () => {
-          this.currentStage = this.stageList.find(
-            (s) => s.id === 'select-strategy'
-          );
-          this.handleCurrentStage();
+          this.updateStageByStageListId('select-strategy');
         },
       },
       {
@@ -104,10 +103,7 @@ export class SoccerStateHandler extends GameStateHandler {
               ],
             });
           }
-          this.currentStage = this.stageList.find(
-            (s) => s.id === 'respond-feedback'
-          );
-          this.handleCurrentStage();
+          this.updateStageByStageListId('respond-feedback');
         },
       },
       {
@@ -115,9 +111,6 @@ export class SoccerStateHandler extends GameStateHandler {
         stage: feedbackResponseStage,
         onStageFinished: (data) => {
           // Loop back to Stage 2
-          this.currentStage = this.stageList.find(
-            (s) => s.id === 'select-strategy'
-          );
           // this.initializeGame();
           this.updateRoomGameData({
             globalStateData: {
@@ -132,61 +125,38 @@ export class SoccerStateHandler extends GameStateHandler {
               },
             ],
           });
-          this.handleCurrentStage();
+          this.updateStageByStageListId('select-strategy');
         },
       },
     ];
-
-    this.currentStage = this.stageList[0];
   }
 
-  handleCurrentStage() {
-    if (!this.currentStage) return;
-
-    if (isDiscussionStage(this.currentStage.stage)) {
-      this.discussionStageHandler.setCurrentDiscussion(
-        this.currentStage.stage as DiscussionStage
-      );
-      this.discussionStageHandler.onDiscussionFinished =
-        this.currentStage.onStageFinished;
-      if (this.currentStage.beforeStart) {
-        this.currentStage.beforeStart();
-      }
-      this.discussionStageHandler.initializeActivity();
-    } else {
-      throw new Error(
-        `Unhandled stage type: ${this.currentStage.stage.stageType}`
-      );
+  playerStateUpdated(newGameState: PlayerStateData[]): void {
+    super.playerStateUpdated(newGameState);
+    const curStage = this.getCurrentStage();
+    const anyPlayerViewedSimulation = newGameState.find((p) =>
+      p.gameStateData.find((g) => g.key === SIMULTAION_VIEWED_KEY)
+    );
+    if (
+      curStage?.stage.stageType === 'simulation' &&
+      anyPlayerViewedSimulation
+    ) {
+      this.simulationEnded();
     }
   }
 
-  initializeGame() {
-    // Step 1: Clear old strategy input before starting
-    this.updateRoomGameData({
-      globalStateData: {
-        ...this.globalStateData,
-        gameStateData: [{ key: 'User Strategy Input', value: '' }],
-      },
-      playerStateData: [
-        {
-          player: this.player.clientId,
-          animation: '',
-          gameStateData: [{ key: 'User Strategy Input', value: '' }],
-        },
-      ],
-    });
-
-    // Step 2: Begin the first discussion stage
-    if (!this.currentStage) return;
-    this.handleCurrentStage();
-  }
-
   simulationEnded(): void {
-    // ✅ Implement abstract method (even if unused)
-  }
-
-  async handleNewUserMessage(message: string) {
-    // Optionally handle user messages here
+    super.simulationEnded();
+    const curStage = this.getCurrentStage();
+    if (curStage?.stage.stageType === 'simulation') {
+      const stage = this.stageList.find(
+        (s) => s.stage?.clientId === curStage?.stage.clientId
+      );
+      if (!stage) {
+        throw new Error('missing stage');
+      }
+      stage.onStageFinished({});
+    }
   }
 }
 
@@ -215,8 +185,8 @@ const SoccerGame: Game = {
   showSolution: () => <></>, // Avoid `null` in JSX returns
   showSimulation: () => <></>,
   showResult: () => <></>,
-  createController: (args: GameStateHandlerArgs) =>
-    new SoccerStateHandler(args),
+  createController: (args: GameStateHandlerArgs) => new SoccerStateHandler(args),
+  persistTruthGlobalStateData: []
 };
 
 export default SoccerGame;
