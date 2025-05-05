@@ -207,12 +207,15 @@ export function SolutionComponent(props: {
                 (data[KICK_RIGHT_PERCENT] || 0) <=
               NUMBER_OF_SHOTS
             ) {
-              controller.newPlayerStateData([
-                {
-                  key: props.dataKey,
-                  value: value,
-                },
-              ]);
+              controller.newPlayerStateData(
+                [
+                  {
+                    key: props.dataKey,
+                    value: value,
+                  },
+                ],
+                controller.player.clientId
+              );              
             }
           }}
         />

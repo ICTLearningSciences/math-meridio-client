@@ -26,7 +26,7 @@ import { useWithGame } from '../../store/slices/game/use-with-game-state';
 import { GameStateHandler } from '../../classes/game-state-handler';
 import withAuthorizationOnly from '../../wrap-with-authorization-only';
 import SoccerGame from '../../game/soccer/SimulationScene';
-import { checkProfanity } from '../../../src/classes/discussion-stage-handler'; // adjust path if needed
+// import { checkProfanity } from '../../../src/classes/discussion-stage-handler'; // adjust path if needed
 
 function ProblemSpace(props: {
   game: Game;
@@ -696,7 +696,8 @@ function GamePage(): JSX.Element {
 
     // Check if the last message is new
     if (lastMsg.id !== lastCheckedIdRef.current) {
-      const isProfane = await checkProfanity(lastMsg.message);
+      // const isProfane = await checkProfanity(lastMsg.message);
+      const isProfane = true;
 
       let newCount = profanityCount;
       if (isProfane) {
