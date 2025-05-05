@@ -56,7 +56,7 @@ function SolutionSpace(props: {
       style={{
         overflowY: 'auto',
         flexGrow: 1,
-        margin: 10,
+        margin: 5,
         borderTopRightRadius: 20,
         borderBottomLeftRadius: 20,
       }}

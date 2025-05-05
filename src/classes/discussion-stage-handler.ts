@@ -19,6 +19,7 @@ import {
   sortMessagesByResponseWeight,
 } from '../components/discussion-stage-builder/helpers';
 import {
+  DiscussionStage,
   DiscussionStageStep,
   DiscussionStageStepType,
   PredefinedResponse,
@@ -382,6 +383,7 @@ export class DiscussionStageHandler {
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
+      console.log('DSH: error updating room with next step', err);
       this.sendErrorMessage(err.message);
       return;
     }
