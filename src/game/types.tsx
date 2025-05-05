@@ -16,6 +16,7 @@ export interface Game {
   name: string;
   problem: string;
   config: Phaser.Types.Core.GameConfig;
+  persistTruthGlobalStateData: string[];
   showProblem: (controller: GameStateHandler) => JSX.Element;
   showSolution: (controller: GameStateHandler) => JSX.Element;
   showSimulation: (

@@ -22,6 +22,8 @@ import { Mic, MicOutlined, Send } from '@mui/icons-material';
 import { useAppSelector } from '../../store/hooks';
 import { ChatMessage, SenderType } from '../../store/slices/game';
 import { useWithGame } from '../../store/slices/game/use-with-game-state';
+import { SESSION_ID } from '../../store/local-storage';
+import { localStorageGet } from '../../store/local-storage';
 
 // MODIFIED
 function containsBadWords(text: string): boolean {
@@ -114,39 +116,14 @@ export default function ChatForm(props: {
   }, [transcript]);
 
   function onSend(): void {
-    // MODIFIED
-
-    // checkProfanity(input).then((isProfane) => {
-    //   if (isProfane) {
-    //     alert("Your message contains language that is not allowed. Please revise it.");
-    //     setInput("");
-    //     return;
-    //   }
-
-    //   // If it passes the check, proceed with sending the message.
-    //   const msg: ChatMessage = {
-    //     id: uuid(),
-    //     sender: SenderType.PLAYER,
-    //     senderId: player?.clientId,
-    //     senderName: player?.name,
-    //     message: input,
-    //   };
-    //   if (props.sendMessage) {
-    //     props.sendMessage(msg);
-    //   } else {
-    //     sendMessage(msg);
-    //   }
-    //   setInput("");
-    // });
-
-    // END OF MODIFICATION
-
+    const sessionId = localStorageGet(SESSION_ID);
     const msg: ChatMessage = {
       id: uuid(),
       sender: SenderType.PLAYER,
       senderId: player?.clientId,
       senderName: player?.name,
       message: input,
+      sessionId: sessionId as string,
     };
     if (props.sendMessage) {
       props.sendMessage(msg);

@@ -7,7 +7,6 @@ The full terms of this copyright and license should always be found in the root 
 import React from 'react';
 import { DiscussionStage } from './types';
 import { Button } from '@mui/material';
-import { isStageRunnable } from './helpers';
 import { RowDiv, ColumnDiv } from '../../styled-components';
 
 export function ExistingStageItem(props: {
@@ -15,7 +14,7 @@ export function ExistingStageItem(props: {
   goToStage: () => void;
   editStage: () => void;
 }) {
-  const { stage, editStage, goToStage } = props;
+  const { stage, editStage } = props;
   return (
     <RowDiv
       style={{
@@ -26,13 +25,6 @@ export function ExistingStageItem(props: {
     >
       <h3>{stage.title}</h3>
       <RowDiv>
-        <Button
-          style={{ marginRight: 10 }}
-          disabled={!isStageRunnable(stage)}
-          onClick={goToStage}
-        >
-          Preview
-        </Button>
         <Button onClick={editStage}>Edit</Button>
       </RowDiv>
     </RowDiv>

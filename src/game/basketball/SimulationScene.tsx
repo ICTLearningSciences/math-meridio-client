@@ -15,7 +15,7 @@ import {
   OUTSIDE_SHOT_SUCCESS_VALUE,
 } from './solution';
 import { SenderType } from '../../store/slices/game';
-
+import { localStorageGet, SESSION_ID } from '../../store/local-storage';
 export interface BasketballSimulationData {
   player: string;
 
@@ -73,6 +73,7 @@ export class SimulationScene extends GameScene {
       id: '',
       sender: SenderType.SYSTEM,
       message: 'Select a strategy first to see simulation',
+      sessionId: localStorageGet(SESSION_ID) as string,
     });
     super.createScene();
   }

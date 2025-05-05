@@ -6,22 +6,26 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React, { useEffect } from 'react';
 import { StageFlowContainer } from './stage-flow-container';
-import { Button, CircularProgress, IconButton } from '@mui/material';
+import {
+  Button,
+  CircularProgress,
+  IconButton,
+  Typography,
+} from '@mui/material';
 import { InputField } from '../shared/input-components';
 import { v4 as uuidv4 } from 'uuid';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { isStageRunnable } from '../helpers';
 import { equals } from '../../../helpers';
 import { DiscussionStage, FlowItem } from '../types';
 import { ColumnDiv, RowDiv } from '../../../styled-components';
-
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 export function EditDiscussionStage(props: {
   goToStage: (stage: DiscussionStage) => void;
   stage: DiscussionStage;
   saveStage: (stage: DiscussionStage) => Promise<DiscussionStage>;
   returnTo: () => void;
 }): JSX.Element {
-  const { stage, saveStage: _saveStage, goToStage, returnTo } = props;
+  const { stage, saveStage: _saveStage, returnTo } = props;
 
   const [localStageCopy, setLocalStageCopy] = React.useState<DiscussionStage>(
     JSON.parse(JSON.stringify(stage))
@@ -99,20 +103,6 @@ export function EditDiscussionStage(props: {
           }}
         />
         <RowDiv>
-          <Button
-            style={{
-              marginRight: '10px',
-            }}
-            disabled={saveInProgress || !isStageRunnable(localStageCopy)}
-            variant="outlined"
-            onClick={async () => {
-              saveStage().then(() => {
-                goToStage(localStageCopy);
-              });
-            }}
-          >
-            Preview
-          </Button>
           {!saveInProgress ? (
             <Button
               style={{
@@ -135,6 +125,24 @@ export function EditDiscussionStage(props: {
             + Add Flow
           </Button>
         </RowDiv>
+        {/* Stage Id */}
+        <Typography
+          style={{ position: 'absolute', top: 0, right: 0 }}
+          variant="caption"
+        >
+          <b>Stage Id:</b> {stage.clientId}
+          <IconButton
+            onClick={() => {
+              navigator.clipboard.writeText(stage.clientId);
+            }}
+          >
+            <ContentCopyIcon
+              style={{
+                fontSize: '16px',
+              }}
+            />
+          </IconButton>
+        </Typography>
       </ColumnDiv>
       <StageFlowContainer
         localStage={localStageCopy}

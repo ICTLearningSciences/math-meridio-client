@@ -24,13 +24,18 @@ export function Header() {
   const { leaveRoom, renameRoom } = useWithGame();
   const navigate = useNavigate();
 
+  function homeButtonClick() {
+    leaveRoom();
+    navigate('/');
+  }
+
   return (
     <header
       className="row center-div header"
       style={{ justifyContent: 'space-between' }}
     >
       <div style={{ marginLeft: 20, width: 150 }}>
-        <IconButton onClick={() => navigate('/')}>
+        <IconButton onClick={homeButtonClick}>
           <Home style={{ color: 'white' }} />
         </IconButton>
       </div>
@@ -67,9 +72,14 @@ export function Header() {
       <div style={{ display: 'flex', width: 150, alignItems: 'center' }}>
         {pathname.startsWith('/game/') ? (
           <Button
-            variant="outlined"
+            variant="text"
             disabled={!player || !room}
-            style={{ height: 'fit-content', color: 'white', marginRight: 5 }}
+            style={{
+              height: 'fit-content',
+              color: 'white',
+              marginRight: 5,
+              padding: 0,
+            }}
             onClick={leaveRoom}
           >
             Leave Room
