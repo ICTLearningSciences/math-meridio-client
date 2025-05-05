@@ -12,93 +12,48 @@ import {
   CardActionArea,
   CardContent,
   CircularProgress,
-  Collapse,
-  IconButton,
   Typography,
 } from '@mui/material';
-import { ExpandLess, ExpandMore } from '@mui/icons-material';
 import { GAMES } from '../../game/types';
-import { Room, deleteRoom, fetchRooms } from '../../store/slices/game';
+import { deleteRoom, fetchRooms } from '../../store/slices/game';
 import { useWithGame } from '../../store/slices/game/use-with-game-state';
 import withAuthorizationOnly from '../../wrap-with-authorization-only';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { LoadStatus } from '../../types';
-
-function RoomCard(props: {
-  room: Room;
-  join: (id: string) => void;
-  delete: (id: string) => void;
-}): JSX.Element {
-  const { room } = props;
-  const [expanded, setIsExpanded] = React.useState<boolean>(false);
-  return (
-    <Card
-      className="list-item"
-      style={{
-        width: '100%',
-        boxSizing: 'border-box',
-      }}
-    >
-      <CardContent className="row" style={{ padding: 10 }}>
-        <IconButton onClick={() => setIsExpanded(!expanded)}>
-          {expanded ? <ExpandLess /> : <ExpandMore />}
-        </IconButton>
-        <div
-          className="row"
-          style={{
-            flexGrow: 1,
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <Typography style={{ flexGrow: 1 }}>{room.name}</Typography>
-          <Typography style={{ marginRight: 10 }}>
-            {room.gameData.players.length} players
-          </Typography>
-          <Button
-            variant="contained"
-            disabled={room.gameData.players.length >= 4}
-            onClick={() => props.join(room._id)}
-          >
-            Join
-          </Button>
-        </div>
-      </CardContent>
-      <Collapse in={expanded} timeout="auto" unmountOnExit>
-        <CardContent style={{ backgroundColor: '#fcfcfc' }}>
-          <Typography variant="body2" color="text.secondary">
-            Game: {room.gameData.gameId}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Current Stage: {room.gameData.globalStateData.curStageId}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Current Step: {room.gameData.globalStateData.curStepId}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Players: {room.gameData.players.map((p) => p.name).join(', ')}
-          </Typography>
-          <Button
-            variant="contained"
-            color="error"
-            onClick={() => props.delete(room._id)}
-          >
-            Delete Room
-          </Button>
-        </CardContent>
-      </Collapse>
-    </Card>
-  );
-}
+import { ColumnDiv } from '../../styled-components';
+import RoomDropdown from '../room-dropdown';
 
 function RoomPage(): JSX.Element {
   const dispatch = useAppDispatch();
   const { joinRoom, createRoom } = useWithGame();
-  const { room, rooms, roomsLoadStatus } = useAppSelector(
-    (state) => state.gameData
-  );
+  const {
+    room,
+    rooms: _rooms,
+    roomsLoadStatus,
+  } = useAppSelector((state) => state.gameData);
+  const player = useAppSelector((state) => state.playerData.player);
   const [selectedGame, setSelectedGame] = React.useState<string>();
+  const rooms = _rooms.filter((r) => r.gameData?.gameId === selectedGame);
+  const myRooms = rooms.filter(
+    (r) => r.gameData.globalStateData.roomOwnerId === player?.clientId
+  );
+  const notMyRooms = rooms.filter(
+    (r) => !myRooms.some((presentRoom) => presentRoom._id === r._id)
+  );
+  const roomsWithOwnerPresent = notMyRooms.filter((r) =>
+    r.gameData.players.some(
+      (p) => p.clientId === r.gameData.globalStateData.roomOwnerId
+    )
+  );
+  const roomsWithoutOwnerPresent = notMyRooms.filter(
+    (r) =>
+      !roomsWithOwnerPresent.some((presentRoom) => presentRoom._id === r._id)
+  );
   const navigate = useNavigate();
+  const [activeExpanded, setActiveExpanded] = React.useState<boolean>(true);
+  const [myRoomsExpanded, setMyRoomsExpanded] = React.useState<boolean>(true);
+  const [inactiveExpanded, setInactiveExpanded] =
+    React.useState<boolean>(false);
 
   const gameRoutes: Record<string, string> = {
     soccer: '/game-soccer',
@@ -189,16 +144,47 @@ function RoomPage(): JSX.Element {
             ) : roomsLoadStatus.status === LoadStatus.FAILED ? (
               <Typography color="error">Failed to load rooms</Typography>
             ) : (
-              rooms
-                .filter((r) => r.gameData?.gameId === selectedGame)
-                .map((r) => (
-                  <RoomCard
-                    key={`room-${r._id}`}
-                    room={r}
-                    join={(id) => joinRoom(id)}
-                    delete={(id) => onDeleteRoom(id)}
+              <ColumnDiv style={{ width: '100%' }}>
+                {roomsWithOwnerPresent.length > 0 && (
+                  <RoomDropdown
+                    title="Active Rooms"
+                    rooms={roomsWithOwnerPresent.filter(
+                      (r) => r.gameData?.gameId === selectedGame
+                    )}
+                    expanded={activeExpanded}
+                    setExpanded={setActiveExpanded}
+                    joinRoom={joinRoom}
+                    deleteRoom={onDeleteRoom}
+                    ownerPresent={true}
                   />
-                ))
+                )}
+                {myRooms.length > 0 && (
+                  <RoomDropdown
+                    title="My Rooms"
+                    rooms={myRooms.filter(
+                      (r) => r.gameData?.gameId === selectedGame
+                    )}
+                    expanded={myRoomsExpanded}
+                    setExpanded={setMyRoomsExpanded}
+                    joinRoom={joinRoom}
+                    deleteRoom={onDeleteRoom}
+                    ownerPresent={true}
+                  />
+                )}
+                {roomsWithoutOwnerPresent.length > 0 && (
+                  <RoomDropdown
+                    title="Inactive Rooms (Owner not present)"
+                    rooms={roomsWithoutOwnerPresent.filter(
+                      (r) => r.gameData?.gameId === selectedGame
+                    )}
+                    expanded={inactiveExpanded}
+                    setExpanded={setInactiveExpanded}
+                    joinRoom={joinRoom}
+                    deleteRoom={onDeleteRoom}
+                    ownerPresent={false}
+                  />
+                )}
+              </ColumnDiv>
             )}
           </div>
           <Button onClick={() => reloadRooms(selectedGame)}>

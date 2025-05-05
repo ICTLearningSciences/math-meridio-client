@@ -4,34 +4,37 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-export const PLAYER_DATA = '@playerData';
-export const SESSION_ID = '@sessionId';
-export function localStorageGet(key: string): unknown | null {
-  if (typeof window === 'undefined') {
-    return null;
-  }
-  const item = localStorage.getItem(key);
-  if (!item) {
-    return null;
-  }
-  try {
-    return JSON.parse(item);
-  } catch (err) {
-    return item;
-  }
+import React from 'react';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+} from '@mui/material';
+
+interface PopupProps {
+  open: boolean;
+  onClose: () => void;
 }
 
-export function localStorageStore(key: string, value: unknown): void {
-  if (typeof window === 'undefined') {
-    return;
-  }
-  const val = typeof value === 'string' ? value : JSON.stringify(value);
-  localStorage.setItem(key, val);
-}
+const Popup: React.FC<PopupProps> = ({ open, onClose }) => {
+  return (
+    <Dialog open={open} onClose={onClose}>
+      <DialogTitle style={{ textAlign: 'center' }}>
+        Owner Not Present
+      </DialogTitle>
+      <DialogContent style={{ textAlign: 'center' }}>
+        The owner of this room is not present. Please join an Active Room or
+        create your own.
+      </DialogContent>
+      <DialogActions style={{ justifyContent: 'center' }}>
+        <Button onClick={onClose} color="primary">
+          Close
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
 
-export function localStorageClear(key: string): void {
-  if (typeof window === 'undefined') {
-    return;
-  }
-  localStorage.removeItem(key);
-}
+export default Popup;

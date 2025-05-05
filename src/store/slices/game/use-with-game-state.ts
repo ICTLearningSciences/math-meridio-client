@@ -11,6 +11,7 @@ import {
   GlobalStateData,
   PlayerStateData,
   Room,
+  SenderType,
   createAndJoinRoom,
   deleteRoom,
   fetchRoom,
@@ -29,9 +30,14 @@ import { CancelToken } from 'axios';
 import { syncLlmRequest } from '../../../hooks/use-with-synchronous-polling';
 import { useWithStages } from '../stages/use-with-stages';
 import { Player } from '../player';
-import { equals } from '../../../helpers';
+import { equals, SIMULTAION_VIEWED_KEY } from '../../../helpers';
 import EventSystem from '../../../game/event-system';
-
+import { v4 as uuidv4 } from 'uuid';
+import {
+  localStorageClear,
+  localStorageStore,
+  SESSION_ID,
+} from '../../local-storage';
 export abstract class Subscriber {
   abstract newChatLogReceived(chatLog: ChatMessage[]): void;
   abstract simulationEnded(): void;
@@ -47,6 +53,15 @@ export function useWithGame() {
   const [responsePending, setResponsePending] = React.useState<boolean>(false);
   const { loadDiscussionStages } = useWithStages();
   const poll = React.useRef<NodeJS.Timeout | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const operationQueue = React.useRef<(() => Promise<any>)[]>([]);
+  const isProcessing = React.useRef<boolean>(false);
+  const ownerIsPresent = React.useMemo(() => {
+    if (loadStatus.status === LoadStatus.IN_PROGRESS) return true;
+    return room?.gameData.players.some(
+      (p) => p.clientId === room?.gameData.globalStateData.roomOwnerId
+    );
+  }, [room, player, loadStatus]);
 
   const [game, setGame] = React.useState<Game>();
   const [subscribers, setSubscribers] = React.useState<Subscriber[]>([]);
@@ -58,7 +73,7 @@ export function useWithGame() {
   const [lastPlayers, setLastPlayers] = React.useState<Player[]>();
   const [gameStateHandler, setGameStateHandler] =
     React.useState<GameStateHandler>();
-
+  const chatLog = useAppSelector((state) => state.gameData.room?.gameData.chat);
   React.useEffect(() => {
     if (!room || equals(lastChatLog, room.gameData.chat)) return;
     for (let i = 0; i < subscribers.length; i++) {
@@ -83,6 +98,7 @@ export function useWithGame() {
 
   React.useEffect(() => {
     if (!room || equals(lastPlayerState, room.gameData.playerStateData)) return;
+
     for (let i = 0; i < subscribers.length; i++) {
       const updateFunction = subscribers[i].playerStateUpdated.bind(
         subscribers[i]
@@ -100,6 +116,19 @@ export function useWithGame() {
     }
     setLastPlayers(room.gameData.players);
   }, [room?.gameData.players]);
+
+  // Function to process the next operation in the queue
+  const processQueue = React.useCallback(() => {
+    if (isProcessing.current || operationQueue.current.length === 0) return;
+    isProcessing.current = true;
+    const nextOperation = operationQueue.current.shift();
+    if (nextOperation) {
+      nextOperation().finally(() => {
+        isProcessing.current = false;
+        processQueue(); // Process the next operation
+      });
+    }
+  }, []);
 
   React.useEffect(() => {
     if (!room && poll.current) {
@@ -131,6 +160,8 @@ export function useWithGame() {
     const gameId = room.gameData.gameId;
     const game = GAMES.find((g) => g.id === gameId);
     if (!game) return undefined;
+    const sessionId = uuidv4();
+    localStorageStore(SESSION_ID, sessionId);
     const stages = await loadDiscussionStages();
     const controller = game.createController({
       stages: stages,
@@ -139,17 +170,21 @@ export function useWithGame() {
       player: player,
       sendMessage: _sendMessage,
       updateRoomGameData: _updateRoomGameData,
-      setResponsePending: setResponsePending,
+      setResponsePending: _setResponsePending,
       executePrompt: (
         llmRequest: GenericLlmRequest,
         cancelToken?: CancelToken
       ) => {
         return syncLlmRequest(llmRequest, cancelToken);
       },
+      viewedSimulation: _viewedSimulation,
     });
     if (!poll.current) {
       poll.current = setInterval(() => {
-        dispatch(fetchRoom({ roomId: room._id }));
+        operationQueue.current.push(() =>
+          dispatch(fetchRoom({ roomId: room._id }))
+        );
+        processQueue();
       }, 1000);
     }
     addNewSubscriber(controller);
@@ -177,6 +212,7 @@ export function useWithGame() {
 
   function _leaveRoom() {
     if (!player || !room) return;
+    localStorageClear(SESSION_ID);
     dispatch(leaveRoom({ roomId: room._id, playerId: player.clientId }));
   }
 
@@ -189,6 +225,7 @@ export function useWithGame() {
         gameId: game.id,
         gameName: game.name,
         playerId: player.clientId,
+        persistTruthGlobalStateData: game.persistTruthGlobalStateData,
       })
     );
   }
@@ -202,14 +239,59 @@ export function useWithGame() {
     dispatch(renameRoom({ roomId: room._id, name }));
   }
 
+  function _setResponsePending(pending: boolean) {
+    setResponsePending(pending);
+  }
+
   function _sendMessage(msg: ChatMessage) {
     if (!player || !room) return;
-    dispatch(sendMessage({ roomId: room._id, message: msg }));
+    if (msg.sender === SenderType.SYSTEM && !msg.message) return;
+    if (
+      msg.sender === SenderType.SYSTEM &&
+      msg.message === chatLog?.[chatLog.length - 1]?.message
+    ) {
+      return;
+    }
+    if (
+      msg.sender === SenderType.SYSTEM &&
+      room.gameData.globalStateData.roomOwnerId !== player.clientId
+    ) {
+      console.log('not the room owner, skipping message');
+      return;
+    }
+    operationQueue.current.push(() =>
+      dispatch(sendMessage({ roomId: room._id, message: msg }))
+    );
+    processQueue();
   }
 
   function _updateRoomGameData(gameData: Partial<GameData>): void {
     if (!player || !room) return;
-    dispatch(updateRoomGameData({ roomId: room._id, gameData }));
+    operationQueue.current.push(() =>
+      dispatch(updateRoomGameData({ roomId: room._id, gameData }))
+    );
+    processQueue();
+  }
+
+  function _viewedSimulation(playerId: string): void {
+    if (!room) return;
+    operationQueue.current.push(() =>
+      dispatch(
+        updateRoomGameData({
+          roomId: room._id,
+          gameData: {
+            playerStateData: [
+              {
+                player: playerId,
+                animation: '',
+                gameStateData: [{ key: SIMULTAION_VIEWED_KEY, value: true }],
+              },
+            ],
+          },
+        })
+      )
+    );
+    processQueue();
   }
 
   return {
@@ -218,7 +300,6 @@ export function useWithGame() {
     launchGame,
     addNewSubscriber,
     removeAllSubscribers,
-
     loadRooms,
     joinRoom: _joinRoom,
     leaveRoom: _leaveRoom,
@@ -231,5 +312,6 @@ export function useWithGame() {
     // MODIFIED
     lastChatLog,
     // END MODIFIED
+    ownerIsPresent,
   };
 }

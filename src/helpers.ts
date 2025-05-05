@@ -6,6 +6,13 @@ The full terms of this copyright and license should always be found in the root 
 */
 
 import { ChatMessage } from './store/slices/game';
+import { GameStateData } from './game/basketball/solution';
+import axios from 'axios';
+import { IStage } from './components/discussion-stage-builder/types';
+import { DiscussionStage } from './components/discussion-stage-builder/types';
+import { isDiscussionStage } from './components/discussion-stage-builder/types';
+
+export const SIMULTAION_VIEWED_KEY = 'viewed-simulation';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function equals<T>(val1: T, val2: T): boolean {
@@ -14,8 +21,10 @@ export function equals<T>(val1: T, val2: T): boolean {
 
 export function chatLogToString(chatLog: ChatMessage[]) {
   let chatLogString = '';
+
   for (let i = 0; i < chatLog.length; i++) {
-    chatLogString += `${chatLog[i].sender}: ${chatLog[i].message}\n`;
+    const msg = chatLog[i];
+    chatLogString += `${msg.senderName || msg.sender}: ${msg.message}\n`;
   }
   return chatLogString;
 }
@@ -56,4 +65,42 @@ export function arrayGetRandom<T>(arr: T[]): T | undefined {
 
 export function isEqual<T>(obj1: T, obj2: T): boolean {
   return JSON.stringify(obj1) !== JSON.stringify(obj2);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function extractErrorMessageFromError(err: any | unknown): string {
+  if (err?.response?.data) {
+    try {
+      const error = JSON.stringify(err.response.data);
+      return error;
+    } catch (err) {
+      console.error(err);
+    }
+  }
+  if (err instanceof Error) {
+    return err.message;
+  } else if (axios.isAxiosError(err)) {
+    return err.response?.data || err.message;
+  } else {
+    try {
+      const error = JSON.stringify(err);
+      return error;
+    } catch (err) {
+      return 'Cannot stringify error, unknown error structure';
+    }
+  }
+}
+
+export function didGameStateDataChange(
+  prevGameStateData: GameStateData,
+  newGameStateData: GameStateData
+): boolean {
+  return JSON.stringify(prevGameStateData) !== JSON.stringify(newGameStateData);
+}
+
+export function getFirstStepId(stage: IStage): string {
+  if (isDiscussionStage(stage)) {
+    return (stage as DiscussionStage).flowsList[0].steps[0].stepId;
+  }
+  return stage.clientId;
 }

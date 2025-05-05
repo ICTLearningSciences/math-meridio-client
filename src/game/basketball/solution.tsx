@@ -5,7 +5,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import React, { useEffect } from 'react';
-import { Card, TextField, Typography } from '@mui/material';
+import { Card, Typography } from '@mui/material';
 import { GameStateHandler } from '../../classes/game-state-handler';
 import { PlayerStateData } from '../../store/slices/game';
 import { makeStyles } from 'tss-react/mui';
@@ -37,6 +37,7 @@ export const UNDERSTANDS_MULTIPLICATION = 'understands_multiplication';
 export const UNDERSTANDS_ADDITION = 'understands_addition';
 
 import courtBg from './court.png';
+import { EditableVariable } from './editable-variable';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type GameStateData = Record<string, any>;
@@ -62,7 +63,7 @@ export function SolutionComponent(props: {
   const [understandsMultiplication, setUnderstandsMultiplication] =
     React.useState(false);
   const [understandsAddition, setUnderstandsAddition] = React.useState(false);
-
+  const [editingVariable, setEditingVariable] = React.useState('');
   React.useEffect(() => {
     !understandsPoints &&
       setUnderstandsPoints(
@@ -174,64 +175,6 @@ export function SolutionComponent(props: {
     );
   }
 
-  function EditableVariable(props: {
-    dataKey: string;
-    title: string;
-  }): JSX.Element {
-    const data = myPlayerStateData[props.dataKey];
-
-    return (
-      <Card
-        className={classes.box}
-        style={{
-          backgroundColor: '#fff8db',
-          borderColor: 'red',
-          display: data ? '' : 'none',
-        }}
-      >
-        <Typography className={classes.text} style={{ color: '#c96049' }}>
-          {props.title}
-        </Typography>
-        <TextField
-          value={data || 0}
-          variant="standard"
-          type="number"
-          sx={{
-            input: {
-              color: '#c96049',
-              fontSize: 40,
-              fontFamily: 'SigmarOne',
-              textAlign: 'center',
-              margin: 0,
-              padding: 0,
-            },
-            '& .MuiInput-underline:before': { borderBottomColor: '#c96049' },
-            '& .MuiInput-underline:after': { borderBottomColor: '#c96049' },
-          }}
-          InputProps={{ inputProps: { min: 0, max: 100 } }}
-          onChange={(e) => {
-            const value = parseInt(e.target.value);
-            const data = { ...myPlayerStateData };
-            data[props.dataKey] = value;
-            if (
-              (data[INSIDE_SHOT_PERCENT] || 0) +
-                (data[MID_SHOT_PERCENT] || 0) +
-                (data[OUTSIDE_SHOT_PERCENT] || 0) <=
-              NUMBER_OF_SHOTS
-            ) {
-              controller.newPlayerStateData([
-                {
-                  key: props.dataKey,
-                  value: value,
-                },
-              ]);
-            }
-          }}
-        />
-      </Card>
-    );
-  }
-
   /**
    * A component that will reveal the icon when reveal is true, and never hide it again.
    */
@@ -305,8 +248,24 @@ export function SolutionComponent(props: {
           }
         />
         <EditableVariable
+          updatePlayerStateData={(newValue: number) => {
+            controller.newPlayerStateData(
+              [
+                {
+                  key: INSIDE_SHOT_PERCENT,
+                  value: newValue,
+                },
+              ],
+              controller.player.clientId
+            );
+          }}
           dataKey={INSIDE_SHOT_PERCENT}
           title="# of inside shots"
+          myPlayerStateData={myPlayerStateData}
+          shouldDisable={
+            Boolean(editingVariable) && editingVariable !== INSIDE_SHOT_PERCENT
+          }
+          setEditingVariable={setEditingVariable}
         />
         <RevealingIcon
           reveal={understandsMultiplication}
@@ -355,7 +314,26 @@ export function SolutionComponent(props: {
             </Typography>
           }
         />
-        <EditableVariable dataKey={MID_SHOT_PERCENT} title="# of mid shots" />
+        <EditableVariable
+          updatePlayerStateData={(newValue: number) => {
+            controller.newPlayerStateData(
+              [
+                {
+                  key: MID_SHOT_PERCENT,
+                  value: newValue,
+                },
+              ],
+              controller.player.clientId
+            );
+          }}
+          dataKey={MID_SHOT_PERCENT}
+          title="# of mid shots"
+          myPlayerStateData={myPlayerStateData}
+          shouldDisable={
+            Boolean(editingVariable) && editingVariable !== MID_SHOT_PERCENT
+          }
+          setEditingVariable={setEditingVariable}
+        />
         <RevealingIcon
           reveal={understandsMultiplication}
           icon={
@@ -404,8 +382,24 @@ export function SolutionComponent(props: {
           }
         />
         <EditableVariable
+          updatePlayerStateData={(newValue: number) => {
+            controller.newPlayerStateData(
+              [
+                {
+                  key: OUTSIDE_SHOT_PERCENT,
+                  value: newValue,
+                },
+              ],
+              controller.player.clientId
+            );
+          }}
           dataKey={OUTSIDE_SHOT_PERCENT}
           title="# of 3 pointers"
+          myPlayerStateData={myPlayerStateData}
+          shouldDisable={
+            Boolean(editingVariable) && editingVariable !== OUTSIDE_SHOT_PERCENT
+          }
+          setEditingVariable={setEditingVariable}
         />
         <RevealingIcon
           reveal={understandsMultiplication}

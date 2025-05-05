@@ -15,6 +15,7 @@ import {
 import { GenericLlmRequest } from './types';
 import { Player } from './store/slices/player';
 import { ChatMessage, GameData, Room } from './store/slices/game';
+import { extractErrorMessageFromError } from './helpers';
 
 type OpenAiJobId = string;
 export const LLM_API_ENDPOINT =
@@ -117,13 +118,13 @@ export async function asyncLlmRequestStatus(
           axiosConfig: { cancelToken: cancelToken },
         }
       );
-    } catch (e: any) {
-      console.error('Error during job status polling:', e.message);
+    } catch (e) {
+      console.error(
+        'Error during job status polling:',
+        extractErrorMessageFromError(e)
+      );
       throw e;
     }
-
-    // Log the JSON response to the console for debugging.
-    console.log('Full AI Service Response:', JSON.stringify(res, null, 2));
 
     // Wait 2 seconds before polling again if the job is still in progress.
     if (res.jobStatus === 'IN_PROGRESS') {
@@ -217,10 +218,12 @@ export const fullRoomQueryData = `
       displayType
       disableUserInput
       mcqChoices
+      sessionId
     }
     globalStateData {
       curStageId
       curStepId
+      roomOwnerId
       gameStateData {
         key
         value
@@ -393,13 +396,14 @@ export async function fetchRoom(roomId: string): Promise<Room> {
 export async function createAndJoinRoom(
   playerId: string,
   gameId: string,
-  gameName: string
+  gameName: string,
+  persistTruthGlobalStateData: string[]
 ): Promise<Room> {
   const data = await execGql<Room>(
     {
       query: `
-        mutation CreateAndJoinRoom($playerId: String!, $gameId: String!, $gameName: String!) {
-          createAndJoinRoom(playerId: $playerId, gameId: $gameId, gameName: $gameName) {
+        mutation CreateAndJoinRoom($playerId: String!, $gameId: String!, $gameName: String!, $persistTruthGlobalStateData: [String]) {
+          createAndJoinRoom(playerId: $playerId, gameId: $gameId, gameName: $gameName, persistTruthGlobalStateData: $persistTruthGlobalStateData) {
             ${fullRoomQueryData}
           }
         }`,
@@ -407,6 +411,7 @@ export async function createAndJoinRoom(
         playerId,
         gameId,
         gameName,
+        persistTruthGlobalStateData,
       },
     },
     {
@@ -490,7 +495,10 @@ export async function deleteRoom(roomId: string): Promise<Room> {
     {
       query: `
         mutation DeleteRoom($roomId: ID!) {
-          deleteRoom(roomId: $roomId)
+          deleteRoom(roomId: $roomId){
+            _id
+            deletedRoom
+          }
         }`,
       variables: {
         roomId,
