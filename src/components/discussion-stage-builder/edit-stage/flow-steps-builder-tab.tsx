@@ -28,6 +28,10 @@ import {
   SystemMessageStageStep,
 } from '../types';
 import { ColumnDiv } from '../../../styled-components';
+import {
+  ConditionalStepBuilder,
+  getDefaultConditionalStep,
+} from './step-builder/conditional-step-builder';
 export function FlowStepsBuilderTab(props: {
   flow: FlowItem;
   flowsList: FlowItem[];
@@ -77,6 +81,17 @@ export function FlowStepsBuilderTab(props: {
             stopPreview={() => setPreviewPromptId('')}
           />
         );
+      case DiscussionStageStepType.CONDITIONAL:
+        return (
+          <ConditionalStepBuilder
+            step={step}
+            updateLocalActivity={updateLocalStage}
+            deleteStep={() => props.deleteStep(step.stepId, flow.clientId)}
+            flowsList={flowsList}
+            stepIndex={i}
+            key={i}
+          />
+        );
       default:
         throw new Error(`Unknown step type: ${step}`);
     }
@@ -99,6 +114,8 @@ export function FlowStepsBuilderTab(props: {
         ? getDefaultSystemMessage()
         : stepType === DiscussionStageStepType.REQUEST_USER_INPUT
         ? getDefaultRequestUserInputBuilder()
+        : stepType === DiscussionStageStepType.CONDITIONAL
+        ? getDefaultConditionalStep()
         : defaultPromptBuilder();
     updateLocalStage((prevValue) => {
       return {

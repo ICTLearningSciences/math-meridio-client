@@ -184,6 +184,20 @@ export const fullDiscussionStageQueryData = `
           jsonResponseData
           customSystemRole
       }
+
+                                ... on ConditionalActivityStepType {
+                              stepId
+                              stepType
+                              lastStep
+                              jumpToStepId
+                              conditionals{
+                                  stateDataKey
+                                  checking
+                                  operation
+                                  expectedValue
+                                  targetStepId
+                              }
+                          }
     }
   }
 `;
