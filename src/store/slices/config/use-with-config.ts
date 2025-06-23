@@ -6,7 +6,7 @@ The full terms of this copyright and license should always be found in the root 
 */
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { fetchAbeConfig } from '.';
-import { TargetAiModelServiceType } from '../../../types';
+import { AiServiceNames, TargetAiModelServiceType } from '../../../types';
 
 export function useWithConfig() {
   const dispatch = useAppDispatch();
@@ -21,7 +21,7 @@ export function useWithConfig() {
 
   function firstAvailableAzureServiceModel(): TargetAiModelServiceType {
     const azureModels = abeConfig.aiServiceModelConfigs.find(
-      (config) => config.serviceName === 'AZURE_OPEN_AI'
+      (config) => config.serviceName === AiServiceNames.AZURE
     );
     if (!azureModels) {
       throw new Error('No Azure service found');
@@ -30,7 +30,7 @@ export function useWithConfig() {
       throw new Error('No Azure service models found');
     }
     return {
-      serviceName: 'AZURE_OPEN_AI',
+      serviceName: AiServiceNames.AZURE,
       model: azureModels.modelList[0].name,
     };
   }
