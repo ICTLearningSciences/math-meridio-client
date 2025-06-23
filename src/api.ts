@@ -15,7 +15,8 @@ import {
 import { GenericLlmRequest } from './types';
 import { Player } from './store/slices/player';
 import { ChatMessage, GameData, Room } from './store/slices/game';
-import { extractErrorMessageFromError } from './helpers';
+import { extractErrorMessageFromError, requireEnv } from './helpers';
+import { Config } from './store/slices/config';
 
 type OpenAiJobId = string;
 export const LLM_API_ENDPOINT =
@@ -554,6 +555,32 @@ export async function sendMessage(
     },
     {
       dataPath: 'sendMessage',
+    }
+  );
+  return data;
+}
+
+export async function fetchAbeConfig(): Promise<Config> {
+  const abeEndpoint = requireEnv('REACT_APP_ABE_GQL_ENDPOINT');
+  const data = await execGql<Config>(
+    {
+      query: `
+        query FetchConfig {
+          fetchConfig {
+            aiServiceModelConfigs{
+              serviceName
+              modelList{
+                name
+                maxTokens
+                supportsWebSearch
+              }
+            }
+          }
+        }`,
+    },
+    {
+      dataPath: 'fetchConfig',
+      gqlEndpoint: abeEndpoint,
     }
   );
   return data;

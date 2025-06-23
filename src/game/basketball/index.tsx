@@ -61,6 +61,7 @@ export class BasketballStateHandler extends GameStateHandler {
       args.setResponsePending,
       args.executePrompt,
       this.updateRoomStageStepId.bind(this),
+      args.targetAiServiceModel,
       undefined,
       this.newPlayerStateData.bind(this),
       undefined

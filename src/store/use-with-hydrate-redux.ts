@@ -6,11 +6,14 @@ The full terms of this copyright and license should always be found in the root 
 */
 import { useEffect } from 'react';
 import { useWithStages } from './slices/stages/use-with-stages';
+import { useWithConfig } from './slices/config/use-with-config';
 
 export function useWithHydrateRedux() {
   const { loadDiscussionStages } = useWithStages();
+  const { loadAbeConfig } = useWithConfig();
 
   useEffect(() => {
     loadDiscussionStages();
+    loadAbeConfig();
   }, []);
 }

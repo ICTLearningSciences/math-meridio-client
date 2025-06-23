@@ -38,6 +38,7 @@ import {
   localStorageStore,
   SESSION_ID,
 } from '../../local-storage';
+import { useWithConfig } from '../config/use-with-config';
 export abstract class Subscriber {
   abstract newChatLogReceived(chatLog: ChatMessage[]): void;
   abstract simulationEnded(): void;
@@ -51,6 +52,7 @@ export function useWithGame() {
   const { player } = useAppSelector((state) => state.playerData);
   const { room, loadStatus } = useAppSelector((state) => state.gameData);
   const [responsePending, setResponsePending] = React.useState<boolean>(false);
+  const { firstAvailableAzureServiceModel } = useWithConfig();
   const { loadDiscussionStages } = useWithStages();
   const poll = React.useRef<NodeJS.Timeout | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -178,6 +180,7 @@ export function useWithGame() {
         return syncLlmRequest(llmRequest, cancelToken);
       },
       viewedSimulation: _viewedSimulation,
+      targetAiServiceModel: firstAvailableAzureServiceModel(),
     });
     if (!poll.current) {
       poll.current = setInterval(() => {
