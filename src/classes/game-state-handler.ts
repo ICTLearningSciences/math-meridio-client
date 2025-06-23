@@ -20,7 +20,7 @@ import {
   PlayerStateData,
   SenderType,
 } from '../store/slices/game';
-import { GenericLlmRequest } from '../types';
+import { GenericLlmRequest, TargetAiModelServiceType } from '../types';
 import { CancelToken } from 'axios';
 import { Subscriber } from '../store/slices/game/use-with-game-state';
 import { Player } from '../store/slices/player';
@@ -61,6 +61,7 @@ export interface GameStateHandlerArgs {
   game: Phaser.Types.Core.GameConfig;
   gameData: GameData;
   viewedSimulation: (playerId: string) => void;
+  targetAiServiceModel: TargetAiModelServiceType;
 }
 
 export abstract class GameStateHandler implements Subscriber {

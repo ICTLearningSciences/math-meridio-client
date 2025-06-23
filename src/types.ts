@@ -55,3 +55,22 @@ export interface LoadingState {
   endedAt?: string;
   failedAt?: string;
 }
+
+export enum AiServiceNames {
+  AZURE = 'AZURE_OPEN_AI',
+  OPEN_AI = 'OPEN_AI',
+  GEMINI = 'GEMINI',
+}
+
+export interface ServiceModelInfo {
+  name: string;
+  maxTokens: number;
+  supportsWebSearch: boolean;
+  onlyAdminUse?: boolean;
+  disabled?: boolean;
+}
+
+export type AiServiceModelConfigs = {
+  serviceName: AiServiceNames;
+  modelList: ServiceModelInfo[];
+};

@@ -26,11 +26,15 @@ import {
   RequestUserInputStageStep,
   SystemMessageStageStep,
 } from '../components/discussion-stage-builder/types';
-import { GenericLlmRequest, PromptOutputTypes, PromptRoles } from '../types';
+import {
+  GenericLlmRequest,
+  PromptOutputTypes,
+  PromptRoles,
+  TargetAiModelServiceType,
+} from '../types';
 import { CancelToken } from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import { chatLogToString, isJsonString } from '../helpers';
-import { AzureServiceModel } from './types';
 import {
   ChatMessage,
   SenderType,
@@ -67,6 +71,7 @@ export class DiscussionStageHandler {
   chatLog: ChatMessage[] = [];
   playerId: string;
   errorMessage: string | null = null;
+  targetAiServiceModel: TargetAiModelServiceType;
   sendMessage: (msg: ChatMessage) => void;
   setResponsePending: (pending: boolean) => void; // let parent component know when we are waiting for an async response
   executePrompt: (
@@ -162,6 +167,7 @@ export class DiscussionStageHandler {
       cancelToken?: CancelToken
     ) => Promise<AiServicesResponseTypes>,
     updateRoomStageStepId: (stageId: string, stepId: string) => void,
+    targetAiServiceModel: TargetAiModelServiceType,
     onDiscussionFinished?: (discussionData: CollectedDiscussionData) => void,
     newPlayerStateData?: (data: GameStateData[], playerId: string) => void,
     exitEarlyCondition?: (data: CollectedDiscussionData) => boolean
@@ -178,6 +184,7 @@ export class DiscussionStageHandler {
     this.exitEarlyCondition = exitEarlyCondition;
     this.playerId = playerId;
     this.updateRoomStageStepId = updateRoomStageStepId;
+    this.targetAiServiceModel = targetAiServiceModel;
     // bind functions to this
     this.exitEarlyCondition = this.exitEarlyCondition?.bind(this);
     this.newPlayerStateData = this.newPlayerStateData?.bind(this);
@@ -525,7 +532,7 @@ export class DiscussionStageHandler {
     const llmRequest: GenericLlmRequest = {
       prompts: [],
       outputDataType: curStep.outputDataType,
-      targetAiServiceModel: AzureServiceModel,
+      targetAiServiceModel: this.targetAiServiceModel,
       responseFormat: responseFormat,
       systemRole: customSystemRole,
     };

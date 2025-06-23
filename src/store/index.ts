@@ -8,12 +8,14 @@ import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import gameData from './slices/game';
 import playerData from './slices/player';
 import stages from './slices/stages';
+import config from './slices/config';
 
 export const store = configureStore({
   reducer: combineReducers({
     gameData,
     playerData,
     stages,
+    config,
   }),
 });
 

@@ -44,6 +44,7 @@ interface HttpRequestConfig {
    * { "foo": { "bar": "barvalue" } }
    */
   dataPath?: string | string[];
+  gqlEndpoint?: string;
 }
 
 export async function execHttp<T>(
@@ -108,7 +109,7 @@ export async function execGql<T>(
   query: GQLQuery,
   opts?: HttpRequestConfig
 ): Promise<T> {
-  return execHttp<T>('POST', GRAPHQL_ENDPOINT, {
+  return execHttp<T>('POST', opts?.gqlEndpoint || GRAPHQL_ENDPOINT, {
     // axiosMiddleware: applyAppTokenRefreshInterceptor,
     ...(opts || {}),
     axiosConfig: {

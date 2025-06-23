@@ -38,13 +38,13 @@ import {
   JsonResponseDataType,
   PromptStageStep,
 } from '../../types';
-import { AzureServiceModel } from '../../../../classes/types';
 import {
   RoundedBorderDiv,
   RowDiv,
   TopLeftText,
 } from '../../../../styled-components';
 import { syncLlmRequest } from '../../../../hooks/use-with-synchronous-polling';
+import { useWithConfig } from '../../../../store/slices/config/use-with-config';
 export function getEmptyJsonResponseData(): JsonResponseData {
   return {
     clientId: uuid(),
@@ -98,6 +98,7 @@ export function PromptStepBuilder(props: {
     deleteStep,
     flowsList,
   } = props;
+  const { firstAvailableAzureServiceModel } = useWithConfig();
   const currentFLow = flowsList.find((f) => {
     return f.steps.find((s) => s.stepId === step.stepId);
   });
@@ -361,7 +362,7 @@ export function PromptStepBuilder(props: {
     setExecuteInProgress(true);
     const llmRequest: GenericLlmRequest = {
       prompts: [],
-      targetAiServiceModel: AzureServiceModel,
+      targetAiServiceModel: firstAvailableAzureServiceModel(),
       outputDataType: step.outputDataType,
       responseFormat: step.responseFormat,
       systemRole: step.customSystemRole,
