@@ -19,6 +19,8 @@ import {
   sortMessagesByResponseWeight,
 } from '../components/discussion-stage-builder/helpers';
 import {
+  Checking,
+  ConditionalActivityStep,
   DiscussionStageStep,
   DiscussionStageStepType,
   PredefinedResponse,
@@ -116,6 +118,15 @@ export class DiscussionStageHandler {
     discussionStage: DiscussionCurrentStage,
     currentStep: DiscussionStageStep
   ): DiscussionStageStep {
+    if (currentStep.stepType === DiscussionStageStepType.CONDITIONAL) {
+      const nextStep = this.getNextStepFromConditional(
+        discussionStage,
+        currentStep as ConditionalActivityStep
+      );
+      if (nextStep) {
+        return nextStep;
+      }
+    }
     if (currentStep.jumpToStepId) {
       const jumpStep = this.getStepById(
         discussionStage,
@@ -279,9 +290,134 @@ export class DiscussionStageHandler {
           discussionStage,
           step as PromptStageStep
         );
+      case DiscussionStageStepType.CONDITIONAL:
+        // A conditional step is just an extra condition to determine the next step
+        // So we can just call updateRoomWithNextStep with the step
+        return await this.updateRoomWithNextStep(discussionStage, step);
       default:
         throw new Error(`Unknown step type: ${step}`);
     }
+  }
+
+  async updateRoomWithNextStep(
+    discussionStage: DiscussionCurrentStage,
+    step: DiscussionStageStep
+  ) {
+    if (step.lastStep) {
+      if (this.onDiscussionFinished) {
+        this.onDiscussionFinished(this.stateData);
+      }
+      return;
+    }
+    try {
+      const nextStep = this.getNextStep(discussionStage, step);
+      if (nextStep) {
+        this.updateRoomStageStepId(discussionStage.id, nextStep.stepId);
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      this.sendErrorMessage(err.message);
+      return;
+    }
+  }
+
+  getNextStepFromConditional(
+    discussionStage: DiscussionCurrentStage,
+    step: ConditionalActivityStep
+  ) {
+    this.setResponsePending(true);
+    this.stateData = {
+      ...this.stateData,
+    };
+    const conditionals = step.conditionals.map((c) => ({
+      ...c,
+      expectedValue: replaceStoredDataInString(c.expectedValue, this.stateData),
+    }));
+    this.setResponsePending(false);
+    for (let i = 0; i < conditionals.length; i++) {
+      const condition = conditionals[i];
+      let stateValue = this.stateData[condition.stateDataKey];
+      if (!stateValue) {
+        this.sendErrorMessage(
+          `An error occured during this activity. Could not find state value ${condition.stateDataKey}.`
+        );
+        return;
+      }
+
+      if (
+        typeof stateValue === 'string' &&
+        ['false', 'true', 'False', 'True'].includes(stateValue)
+      ) {
+        if (stateValue === 'false' || stateValue === 'False') {
+          stateValue = false;
+        } else {
+          stateValue = true;
+        }
+      }
+
+      if (condition.checking === Checking.VALUE) {
+        const expression = `${String(stateValue)} ${condition.operation} ${
+          condition.expectedValue
+        }`;
+        const conditionTrue = new Function(`return ${expression};`)();
+        if (conditionTrue) {
+          const step = this.getStepById(
+            discussionStage,
+            condition.targetStepId
+          );
+          if (!step) {
+            this.sendErrorMessage(
+              `An error occured during this activity. Could not find step: ${condition.targetStepId}`
+            );
+            return;
+          }
+          return step;
+        }
+      } else if (condition.checking === Checking.LENGTH) {
+        if (!Array.isArray(stateValue) && typeof stateValue !== 'string') {
+          this.sendErrorMessage(
+            `Expected a string or array for state value ${
+              condition.stateDataKey
+            }, but got ${typeof stateValue}`
+          );
+          return;
+        }
+        const expression = `${stateValue.length} ${condition.operation} ${condition.expectedValue}`;
+        const conditionTrue = new Function(`return ${expression};`)();
+        if (conditionTrue) {
+          const step = this.getStepById(
+            discussionStage,
+            condition.targetStepId
+          );
+          if (!step) {
+            this.sendErrorMessage(
+              `An error occured during this activity. Could not find step: ${condition.targetStepId}`
+            );
+            return;
+          }
+          return step;
+        }
+      } else {
+        // Checking if array or string contains value
+        const conditionTrue = Array.isArray(stateValue)
+          ? stateValue.find((a) => String(a) === condition.expectedValue)
+          : (stateValue as string).includes(String(condition.expectedValue));
+        if (conditionTrue) {
+          const step = this.getStepById(
+            discussionStage,
+            condition.targetStepId
+          );
+          if (!step) {
+            this.sendErrorMessage(
+              `An error occured during this activity. Could not find step: ${condition.targetStepId}`
+            );
+            return;
+          }
+          return step;
+        }
+      }
+    }
+    return undefined;
   }
 
   async handleSystemMessageStep(
@@ -370,28 +506,6 @@ export class DiscussionStageHandler {
       }
     }
     return [str];
-  }
-
-  async updateRoomWithNextStep(
-    discussionStage: DiscussionCurrentStage,
-    step: DiscussionStageStep
-  ) {
-    if (step.lastStep) {
-      if (this.onDiscussionFinished) {
-        this.onDiscussionFinished(this.stateData);
-      }
-      return;
-    }
-    try {
-      const nextStep = this.getNextStep(discussionStage, step);
-      if (nextStep) {
-        this.updateRoomStageStepId(discussionStage.id, nextStep.stepId);
-      }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      this.sendErrorMessage(err.message);
-      return;
-    }
   }
 
   sendErrorMessage(message: string) {
