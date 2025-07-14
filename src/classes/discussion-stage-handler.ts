@@ -19,7 +19,6 @@ import {
   sortMessagesByResponseWeight,
 } from '../components/discussion-stage-builder/helpers';
 import {
-  DiscussionStage,
   DiscussionStageStep,
   DiscussionStageStepType,
   PredefinedResponse,

@@ -215,7 +215,7 @@ export function SolutionComponent(props: {
                   },
                 ],
                 controller.player.clientId
-              );              
+              );
             }
           }}
         />

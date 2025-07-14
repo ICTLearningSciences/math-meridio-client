@@ -12,11 +12,7 @@ import {
 } from '../../classes/game-state-handler';
 import { Game } from '../types';
 import { DiscussionStageHandler } from '../../classes/discussion-stage-handler';
-import {
-  DiscussionStage,
-  isDiscussionStage,
-  IStage,
-} from '../../components/discussion-stage-builder/types';
+import { IStage } from '../../components/discussion-stage-builder/types';
 import { ProblemComponent } from './problem';
 import SimulationScene from './SimulationScene';
 import { PlayerStateData } from '../../store/slices/game';
@@ -52,7 +48,7 @@ export class SoccerStateHandler extends GameStateHandler {
       this.newPlayerStateData.bind(this),
       undefined
     );
-    
+
     this.initializeGame = this.initializeGame.bind(this);
     this.simulationEnded = this.simulationEnded.bind(this);
 
@@ -185,8 +181,9 @@ const SoccerGame: Game = {
   showSolution: () => <></>, // Avoid `null` in JSX returns
   showSimulation: () => <></>,
   showResult: () => <></>,
-  createController: (args: GameStateHandlerArgs) => new SoccerStateHandler(args),
-  persistTruthGlobalStateData: []
+  createController: (args: GameStateHandlerArgs) =>
+    new SoccerStateHandler(args),
+  persistTruthGlobalStateData: [],
 };
 
 export default SoccerGame;

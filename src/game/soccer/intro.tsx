@@ -4,10 +4,11 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
+import React from 'react';
 const VideoPage = () => {
   return (
     <div>
-      <h1>Let's Get Started!</h1>
+      <h1>Let&apos;s Get Started!</h1>
       <iframe
         width="560"
         height="315"

@@ -8,7 +8,6 @@ import React from 'react';
 import { Typography } from '@mui/material';
 import { GameStateHandler } from '../../classes/game-state-handler';
 import SoccerGame from '.';
-import shotChart from './shot-chart.jpg';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function ProblemComponent(props: {

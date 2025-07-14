@@ -10,7 +10,6 @@ import {
   Box,
   Button,
   Card,
-  CircularProgress,
   Grid,
   Stack,
   Typography,
@@ -26,7 +25,6 @@ import { useWithGame } from '../../store/slices/game/use-with-game-state';
 import { GameStateHandler } from '../../classes/game-state-handler';
 import withAuthorizationOnly from '../../wrap-with-authorization-only';
 import SoccerGame from '../../game/soccer/SimulationScene';
-// import { checkProfanity } from '../../../src/classes/discussion-stage-handler'; // adjust path if needed
 
 function ProblemSpace(props: {
   game: Game;
@@ -561,26 +559,26 @@ function Scoreboard(props: {
   );
 }
 
-function ResultsSpace(props: {
-  game: Game;
-  controller: GameStateHandler;
-}): JSX.Element {
-  return (
-    <Card
-      className="scroll box"
-      style={{
-        overflowY: 'auto',
-        flexGrow: 1,
-        margin: 10,
-        borderTopLeftRadius: 20,
-        borderBottomRightRadius: 20,
-      }}
-    >
-      <Typography fontWeight="bold">Results</Typography>
-      {props.game.showResult(props.controller)}
-    </Card>
-  );
-}
+// function ResultsSpace(props: {
+//   game: Game;
+//   controller: GameStateHandler;
+// }): JSX.Element {
+//   return (
+//     <Card
+//       className="scroll box"
+//       style={{
+//         overflowY: 'auto',
+//         flexGrow: 1,
+//         margin: 10,
+//         borderTopLeftRadius: 20,
+//         borderBottomRightRadius: 20,
+//       }}
+//     >
+//       <Typography fontWeight="bold">Results</Typography>
+//       {props.game.showResult(props.controller)}
+//     </Card>
+//   );
+// }
 
 function Timer({ secondsLeft }: { secondsLeft: number }): JSX.Element {
   const displaySeconds = String(secondsLeft % 60).padStart(2, '0');
@@ -613,10 +611,9 @@ function GamePage(): JSX.Element {
 
   const [playerStates, setPlayerStates] = useState<PlayerState[]>([]);
 
-  const { room, simulation } = useAppSelector((state) => state.gameData);
+  const {simulation } = useAppSelector((state) => state.gameData);
   const { game, gameStateHandler, launchGame, responsePending, lastChatLog } =
     useWithGame();
-  const navigate = useNavigate();
 
   const [leftVotes, setLeftVotes] = React.useState(0);
   const [rightVotes, setRightVotes] = React.useState(0);
