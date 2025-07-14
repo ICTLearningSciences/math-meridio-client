@@ -11,6 +11,7 @@ import BasketballGame from '../game/basketball';
 import withAuthorizationOnly from '../wrap-with-authorization-only';
 import EventSystem from '../game/event-system';
 
+// need change after soccer game is designed.
 function PhaserTestPage(): JSX.Element {
   const { player } = useAppSelector((state) => state.playerData);
   const gameContainerRef = React.useRef<HTMLDivElement | null>(null);

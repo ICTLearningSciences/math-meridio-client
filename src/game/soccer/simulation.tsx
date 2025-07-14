@@ -4,27 +4,26 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import BasketballGame from './basketball';
-import SoccerGame from './soccer';
-import {
-  GameStateHandler,
-  GameStateHandlerArgs,
-} from '../classes/game-state-handler';
+import React from 'react';
+import { GameStateHandler } from '../../classes/game-state-handler';
+import { useWithPhaserGame } from '../../hooks/use-with-phaser-game';
 
-export interface Game {
-  id: 'basketball' | 'soccer';
-  name: string;
-  problem: string;
-  config: Phaser.Types.Core.GameConfig;
-  persistTruthGlobalStateData: string[];
-  showProblem: (controller: GameStateHandler) => JSX.Element;
-  showSolution: (controller: GameStateHandler) => JSX.Element;
-  showSimulation: (
-    controller: GameStateHandler,
-    simulation?: string
-  ) => JSX.Element;
-  showResult: (controller: GameStateHandler) => JSX.Element;
-  createController: (args: GameStateHandlerArgs) => GameStateHandler;
+export function SimulationComponent(props: {
+  controller: GameStateHandler;
+}): JSX.Element {
+  const gameContainerRef = React.useRef<HTMLDivElement | null>(null);
+  const { startPhaserGame } = useWithPhaserGame(gameContainerRef);
+
+  React.useEffect(() => {
+    // Start the Phaser scene named 'SoccerGame'
+    startPhaserGame(props.controller.game, props.controller, 'SoccerGame');
+  }, [props.controller]);
+
+  return (
+    <div
+      id="game-container"
+      ref={gameContainerRef}
+      style={{ height: window.innerHeight / 2 - 150 }}
+    />
+  );
 }
-
-export const GAMES: Game[] = [BasketballGame, SoccerGame];

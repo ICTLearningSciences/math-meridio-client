@@ -4,27 +4,22 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import BasketballGame from './basketball';
-import SoccerGame from './soccer';
-import {
-  GameStateHandler,
-  GameStateHandlerArgs,
-} from '../classes/game-state-handler';
+import React from 'react';
+const VideoPage = () => {
+  return (
+    <div>
+      <h1>Let&apos;s Get Started!</h1>
+      <iframe
+        width="560"
+        height="315"
+        src="https://youtu.be/OTs5JX6Tut4"
+        title="YouTube video player"
+        frameBorder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+      ></iframe>
+    </div>
+  );
+};
 
-export interface Game {
-  id: 'basketball' | 'soccer';
-  name: string;
-  problem: string;
-  config: Phaser.Types.Core.GameConfig;
-  persistTruthGlobalStateData: string[];
-  showProblem: (controller: GameStateHandler) => JSX.Element;
-  showSolution: (controller: GameStateHandler) => JSX.Element;
-  showSimulation: (
-    controller: GameStateHandler,
-    simulation?: string
-  ) => JSX.Element;
-  showResult: (controller: GameStateHandler) => JSX.Element;
-  createController: (args: GameStateHandlerArgs) => GameStateHandler;
-}
-
-export const GAMES: Game[] = [BasketballGame, SoccerGame];
+export default VideoPage;

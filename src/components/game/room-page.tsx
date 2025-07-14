@@ -55,6 +55,11 @@ function RoomPage(): JSX.Element {
   const [inactiveExpanded, setInactiveExpanded] =
     React.useState<boolean>(false);
 
+  const gameRoutes: Record<string, string> = {
+    soccer: '/game-soccer',
+    basketball: '/game-basketball',
+  };
+
   React.useEffect(() => {
     if (selectedGame) {
       reloadRooms(selectedGame);
@@ -62,8 +67,9 @@ function RoomPage(): JSX.Element {
   }, [selectedGame]);
 
   React.useEffect(() => {
-    if (room) {
-      navigate(`/game/${room._id}`);
+    if (room && selectedGame) {
+      const route = gameRoutes[selectedGame] || '/game';
+      navigate(`${route}/${room._id}`);
     }
   }, [room]);
 
@@ -92,6 +98,7 @@ function RoomPage(): JSX.Element {
                 key={g.id}
                 style={{
                   width: 300,
+                  minHeight: 300,
                   marginLeft: 5,
                   marginRight: 5,
                   backgroundColor: selectedGame === g.id ? '#D2EBFE' : '',
