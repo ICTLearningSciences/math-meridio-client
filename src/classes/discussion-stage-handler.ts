@@ -127,7 +127,6 @@ export class DiscussionStageHandler {
         return nextStep;
       }
     }
-
     if (currentStep.jumpToStepId) {
       const jumpStep = this.getStepById(
         discussionStage,
@@ -292,10 +291,9 @@ export class DiscussionStageHandler {
           step as PromptStageStep
         );
       case DiscussionStageStepType.CONDITIONAL:
-        return await this.getNextStepFromConditional(
-          discussionStage,
-          step as ConditionalActivityStep
-        );
+        // A conditional step is just an extra condition to determine the next step
+        // So we can just call updateRoomWithNextStep with the step
+        return await this.updateRoomWithNextStep(discussionStage, step);
       default:
         throw new Error(`Unknown step type: ${step}`);
     }
@@ -338,12 +336,23 @@ export class DiscussionStageHandler {
     this.setResponsePending(false);
     for (let i = 0; i < conditionals.length; i++) {
       const condition = conditionals[i];
-      const stateValue = this.stateData[condition.stateDataKey];
+      let stateValue = this.stateData[condition.stateDataKey];
       if (!stateValue) {
         this.sendErrorMessage(
           `An error occured during this activity. Could not find state value ${condition.stateDataKey}.`
         );
         return;
+      }
+
+      if (
+        typeof stateValue === 'string' &&
+        ['false', 'true', 'False', 'True'].includes(stateValue)
+      ) {
+        if (stateValue === 'false' || stateValue === 'False') {
+          stateValue = false;
+        } else {
+          stateValue = true;
+        }
       }
 
       if (condition.checking === Checking.VALUE) {
