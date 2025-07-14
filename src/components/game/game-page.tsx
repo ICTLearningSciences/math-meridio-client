@@ -22,6 +22,7 @@ import { useAppSelector } from '../../store/hooks';
 import { useWithGame } from '../../store/slices/game/use-with-game-state';
 import { GameStateHandler } from '../../classes/game-state-handler';
 import withAuthorizationOnly from '../../wrap-with-authorization-only';
+import Popup from '../popup';
 
 function ProblemSpace(props: {
   game: Game;
@@ -111,19 +112,35 @@ function ResultsSpace(props: {
 
 function GamePage(): JSX.Element {
   const { room, simulation } = useAppSelector((state) => state.gameData);
-  const { game, gameStateHandler, launchGame, responsePending } = useWithGame();
+  const {
+    game,
+    gameStateHandler,
+    launchGame,
+    responsePending,
+    ownerIsPresent,
+  } = useWithGame();
   const navigate = useNavigate();
+  const [popupOpen, setPopupOpen] = React.useState(false);
+  const [alreadyShownPopup, setAlreadyShownPopup] = React.useState(false);
 
   React.useEffect(() => {
     if (!room) {
       navigate('/');
+    }
+    if (!alreadyShownPopup && !ownerIsPresent) {
+      setPopupOpen(true);
+      setAlreadyShownPopup(true);
     }
     // return () => {
     //   if (gameStateHandler && room) {
     //     leaveRoom();
     //   }
     // };
-  }, [Boolean(room)]);
+  }, [Boolean(room), ownerIsPresent]);
+
+  const handleClosePopup = () => {
+    setPopupOpen(false);
+  };
 
   if (!room) {
     return (
@@ -144,40 +161,43 @@ function GamePage(): JSX.Element {
   }
 
   return (
-    <div className="root row" style={{ backgroundColor: '#cfdaf8' }}>
-      <Grid container flexDirection="row" style={{ height: '100%' }}>
-        <Grid item xs={6} flexDirection="column" style={{ height: '100%' }}>
-          <div className="column" style={{ height: '100%', width: '100%' }}>
-            <ProblemSpace game={game} controller={gameStateHandler} />
-            <SolutionSpace game={game} controller={gameStateHandler} />
-          </div>
+    <>
+      <Popup open={popupOpen} onClose={handleClosePopup} />
+      <div className="root row" style={{ backgroundColor: '#cfdaf8' }}>
+        <Grid container flexDirection="row" style={{ height: '100%' }}>
+          <Grid item xs={6} flexDirection="column" style={{ height: '100%' }}>
+            <div className="column" style={{ height: '100%', width: '100%' }}>
+              <ProblemSpace game={game} controller={gameStateHandler} />
+              <SolutionSpace game={game} controller={gameStateHandler} />
+            </div>
+          </Grid>
+          <Grid item xs={6} style={{ height: '100%' }}>
+            <div className="column" style={{ height: '100%', width: '100%' }}>
+              <SimulationSpace
+                game={game}
+                controller={gameStateHandler}
+                simulation={simulation}
+              />
+              <ResultsSpace game={game} controller={gameStateHandler} />
+            </div>
+          </Grid>
         </Grid>
-        <Grid item xs={6} style={{ height: '100%' }}>
-          <div className="column" style={{ height: '100%', width: '100%' }}>
-            <SimulationSpace
-              game={game}
-              controller={gameStateHandler}
-              simulation={simulation}
-            />
-            <ResultsSpace game={game} controller={gameStateHandler} />
-          </div>
-        </Grid>
-      </Grid>
-      <Stack
-        spacing={2}
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          height: '100%',
-          width: 600,
-          padding: 10,
-          boxSizing: 'border-box',
-        }}
-      >
-        <ChatThread responsePending={responsePending} />
-        <ChatForm />
-      </Stack>
-    </div>
+        <Stack
+          spacing={2}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            height: '100%',
+            width: 600,
+            padding: 10,
+            boxSizing: 'border-box',
+          }}
+        >
+          <ChatThread responsePending={responsePending} />
+          <ChatForm />
+        </Stack>
+      </div>
+    </>
   );
 }
 

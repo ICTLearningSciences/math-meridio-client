@@ -38,6 +38,7 @@ import {
   localStorageStore,
   SESSION_ID,
 } from '../../local-storage';
+import { useWithConfig } from '../config/use-with-config';
 export abstract class Subscriber {
   abstract newChatLogReceived(chatLog: ChatMessage[]): void;
   abstract simulationEnded(): void;
@@ -51,11 +52,18 @@ export function useWithGame() {
   const { player } = useAppSelector((state) => state.playerData);
   const { room, loadStatus } = useAppSelector((state) => state.gameData);
   const [responsePending, setResponsePending] = React.useState<boolean>(false);
+  const { firstAvailableAzureServiceModel } = useWithConfig();
   const { loadDiscussionStages } = useWithStages();
   const poll = React.useRef<NodeJS.Timeout | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const operationQueue = React.useRef<(() => Promise<any>)[]>([]);
   const isProcessing = React.useRef<boolean>(false);
+  const ownerIsPresent = React.useMemo(() => {
+    if (loadStatus.status === LoadStatus.IN_PROGRESS) return true;
+    return room?.gameData.players.some(
+      (p) => p.clientId === room?.gameData.globalStateData.roomOwnerId
+    );
+  }, [room, player, loadStatus]);
 
   const [game, setGame] = React.useState<Game>();
   const [subscribers, setSubscribers] = React.useState<Subscriber[]>([]);
@@ -68,7 +76,6 @@ export function useWithGame() {
   const [gameStateHandler, setGameStateHandler] =
     React.useState<GameStateHandler>();
   const chatLog = useAppSelector((state) => state.gameData.room?.gameData.chat);
-  // console.log("room", room?.gameData.globalStateData.curStageId, room?.gameData.globalStateData.curStepId)
   React.useEffect(() => {
     if (!room || equals(lastChatLog, room.gameData.chat)) return;
     for (let i = 0; i < subscribers.length; i++) {
@@ -173,6 +180,7 @@ export function useWithGame() {
         return syncLlmRequest(llmRequest, cancelToken);
       },
       viewedSimulation: _viewedSimulation,
+      targetAiServiceModel: firstAvailableAzureServiceModel(),
     });
     if (!poll.current) {
       poll.current = setInterval(() => {
@@ -304,5 +312,6 @@ export function useWithGame() {
     sendMessage: _sendMessage,
     updateRoomGameData: _updateRoomGameData,
     responsePending,
+    ownerIsPresent,
   };
 }

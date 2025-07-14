@@ -7,7 +7,6 @@ The full terms of this copyright and license should always be found in the root 
 import { v4 as uuid } from 'uuid';
 import { Avatar, savePlayer } from '.';
 import { jsonLlmRequest } from '../../../classes/api-helpers';
-import { AzureServiceModel } from '../../../classes/types';
 import {
   GenericLlmRequest,
   PromptOutputTypes,
@@ -16,6 +15,7 @@ import {
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { Schema } from 'jsonschema';
 import { arrayGetRandom, randomInt } from '../../../helpers';
+import { useWithConfig } from '../config/use-with-config';
 
 export const pickAvatarSchema: Schema = {
   type: 'array',
@@ -39,6 +39,7 @@ export function useWithPlayer() {
   const { player, loadStatus, saveStatus } = useAppSelector(
     (state) => state.playerData
   );
+  const { firstAvailableAzureServiceModel } = useWithConfig();
 
   function createPlayerName(name: string): void {
     dispatch(
@@ -179,7 +180,7 @@ export function useWithPlayer() {
             promptRole: PromptRoles.USER,
           },
         ],
-        targetAiServiceModel: AzureServiceModel,
+        targetAiServiceModel: firstAvailableAzureServiceModel(),
         outputDataType: PromptOutputTypes.JSON,
         responseFormat: `
             Please only respond in JSON.

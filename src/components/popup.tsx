@@ -4,21 +4,37 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { Schema } from 'jsonschema';
+import React from 'react';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+} from '@mui/material';
 
-export interface GameObjects {
-  clientId: string;
-  name: string;
+interface PopupProps {
+  open: boolean;
+  onClose: () => void;
 }
 
-export interface IRemoveItem {
-  clientId: string;
-}
-
-export const removeItemSchema: Schema = {
-  type: 'object',
-  properties: {
-    clientId: { type: 'string' },
-  },
-  required: ['clientId'],
+const Popup: React.FC<PopupProps> = ({ open, onClose }) => {
+  return (
+    <Dialog open={open} onClose={onClose}>
+      <DialogTitle style={{ textAlign: 'center' }}>
+        Owner Not Present
+      </DialogTitle>
+      <DialogContent style={{ textAlign: 'center' }}>
+        The owner of this room is not present. Please join an Active Room or
+        create your own.
+      </DialogContent>
+      <DialogActions style={{ justifyContent: 'center' }}>
+        <Button onClick={onClose} color="primary">
+          Close
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
 };
+
+export default Popup;

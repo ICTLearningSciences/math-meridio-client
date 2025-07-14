@@ -4,6 +4,7 @@ env:
   variables:
     STAGE: 'prod'
     REACT_APP_GRAPHQL_ENDPOINT: "https://api.meridiomath.org/graphql/graphql"
+    REACT_APP_ABE_GQL_ENDPOINT: "https://api.abewriting.org/graphql/graphql"
     REACT_APP_LLM_API_ENDPOINT: "https://api.abewriting.org/docs"
   parameter-store:
     S3_DEPLOY_BUCKET_PROD: "/mathm/prod/s3-websites/NAME"
