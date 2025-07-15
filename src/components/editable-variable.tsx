@@ -12,9 +12,9 @@ import {
   INSIDE_SHOT_PERCENT,
   MID_SHOT_PERCENT,
   OUTSIDE_SHOT_PERCENT,
-} from './solution';
-import { useDebouncedCallback } from '../../hooks/use-debounced-callback';
-import { didGameStateDataChange } from '../../helpers';
+} from '../game/basketball/solution';
+import { useDebouncedCallback } from '../hooks/use-debounced-callback';
+import { didGameStateDataChange } from '../helpers';
 export const EditableVariable = React.memo(
   function EditableVariable(props: {
     dataKey: string;
