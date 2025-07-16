@@ -16,6 +16,7 @@ import {
   InputAdornment,
   InputLabel,
   OutlinedInput,
+  Typography,
 } from '@mui/material';
 import { Mic, MicOutlined, Send } from '@mui/icons-material';
 
@@ -24,6 +25,8 @@ import { ChatMessage, SenderType } from '../../store/slices/game';
 import { useWithGame } from '../../store/slices/game/use-with-game-state';
 import { SESSION_ID } from '../../store/local-storage';
 import { localStorageGet } from '../../store/local-storage';
+
+export const MAX_MESSAGE_LENGTH = 200;
 
 export default function ChatForm(props: {
   sendMessage?: (msg: ChatMessage) => void;
@@ -46,6 +49,9 @@ export default function ChatForm(props: {
 
   function onSend(): void {
     const sessionId = localStorageGet(SESSION_ID);
+    if (input.trim() === '' || input.length > MAX_MESSAGE_LENGTH) {
+      return;
+    }
     const msg: ChatMessage = {
       id: uuid(),
       sender: SenderType.PLAYER,
@@ -94,6 +100,21 @@ export default function ChatForm(props: {
           onKeyDown={(e) => onKeyPress(e)}
           style={{ backgroundColor: 'white' }}
           multiline
+          inputProps={{ maxLength: MAX_MESSAGE_LENGTH }}
+          startAdornment={
+            input.length > MAX_MESSAGE_LENGTH * 0.75 && (
+              <InputAdornment position="start">
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  margin={0}
+                  padding={0}
+                >
+                  {input.length}/{MAX_MESSAGE_LENGTH}
+                </Typography>
+              </InputAdornment>
+            )
+          }
           endAdornment={
             <InputAdornment position="end">
               <IconButton
@@ -101,6 +122,7 @@ export default function ChatForm(props: {
                 color="primary"
                 edge="end"
                 onClick={onSend}
+                disabled={input.length > MAX_MESSAGE_LENGTH}
               >
                 <Send />
               </IconButton>

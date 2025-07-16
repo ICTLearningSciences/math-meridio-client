@@ -47,17 +47,17 @@ export const UNDERSTANDS_TICKET_PRICES_KEY = 'understands_ticket_prices';
 export const BEST_STRATEGY_FOUND_KEY = 'best_strategy_found';
 
 export const VIP_TICKET_PERCENT_KEY = 'vip_ticket_percent';
-export const VIP_TICKET_PRICE = 2;
-export const VIP_TICKET_SELL_THROUGH_RATE = 0.5;
+export const VIP_TICKET_PRICE = 75;
+export const VIP_TICKET_SELL_THROUGH_RATE = 0.36;
 
 export const RESERVED_TICKET_PERCENT_KEY = 'reserved_ticket_percent';
-export const RESERVED_TICKET_PRICE = 2;
+export const RESERVED_TICKET_PRICE = 50;
 export const RESERVED_TICKET_SELL_THROUGH_RATE = 0.4;
 
 export const GENERAL_ADMISSION_TICKET_PERCENT_KEY =
   'general_admission_ticket_percent';
-export const GENERAL_ADMISSION_TICKET_PRICE = 3;
-export const GENERAL_ADMISSION_TICKET_SELL_THROUGH_RATE = 0.36;
+export const GENERAL_ADMISSION_TICKET_PRICE = 54;
+export const GENERAL_ADMISSION_TICKET_SELL_THROUGH_RATE = 0.5;
 
 export const TOTAL_NUMBER_OF_TICKETS = 100;
 

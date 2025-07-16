@@ -13,20 +13,14 @@ import { Player } from '../../store/slices/player';
 import { checkGameAndPlayerStateForValue } from '../../components/discussion-stage-builder/helpers';
 
 export const NUMBER_OF_SHOTS = 100;
-// export const INSIDE_SHOT_POINTS = 'inside_shot_points';
-// export const INSIDE_SHOT_SUCCESS = 'inside_shot_success';
 export const INSIDE_SHOT_PERCENT = 'inside_shot_percent';
 export const INSIDE_SHOT_POINTS_VALUE = 2;
 export const INSIDE_SHOT_SUCCESS_VALUE = 0.5;
 
-// export const MID_SHOT_POINTS = 'mid_shot_points';
-// export const MID_SHOT_SUCCESS = 'mid_shot_success';
 export const MID_SHOT_PERCENT = 'middle_shot_percent';
 export const MID_SHOT_POINTS_VALUE = 2;
 export const MID_SHOT_SUCCESS_VALUE = 0.4;
 
-// export const OUTSIDE_SHOT_POINTS = 'outside_shot_points';
-// export const OUTSIDE_SHOT_SUCCESS = 'outside_shot_success';
 export const OUTSIDE_SHOT_PERCENT = 'outside_shot_percent';
 export const OUTSIDE_SHOT_POINTS_VALUE = 3;
 export const OUTSIDE_SHOT_SUCCESS_VALUE = 0.36;
