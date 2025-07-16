@@ -369,7 +369,7 @@ export function PromptStepBuilder(props: {
     };
     const promptConfig: PromptConfiguration = {
       promptText: step.promptText,
-      promptRole: PromptRoles.USER,
+      promptRole: PromptRoles.SYSTEM,
     };
     llmRequest.prompts.push(promptConfig);
     if (step.jsonResponseData?.length) {

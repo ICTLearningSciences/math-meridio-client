@@ -656,13 +656,13 @@ export class DiscussionStageHandler {
         promptText: `Current state of chat log between user and system: ${chatLogToString(
           this.chatLog
         )}`,
-        promptRole: PromptRoles.USER,
+        promptRole: PromptRoles.SYSTEM,
       });
     }
 
     llmRequest.prompts.push({
       promptText: promptText,
-      promptRole: PromptRoles.USER,
+      promptRole: PromptRoles.SYSTEM,
     });
 
     if (
