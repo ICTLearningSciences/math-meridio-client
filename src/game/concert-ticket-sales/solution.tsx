@@ -216,7 +216,7 @@ export function SolutionComponent(props: {
       }}
     >
       <Variable
-        title="# of shots"
+        title="# of tickets up for sale"
         dataKey=""
         isEnabled={() => true}
         value={String(TOTAL_NUMBER_OF_TICKETS)}

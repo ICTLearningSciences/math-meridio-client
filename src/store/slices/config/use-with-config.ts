@@ -34,7 +34,6 @@ export function useWithConfig() {
       model: azureModels.modelList[0].name,
     };
   }
-  console.log('abeConfig', abeConfig);
   return {
     abeConfig,
     abeConfigLoadStatus,
