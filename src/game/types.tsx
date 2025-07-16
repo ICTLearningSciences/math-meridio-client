@@ -5,14 +5,14 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import BasketballGame from './basketball';
-import NewGame from './NEW-GAME';
+import NewGame from './concert-ticket-sales';
 import {
   GameStateHandler,
   GameStateHandlerArgs,
 } from '../classes/game-state-handler';
 
 export interface Game {
-  id: 'basketball' | 'new-game';
+  id: 'basketball' | 'concert-ticket-sales';
   name: string;
   problem: string;
   config: Phaser.Types.Core.GameConfig;
