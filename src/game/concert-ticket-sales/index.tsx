@@ -288,9 +288,9 @@ export class BasketballStateHandler extends GameStateHandler {
 }
 
 const BasketballGame: Game = {
-  id: 'new-game',
-  name: 'New Game',
-  problem: `We need you and the analyst team to figure out why we're losing and what we need to change in our strategy to be winners! From what you're seeing right now, what do you think we're doing wrong? Out of 100 shots, how many should be inside, outside, or mid lane? Inside and mid lane shots are worth 2 points, and outside shots are worth 3 points. Outside shots have a lower success rate, however.`,
+  id: 'concert-ticket-sales',
+  name: 'Concert Ticket Management',
+  problem: `We need you and the analyst team to figure out why we're not hitting our profit goals and what we need to change in our ticket sales strategy to become a top-selling venue! From what you're seeing right now, what do you think we're doing wrong? Out of 100 tickets, how many should be VIP, Reserved, or General Admission? VIP tickets bring in more money per sale but are harder to sell, while Reserved and General Admission have different price points and chances of selling.`,
   persistTruthGlobalStateData: [
     'Points per outside shot',
     'Points per inside shot',
