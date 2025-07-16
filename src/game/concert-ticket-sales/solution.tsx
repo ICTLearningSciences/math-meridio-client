@@ -12,32 +12,24 @@ import { makeStyles } from 'tss-react/mui';
 import { Player } from '../../store/slices/player';
 import { checkGameAndPlayerStateForValue } from '../../components/discussion-stage-builder/helpers';
 
-export const NUMBER_OF_SHOTS = 100;
-// export const INSIDE_SHOT_POINTS = 'inside_shot_points';
-// export const INSIDE_SHOT_SUCCESS = 'inside_shot_success';
-export const INSIDE_SHOT_PERCENT = 'inside_shot_percent';
-export const INSIDE_SHOT_POINTS_VALUE = 2;
-export const INSIDE_SHOT_SUCCESS_VALUE = 0.5;
-
-// export const MID_SHOT_POINTS = 'mid_shot_points';
-// export const MID_SHOT_SUCCESS = 'mid_shot_success';
-export const MID_SHOT_PERCENT = 'middle_shot_percent';
-export const MID_SHOT_POINTS_VALUE = 2;
-export const MID_SHOT_SUCCESS_VALUE = 0.4;
-
-// export const OUTSIDE_SHOT_POINTS = 'outside_shot_points';
-// export const OUTSIDE_SHOT_SUCCESS = 'outside_shot_success';
-export const OUTSIDE_SHOT_PERCENT = 'outside_shot_percent';
-export const OUTSIDE_SHOT_POINTS_VALUE = 3;
-export const OUTSIDE_SHOT_SUCCESS_VALUE = 0.36;
-
-export const UNDERSTANDS_SUCCESS_SHOTS = 'understands_success_shots';
-export const UNDERSTANDS_SHOT_POINTS = 'understands_shot_points';
-export const UNDERSTANDS_MULTIPLICATION = 'understands_multiplication';
-export const UNDERSTANDS_ADDITION = 'understands_addition';
-
 import courtBg from './court.png';
 import { EditableVariable } from '../../components/editable-variable';
+import {
+  VIP_TICKET_PERCENT_KEY,
+  VIP_TICKET_PRICE,
+  VIP_TICKET_SELL_THROUGH_RATE,
+  RESERVED_TICKET_PERCENT_KEY,
+  RESERVED_TICKET_PRICE,
+  RESERVED_TICKET_SELL_THROUGH_RATE,
+  GENERAL_ADMISSION_TICKET_PERCENT_KEY,
+  GENERAL_ADMISSION_TICKET_PRICE,
+  GENERAL_ADMISSION_TICKET_SELL_THROUGH_RATE,
+  TOTAL_NUMBER_OF_TICKETS,
+  UNDERSTANDS_ADDITION_KEY,
+  UNDERSTANDS_MULTIPLICATION_KEY,
+  UNDERSTANDS_TICKET_PRICES_KEY,
+  UNDERSTANDS_SELL_THROUGH_RATES_KEY,
+} from '.';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type GameStateData = Record<string, any>;
@@ -58,28 +50,30 @@ export function SolutionComponent(props: {
     (p) => p.player === controller.player.clientId
   );
 
-  const [understandsPoints, setUnderstandsPoints] = React.useState(false);
-  const [understandsSuccess, setUnderstandsSuccess] = React.useState(false);
+  const [understandsTicketPrices, setUnderstandsTicketPrices] =
+    React.useState(false);
+  const [understandsSellThroughRates, setUnderstandsSellThroughRates] =
+    React.useState(false);
   const [understandsMultiplication, setUnderstandsMultiplication] =
     React.useState(false);
   const [understandsAddition, setUnderstandsAddition] = React.useState(false);
   const [editingVariable, setEditingVariable] = React.useState('');
   React.useEffect(() => {
-    !understandsPoints &&
-      setUnderstandsPoints(
+    !understandsTicketPrices &&
+      setUnderstandsTicketPrices(
         checkGameAndPlayerStateForValue(
           controller.globalStateData.gameStateData,
           curPlayerStateData?.gameStateData || [],
-          UNDERSTANDS_SHOT_POINTS,
+          UNDERSTANDS_TICKET_PRICES_KEY,
           'true'
         )
       );
-    !understandsSuccess &&
-      setUnderstandsSuccess(
+    !understandsSellThroughRates &&
+      setUnderstandsSellThroughRates(
         checkGameAndPlayerStateForValue(
           controller.globalStateData.gameStateData,
           curPlayerStateData?.gameStateData || [],
-          UNDERSTANDS_SUCCESS_SHOTS,
+          UNDERSTANDS_SELL_THROUGH_RATES_KEY,
           'true'
         )
       );
@@ -88,7 +82,7 @@ export function SolutionComponent(props: {
         checkGameAndPlayerStateForValue(
           controller.globalStateData.gameStateData,
           curPlayerStateData?.gameStateData || [],
-          UNDERSTANDS_MULTIPLICATION,
+          UNDERSTANDS_MULTIPLICATION_KEY,
           'true'
         )
       );
@@ -97,7 +91,7 @@ export function SolutionComponent(props: {
         checkGameAndPlayerStateForValue(
           controller.globalStateData.gameStateData,
           curPlayerStateData?.gameStateData || [],
-          UNDERSTANDS_ADDITION,
+          UNDERSTANDS_ADDITION_KEY,
           'true'
         )
       );
@@ -225,15 +219,15 @@ export function SolutionComponent(props: {
         title="# of shots"
         dataKey=""
         isEnabled={() => true}
-        value={String(NUMBER_OF_SHOTS)}
+        value={String(TOTAL_NUMBER_OF_TICKETS)}
         forceShow={true}
       />
       <div className="row center-div">
         <Variable
-          dataKey={UNDERSTANDS_SHOT_POINTS}
-          isEnabled={() => understandsPoints}
-          title="Points per inside shot"
-          value={String(INSIDE_SHOT_POINTS_VALUE)}
+          dataKey={UNDERSTANDS_TICKET_PRICES_KEY}
+          isEnabled={() => understandsTicketPrices}
+          title="Price per ticket"
+          value={String(VIP_TICKET_PRICE)}
         />
         <RevealingIcon
           reveal={understandsMultiplication}
@@ -252,18 +246,19 @@ export function SolutionComponent(props: {
             controller.newPlayerStateData(
               [
                 {
-                  key: INSIDE_SHOT_PERCENT,
+                  key: VIP_TICKET_PERCENT_KEY,
                   value: newValue,
                 },
               ],
               controller.player.clientId
             );
           }}
-          dataKey={INSIDE_SHOT_PERCENT}
-          title="# of inside shots"
+          dataKey={VIP_TICKET_PERCENT_KEY}
+          title="# of VIP tickets"
           myPlayerStateData={myPlayerStateData}
           shouldDisable={
-            Boolean(editingVariable) && editingVariable !== INSIDE_SHOT_PERCENT
+            Boolean(editingVariable) &&
+            editingVariable !== VIP_TICKET_PERCENT_KEY
           }
           setEditingVariable={setEditingVariable}
         />
@@ -280,10 +275,10 @@ export function SolutionComponent(props: {
           }
         />
         <Variable
-          dataKey={UNDERSTANDS_SUCCESS_SHOTS}
-          isEnabled={() => understandsSuccess}
-          title="Success% of inside shots"
-          value={String(INSIDE_SHOT_SUCCESS_VALUE)}
+          dataKey={UNDERSTANDS_SELL_THROUGH_RATES_KEY}
+          isEnabled={() => understandsSellThroughRates}
+          title="% chance of selling tickets"
+          value={String(VIP_TICKET_SELL_THROUGH_RATE)}
         />
       </div>
       <RevealingIcon
@@ -297,10 +292,10 @@ export function SolutionComponent(props: {
       />
       <div className="row center-div">
         <Variable
-          isEnabled={() => understandsPoints}
-          dataKey={UNDERSTANDS_SHOT_POINTS}
-          title="Points per mid shot"
-          value={String(MID_SHOT_POINTS_VALUE)}
+          isEnabled={() => understandsTicketPrices}
+          dataKey={UNDERSTANDS_TICKET_PRICES_KEY}
+          title="Price per ticket"
+          value={String(RESERVED_TICKET_PRICE)}
         />
         <RevealingIcon
           reveal={understandsMultiplication}
@@ -319,18 +314,19 @@ export function SolutionComponent(props: {
             controller.newPlayerStateData(
               [
                 {
-                  key: MID_SHOT_PERCENT,
+                  key: RESERVED_TICKET_PERCENT_KEY,
                   value: newValue,
                 },
               ],
               controller.player.clientId
             );
           }}
-          dataKey={MID_SHOT_PERCENT}
-          title="# of mid shots"
+          dataKey={RESERVED_TICKET_PERCENT_KEY}
+          title="# of reserved tickets"
           myPlayerStateData={myPlayerStateData}
           shouldDisable={
-            Boolean(editingVariable) && editingVariable !== MID_SHOT_PERCENT
+            Boolean(editingVariable) &&
+            editingVariable !== RESERVED_TICKET_PERCENT_KEY
           }
           setEditingVariable={setEditingVariable}
         />
@@ -347,10 +343,10 @@ export function SolutionComponent(props: {
           }
         />
         <Variable
-          isEnabled={() => understandsSuccess}
-          dataKey={UNDERSTANDS_SUCCESS_SHOTS}
-          title="Success% of mid shots"
-          value={String(MID_SHOT_SUCCESS_VALUE)}
+          isEnabled={() => understandsSellThroughRates}
+          dataKey={UNDERSTANDS_SELL_THROUGH_RATES_KEY}
+          title="% chance of selling tickets"
+          value={String(RESERVED_TICKET_SELL_THROUGH_RATE)}
         />
       </div>
       <RevealingIcon
@@ -364,10 +360,10 @@ export function SolutionComponent(props: {
       />
       <div className="row center-div">
         <Variable
-          dataKey={UNDERSTANDS_SHOT_POINTS}
-          isEnabled={() => understandsPoints}
-          title="Points per outside shot"
-          value={String(OUTSIDE_SHOT_POINTS_VALUE)}
+          dataKey={UNDERSTANDS_TICKET_PRICES_KEY}
+          isEnabled={() => understandsTicketPrices}
+          title="Price per ticket"
+          value={String(GENERAL_ADMISSION_TICKET_PRICE)}
         />
         <RevealingIcon
           reveal={understandsMultiplication}
@@ -386,18 +382,19 @@ export function SolutionComponent(props: {
             controller.newPlayerStateData(
               [
                 {
-                  key: OUTSIDE_SHOT_PERCENT,
+                  key: GENERAL_ADMISSION_TICKET_PERCENT_KEY,
                   value: newValue,
                 },
               ],
               controller.player.clientId
             );
           }}
-          dataKey={OUTSIDE_SHOT_PERCENT}
-          title="# of 3 pointers"
+          dataKey={GENERAL_ADMISSION_TICKET_PERCENT_KEY}
+          title="# of general admission tickets"
           myPlayerStateData={myPlayerStateData}
           shouldDisable={
-            Boolean(editingVariable) && editingVariable !== OUTSIDE_SHOT_PERCENT
+            Boolean(editingVariable) &&
+            editingVariable !== GENERAL_ADMISSION_TICKET_PERCENT_KEY
           }
           setEditingVariable={setEditingVariable}
         />
@@ -414,10 +411,10 @@ export function SolutionComponent(props: {
           }
         />
         <Variable
-          dataKey={UNDERSTANDS_SUCCESS_SHOTS}
-          isEnabled={() => understandsSuccess}
-          title="Success% of outside shots"
-          value={String(OUTSIDE_SHOT_SUCCESS_VALUE)}
+          dataKey={UNDERSTANDS_SELL_THROUGH_RATES_KEY}
+          isEnabled={() => understandsSellThroughRates}
+          title="% chance of selling tickets"
+          value={String(GENERAL_ADMISSION_TICKET_SELL_THROUGH_RATE)}
         />
       </div>
     </div>

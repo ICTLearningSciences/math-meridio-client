@@ -7,13 +7,13 @@ The full terms of this copyright and license should always be found in the root 
 import React, { useState } from 'react';
 import { BarChart } from '@mui/x-charts/BarChart';
 import { GameStateHandler } from '../../classes/game-state-handler';
-import { BasketballSimulationData } from './SimulationScene';
+import { ConcertTicketSalesSimulationData } from './SimulationScene';
 import EventSystem from '../event-system';
 import {
-  INSIDE_SHOT_POINTS_VALUE,
-  MID_SHOT_POINTS_VALUE,
-  OUTSIDE_SHOT_POINTS_VALUE,
-} from './solution';
+  VIP_TICKET_PRICE,
+  RESERVED_TICKET_PRICE,
+  GENERAL_ADMISSION_TICKET_PRICE,
+} from '.';
 import { Stack, Typography, Tabs, Tab, Box } from '@mui/material';
 
 export function ResultComponent(props: {
@@ -21,7 +21,7 @@ export function ResultComponent(props: {
 }): JSX.Element {
   const { controller } = props;
   const [simulationData, setSimulationData] = React.useState<
-    Record<string, BasketballSimulationData>
+    Record<string, ConcertTicketSalesSimulationData>
   >({});
   React.useEffect(() => {
     EventSystem.on('simulationEnded', simulationEnded);
@@ -29,12 +29,12 @@ export function ResultComponent(props: {
   const chartHeight = 300;
   const resultsWidth = window.innerWidth / 2 - 300;
   const scoreChartWidth = resultsWidth / 2;
-  const shotsChartWidth = resultsWidth / controller.players.length;
+  const ticketsChartWidth = resultsWidth / controller.players.length;
 
   interface ChartData {
-    insideScores: number[];
-    midScores: number[];
-    outsideScores: number[];
+    profitFromVipTickets: number[];
+    profitFromReservedTickets: number[];
+    profitFromGeneralAdmissionTickets: number[];
 
     player1Data: number[];
     player1MissedData: number[];
@@ -52,9 +52,9 @@ export function ResultComponent(props: {
   }
 
   const [myChartData, setMyChartData] = useState<ChartData>({
-    insideScores: [],
-    midScores: [],
-    outsideScores: [],
+    profitFromVipTickets: [],
+    profitFromReservedTickets: [],
+    profitFromGeneralAdmissionTickets: [],
     player1Data: [],
     player1MissedData: [],
     player2Data: [],
@@ -66,7 +66,7 @@ export function ResultComponent(props: {
     playerLabels: [],
   });
 
-  const scoreLabels = ['In', 'Mid', '3pt'];
+  const ticketLabels = ['VIP', 'Reserved', 'General Admission'];
 
   const [tabValue, setTabValue] = useState(0);
 
@@ -74,12 +74,12 @@ export function ResultComponent(props: {
     setTabValue(newValue);
   };
 
-  function simulationEnded(data: BasketballSimulationData): void {
+  function simulationEnded(data: ConcertTicketSalesSimulationData): void {
     simulationData[data.player] = data;
     setSimulationData({ ...simulationData });
-    let insideScores: number[] = [];
-    let midScores: number[] = [];
-    let outsideScores: number[] = [];
+    let profitFromVipTickets: number[] = [];
+    let profitFromReservedTickets: number[] = [];
+    let profitFromGeneralAdmissionTickets: number[] = [];
 
     let player1Data: number[] = [];
     let player1MissedData: number[] = [];
@@ -98,17 +98,17 @@ export function ResultComponent(props: {
     for (let index = 0; index < controller.players.length; index++) {
       const player = controller.players[index];
       const playerMade = [
-        simulationData[player.clientId]?.insideShotsMade,
-        simulationData[player.clientId]?.midShotsMade,
-        simulationData[player.clientId]?.outsideShotsMade,
+        simulationData[player.clientId]?.vipTicketsSold,
+        simulationData[player.clientId]?.reservedTicketsSold,
+        simulationData[player.clientId]?.generalAdmissionTicketsSold,
       ];
       const playerMissed = [
-        simulationData[player.clientId]?.insideShots -
-          simulationData[player.clientId]?.insideShotsMade,
-        simulationData[player.clientId]?.midShots -
-          simulationData[player.clientId]?.midShotsMade,
-        simulationData[player.clientId]?.outsideShots -
-          simulationData[player.clientId]?.outsideShotsMade,
+        simulationData[player.clientId]?.vipTicketsUpForSale -
+          simulationData[player.clientId]?.vipTicketsSold,
+        simulationData[player.clientId]?.reservedTicketsUpForSale -
+          simulationData[player.clientId]?.reservedTicketsSold,
+        simulationData[player.clientId]?.generalAdmissionTicketsUpForSale -
+          simulationData[player.clientId]?.generalAdmissionTicketsSold,
       ];
 
       switch (index) {
@@ -130,28 +130,28 @@ export function ResultComponent(props: {
           break;
       }
     }
-    insideScores = controller.players.map(
+    profitFromVipTickets = controller.players.map(
       (player) =>
-        (simulationData[player.clientId]?.insideShotsMade || 0) *
-        INSIDE_SHOT_POINTS_VALUE
+        (simulationData[player.clientId]?.vipTicketsSold || 0) *
+        VIP_TICKET_PRICE
     );
 
-    midScores = controller.players.map(
+    profitFromReservedTickets = controller.players.map(
       (player) =>
-        (simulationData[player.clientId]?.midShotsMade || 0) *
-        MID_SHOT_POINTS_VALUE
+        (simulationData[player.clientId]?.reservedTicketsSold || 0) *
+        RESERVED_TICKET_PRICE
     );
 
-    outsideScores = controller.players.map(
+    profitFromGeneralAdmissionTickets = controller.players.map(
       (player) =>
-        (simulationData[player.clientId]?.outsideShotsMade || 0) *
-        OUTSIDE_SHOT_POINTS_VALUE
+        (simulationData[player.clientId]?.generalAdmissionTicketsSold || 0) *
+        GENERAL_ADMISSION_TICKET_PRICE
     );
     playerLabels = controller.players.map((player) => player.name);
     setMyChartData({
-      insideScores: insideScores,
-      midScores: midScores,
-      outsideScores: outsideScores,
+      profitFromVipTickets: profitFromVipTickets,
+      profitFromReservedTickets: profitFromReservedTickets,
+      profitFromGeneralAdmissionTickets: profitFromGeneralAdmissionTickets,
       player1Data: player1Data,
       player1MissedData: player1MissedData,
       player2Data: player2Data,
@@ -173,18 +173,18 @@ export function ResultComponent(props: {
     return (
       <Stack key={index} direction="column" alignItems="center">
         <BarChart
-          width={shotsChartWidth}
+          width={ticketsChartWidth}
           height={chartHeight}
           series={[
-            { data: playerData, label: 'made', stack: 'shots' },
+            { data: playerData, label: 'sold', stack: 'tickets' },
             {
               data: playerMissedData,
-              label: 'missed',
-              stack: 'shots',
+              label: 'unsold',
+              stack: 'tickets',
             },
           ]}
           slotProps={{ legend: { hidden: bHideLegend } }}
-          xAxis={[{ data: scoreLabels, scaleType: 'band' }]}
+          xAxis={[{ data: ticketLabels, scaleType: 'band' }]}
           yAxis={[{ disableLine: true, disableTicks: true, tickFontSize: 0 }]}
         />
         <Typography variant="subtitle1">{playerName}</Typography>
@@ -199,8 +199,8 @@ export function ResultComponent(props: {
       width={resultsWidth}
     >
       <Tabs value={tabValue} onChange={handleTabChange}>
-        <Tab label="Score" />
-        <Tab label="Shots" />
+        <Tab label="Profit" />
+        <Tab label="Tickets" />
       </Tabs>
       <Box sx={{ width: '100%', mt: 2 }}>
         {tabValue === 0 && (
@@ -211,21 +211,21 @@ export function ResultComponent(props: {
               height={chartHeight}
               series={[
                 {
-                  data: myChartData.insideScores,
-                  label: 'In',
-                  stack: 'mademissedshots',
+                  data: myChartData.profitFromVipTickets,
+                  label: 'VIP',
+                  stack: 'profit',
                   color: '#e15759',
                 },
                 {
-                  data: myChartData.midScores,
-                  label: 'Mid',
-                  stack: 'mademissedshots',
+                  data: myChartData.profitFromReservedTickets,
+                  label: 'Reserved',
+                  stack: 'profit',
                   color: '#ff9da7',
                 },
                 {
-                  data: myChartData.outsideScores,
-                  label: '3pt',
-                  stack: 'mademissedshots',
+                  data: myChartData.profitFromGeneralAdmissionTickets,
+                  label: 'General Admission',
+                  stack: 'profit',
                   color: '#af7aa1',
                 },
               ]}

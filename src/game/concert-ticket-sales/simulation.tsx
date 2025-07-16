@@ -11,19 +11,19 @@ import { useWithPhaserGame } from '../../hooks/use-with-phaser-game';
 import { PlayerStateData } from '../../store/slices/game';
 import EventSystem from '../event-system';
 import { Button, Typography } from '@mui/material';
-import { BasketballSimulationData } from './SimulationScene';
+import { ConcertTicketSalesSimulationData } from './SimulationScene';
 import {
-  INSIDE_SHOT_PERCENT,
-  MID_SHOT_PERCENT,
-  OUTSIDE_SHOT_PERCENT,
-  NUMBER_OF_SHOTS,
-  OUTSIDE_SHOT_SUCCESS_VALUE,
-  INSIDE_SHOT_SUCCESS_VALUE,
-  MID_SHOT_SUCCESS_VALUE,
-  OUTSIDE_SHOT_POINTS_VALUE,
-  INSIDE_SHOT_POINTS_VALUE,
-  MID_SHOT_POINTS_VALUE,
-} from './solution';
+  VIP_TICKET_PERCENT_KEY,
+  RESERVED_TICKET_PERCENT_KEY,
+  GENERAL_ADMISSION_TICKET_PERCENT_KEY,
+  TOTAL_NUMBER_OF_TICKETS,
+  GENERAL_ADMISSION_TICKET_SELL_THROUGH_RATE,
+  VIP_TICKET_SELL_THROUGH_RATE,
+  RESERVED_TICKET_SELL_THROUGH_RATE,
+  GENERAL_ADMISSION_TICKET_PRICE,
+  VIP_TICKET_PRICE,
+  RESERVED_TICKET_PRICE,
+} from '.';
 
 export function SimulationComponent(props: {
   controller: GameStateHandler;
@@ -44,33 +44,46 @@ export function SimulationComponent(props: {
   function PlayerStrategy(props: { data: PlayerStateData }): JSX.Element {
     const psd = props.data;
     const player = controller.players.find((p) => p.clientId === psd.player);
-    const insideShots =
-      psd.gameStateData.find((d) => d.key === INSIDE_SHOT_PERCENT)?.value || 0;
-    const midShots =
-      psd.gameStateData.find((d) => d.key === MID_SHOT_PERCENT)?.value || 0;
-    const outsideShots =
-      psd.gameStateData.find((d) => d.key === OUTSIDE_SHOT_PERCENT)?.value || 0;
+    const vipTicketsUpForSale =
+      psd.gameStateData.find((d) => d.key === VIP_TICKET_PERCENT_KEY)?.value ||
+      0;
+    const reservedTicketsUpForSale =
+      psd.gameStateData.find((d) => d.key === RESERVED_TICKET_PERCENT_KEY)
+        ?.value || 0;
+    const generalAdmissionTicketsUpForSale =
+      psd.gameStateData.find(
+        (d) => d.key === GENERAL_ADMISSION_TICKET_PERCENT_KEY
+      )?.value || 0;
 
     const canSimulate = Boolean(
-      parseInt(insideShots) + parseInt(midShots) + parseInt(outsideShots) ===
-        NUMBER_OF_SHOTS
+      parseInt(vipTicketsUpForSale) +
+        parseInt(reservedTicketsUpForSale) +
+        parseInt(generalAdmissionTicketsUpForSale) ===
+        TOTAL_NUMBER_OF_TICKETS
     );
 
     function simulate(): void {
-      const simData: BasketballSimulationData = {
+      const simData: ConcertTicketSalesSimulationData = {
         player: psd.player,
-        outsideShots: outsideShots,
-        midShots: midShots,
-        insideShots: insideShots,
-        outsideShotsMade: Math.round(outsideShots * OUTSIDE_SHOT_SUCCESS_VALUE),
-        insideShotsMade: Math.round(insideShots * INSIDE_SHOT_SUCCESS_VALUE),
-        midShotsMade: Math.round(midShots * MID_SHOT_SUCCESS_VALUE),
-        totalPoints: 0,
+        generalAdmissionTicketsUpForSale: generalAdmissionTicketsUpForSale,
+        generalAdmissionTicketsSold: Math.round(
+          generalAdmissionTicketsUpForSale *
+            GENERAL_ADMISSION_TICKET_SELL_THROUGH_RATE
+        ),
+        reservedTicketsUpForSale: reservedTicketsUpForSale,
+        reservedTicketsSold: Math.round(
+          reservedTicketsUpForSale * RESERVED_TICKET_SELL_THROUGH_RATE
+        ),
+        vipTicketsUpForSale: vipTicketsUpForSale,
+        vipTicketsSold: Math.round(
+          vipTicketsUpForSale * VIP_TICKET_SELL_THROUGH_RATE
+        ),
+        totalProfit: 0,
       };
-      simData.totalPoints =
-        simData.outsideShotsMade * OUTSIDE_SHOT_POINTS_VALUE +
-        simData.insideShotsMade * INSIDE_SHOT_POINTS_VALUE +
-        simData.midShotsMade * MID_SHOT_POINTS_VALUE;
+      simData.totalProfit =
+        simData.generalAdmissionTicketsSold * GENERAL_ADMISSION_TICKET_PRICE +
+        simData.vipTicketsSold * VIP_TICKET_PRICE +
+        simData.reservedTicketsSold * RESERVED_TICKET_PRICE;
       EventSystem.emit('simulate', simData);
     }
 
@@ -91,7 +104,8 @@ export function SimulationComponent(props: {
         <Typography
         // style={{ display: insideShots ? '' : 'none' }}
         >
-          {insideShots} inside, {midShots} mid, {outsideShots} 3-pointers
+          {vipTicketsUpForSale} vip, {reservedTicketsUpForSale} reserved,{' '}
+          {generalAdmissionTicketsUpForSale} general admission
         </Typography>
       </Button>
     );

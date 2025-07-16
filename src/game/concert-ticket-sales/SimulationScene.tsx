@@ -9,35 +9,37 @@ import { GameStateHandler } from '../../classes/game-state-handler';
 import { addBackground, addImage } from '../phaser-helpers';
 import EventSystem from '../event-system';
 import {
-  INSIDE_SHOT_SUCCESS_VALUE,
-  MID_SHOT_SUCCESS_VALUE,
-  NUMBER_OF_SHOTS,
-  OUTSIDE_SHOT_SUCCESS_VALUE,
-} from './solution';
+  VIP_TICKET_SELL_THROUGH_RATE,
+  RESERVED_TICKET_SELL_THROUGH_RATE,
+  TOTAL_NUMBER_OF_TICKETS,
+  GENERAL_ADMISSION_TICKET_SELL_THROUGH_RATE,
+} from '.';
 import { SenderType } from '../../store/slices/game';
 import { localStorageGet, SESSION_ID } from '../../store/local-storage';
-export interface BasketballSimulationData {
+export interface ConcertTicketSalesSimulationData {
   player: string;
 
-  outsideShots: number;
-  midShots: number;
-  insideShots: number;
+  // how many we propose to put up for sale
+  generalAdmissionTicketsUpForSale: number;
+  reservedTicketsUpForSale: number;
+  vipTicketsUpForSale: number;
 
-  outsideShotsMade: number;
-  midShotsMade: number;
-  insideShotsMade: number;
+  // how many we actually sold
+  generalAdmissionTicketsSold: number;
+  reservedTicketsSold: number;
+  vipTicketsSold: number;
 
-  totalPoints: number;
+  totalProfit: number;
 }
 
-export interface BasketballShot {
-  position: 'outside' | 'mid' | 'inside';
+export interface ConcertTicketSaleAttempt {
+  ticketType: 'generalAdmission' | 'reserved' | 'vip';
   success: boolean;
 }
 
 export class SimulationScene extends GameScene {
-  simulation: BasketballSimulationData | undefined;
-  shots: BasketballShot[];
+  simulation: ConcertTicketSalesSimulationData | undefined;
+  shots: ConcertTicketSaleAttempt[];
   curShot: number;
 
   constructor() {
@@ -78,7 +80,7 @@ export class SimulationScene extends GameScene {
     super.createScene();
   }
 
-  simulate(simulation: BasketballSimulationData) {
+  simulate(simulation: ConcertTicketSalesSimulationData) {
     if (!this.gameStateHandler || !this.bg) return;
     this.chatMsgText?.setAlpha(0);
     this.chatWindow?.setAlpha(0);
@@ -98,32 +100,42 @@ export class SimulationScene extends GameScene {
 
     for (
       let i = 0;
-      i < Math.ceil(simulation.outsideShots / (NUMBER_OF_SHOTS / 10));
+      i <
+      Math.ceil(
+        simulation.generalAdmissionTicketsUpForSale /
+          (TOTAL_NUMBER_OF_TICKETS / 10)
+      );
       i++
     ) {
       this.shots.push({
-        position: 'outside',
-        success: Math.random() <= OUTSIDE_SHOT_SUCCESS_VALUE,
+        ticketType: 'generalAdmission',
+        success: Math.random() <= GENERAL_ADMISSION_TICKET_SELL_THROUGH_RATE,
       });
     }
     for (
       let i = 0;
-      i < Math.ceil(simulation.midShots / (NUMBER_OF_SHOTS / 10));
+      i <
+      Math.ceil(
+        simulation.reservedTicketsUpForSale / (TOTAL_NUMBER_OF_TICKETS / 10)
+      );
       i++
     ) {
       this.shots.push({
-        position: 'mid',
-        success: Math.random() <= MID_SHOT_SUCCESS_VALUE,
+        ticketType: 'reserved',
+        success: Math.random() <= RESERVED_TICKET_SELL_THROUGH_RATE,
       });
     }
     for (
       let i = 0;
-      i < Math.ceil(simulation.insideShots / (NUMBER_OF_SHOTS / 10));
+      i <
+      Math.ceil(
+        simulation.vipTicketsUpForSale / (TOTAL_NUMBER_OF_TICKETS / 10)
+      );
       i++
     ) {
       this.shots.push({
-        position: 'inside',
-        success: Math.random() <= INSIDE_SHOT_SUCCESS_VALUE,
+        ticketType: 'vip',
+        success: Math.random() <= VIP_TICKET_SELL_THROUGH_RATE,
       });
     }
 
@@ -137,9 +149,9 @@ export class SimulationScene extends GameScene {
     }
     const shot = this.shots[this.curShot];
     const x =
-      shot.position === 'outside'
+      shot.ticketType === 'generalAdmission'
         ? this.bg!.displayWidth * 0.6
-        : shot.position === 'mid'
+        : shot.ticketType === 'reserved'
         ? this.bg!.displayWidth * 0.7
         : this.bg!.displayWidth * 0.8;
     let direction = '';
@@ -157,7 +169,7 @@ export class SimulationScene extends GameScene {
     }
   }
 
-  _runAndShoot(shot: BasketballShot, x: number) {
+  _runAndShoot(shot: ConcertTicketSaleAttempt, x: number) {
     this.tweens.add({
       targets: this.mySprite,
       x: x,
@@ -168,7 +180,7 @@ export class SimulationScene extends GameScene {
     });
   }
 
-  _shoot(shot: BasketballShot) {
+  _shoot(shot: ConcertTicketSaleAttempt) {
     // jump
     this.playSpriteAnim(this.mySprite, `jump_right`);
     const hoop = addImage(this, 'hoop', undefined, {

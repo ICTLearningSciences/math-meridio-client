@@ -38,6 +38,29 @@ const discussBestStrategyDiscussionStage =
   '6edb8b9f-8752-49a7-9327-acb2c80eebb9';
 const finishedDiscussionStage = 'd1323982-4f52-491e-b5e0-dbc70250e52b';
 
+export const UNDERSTANDS_ALGORITHM_KEY = 'understands_algorithm';
+export const UNDERSTANDS_MULTIPLICATION_KEY = 'understands_multiplication';
+export const UNDERSTANDS_ADDITION_KEY = 'understands_addition';
+export const UNDERSTANDS_SELL_THROUGH_RATES_KEY =
+  'understands_sell_through_rates';
+export const UNDERSTANDS_TICKET_PRICES_KEY = 'understands_ticket_prices';
+export const BEST_STRATEGY_FOUND_KEY = 'best_strategy_found';
+
+export const VIP_TICKET_PERCENT_KEY = 'vip_ticket_percent';
+export const VIP_TICKET_PRICE = 2;
+export const VIP_TICKET_SELL_THROUGH_RATE = 0.5;
+
+export const RESERVED_TICKET_PERCENT_KEY = 'reserved_ticket_percent';
+export const RESERVED_TICKET_PRICE = 2;
+export const RESERVED_TICKET_SELL_THROUGH_RATE = 0.4;
+
+export const GENERAL_ADMISSION_TICKET_PERCENT_KEY =
+  'general_admission_ticket_percent';
+export const GENERAL_ADMISSION_TICKET_PRICE = 3;
+export const GENERAL_ADMISSION_TICKET_SELL_THROUGH_RATE = 0.36;
+
+export const TOTAL_NUMBER_OF_TICKETS = 100;
+
 export interface CurrentStage<T extends IStage> {
   id: string;
   stage: T;
@@ -127,7 +150,7 @@ export class BasketballStateHandler extends GameStateHandler {
         id: 'explain-concepts',
         stage: explainConceptsStage,
         onStageFinished: (data) => {
-          if (data['understands_algorithm'] !== 'true') {
+          if (data[UNDERSTANDS_ALGORITHM_KEY] !== 'true') {
             this.updateStageByStageListId('key-concepts-convo');
           } else {
             this.updateStageByStageListId('select-strategy');
@@ -141,12 +164,12 @@ export class BasketballStateHandler extends GameStateHandler {
           this.discussionStageHandler.exitEarlyCondition = (
             data: CollectedDiscussionData
           ) => {
-            return data['understands_algorithm'] === 'true';
+            return data[UNDERSTANDS_ALGORITHM_KEY] === 'true';
           };
         },
         onStageFinished: (data) => {
           this.discussionStageHandler.exitEarlyCondition = undefined;
-          if (data['understands_algorithm'] !== 'true') {
+          if (data[UNDERSTANDS_ALGORITHM_KEY] !== 'true') {
             this.updateStageByStageListId('key-concepts-convo');
           } else {
             this.updateStageByStageListId('select-strategy');
@@ -175,7 +198,7 @@ export class BasketballStateHandler extends GameStateHandler {
         id: 'discuss-new-strategy',
         stage: discussNewStrategyStage,
         onStageFinished: (data) => {
-          if (data['best_strategy_found'] === 'false') {
+          if (data[BEST_STRATEGY_FOUND_KEY] === 'false') {
             this.updateStageByStageListId('discuss-best-strategy');
           } else {
             this.updateStageByStageListId('finished');
@@ -186,7 +209,7 @@ export class BasketballStateHandler extends GameStateHandler {
         id: 'discuss-best-strategy',
         stage: discussBestStrategyStage,
         onStageFinished: (data) => {
-          if (data['best_strategy_found'] === 'false') {
+          if (data[BEST_STRATEGY_FOUND_KEY] === 'false') {
             this.updateStageByStageListId('discuss-best-strategy');
           } else {
             this.updateStageByStageListId('finished');
@@ -231,60 +254,6 @@ export class BasketballStateHandler extends GameStateHandler {
       stage.onStageFinished({});
     }
   }
-
-  async handleNewUserMessage(message: string) {
-    // super.handleNewUserMessage(message);
-    // todo (not hard-coded)
-    const msg = message.toLowerCase();
-    if (msg.includes('outside shot')) {
-      const value = msg.includes('3') || msg.includes('three') ? 3 : undefined;
-      this.updateRoomGameData({
-        globalStateData: {
-          gameStateData: [{ key: 'Points per outside shot', value: value }],
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any,
-        playerStateData: [
-          {
-            player: this.player.clientId,
-            animation: '',
-            gameStateData: [{ key: 'Points per outside shot', value: value }],
-          },
-        ],
-      });
-    }
-    if (msg.includes('inside shot')) {
-      const value = msg.includes('2') || msg.includes('two') ? 2 : undefined;
-      this.updateRoomGameData({
-        globalStateData: {
-          gameStateData: [{ key: 'Points per inside shot', value: value }],
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any,
-        playerStateData: [
-          {
-            player: this.player.clientId,
-            animation: '',
-            gameStateData: [{ key: 'Points per inside shot', value: value }],
-          },
-        ],
-      });
-    }
-    if (msg.includes('mid shot')) {
-      const value = msg.includes('2') || msg.includes('two') ? 2 : undefined;
-      this.updateRoomGameData({
-        globalStateData: {
-          gameStateData: [{ key: 'Points per mid shot', value: value }],
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any,
-        playerStateData: [
-          {
-            player: this.player.clientId,
-            animation: '',
-            gameStateData: [{ key: 'Points per mid shot', value: value }],
-          },
-        ],
-      });
-    }
-  }
 }
 
 const BasketballGame: Game = {
@@ -292,15 +261,12 @@ const BasketballGame: Game = {
   name: 'Concert Ticket Management',
   problem: `We need you and the analyst team to figure out why we're not hitting our profit goals and what we need to change in our ticket sales strategy to become a top-selling venue! From what you're seeing right now, what do you think we're doing wrong? Out of 100 tickets, how many should be VIP, Reserved, or General Admission? VIP tickets bring in more money per sale but are harder to sell, while Reserved and General Admission have different price points and chances of selling.`,
   persistTruthGlobalStateData: [
-    'Points per outside shot',
-    'Points per inside shot',
-    'Points per mid shot',
-    'understands_algorithm',
-    'understands_multiplication',
-    'understands_addition',
-    'understands_success_shots',
-    'understands_shot_points',
-    'best_strategy_found',
+    UNDERSTANDS_ALGORITHM_KEY,
+    UNDERSTANDS_MULTIPLICATION_KEY,
+    UNDERSTANDS_ADDITION_KEY,
+    UNDERSTANDS_SELL_THROUGH_RATES_KEY,
+    UNDERSTANDS_TICKET_PRICES_KEY,
+    BEST_STRATEGY_FOUND_KEY,
   ],
   config: {
     type: Phaser.CANVAS,
