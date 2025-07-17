@@ -280,7 +280,17 @@ export default function ChatThread(props: {
                     borderTopRightRadius: myMessage ? '1em' : 0,
                   }}
                 >
-                  <Typography color={'white'}>{msg.message}</Typography>
+                  <pre
+                    style={{
+                      whiteSpace: 'pre-wrap',
+                      wordWrap: 'break-word',
+                      overflowWrap: 'break-word',
+                      margin: 0,
+                      fontFamily: 'inherit',
+                    }}
+                  >
+                    <Typography color={'white'}>{msg.message}</Typography>
+                  </pre>
                 </Paper>
               </Stack>
             </Stack>

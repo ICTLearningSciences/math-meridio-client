@@ -28,14 +28,12 @@ import { PlayerStateData } from '../../store/slices/game';
 import { SIMULTAION_VIEWED_KEY } from '../../helpers';
 
 const introductionDiscussionStage = '64de5488-c851-41b3-8347-18ffa340c753';
-const collectVariablesDiscussionStage = 'e20e0247-03a2-485f-b0be-b12ceb2af8b9';
-const explainConceptsDiscussionStage = '0d8f3055-373f-4726-9392-b3fd1dac8385';
-const keyConceptsConvoDiscussionStage = '821ea615-c727-4d3d-bd35-30f0ba3866a9';
+const collectStrategyDiscussionStage = 'e20e0247-03a2-485f-b0be-b12ceb2af8b9';
+const understandingEquationDiscussionStage =
+  '0d8f3055-373f-4726-9392-b3fd1dac8385';
 const selectStrategyDiscussionStage = 'f289f022-3fa7-42a1-9d3d-0642c3015867';
-const discussNewStrategyDiscussionStage =
+const determineBestStrategyDiscussionStage =
   '80419d6d-1eca-491e-a648-8db3db951c02';
-const discussBestStrategyDiscussionStage =
-  '6edb8b9f-8752-49a7-9327-acb2c80eebb9';
 const finishedDiscussionStage = 'd1323982-4f52-491e-b5e0-dbc70250e52b';
 
 export const UNDERSTANDS_ALGORITHM_KEY = 'understands_algorithm';
@@ -56,8 +54,8 @@ export const RESERVED_TICKET_SELL_THROUGH_RATE = 0.4;
 
 export const GENERAL_ADMISSION_TICKET_PERCENT_KEY =
   'general_admission_ticket_percent';
-export const GENERAL_ADMISSION_TICKET_PRICE = 54;
-export const GENERAL_ADMISSION_TICKET_SELL_THROUGH_RATE = 0.5;
+export const GENERAL_ADMISSION_TICKET_PRICE = 45;
+export const GENERAL_ADMISSION_TICKET_SELL_THROUGH_RATE = 0.6;
 
 export const TOTAL_NUMBER_OF_TICKETS = 100;
 
@@ -96,23 +94,17 @@ export class BasketballStateHandler extends GameStateHandler {
     const introDiscussionStage = this.dbDiscussionStages.find(
       (s) => s.clientId === introductionDiscussionStage
     );
-    const collectVariablesStage = this.dbDiscussionStages.find(
-      (s) => s.clientId === collectVariablesDiscussionStage
+    const collectStrategyStage = this.dbDiscussionStages.find(
+      (s) => s.clientId === collectStrategyDiscussionStage
     );
-    const explainConceptsStage = this.dbDiscussionStages.find(
-      (s) => s.clientId === explainConceptsDiscussionStage
-    );
-    const keyConceptsConvoStage = this.dbDiscussionStages.find(
-      (s) => s.clientId === keyConceptsConvoDiscussionStage
+    const understandingEquationStage = this.dbDiscussionStages.find(
+      (s) => s.clientId === understandingEquationDiscussionStage
     );
     const selectStrategyStage = this.dbDiscussionStages.find(
       (s) => s.clientId === selectStrategyDiscussionStage
     );
-    const discussNewStrategyStage = this.dbDiscussionStages.find(
-      (s) => s.clientId === discussNewStrategyDiscussionStage
-    );
-    const discussBestStrategyStage = this.dbDiscussionStages.find(
-      (s) => s.clientId === discussBestStrategyDiscussionStage
+    const determineBestStrategyStage = this.dbDiscussionStages.find(
+      (s) => s.clientId === determineBestStrategyDiscussionStage
     );
     const finishedStage = this.dbDiscussionStages.find(
       (s) => s.clientId === finishedDiscussionStage
@@ -120,12 +112,10 @@ export class BasketballStateHandler extends GameStateHandler {
 
     if (
       !introDiscussionStage ||
-      !collectVariablesStage ||
-      !explainConceptsStage ||
-      !keyConceptsConvoStage ||
+      !collectStrategyStage ||
+      !understandingEquationStage ||
       !selectStrategyStage ||
-      !discussNewStrategyStage ||
-      !discussBestStrategyStage ||
+      !determineBestStrategyStage ||
       !finishedStage
     ) {
       throw new Error('missing stage');
@@ -136,44 +126,21 @@ export class BasketballStateHandler extends GameStateHandler {
         id: 'intro-discussion',
         stage: introDiscussionStage,
         onStageFinished: () => {
-          this.updateStageByStageListId('collect-variables');
+          this.updateStageByStageListId('collect-strategy');
         },
       },
       {
-        id: 'collect-variables',
-        stage: collectVariablesStage,
+        id: 'collect-strategy',
+        stage: collectStrategyStage,
         onStageFinished: () => {
-          this.updateStageByStageListId('explain-concepts');
+          this.updateStageByStageListId('understanding-equation');
         },
       },
       {
-        id: 'explain-concepts',
-        stage: explainConceptsStage,
-        onStageFinished: (data) => {
-          if (data[UNDERSTANDS_ALGORITHM_KEY] !== 'true') {
-            this.updateStageByStageListId('key-concepts-convo');
-          } else {
-            this.updateStageByStageListId('select-strategy');
-          }
-        },
-      },
-      {
-        id: 'key-concepts-convo',
-        stage: keyConceptsConvoStage,
-        beforeStart: () => {
-          this.discussionStageHandler.exitEarlyCondition = (
-            data: CollectedDiscussionData
-          ) => {
-            return data[UNDERSTANDS_ALGORITHM_KEY] === 'true';
-          };
-        },
-        onStageFinished: (data) => {
-          this.discussionStageHandler.exitEarlyCondition = undefined;
-          if (data[UNDERSTANDS_ALGORITHM_KEY] !== 'true') {
-            this.updateStageByStageListId('key-concepts-convo');
-          } else {
-            this.updateStageByStageListId('select-strategy');
-          }
+        id: 'understanding-equation',
+        stage: understandingEquationStage,
+        onStageFinished: () => {
+          this.updateStageByStageListId('select-strategy');
         },
       },
       {
@@ -191,29 +158,14 @@ export class BasketballStateHandler extends GameStateHandler {
           stageType: 'simulation',
         } as SimulationStage,
         onStageFinished: () => {
-          this.updateStageByStageListId('discuss-new-strategy');
+          this.updateStageByStageListId('determine-best-strategy');
         },
       },
       {
-        id: 'discuss-new-strategy',
-        stage: discussNewStrategyStage,
-        onStageFinished: (data) => {
-          if (data[BEST_STRATEGY_FOUND_KEY] === 'false') {
-            this.updateStageByStageListId('discuss-best-strategy');
-          } else {
-            this.updateStageByStageListId('finished');
-          }
-        },
-      },
-      {
-        id: 'discuss-best-strategy',
-        stage: discussBestStrategyStage,
-        onStageFinished: (data) => {
-          if (data[BEST_STRATEGY_FOUND_KEY] === 'false') {
-            this.updateStageByStageListId('discuss-best-strategy');
-          } else {
-            this.updateStageByStageListId('finished');
-          }
+        id: 'determine-best-strategy',
+        stage: determineBestStrategyStage,
+        onStageFinished: () => {
+          this.updateStageByStageListId('finished');
         },
       },
       {

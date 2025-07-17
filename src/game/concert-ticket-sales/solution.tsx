@@ -134,6 +134,7 @@ export function SolutionComponent(props: {
     isEnabled: (value: any) => boolean;
     value?: string;
     forceShow?: boolean;
+    prefix?: string;
   }): JSX.Element {
     const { isEnabled } = props;
     const data =
@@ -163,6 +164,7 @@ export function SolutionComponent(props: {
       >
         <Typography className={classes.text}>{props.title}</Typography>
         <Typography className={classes.boxText} style={{ color: 'white' }}>
+          {props.prefix || ''}
           {value}
         </Typography>
       </Card>
@@ -216,7 +218,7 @@ export function SolutionComponent(props: {
       }}
     >
       <Variable
-        title="# of tickets up for sale"
+        title="Total # of tickets to sell"
         dataKey=""
         isEnabled={() => true}
         value={String(TOTAL_NUMBER_OF_TICKETS)}
@@ -226,7 +228,8 @@ export function SolutionComponent(props: {
         <Variable
           dataKey={UNDERSTANDS_TICKET_PRICES_KEY}
           isEnabled={() => understandsTicketPrices}
-          title="Price per ticket"
+          title="Price per VIP ticket"
+          prefix="$"
           value={String(VIP_TICKET_PRICE)}
         />
         <RevealingIcon
@@ -294,7 +297,8 @@ export function SolutionComponent(props: {
         <Variable
           isEnabled={() => understandsTicketPrices}
           dataKey={UNDERSTANDS_TICKET_PRICES_KEY}
-          title="Price per ticket"
+          title="Price per reserved ticket"
+          prefix="$"
           value={String(RESERVED_TICKET_PRICE)}
         />
         <RevealingIcon
@@ -322,7 +326,7 @@ export function SolutionComponent(props: {
             );
           }}
           dataKey={RESERVED_TICKET_PERCENT_KEY}
-          title="# of reserved tickets"
+          title="# of Reserved tickets"
           myPlayerStateData={myPlayerStateData}
           shouldDisable={
             Boolean(editingVariable) &&
@@ -362,7 +366,8 @@ export function SolutionComponent(props: {
         <Variable
           dataKey={UNDERSTANDS_TICKET_PRICES_KEY}
           isEnabled={() => understandsTicketPrices}
-          title="Price per ticket"
+          title="Price per GA ticket"
+          prefix="$"
           value={String(GENERAL_ADMISSION_TICKET_PRICE)}
         />
         <RevealingIcon
@@ -390,7 +395,7 @@ export function SolutionComponent(props: {
             );
           }}
           dataKey={GENERAL_ADMISSION_TICKET_PERCENT_KEY}
-          title="# of general admission tickets"
+          title="# of GA tickets"
           myPlayerStateData={myPlayerStateData}
           shouldDisable={
             Boolean(editingVariable) &&
