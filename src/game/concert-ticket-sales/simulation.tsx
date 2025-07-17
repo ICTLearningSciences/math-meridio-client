@@ -17,9 +17,9 @@ import {
   RESERVED_TICKET_PERCENT_KEY,
   GENERAL_ADMISSION_TICKET_PERCENT_KEY,
   TOTAL_NUMBER_OF_TICKETS,
-  GENERAL_ADMISSION_TICKET_SELL_THROUGH_RATE,
-  VIP_TICKET_SELL_THROUGH_RATE,
-  RESERVED_TICKET_SELL_THROUGH_RATE,
+  GENERAL_ADMISSION_TICKET_CONVERSION_RATE,
+  VIP_TICKET_CONVERSION_RATE,
+  RESERVED_TICKET_CONVERSION_RATE,
   GENERAL_ADMISSION_TICKET_PRICE,
   VIP_TICKET_PRICE,
   RESERVED_TICKET_PRICE,
@@ -68,15 +68,15 @@ export function SimulationComponent(props: {
         generalAdmissionTicketsUpForSale: generalAdmissionTicketsUpForSale,
         generalAdmissionTicketsSold: Math.round(
           generalAdmissionTicketsUpForSale *
-            GENERAL_ADMISSION_TICKET_SELL_THROUGH_RATE
+            GENERAL_ADMISSION_TICKET_CONVERSION_RATE
         ),
         reservedTicketsUpForSale: reservedTicketsUpForSale,
         reservedTicketsSold: Math.round(
-          reservedTicketsUpForSale * RESERVED_TICKET_SELL_THROUGH_RATE
+          reservedTicketsUpForSale * RESERVED_TICKET_CONVERSION_RATE
         ),
         vipTicketsUpForSale: vipTicketsUpForSale,
         vipTicketsSold: Math.round(
-          vipTicketsUpForSale * VIP_TICKET_SELL_THROUGH_RATE
+          vipTicketsUpForSale * VIP_TICKET_CONVERSION_RATE
         ),
         totalProfit: 0,
       };
