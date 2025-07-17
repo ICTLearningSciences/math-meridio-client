@@ -199,8 +199,8 @@ export function ResultComponent(props: {
       width={resultsWidth}
     >
       <Tabs value={tabValue} onChange={handleTabChange}>
-        <Tab label="Profit" />
-        <Tab label="Tickets" />
+        <Tab label="Profits" />
+        <Tab label="Tickets Sold" />
       </Tabs>
       <Box sx={{ width: '100%', mt: 2 }}>
         {tabValue === 0 && (

@@ -12,8 +12,8 @@ import { makeStyles } from 'tss-react/mui';
 import { Player } from '../../store/slices/player';
 import { checkGameAndPlayerStateForValue } from '../../components/discussion-stage-builder/helpers';
 
-import courtBg from './court.png';
-import { EditableVariable } from '../../components/editable-variable';
+import stageBg from './stage.jpg';
+import { EditableVariable } from './editable-variable';
 import {
   VIP_TICKET_PERCENT_KEY,
   VIP_TICKET_PRICE,
@@ -135,6 +135,7 @@ export function SolutionComponent(props: {
     value?: string;
     forceShow?: boolean;
     prefix?: string;
+    backgroundColor?: string;
   }): JSX.Element {
     const { isEnabled } = props;
     const data =
@@ -159,7 +160,7 @@ export function SolutionComponent(props: {
         className={classes.box}
         style={{
           display: props.forceShow || (data && isEnabled(data)) ? '' : 'none',
-          backgroundColor: '#e3a363',
+          backgroundColor: props.backgroundColor || '#301934',
         }}
       >
         <Typography className={classes.text}>{props.title}</Typography>
@@ -191,8 +192,8 @@ export function SolutionComponent(props: {
       <Card
         className={classes.box}
         style={{
-          backgroundColor: '#E3A363',
-          borderColor: '#C96049',
+          backgroundColor: '#301934',
+          borderColor: '#fff',
           padding: 0,
           width: 50,
           height: 50,
@@ -212,9 +213,10 @@ export function SolutionComponent(props: {
       className="column center-div"
       style={{
         height: window.innerHeight - 400,
-        backgroundImage: `url(${courtBg})`,
+        backgroundImage: `url(${stageBg})`,
         backgroundSize: 'cover',
         backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center',
       }}
     >
       <Variable
@@ -235,10 +237,7 @@ export function SolutionComponent(props: {
         <RevealingIcon
           reveal={understandsMultiplication}
           icon={
-            <Typography
-              className={classes.boxText}
-              style={{ color: '#C96049' }}
-            >
+            <Typography className={classes.boxText} style={{ color: '#fff' }}>
               {' '}
               x{' '}
             </Typography>
@@ -268,10 +267,7 @@ export function SolutionComponent(props: {
         <RevealingIcon
           reveal={understandsMultiplication}
           icon={
-            <Typography
-              className={classes.boxText}
-              style={{ color: '#C96049' }}
-            >
+            <Typography className={classes.boxText} style={{ color: '#fff' }}>
               {' '}
               x{' '}
             </Typography>
@@ -287,7 +283,7 @@ export function SolutionComponent(props: {
       <RevealingIcon
         reveal={understandsAddition}
         icon={
-          <Typography className={classes.boxText} style={{ color: '#C96049' }}>
+          <Typography className={classes.boxText} style={{ color: '#fff' }}>
             {' '}
             +{' '}
           </Typography>
@@ -304,10 +300,7 @@ export function SolutionComponent(props: {
         <RevealingIcon
           reveal={understandsMultiplication}
           icon={
-            <Typography
-              className={classes.boxText}
-              style={{ color: '#C96049' }}
-            >
+            <Typography className={classes.boxText} style={{ color: '#fff' }}>
               {' '}
               x{' '}
             </Typography>
@@ -337,10 +330,7 @@ export function SolutionComponent(props: {
         <RevealingIcon
           reveal={understandsMultiplication}
           icon={
-            <Typography
-              className={classes.boxText}
-              style={{ color: '#C96049' }}
-            >
+            <Typography className={classes.boxText} style={{ color: '#fff' }}>
               {' '}
               x{' '}
             </Typography>
@@ -356,7 +346,7 @@ export function SolutionComponent(props: {
       <RevealingIcon
         reveal={understandsAddition}
         icon={
-          <Typography className={classes.boxText} style={{ color: '#C96049' }}>
+          <Typography className={classes.boxText} style={{ color: '#fff' }}>
             {' '}
             +{' '}
           </Typography>
@@ -373,10 +363,7 @@ export function SolutionComponent(props: {
         <RevealingIcon
           reveal={understandsMultiplication}
           icon={
-            <Typography
-              className={classes.boxText}
-              style={{ color: '#C96049' }}
-            >
+            <Typography className={classes.boxText} style={{ color: '#fff' }}>
               {' '}
               x{' '}
             </Typography>
@@ -406,10 +393,7 @@ export function SolutionComponent(props: {
         <RevealingIcon
           reveal={understandsMultiplication}
           icon={
-            <Typography
-              className={classes.boxText}
-              style={{ color: '#C96049' }}
-            >
+            <Typography className={classes.boxText} style={{ color: '#fff' }}>
               {' '}
               x{' '}
             </Typography>
