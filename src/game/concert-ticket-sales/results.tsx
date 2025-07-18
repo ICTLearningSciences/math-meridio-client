@@ -24,11 +24,14 @@ export function ResultComponent(props: {
     Record<string, ConcertTicketSalesSimulationData>
   >({});
   React.useEffect(() => {
+    EventSystem.on('simulate', simulationStarted);
+  }, []);
+  React.useEffect(() => {
     EventSystem.on('simulationEnded', simulationEnded);
   }, []);
   const chartHeight = 300;
   const resultsWidth = window.innerWidth / 2 - 300;
-  const scoreChartWidth = resultsWidth / 2;
+  const scoreChartWidth = resultsWidth;
   const ticketsChartWidth = resultsWidth / controller.players.length;
 
   interface ChartData {
@@ -51,7 +54,7 @@ export function ResultComponent(props: {
     playerLabels: string[];
   }
 
-  const [myChartData, setMyChartData] = useState<ChartData>({
+  const initialChartData: ChartData = {
     profitFromVipTickets: [],
     profitFromReservedTickets: [],
     profitFromGeneralAdmissionTickets: [],
@@ -64,7 +67,9 @@ export function ResultComponent(props: {
     player4Data: [],
     player4MissedData: [],
     playerLabels: [],
-  });
+  };
+
+  const [myChartData, setMyChartData] = useState<ChartData>(initialChartData);
 
   const ticketLabels = ['VIP', 'Reserved', 'General Admission'];
 
@@ -73,6 +78,16 @@ export function ResultComponent(props: {
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
+
+  function simulationStarted(): void {
+    setMyChartData({
+      ...myChartData,
+      profitFromVipTickets: initialChartData.profitFromVipTickets,
+      profitFromReservedTickets: initialChartData.profitFromReservedTickets,
+      profitFromGeneralAdmissionTickets:
+        initialChartData.profitFromGeneralAdmissionTickets,
+    });
+  }
 
   function simulationEnded(data: ConcertTicketSalesSimulationData): void {
     simulationData[data.player] = data;
@@ -163,7 +178,8 @@ export function ResultComponent(props: {
       playerLabels: playerLabels,
     });
   }
-  function GetShotChartFor(
+
+  function GetChartFor(
     playerData: number[],
     playerMissedData: number[],
     playerName: string,
@@ -191,6 +207,7 @@ export function ResultComponent(props: {
       </Stack>
     );
   }
+
   return (
     <Stack
       sx={{ width: resultsWidth }}
@@ -214,19 +231,19 @@ export function ResultComponent(props: {
                   data: myChartData.profitFromVipTickets,
                   label: 'VIP',
                   stack: 'profit',
-                  color: '#e15759',
+                  color: 'rgb(150,221,242)',
                 },
                 {
                   data: myChartData.profitFromReservedTickets,
                   label: 'Reserved',
                   stack: 'profit',
-                  color: '#ff9da7',
+                  color: 'rgb(245,152,160)',
                 },
                 {
                   data: myChartData.profitFromGeneralAdmissionTickets,
                   label: 'General Admission',
                   stack: 'profit',
-                  color: '#af7aa1',
+                  color: 'rgb(151,118,109)',
                 },
               ]}
               xAxis={[{ data: myChartData.playerLabels, scaleType: 'band' }]}
@@ -238,7 +255,7 @@ export function ResultComponent(props: {
             {controller.players.map((player, index) => (
               <>
                 {index === 0 &&
-                  GetShotChartFor(
+                  GetChartFor(
                     myChartData.player1Data,
                     myChartData.player1MissedData,
                     player.name,
@@ -246,7 +263,7 @@ export function ResultComponent(props: {
                     index
                   )}
                 {index === 1 &&
-                  GetShotChartFor(
+                  GetChartFor(
                     myChartData.player2Data,
                     myChartData.player2MissedData,
                     player.name,
@@ -254,7 +271,7 @@ export function ResultComponent(props: {
                     index
                   )}
                 {index === 2 &&
-                  GetShotChartFor(
+                  GetChartFor(
                     myChartData.player3Data,
                     myChartData.player3MissedData,
                     player.name,
@@ -262,7 +279,7 @@ export function ResultComponent(props: {
                     index
                   )}
                 {index === 3 &&
-                  GetShotChartFor(
+                  GetChartFor(
                     myChartData.player4Data,
                     myChartData.player4MissedData,
                     player.name,

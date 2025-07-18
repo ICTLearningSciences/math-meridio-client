@@ -68,6 +68,7 @@ export class SimulationScene extends GameScene {
   reservedText?: Phaser.GameObjects.Text;
   generalText?: Phaser.GameObjects.Text;
   profitText?: Phaser.GameObjects.Text;
+  door?: Phaser.GameObjects.Sprite;
 
   constructor() {
     super('Simulation');
@@ -125,6 +126,13 @@ export class SimulationScene extends GameScene {
   create(handler: GameStateHandler) {
     super.create(handler);
     EventSystem.on('simulate', this.simulate, this);
+    EventSystem.on(
+      'setMuted',
+      (isMuted: boolean) => {
+        this.game.sound.mute = isMuted;
+      },
+      this
+    );
     this.anims.create({
       key: 'door_open',
       frames: this.anims.generateFrameNumbers('doors', {
@@ -314,7 +322,7 @@ export class SimulationScene extends GameScene {
           else if (type === 'reserved')
             scaleText(this, this.reservedText!, `${++this.numReserved}`);
           else scaleText(this, this.generalText!, `${++this.numGeneral}`);
-          playSound(this, 'right');
+          playSound(this, 'right', { volume: 0.8 });
           this.playSpriteAnim(sprite, 'walk_right');
 
           addSprite(this, 'money', 0, {
@@ -338,12 +346,17 @@ export class SimulationScene extends GameScene {
             duration: 500,
             delay: 100,
             onComplete: () => {
+              this.door?.play('door_open');
               this.playSpriteAnim(sprite, `walk`);
               if (type === 'vip') this.profit += VIP_TICKET_PRICE;
               else if (type === 'reserved')
                 this.profit += RESERVED_TICKET_PRICE;
               else this.profit += GENERAL_ADMISSION_TICKET_PRICE;
-              scaleText(this, this.profitText!, `$${this.profit}`);
+              scaleText(
+                this,
+                this.profitText!,
+                `Today's Sales:\n $${this.profit}`
+              );
               this.curTicket++;
               this.destroySprite(sprite);
               this.buyTickets();
@@ -352,7 +365,7 @@ export class SimulationScene extends GameScene {
         }
         // didn't buy ticket
         else {
-          playSound(this, 'wrong');
+          playSound(this, 'wrong', { volume: 2 });
           this.playSpriteAnim(sprite, 'walk_left');
           bubble.play('emote_angry');
           addTween(this, {
@@ -408,17 +421,40 @@ export class SimulationScene extends GameScene {
       y: y,
       duration: 500,
       onComplete: () => {
-        this.playSpriteAnim(sprite, `walk_left`);
         let x = 0;
         if (type === 'vip') {
           x = gameWidth * 0.3 + gameWidth * 0.05 * this.numVip;
           this.numVip++;
+          this.playSpriteAnim(
+            sprite,
+            this.numVip < 5
+              ? `walk_left`
+              : this.numVip > 5
+              ? 'walk_right'
+              : 'walk'
+          );
         } else if (type === 'reserved') {
           x = gameWidth * 0.3 + gameWidth * 0.05 * this.numReserved;
           this.numReserved++;
+          this.playSpriteAnim(
+            sprite,
+            this.numReserved < 5
+              ? `walk_left`
+              : this.numReserved > 5
+              ? 'walk_right'
+              : 'walk'
+          );
         } else {
           x = gameWidth * 0.3 + gameWidth * 0.05 * this.numGeneral;
           this.numGeneral++;
+          this.playSpriteAnim(
+            sprite,
+            this.numGeneral < 5
+              ? `walk_left`
+              : this.numGeneral > 5
+              ? 'walk_right'
+              : 'walk'
+          );
         }
         addTween(this, {
           targets: sprite,
@@ -475,16 +511,19 @@ export class SimulationScene extends GameScene {
       maxFontSize: 78,
     });
     this.generalText.setDepth(1000);
-    this.profitText = addText(this, `$${0}`, {
+    this.profitText = addText(this, `Today's Sales:\n$${0}`, {
       bg,
       heightRel: 0.1,
       x: bg!.displayWidth * 0.28,
       y: bg!.displayHeight * -0.35,
       maxFontSize: 78,
+      textStyle: {
+        align: 'center',
+      },
     });
     this.profitText.setDepth(1000);
 
-    addSprite(this, 'doors', 0, {
+    this.door = addSprite(this, 'doors', 0, {
       heightRel: 0.2,
       x: this.bg!.displayWidth * 0.79,
       y: this.bg!.displayHeight * 0.39,
@@ -514,20 +553,50 @@ export class SimulationScene extends GameScene {
       lights.play('lights_off');
     }
 
-    playSound(this, `music${randomInt(6)}`, { loop: true });
+    playSound(this, `music${randomInt(6)}`, { loop: true, volume: 0.5 });
     this.destroySprite(this.mySprite);
     this.vipText?.destroy();
     this.reservedText?.destroy();
     this.generalText?.destroy();
     this.profitText?.destroy();
 
-    this.profitText = addText(this, `$${this.simulation?.totalProfit}`, {
+    this.vipText = addText(this, `VIP`, {
       bg: this.bg,
       heightRel: 0.1,
-      x: 0,
-      y: this.bg.displayHeight * -0.33,
-      maxFontSize: 78,
+      x: this.bg.displayWidth * -0.28,
+      y: this.bg.displayHeight * 0.23,
+      maxFontSize: 60,
     });
+    this.vipText.setDepth(1000);
+    this.reservedText = addText(this, `Reserved`, {
+      bg: this.bg,
+      heightRel: 0.1,
+      x: this.bg.displayWidth * -0.35,
+      y: this.bg.displayHeight * 0.325,
+      maxFontSize: 60,
+    });
+    this.reservedText.setDepth(1000);
+    this.generalText = addText(this, `General`, {
+      bg: this.bg,
+      heightRel: 0.1,
+      x: this.bg.displayWidth * -0.33,
+      y: this.bg.displayHeight * 0.425,
+      maxFontSize: 60,
+    });
+    this.profitText = addText(
+      this,
+      `Total Sales:\n$${this.simulation?.totalProfit}`,
+      {
+        bg: this.bg,
+        heightRel: 0.1,
+        x: 0,
+        y: this.bg.displayHeight * -0.33,
+        maxFontSize: 78,
+        textStyle: {
+          align: 'center',
+        },
+      }
+    );
     this.profitText.setDepth(1000);
 
     const avatar =
