@@ -9,10 +9,10 @@ import { GameStateHandler } from '../../classes/game-state-handler';
 import { addBackground, addImage } from '../phaser-helpers';
 import EventSystem from '../event-system';
 import {
-  VIP_TICKET_SELL_THROUGH_RATE,
-  RESERVED_TICKET_SELL_THROUGH_RATE,
+  VIP_TICKET_CONVERSION_RATE,
+  RESERVED_TICKET_CONVERSION_RATE,
   TOTAL_NUMBER_OF_TICKETS,
-  GENERAL_ADMISSION_TICKET_SELL_THROUGH_RATE,
+  GENERAL_ADMISSION_TICKET_CONVERSION_RATE,
 } from '.';
 import { SenderType } from '../../store/slices/game';
 import { localStorageGet, SESSION_ID } from '../../store/local-storage';
@@ -109,7 +109,7 @@ export class SimulationScene extends GameScene {
     ) {
       this.shots.push({
         ticketType: 'generalAdmission',
-        success: Math.random() <= GENERAL_ADMISSION_TICKET_SELL_THROUGH_RATE,
+        success: Math.random() <= GENERAL_ADMISSION_TICKET_CONVERSION_RATE,
       });
     }
     for (
@@ -122,7 +122,7 @@ export class SimulationScene extends GameScene {
     ) {
       this.shots.push({
         ticketType: 'reserved',
-        success: Math.random() <= RESERVED_TICKET_SELL_THROUGH_RATE,
+        success: Math.random() <= RESERVED_TICKET_CONVERSION_RATE,
       });
     }
     for (
@@ -135,7 +135,7 @@ export class SimulationScene extends GameScene {
     ) {
       this.shots.push({
         ticketType: 'vip',
-        success: Math.random() <= VIP_TICKET_SELL_THROUGH_RATE,
+        success: Math.random() <= VIP_TICKET_CONVERSION_RATE,
       });
     }
 

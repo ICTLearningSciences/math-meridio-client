@@ -39,23 +39,22 @@ const finishedDiscussionStage = 'd1323982-4f52-491e-b5e0-dbc70250e52b';
 export const UNDERSTANDS_ALGORITHM_KEY = 'understands_algorithm';
 export const UNDERSTANDS_MULTIPLICATION_KEY = 'understands_multiplication';
 export const UNDERSTANDS_ADDITION_KEY = 'understands_addition';
-export const UNDERSTANDS_SELL_THROUGH_RATES_KEY =
-  'understands_sell_through_rates';
+export const UNDERSTANDS_CONVERSION_RATE_KEY = 'understands_conversion_rate';
 export const UNDERSTANDS_TICKET_PRICES_KEY = 'understands_ticket_prices';
 export const BEST_STRATEGY_FOUND_KEY = 'best_strategy_found';
 
 export const VIP_TICKET_PERCENT_KEY = 'vip_ticket_percent';
 export const VIP_TICKET_PRICE = 75;
-export const VIP_TICKET_SELL_THROUGH_RATE = 0.36;
+export const VIP_TICKET_CONVERSION_RATE = 0.36;
 
 export const RESERVED_TICKET_PERCENT_KEY = 'reserved_ticket_percent';
 export const RESERVED_TICKET_PRICE = 50;
-export const RESERVED_TICKET_SELL_THROUGH_RATE = 0.4;
+export const RESERVED_TICKET_CONVERSION_RATE = 0.4;
 
 export const GENERAL_ADMISSION_TICKET_PERCENT_KEY =
   'general_admission_ticket_percent';
 export const GENERAL_ADMISSION_TICKET_PRICE = 45;
-export const GENERAL_ADMISSION_TICKET_SELL_THROUGH_RATE = 0.6;
+export const GENERAL_ADMISSION_TICKET_CONVERSION_RATE = 0.6;
 
 export const TOTAL_NUMBER_OF_TICKETS = 100;
 
@@ -211,12 +210,12 @@ export class BasketballStateHandler extends GameStateHandler {
 const BasketballGame: Game = {
   id: 'concert-ticket-sales',
   name: 'Concert Ticket Management',
-  problem: `We need you and the analyst team to figure out why we're not hitting our profit goals and what we need to change in our ticket sales strategy to become a top-selling venue! From what you're seeing right now, what do you think we're doing wrong? Out of 100 tickets, how many should be VIP, Reserved, or General Admission? VIP tickets bring in more money per sale but are harder to sell, while Reserved and General Admission have different price points and chances of selling.`,
+  problem: `Our concert venue isn't hitting its profit goals, and we need your help to turn things around. We're relying on you and the sales analyst team to figure out what's wrong with our current ticket sales strategy and what we need to adjust to maximize our revenue. Out of 100 tickets we can offer for each show, how many should be VIP, Reserved, or General Admission? VIP tickets bring in the most money per sale but are harder to sell, while Reserved and General Admission have lower prices but sell more easily.`,
   persistTruthGlobalStateData: [
     UNDERSTANDS_ALGORITHM_KEY,
     UNDERSTANDS_MULTIPLICATION_KEY,
     UNDERSTANDS_ADDITION_KEY,
-    UNDERSTANDS_SELL_THROUGH_RATES_KEY,
+    UNDERSTANDS_CONVERSION_RATE_KEY,
     UNDERSTANDS_TICKET_PRICES_KEY,
     BEST_STRATEGY_FOUND_KEY,
   ],

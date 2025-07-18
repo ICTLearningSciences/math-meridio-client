@@ -8,7 +8,7 @@ import React from 'react';
 import { Typography } from '@mui/material';
 import { GameStateHandler } from '../../classes/game-state-handler';
 import BasketballGame from '.';
-import shotChart from './shot-chart.png';
+import stadiumSeats from './stadium_seats.jpg';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function ProblemComponent(props: {
@@ -23,7 +23,7 @@ export function ProblemComponent(props: {
           float: 'right',
           marginLeft: '10px',
         }}
-        src={shotChart}
+        src={stadiumSeats}
       ></img>
       <Typography>{BasketballGame.problem}</Typography>
     </div>

@@ -12,23 +12,23 @@ import { makeStyles } from 'tss-react/mui';
 import { Player } from '../../store/slices/player';
 import { checkGameAndPlayerStateForValue } from '../../components/discussion-stage-builder/helpers';
 
-import courtBg from './court.png';
-import { EditableVariable } from '../../components/editable-variable';
+import stageBg from './stage.jpg';
+import { EditableVariable } from './editable-variable';
 import {
   VIP_TICKET_PERCENT_KEY,
   VIP_TICKET_PRICE,
-  VIP_TICKET_SELL_THROUGH_RATE,
+  VIP_TICKET_CONVERSION_RATE,
   RESERVED_TICKET_PERCENT_KEY,
   RESERVED_TICKET_PRICE,
-  RESERVED_TICKET_SELL_THROUGH_RATE,
+  RESERVED_TICKET_CONVERSION_RATE,
   GENERAL_ADMISSION_TICKET_PERCENT_KEY,
   GENERAL_ADMISSION_TICKET_PRICE,
-  GENERAL_ADMISSION_TICKET_SELL_THROUGH_RATE,
+  GENERAL_ADMISSION_TICKET_CONVERSION_RATE,
   TOTAL_NUMBER_OF_TICKETS,
   UNDERSTANDS_ADDITION_KEY,
   UNDERSTANDS_MULTIPLICATION_KEY,
   UNDERSTANDS_TICKET_PRICES_KEY,
-  UNDERSTANDS_SELL_THROUGH_RATES_KEY,
+  UNDERSTANDS_CONVERSION_RATE_KEY,
 } from '.';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -73,7 +73,7 @@ export function SolutionComponent(props: {
         checkGameAndPlayerStateForValue(
           controller.globalStateData.gameStateData,
           curPlayerStateData?.gameStateData || [],
-          UNDERSTANDS_SELL_THROUGH_RATES_KEY,
+          UNDERSTANDS_CONVERSION_RATE_KEY,
           'true'
         )
       );
@@ -135,6 +135,7 @@ export function SolutionComponent(props: {
     value?: string;
     forceShow?: boolean;
     prefix?: string;
+    backgroundColor?: string;
   }): JSX.Element {
     const { isEnabled } = props;
     const data =
@@ -159,7 +160,7 @@ export function SolutionComponent(props: {
         className={classes.box}
         style={{
           display: props.forceShow || (data && isEnabled(data)) ? '' : 'none',
-          backgroundColor: '#e3a363',
+          backgroundColor: props.backgroundColor || '#301934',
         }}
       >
         <Typography className={classes.text}>{props.title}</Typography>
@@ -191,8 +192,8 @@ export function SolutionComponent(props: {
       <Card
         className={classes.box}
         style={{
-          backgroundColor: '#E3A363',
-          borderColor: '#C96049',
+          backgroundColor: '#301934',
+          borderColor: '#fff',
           padding: 0,
           width: 50,
           height: 50,
@@ -212,9 +213,10 @@ export function SolutionComponent(props: {
       className="column center-div"
       style={{
         height: window.innerHeight - 400,
-        backgroundImage: `url(${courtBg})`,
+        backgroundImage: `url(${stageBg})`,
         backgroundSize: 'cover',
         backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center',
       }}
     >
       <Variable
@@ -235,10 +237,7 @@ export function SolutionComponent(props: {
         <RevealingIcon
           reveal={understandsMultiplication}
           icon={
-            <Typography
-              className={classes.boxText}
-              style={{ color: '#C96049' }}
-            >
+            <Typography className={classes.boxText} style={{ color: '#fff' }}>
               {' '}
               x{' '}
             </Typography>
@@ -268,26 +267,23 @@ export function SolutionComponent(props: {
         <RevealingIcon
           reveal={understandsMultiplication}
           icon={
-            <Typography
-              className={classes.boxText}
-              style={{ color: '#C96049' }}
-            >
+            <Typography className={classes.boxText} style={{ color: '#fff' }}>
               {' '}
               x{' '}
             </Typography>
           }
         />
         <Variable
-          dataKey={UNDERSTANDS_SELL_THROUGH_RATES_KEY}
+          dataKey={UNDERSTANDS_CONVERSION_RATE_KEY}
           isEnabled={() => understandsSellThroughRates}
-          title="% chance of selling tickets"
-          value={String(VIP_TICKET_SELL_THROUGH_RATE)}
+          title="Conversion Rate"
+          value={String(VIP_TICKET_CONVERSION_RATE)}
         />
       </div>
       <RevealingIcon
         reveal={understandsAddition}
         icon={
-          <Typography className={classes.boxText} style={{ color: '#C96049' }}>
+          <Typography className={classes.boxText} style={{ color: '#fff' }}>
             {' '}
             +{' '}
           </Typography>
@@ -304,10 +300,7 @@ export function SolutionComponent(props: {
         <RevealingIcon
           reveal={understandsMultiplication}
           icon={
-            <Typography
-              className={classes.boxText}
-              style={{ color: '#C96049' }}
-            >
+            <Typography className={classes.boxText} style={{ color: '#fff' }}>
               {' '}
               x{' '}
             </Typography>
@@ -337,10 +330,7 @@ export function SolutionComponent(props: {
         <RevealingIcon
           reveal={understandsMultiplication}
           icon={
-            <Typography
-              className={classes.boxText}
-              style={{ color: '#C96049' }}
-            >
+            <Typography className={classes.boxText} style={{ color: '#fff' }}>
               {' '}
               x{' '}
             </Typography>
@@ -348,15 +338,15 @@ export function SolutionComponent(props: {
         />
         <Variable
           isEnabled={() => understandsSellThroughRates}
-          dataKey={UNDERSTANDS_SELL_THROUGH_RATES_KEY}
-          title="% chance of selling tickets"
-          value={String(RESERVED_TICKET_SELL_THROUGH_RATE)}
+          dataKey={UNDERSTANDS_CONVERSION_RATE_KEY}
+          title="Conversion Rate"
+          value={String(RESERVED_TICKET_CONVERSION_RATE)}
         />
       </div>
       <RevealingIcon
         reveal={understandsAddition}
         icon={
-          <Typography className={classes.boxText} style={{ color: '#C96049' }}>
+          <Typography className={classes.boxText} style={{ color: '#fff' }}>
             {' '}
             +{' '}
           </Typography>
@@ -373,10 +363,7 @@ export function SolutionComponent(props: {
         <RevealingIcon
           reveal={understandsMultiplication}
           icon={
-            <Typography
-              className={classes.boxText}
-              style={{ color: '#C96049' }}
-            >
+            <Typography className={classes.boxText} style={{ color: '#fff' }}>
               {' '}
               x{' '}
             </Typography>
@@ -406,20 +393,17 @@ export function SolutionComponent(props: {
         <RevealingIcon
           reveal={understandsMultiplication}
           icon={
-            <Typography
-              className={classes.boxText}
-              style={{ color: '#C96049' }}
-            >
+            <Typography className={classes.boxText} style={{ color: '#fff' }}>
               {' '}
               x{' '}
             </Typography>
           }
         />
         <Variable
-          dataKey={UNDERSTANDS_SELL_THROUGH_RATES_KEY}
+          dataKey={UNDERSTANDS_CONVERSION_RATE_KEY}
           isEnabled={() => understandsSellThroughRates}
-          title="% chance of selling tickets"
-          value={String(GENERAL_ADMISSION_TICKET_SELL_THROUGH_RATE)}
+          title="Conversion Rate"
+          value={String(GENERAL_ADMISSION_TICKET_CONVERSION_RATE)}
         />
       </div>
     </div>
