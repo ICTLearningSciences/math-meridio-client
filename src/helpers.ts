@@ -11,6 +11,12 @@ import axios from 'axios';
 import { IStage } from './components/discussion-stage-builder/types';
 import { DiscussionStage } from './components/discussion-stage-builder/types';
 import { isDiscussionStage } from './components/discussion-stage-builder/types';
+import { Avatar } from './store/slices/player';
+import {
+  SPRITE_BODY,
+  SPRITE_CLOTHES,
+  SPRITE_HAIR,
+} from './store/slices/player/use-with-player-state';
 
 export const SIMULTAION_VIEWED_KEY = 'viewed-simulation';
 
@@ -56,6 +62,10 @@ export function arrayNRandom(arr: any[], n: number): any[] {
 
 export function randomInt(n: number): number {
   return Math.floor(Math.random() * n);
+}
+
+export function getRandomNumber(min: number, max: number) {
+  return Math.random() * (max - min) + min;
 }
 
 export function arrayGetRandom<T>(arr: T[]): T | undefined {
@@ -111,4 +121,39 @@ export function requireEnv(key: string): string {
     throw new Error(`Environment variable ${key} is not set`);
   }
   return value;
+}
+
+export function getRandomAvatar() {
+  const avatar: Avatar[] = [];
+  const body = arrayGetRandom<Avatar>(SPRITE_BODY);
+  if (body) {
+    body.variant = body.variants ? randomInt(body.variants.length) : undefined;
+    avatar.push(body);
+  }
+  const top = arrayGetRandom<Avatar>(
+    SPRITE_CLOTHES.filter(
+      (s) => s.type.endsWith('clothes_top') || s.type.endsWith('clothes_outfit')
+    )
+  );
+  if (top) {
+    top.variant = top.variants ? randomInt(top.variants.length) : undefined;
+    avatar.push(top);
+    if (top.type.endsWith('_top')) {
+      const bottom = arrayGetRandom<Avatar>(
+        SPRITE_CLOTHES.filter((s) => s.type.endsWith('clothes_bottom'))
+      );
+      if (bottom) {
+        bottom.variant = bottom.variants
+          ? randomInt(bottom.variants.length)
+          : undefined;
+        avatar.push(bottom);
+      }
+    }
+  }
+  const hair = arrayGetRandom<Avatar>(SPRITE_HAIR);
+  if (hair) {
+    hair.variant = hair.variants ? randomInt(hair.variants.length) : undefined;
+    avatar.push(hair);
+  }
+  return avatar;
 }

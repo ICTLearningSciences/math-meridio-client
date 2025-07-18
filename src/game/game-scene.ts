@@ -20,10 +20,14 @@ import {
   addImage,
   addSprite,
   addText,
+  addTween,
   animateText,
 } from './phaser-helpers';
 import { Avatar } from '../store/slices/player';
 import { GameStateHandler } from '../classes/game-state-handler';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const gameObjects: any[] = [];
 
 export interface RenderAvatars extends Avatars {
   sprite: Phaser.GameObjects.Sprite[];
@@ -182,6 +186,7 @@ export abstract class GameScene extends Scene {
       )
       .setDepth(999)
       .setOrigin(0, 0);
+    gameObjects.push(this.chatWindow);
 
     this.systemMsgText = addText(this, '              ', {
       bg: this.bg,
@@ -197,7 +202,6 @@ export abstract class GameScene extends Scene {
     })
       .setDepth(1000)
       .setFontSize(36);
-
     EventSystem.on('startGame', this.startGame, this);
     EventSystem.on('resetGame', this.resetGame, this);
     EventSystem.on('addSystemMessage', this.addSystemMessage, this);
@@ -262,7 +266,7 @@ export abstract class GameScene extends Scene {
 
   renderSpriteAvatar(
     avatar: Avatar[],
-    props: { x: number; y: number }
+    props: { x: number; y: number; scale?: number }
   ): Phaser.GameObjects.Sprite[] {
     const sprites: Phaser.GameObjects.Sprite[] = [];
     avatar
@@ -270,11 +274,12 @@ export abstract class GameScene extends Scene {
       .forEach((a) => {
         const sprite = addSprite(this, a.id, (a.variant || 0) * 8, {
           bg: this.bg,
-          heightRel: 0.3,
+          heightRel: props.scale || 0.3,
         })
           .setName(`${a.id}_${a.variant || 0}`)
           .setX(props.x)
-          .setY(props.y);
+          .setY(props.y)
+          .setDepth(999);
         sprites.push(sprite);
       });
     return sprites;
@@ -336,7 +341,11 @@ export abstract class GameScene extends Scene {
 
   playSpriteAnim(sprite: Phaser.GameObjects.Sprite[], anim: string) {
     sprite.forEach((s) => {
-      s.play(`${s.name}_${anim}`);
+      try {
+        s.play(`${s.name}_${anim}`);
+      } catch (err) {
+        console.log('could not play sprite animation');
+      }
     });
   }
 
@@ -366,7 +375,7 @@ export abstract class GameScene extends Scene {
   showSystemMessage(msg: ChatMessage) {
     if (!this.systemMsgText) return;
     const msgRef = this.systemMsgText;
-    this.tweens.add({
+    addTween(this, {
       targets: this.systemMsgText,
       alpha: { from: 1, to: 0 },
       duration: 100,
@@ -374,7 +383,7 @@ export abstract class GameScene extends Scene {
         EventSystem.emit('systemMessageStart', msg);
         msgRef.setText(msg.message);
         msgRef.setY(msgRef.displayHeight / 2);
-        this.tweens.add({
+        addTween(this, {
           targets: this.systemMsgText,
           alpha: { from: 0, to: 1 },
           duration: 1000,
