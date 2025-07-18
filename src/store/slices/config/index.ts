@@ -7,17 +7,20 @@ The full terms of this copyright and license should always be found in the root 
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { fetchAbeConfig as _fetchAbeConfig } from '../../../api';
 import { AiServiceModelConfigs, LoadStatus } from '../../../types';
+import EventSystem from '../../../game/event-system';
 
 export interface Config {
   aiServiceModelConfigs: AiServiceModelConfigs[];
 }
 
 export interface ConfigState {
+  isMuted: boolean;
   abeConfig: Config;
   abeConfigLoadStatus: LoadStatus;
 }
 
 const initialState: ConfigState = {
+  isMuted: false,
   abeConfig: {
     aiServiceModelConfigs: [],
   },
@@ -35,7 +38,12 @@ export const fetchAbeConfig = createAsyncThunk(
 export const dataSlice = createSlice({
   name: 'config',
   initialState: initialState,
-  reducers: {},
+  reducers: {
+    toggleMute: (state) => {
+      state.isMuted = !state.isMuted;
+      EventSystem.emit('setMuted', state.isMuted);
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchAbeConfig.fulfilled, (state, action) => {
@@ -50,5 +58,7 @@ export const dataSlice = createSlice({
       });
   },
 });
+
+export const { toggleMute } = dataSlice.actions;
 
 export default dataSlice.reducer;

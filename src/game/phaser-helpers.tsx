@@ -63,7 +63,7 @@ export function playSound(
   sound: string,
   config?: Phaser.Types.Sound.SoundConfig
 ) {
-  scene.sound.play(sound, config);
+  scene.sound.play(sound, { ...config, volume: (config?.volume || 1) * 0.1 });
 }
 
 /** image helpers */

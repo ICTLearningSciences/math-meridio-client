@@ -11,6 +11,7 @@ import {
   Card,
   CircularProgress,
   Grid,
+  IconButton,
   Stack,
   Typography,
 } from '@mui/material';
@@ -23,6 +24,8 @@ import { useWithGame } from '../../store/slices/game/use-with-game-state';
 import { GameStateHandler } from '../../classes/game-state-handler';
 import withAuthorizationOnly from '../../wrap-with-authorization-only';
 import Popup from '../popup';
+import { VolumeOff, VolumeUp } from '@mui/icons-material';
+import { useWithConfig } from '../../store/slices/config/use-with-config';
 
 function ProblemSpace(props: {
   game: Game;
@@ -72,6 +75,7 @@ function SimulationSpace(props: {
   controller: GameStateHandler;
   simulation?: string;
 }): JSX.Element {
+  const { isMuted, toggleMuted } = useWithConfig();
   return (
     <Card
       className="scroll box"
@@ -83,7 +87,12 @@ function SimulationSpace(props: {
         borderBottomRightRadius: 20,
       }}
     >
-      <Typography fontWeight="bold">Simulation</Typography>
+      <div className="row" style={{ justifyContent: 'space-between' }}>
+        <Typography fontWeight="bold">Simulation</Typography>
+        <IconButton onClick={toggleMuted}>
+          {isMuted ? <VolumeOff /> : <VolumeUp />}
+        </IconButton>
+      </div>
       {props.game.showSimulation(props.controller, props.simulation)}
     </Card>
   );

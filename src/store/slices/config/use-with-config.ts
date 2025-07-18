@@ -5,11 +5,12 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import { useAppDispatch, useAppSelector } from '../../hooks';
-import { fetchAbeConfig } from '.';
+import { fetchAbeConfig, toggleMute } from '.';
 import { AiServiceNames, TargetAiModelServiceType } from '../../../types';
 
 export function useWithConfig() {
   const dispatch = useAppDispatch();
+  const isMuted = useAppSelector((state) => state.config.isMuted);
   const abeConfig = useAppSelector((state) => state.config.abeConfig);
   const abeConfigLoadStatus = useAppSelector(
     (state) => state.config.abeConfigLoadStatus
@@ -35,10 +36,17 @@ export function useWithConfig() {
       model: 'gpt-4o',
     };
   }
+
+  function toggleMuted(): void {
+    dispatch(toggleMute());
+  }
+
   return {
+    isMuted,
     abeConfig,
     abeConfigLoadStatus,
     loadAbeConfig,
     firstAvailableAzureServiceModel,
+    toggleMuted,
   };
 }
