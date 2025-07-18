@@ -8,35 +8,52 @@ import React from 'react';
 import { useWithPhaserGame } from '../hooks/use-with-phaser-game';
 import { useAppSelector } from '../store/hooks';
 import BasketballGame from '../game/basketball';
+import ConcertGame from '../game/concert-ticket-sales';
 import withAuthorizationOnly from '../wrap-with-authorization-only';
 import EventSystem from '../game/event-system';
 
 function PhaserTestPage(): JSX.Element {
   const { player } = useAppSelector((state) => state.playerData);
   const gameContainerRef = React.useRef<HTMLDivElement | null>(null);
+  const [game] = React.useState<string>('concert');
   const { startPhaserGame } = useWithPhaserGame(gameContainerRef);
 
   React.useEffect(() => {
-    startPhaserGame(BasketballGame.config, undefined, 'Simulation');
+    if (game === 'basketball') {
+      startPhaserGame(BasketballGame.config, undefined, 'Simulation');
+    } else {
+      startPhaserGame(ConcertGame.config, undefined, 'Simulation');
+    }
     EventSystem.on('sceneCreated', sceneCreated);
   }, []);
 
   function sceneCreated() {
-    EventSystem.emit('simulate', {
-      player: player?.clientId,
-
-      outsideShots: 2,
-      midShots: 2,
-      insideShots: 2,
-
-      outsidePoints: 3,
-      midPoints: 2,
-      insidePoints: 2,
-
-      outsidePercent: 0.25,
-      midPercent: 0.5,
-      insidePercent: 0.75,
-    });
+    if (game === 'basketball') {
+      EventSystem.emit('simulate', {
+        player: player?.clientId,
+        playerAvatar: player,
+        insideShots: 10,
+        midShots: 10,
+        outsideShots: 80,
+        insidePoints: 2,
+        midPoints: 2,
+        outsidePoints: 3,
+        insidePercent: 0.75,
+        midPercent: 0.5,
+        outsidePercent: 0.25,
+      });
+    } else {
+      EventSystem.emit('simulate', {
+        player: player?.clientId,
+        playerAvatar: player,
+        generalAdmissionTicketsUpForSale: 40,
+        reservedTicketsUpForSale: 30,
+        vipTicketsUpForSale: 30,
+        generalAdmissionTicketsSold: 5,
+        reservedTicketsSold: 5,
+        vipTicketsSold: 80,
+      });
+    }
   }
 
   return (

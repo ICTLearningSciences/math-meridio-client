@@ -262,7 +262,7 @@ export abstract class GameScene extends Scene {
 
   renderSpriteAvatar(
     avatar: Avatar[],
-    props: { x: number; y: number }
+    props: { x: number; y: number; scale?: number }
   ): Phaser.GameObjects.Sprite[] {
     const sprites: Phaser.GameObjects.Sprite[] = [];
     avatar
@@ -270,11 +270,12 @@ export abstract class GameScene extends Scene {
       .forEach((a) => {
         const sprite = addSprite(this, a.id, (a.variant || 0) * 8, {
           bg: this.bg,
-          heightRel: 0.3,
+          heightRel: props.scale || 0.3,
         })
           .setName(`${a.id}_${a.variant || 0}`)
           .setX(props.x)
-          .setY(props.y);
+          .setY(props.y)
+          .setDepth(999);
         sprites.push(sprite);
       });
     return sprites;
