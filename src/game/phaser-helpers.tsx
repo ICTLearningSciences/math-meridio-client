@@ -5,6 +5,8 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 
+import { gameObjects } from './game-scene';
+
 export enum Anchor {
   center = 'center',
   start = 'start',
@@ -44,6 +46,26 @@ export interface TextProps {
   maxFontSize?: number;
 }
 
+export function addTween(
+  scene: Phaser.Scene,
+  config:
+    | Phaser.Types.Tweens.TweenBuilderConfig
+    | Phaser.Types.Tweens.TweenChainBuilderConfig
+    | Phaser.Tweens.Tween
+    | Phaser.Tweens.TweenChain
+): void {
+  const tween = scene.tweens.add(config);
+  gameObjects.push(tween);
+}
+
+export function playSound(
+  scene: Phaser.Scene,
+  sound: string,
+  config?: Phaser.Types.Sound.SoundConfig
+) {
+  scene.sound.play(sound, config);
+}
+
 /** image helpers */
 
 export function addImage(
@@ -54,6 +76,7 @@ export function addImage(
 ): Phaser.GameObjects.Image {
   const image = scene.add.image(0, 0, texture, frame);
   scaleImage(scene, image, props);
+  gameObjects.push(image);
   return image;
 }
 
@@ -65,6 +88,7 @@ export function addSprite(
 ): Phaser.GameObjects.Sprite {
   const sprite = scene.add.sprite(0, 0, texture, frame);
   scaleImage(scene, sprite, props);
+  gameObjects.push(sprite);
   return sprite;
 }
 
@@ -82,6 +106,7 @@ export function addBackground(
   const y = gameHeight * 0.5;
   image.setX(x);
   image.setY(y);
+  gameObjects.push(image);
   return image;
 }
 
@@ -161,6 +186,7 @@ export function addText(
     ...props.textStyle,
   });
   scaleText(scene, text, str, props);
+  gameObjects.push(text);
   return text;
 }
 
@@ -262,6 +288,7 @@ export function animateText(target: Phaser.GameObjects.Text, speedInMs = 25) {
         target.text = visibleText + invisibleText;
       },
     });
+    gameObjects.push(timer);
   });
 }
 

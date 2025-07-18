@@ -7,7 +7,7 @@ The full terms of this copyright and license should always be found in the root 
 
 import GameScene, { RenderAvatars } from '../game-scene';
 import EventSystem from '../event-system';
-import { Anchor, addImage } from '../phaser-helpers';
+import { Anchor, addImage, addTween } from '../phaser-helpers';
 import { Avatars } from '../../store/slices/player/use-with-player-state';
 import { GameStateHandler } from '../../classes/game-state-handler';
 
@@ -45,7 +45,7 @@ export class AvatarCreator extends GameScene {
       yAnchor: Anchor.center,
       xAnchor: Anchor.center,
     }).setAlpha(0);
-    this.tweens.add({
+    addTween(this, {
       targets: this.search,
       angle: '-=45',
       yoyo: true,
@@ -103,7 +103,7 @@ export class AvatarCreator extends GameScene {
         this
       );
 
-      this.tweens.add({
+      addTween(this, {
         targets: avatar,
         alpha: { from: 0, to: 1 },
         duration: 1000,

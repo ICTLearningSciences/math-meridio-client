@@ -6,7 +6,7 @@ The full terms of this copyright and license should always be found in the root 
 */
 import GameScene from '../game-scene';
 import { GameStateHandler } from '../../classes/game-state-handler';
-import { addBackground, addImage } from '../phaser-helpers';
+import { addBackground, addImage, addTween } from '../phaser-helpers';
 import EventSystem from '../event-system';
 import {
   INSIDE_SHOT_SUCCESS_VALUE,
@@ -162,7 +162,7 @@ export class SimulationScene extends GameScene {
   }
 
   _runAndShoot(shot: BasketballShot, x: number) {
-    this.tweens.add({
+    addTween(this, {
       targets: this.mySprite,
       x: x,
       duration: 500,
@@ -186,7 +186,7 @@ export class SimulationScene extends GameScene {
     ball.setX(this.mySprite[0].x);
     ball.setY(this.mySprite[0].y);
     // throw ball
-    this.tweens.add({
+    addTween(this, {
       targets: ball,
       x: this.bg!.displayWidth * 0.9,
       y: 320,
@@ -198,7 +198,7 @@ export class SimulationScene extends GameScene {
         ball.displayWidth = 200;
         ball.setX(this.bg!.displayWidth / 2);
         ball.setY(0);
-        this.tweens.add({
+        addTween(this, {
           targets: ball,
           x: shot.success ? this.bg!.displayWidth / 2 : 0,
           y: this.bg!.displayHeight,

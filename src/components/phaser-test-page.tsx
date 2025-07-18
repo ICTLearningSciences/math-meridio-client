@@ -8,9 +8,17 @@ import React from 'react';
 import { useWithPhaserGame } from '../hooks/use-with-phaser-game';
 import { useAppSelector } from '../store/hooks';
 import BasketballGame from '../game/basketball';
-import ConcertGame from '../game/concert-ticket-sales';
+import ConcertGame, {
+  GENERAL_ADMISSION_TICKET_CONVERSION_RATE,
+  GENERAL_ADMISSION_TICKET_PRICE,
+  RESERVED_TICKET_CONVERSION_RATE,
+  RESERVED_TICKET_PRICE,
+  VIP_TICKET_CONVERSION_RATE,
+  VIP_TICKET_PRICE,
+} from '../game/concert-ticket-sales';
 import withAuthorizationOnly from '../wrap-with-authorization-only';
 import EventSystem from '../game/event-system';
+import { getRandomNumber } from '../helpers';
 
 function PhaserTestPage(): JSX.Element {
   const { player } = useAppSelector((state) => state.playerData);
@@ -29,12 +37,15 @@ function PhaserTestPage(): JSX.Element {
 
   function sceneCreated() {
     if (game === 'basketball') {
+      const outside = getRandomNumber(10, 50);
+      const mid = getRandomNumber(10, 50);
+      const inside = 100 - outside - mid;
       EventSystem.emit('simulate', {
         player: player?.clientId,
         playerAvatar: player,
-        insideShots: 10,
-        midShots: 10,
-        outsideShots: 80,
+        insideShots: inside,
+        midShots: mid,
+        outsideShots: outside,
         insidePoints: 2,
         midPoints: 2,
         outsidePoints: 3,
@@ -43,15 +54,30 @@ function PhaserTestPage(): JSX.Element {
         outsidePercent: 0.25,
       });
     } else {
+      const vip = getRandomNumber(0, 50);
+      const vipSold = Math.round(vip * VIP_TICKET_CONVERSION_RATE);
+      const reserved = getRandomNumber(0, 50);
+      const reservedSold = Math.round(
+        reserved * RESERVED_TICKET_CONVERSION_RATE
+      );
+      const general = 100 - vip - reserved;
+      const generalSold = Math.round(
+        general * GENERAL_ADMISSION_TICKET_CONVERSION_RATE
+      );
+
       EventSystem.emit('simulate', {
         player: player?.clientId,
         playerAvatar: player,
-        generalAdmissionTicketsUpForSale: 40,
-        reservedTicketsUpForSale: 30,
-        vipTicketsUpForSale: 30,
-        generalAdmissionTicketsSold: 5,
-        reservedTicketsSold: 5,
-        vipTicketsSold: 80,
+        generalAdmissionTicketsUpForSale: general,
+        reservedTicketsUpForSale: reserved,
+        vipTicketsUpForSale: vip,
+        generalAdmissionTicketsSold: generalSold,
+        reservedTicketsSold: reservedSold,
+        vipTicketsSold: vipSold,
+        totalProfit:
+          generalSold * GENERAL_ADMISSION_TICKET_PRICE +
+          vipSold * VIP_TICKET_PRICE +
+          reservedSold * RESERVED_TICKET_PRICE,
       });
     }
   }

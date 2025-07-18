@@ -84,6 +84,7 @@ export function SimulationComponent(props: {
         simData.generalAdmissionTicketsSold * GENERAL_ADMISSION_TICKET_PRICE +
         simData.vipTicketsSold * VIP_TICKET_PRICE +
         simData.reservedTicketsSold * RESERVED_TICKET_PRICE;
+      EventSystem.emit('destroy');
       EventSystem.emit('simulate', simData);
     }
 
