@@ -20,18 +20,19 @@ export function useWithConfig() {
   }
 
   function firstAvailableAzureServiceModel(): TargetAiModelServiceType {
-    const azureModels = abeConfig.aiServiceModelConfigs.find(
-      (config) => config.serviceName === AiServiceNames.AZURE
+    const openAiModels = abeConfig.aiServiceModelConfigs.find(
+      (config) => config.serviceName === AiServiceNames.OPEN_AI
     );
-    if (!azureModels) {
-      throw new Error('No Azure service found');
+    if (!openAiModels) {
+      throw new Error('No OpenAI service found');
     }
-    if (azureModels.modelList.length === 0) {
-      throw new Error('No Azure service models found');
+    if (openAiModels.modelList.length === 0) {
+      throw new Error('No OpenAI service models found');
     }
     return {
-      serviceName: AiServiceNames.AZURE,
-      model: azureModels.modelList[0].name,
+      serviceName: AiServiceNames.OPEN_AI,
+      // TODO: make this dynamic again
+      model: 'gpt-4o',
     };
   }
   return {
