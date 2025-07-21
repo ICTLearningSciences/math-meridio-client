@@ -290,7 +290,7 @@ export class BasketballStateHandler extends GameStateHandler {
 const BasketballGame: Game = {
   id: 'basketball',
   name: 'NBA Analyst',
-  problem: `We need you and the analyst team to figure out why we're losing and what we need to change in our strategy to be winners! From what you're seeing right now, what do you think we're doing wrong? Out of 100 shots, how many should be inside, outside, or mid lane? Inside and mid lane shots are worth 2 points, and outside shots are worth 3 points. Outside shots have a lower success rate, however.`,
+  problem: `We need you and the analyst team to figure out why we're losing and what to change in our strategy to start winning. Based on what you see, what do you think we're doing wrong? Out of 100 shots, how many should be inside, outside, or mid lane? Inside and mid lane shots earn 2 points, and outside shots earn 3, but they're harder to make.`,
   persistTruthGlobalStateData: [
     'Points per outside shot',
     'Points per inside shot',

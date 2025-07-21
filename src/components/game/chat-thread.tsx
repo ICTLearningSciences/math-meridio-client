@@ -323,7 +323,7 @@ export default function ChatThread(props: {
               {' '}
               <Typography color={'white'}>
                 <FadingText
-                  strings={['Thinking...', 'Dribbling...', 'Analyzing...']}
+                  strings={['Thinking...', 'Strategizing...', 'Analyzing...']}
                 />
               </Typography>
             </Paper>

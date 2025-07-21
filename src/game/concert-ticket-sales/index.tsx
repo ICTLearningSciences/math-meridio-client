@@ -210,7 +210,7 @@ export class BasketballStateHandler extends GameStateHandler {
 const BasketballGame: Game = {
   id: 'concert-ticket-sales',
   name: 'Concert Ticket Management',
-  problem: `Our concert venue isn't meeting its profit goals, and we need your help to fix it. You and your team will look at our ticket sales and figure out how to improve them to maximize our revenue. We can only sell 100 tickets per show. How many should be VIP, Reserved, or General Admission? VIP tickets earn the most but are hardest to sell. Reserved and General Admission tickets earn less but are easier to sell.`,
+  problem: `Our concert venue isn't meeting its profit goals, and we need your help to fix it. You and the sales team must figure out what's wrong with our current ticket strategy and how to adjust it to maximize revenue. For each show, we can sell 100 tickets. VIP tickets earn the most but are hardest to sell, while Reserved and General Admission earn less but sell more easily.`,
   persistTruthGlobalStateData: [
     UNDERSTANDS_ALGORITHM_KEY,
     UNDERSTANDS_MULTIPLICATION_KEY,
