@@ -157,3 +157,10 @@ export function getRandomAvatar() {
   }
   return avatar;
 }
+
+export function copyAndSet<T>(array: T[], idx: number, value: T): T[] {
+  if (idx >= array.length || idx < 0) {
+    return [...array, value];
+  }
+  return [...array.slice(0, idx), value, ...array.slice(idx + 1)];
+}

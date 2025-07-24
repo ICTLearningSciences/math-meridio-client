@@ -4,7 +4,8 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
+import { TransformComponent, useControls } from 'react-zoom-pan-pinch';
 import { Card, Typography } from '@mui/material';
 import { GameStateHandler } from '../../classes/game-state-handler';
 import { PlayerStateData } from '../../store/slices/game';
@@ -41,6 +42,7 @@ export function SolutionComponent(props: {
 }): JSX.Element {
   const { controller } = props;
   const { classes } = useStyles();
+  const { zoomIn, zoomOut } = useControls();
   const [gameStateData, setGameStateData] = React.useState<GameStateData>({});
   const [players, setPlayers] = React.useState<Player[]>([]);
   const [playerStateData, setPlayerStateData] = React.useState<
@@ -58,6 +60,28 @@ export function SolutionComponent(props: {
     React.useState(false);
   const [understandsAddition, setUnderstandsAddition] = React.useState(false);
   const [editingVariable, setEditingVariable] = React.useState('');
+
+  const ref = useRef<HTMLDivElement | null>(null);
+  const [width, setWidth] = React.useState<number>(0);
+  const [height, setHeight] = React.useState<number>(0);
+
+  React.useEffect(() => {
+    if (ref?.current) {
+      new ResizeObserver(() => {
+        setWidth(ref?.current?.clientWidth || 0);
+        setHeight(ref?.current?.clientHeight || 0);
+      }).observe(ref?.current);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    if (width < 500 || height < 500) {
+      zoomOut(1);
+    } else {
+      zoomIn(1);
+    }
+  }, [width, height]);
+
   React.useEffect(() => {
     !understandsPoints &&
       setUnderstandsPoints(
@@ -207,213 +231,227 @@ export function SolutionComponent(props: {
 
   return (
     <div
+      ref={ref}
       className="column center-div"
       style={{
-        height: window.innerHeight - 400,
+        height: '100%',
+        width: '100%',
         backgroundImage: `url(${courtBg})`,
         backgroundSize: 'cover',
         backgroundRepeat: 'no-repeat',
       }}
     >
-      <Variable
-        title="# of shots"
-        dataKey=""
-        isEnabled={() => true}
-        value={String(NUMBER_OF_SHOTS)}
-        forceShow={true}
-      />
-      <div className="row center-div">
-        <Variable
-          dataKey={UNDERSTANDS_SHOT_POINTS}
-          isEnabled={() => understandsPoints}
-          title="Points per inside shot"
-          value={String(INSIDE_SHOT_POINTS_VALUE)}
-        />
-        <RevealingIcon
-          reveal={understandsMultiplication}
-          icon={
-            <Typography
-              className={classes.boxText}
-              style={{ color: '#C96049' }}
-            >
-              {' '}
-              x{' '}
-            </Typography>
-          }
-        />
-        <EditableVariable
-          updatePlayerStateData={(newValue: number) => {
-            controller.newPlayerStateData(
-              [
-                {
-                  key: INSIDE_SHOT_PERCENT,
-                  value: newValue,
-                },
-              ],
-              controller.player.clientId
-            );
-          }}
-          dataKey={INSIDE_SHOT_PERCENT}
-          title="# of inside shots"
-          myPlayerStateData={myPlayerStateData}
-          shouldDisable={
-            Boolean(editingVariable) && editingVariable !== INSIDE_SHOT_PERCENT
-          }
-          setEditingVariable={setEditingVariable}
-        />
-        <RevealingIcon
-          reveal={understandsMultiplication}
-          icon={
-            <Typography
-              className={classes.boxText}
-              style={{ color: '#C96049' }}
-            >
-              {' '}
-              x{' '}
-            </Typography>
-          }
-        />
-        <Variable
-          dataKey={UNDERSTANDS_SUCCESS_SHOTS}
-          isEnabled={() => understandsSuccess}
-          title="Success% of inside shots"
-          value={String(INSIDE_SHOT_SUCCESS_VALUE)}
-        />
-      </div>
-      <RevealingIcon
-        reveal={understandsAddition}
-        icon={
-          <Typography className={classes.boxText} style={{ color: '#C96049' }}>
-            {' '}
-            +{' '}
-          </Typography>
-        }
-      />
-      <div className="row center-div">
-        <Variable
-          isEnabled={() => understandsPoints}
-          dataKey={UNDERSTANDS_SHOT_POINTS}
-          title="Points per mid shot"
-          value={String(MID_SHOT_POINTS_VALUE)}
-        />
-        <RevealingIcon
-          reveal={understandsMultiplication}
-          icon={
-            <Typography
-              className={classes.boxText}
-              style={{ color: '#C96049' }}
-            >
-              {' '}
-              x{' '}
-            </Typography>
-          }
-        />
-        <EditableVariable
-          updatePlayerStateData={(newValue: number) => {
-            controller.newPlayerStateData(
-              [
-                {
-                  key: MID_SHOT_PERCENT,
-                  value: newValue,
-                },
-              ],
-              controller.player.clientId
-            );
-          }}
-          dataKey={MID_SHOT_PERCENT}
-          title="# of mid shots"
-          myPlayerStateData={myPlayerStateData}
-          shouldDisable={
-            Boolean(editingVariable) && editingVariable !== MID_SHOT_PERCENT
-          }
-          setEditingVariable={setEditingVariable}
-        />
-        <RevealingIcon
-          reveal={understandsMultiplication}
-          icon={
-            <Typography
-              className={classes.boxText}
-              style={{ color: '#C96049' }}
-            >
-              {' '}
-              x{' '}
-            </Typography>
-          }
-        />
-        <Variable
-          isEnabled={() => understandsSuccess}
-          dataKey={UNDERSTANDS_SUCCESS_SHOTS}
-          title="Success% of mid shots"
-          value={String(MID_SHOT_SUCCESS_VALUE)}
-        />
-      </div>
-      <RevealingIcon
-        reveal={understandsAddition}
-        icon={
-          <Typography className={classes.boxText} style={{ color: '#C96049' }}>
-            {' '}
-            +{' '}
-          </Typography>
-        }
-      />
-      <div className="row center-div">
-        <Variable
-          dataKey={UNDERSTANDS_SHOT_POINTS}
-          isEnabled={() => understandsPoints}
-          title="Points per outside shot"
-          value={String(OUTSIDE_SHOT_POINTS_VALUE)}
-        />
-        <RevealingIcon
-          reveal={understandsMultiplication}
-          icon={
-            <Typography
-              className={classes.boxText}
-              style={{ color: '#C96049' }}
-            >
-              {' '}
-              x{' '}
-            </Typography>
-          }
-        />
-        <EditableVariable
-          updatePlayerStateData={(newValue: number) => {
-            controller.newPlayerStateData(
-              [
-                {
-                  key: OUTSIDE_SHOT_PERCENT,
-                  value: newValue,
-                },
-              ],
-              controller.player.clientId
-            );
-          }}
-          dataKey={OUTSIDE_SHOT_PERCENT}
-          title="# of 3 pointers"
-          myPlayerStateData={myPlayerStateData}
-          shouldDisable={
-            Boolean(editingVariable) && editingVariable !== OUTSIDE_SHOT_PERCENT
-          }
-          setEditingVariable={setEditingVariable}
-        />
-        <RevealingIcon
-          reveal={understandsMultiplication}
-          icon={
-            <Typography
-              className={classes.boxText}
-              style={{ color: '#C96049' }}
-            >
-              {' '}
-              x{' '}
-            </Typography>
-          }
-        />
-        <Variable
-          dataKey={UNDERSTANDS_SUCCESS_SHOTS}
-          isEnabled={() => understandsSuccess}
-          title="Success% of outside shots"
-          value={String(OUTSIDE_SHOT_SUCCESS_VALUE)}
-        />
-      </div>
+      <TransformComponent>
+        <div className="column center-div">
+          <Variable
+            title="# of shots"
+            dataKey=""
+            isEnabled={() => true}
+            value={String(NUMBER_OF_SHOTS)}
+            forceShow={true}
+          />
+          <div className="row center-div">
+            <Variable
+              dataKey={UNDERSTANDS_SHOT_POINTS}
+              isEnabled={() => understandsPoints}
+              title="Points per inside shot"
+              value={String(INSIDE_SHOT_POINTS_VALUE)}
+            />
+            <RevealingIcon
+              reveal={understandsMultiplication}
+              icon={
+                <Typography
+                  className={classes.boxText}
+                  style={{ color: '#C96049' }}
+                >
+                  {' '}
+                  x{' '}
+                </Typography>
+              }
+            />
+            <EditableVariable
+              updatePlayerStateData={(newValue: number) => {
+                controller.newPlayerStateData(
+                  [
+                    {
+                      key: INSIDE_SHOT_PERCENT,
+                      value: newValue,
+                    },
+                  ],
+                  controller.player.clientId
+                );
+              }}
+              dataKey={INSIDE_SHOT_PERCENT}
+              title="# of inside shots"
+              myPlayerStateData={myPlayerStateData}
+              shouldDisable={
+                Boolean(editingVariable) &&
+                editingVariable !== INSIDE_SHOT_PERCENT
+              }
+              setEditingVariable={setEditingVariable}
+            />
+            <RevealingIcon
+              reveal={understandsMultiplication}
+              icon={
+                <Typography
+                  className={classes.boxText}
+                  style={{ color: '#C96049' }}
+                >
+                  {' '}
+                  x{' '}
+                </Typography>
+              }
+            />
+            <Variable
+              dataKey={UNDERSTANDS_SUCCESS_SHOTS}
+              isEnabled={() => understandsSuccess}
+              title="Success% of inside shots"
+              value={String(INSIDE_SHOT_SUCCESS_VALUE)}
+            />
+          </div>
+          <RevealingIcon
+            reveal={understandsAddition}
+            icon={
+              <Typography
+                className={classes.boxText}
+                style={{ color: '#C96049' }}
+              >
+                {' '}
+                +{' '}
+              </Typography>
+            }
+          />
+          <div className="row center-div">
+            <Variable
+              isEnabled={() => understandsPoints}
+              dataKey={UNDERSTANDS_SHOT_POINTS}
+              title="Points per mid shot"
+              value={String(MID_SHOT_POINTS_VALUE)}
+            />
+            <RevealingIcon
+              reveal={understandsMultiplication}
+              icon={
+                <Typography
+                  className={classes.boxText}
+                  style={{ color: '#C96049' }}
+                >
+                  {' '}
+                  x{' '}
+                </Typography>
+              }
+            />
+            <EditableVariable
+              updatePlayerStateData={(newValue: number) => {
+                controller.newPlayerStateData(
+                  [
+                    {
+                      key: MID_SHOT_PERCENT,
+                      value: newValue,
+                    },
+                  ],
+                  controller.player.clientId
+                );
+              }}
+              dataKey={MID_SHOT_PERCENT}
+              title="# of mid shots"
+              myPlayerStateData={myPlayerStateData}
+              shouldDisable={
+                Boolean(editingVariable) && editingVariable !== MID_SHOT_PERCENT
+              }
+              setEditingVariable={setEditingVariable}
+            />
+            <RevealingIcon
+              reveal={understandsMultiplication}
+              icon={
+                <Typography
+                  className={classes.boxText}
+                  style={{ color: '#C96049' }}
+                >
+                  {' '}
+                  x{' '}
+                </Typography>
+              }
+            />
+            <Variable
+              isEnabled={() => understandsSuccess}
+              dataKey={UNDERSTANDS_SUCCESS_SHOTS}
+              title="Success% of mid shots"
+              value={String(MID_SHOT_SUCCESS_VALUE)}
+            />
+          </div>
+          <RevealingIcon
+            reveal={understandsAddition}
+            icon={
+              <Typography
+                className={classes.boxText}
+                style={{ color: '#C96049' }}
+              >
+                {' '}
+                +{' '}
+              </Typography>
+            }
+          />
+          <div className="row center-div">
+            <Variable
+              dataKey={UNDERSTANDS_SHOT_POINTS}
+              isEnabled={() => understandsPoints}
+              title="Points per outside shot"
+              value={String(OUTSIDE_SHOT_POINTS_VALUE)}
+            />
+            <RevealingIcon
+              reveal={understandsMultiplication}
+              icon={
+                <Typography
+                  className={classes.boxText}
+                  style={{ color: '#C96049' }}
+                >
+                  {' '}
+                  x{' '}
+                </Typography>
+              }
+            />
+            <EditableVariable
+              updatePlayerStateData={(newValue: number) => {
+                controller.newPlayerStateData(
+                  [
+                    {
+                      key: OUTSIDE_SHOT_PERCENT,
+                      value: newValue,
+                    },
+                  ],
+                  controller.player.clientId
+                );
+              }}
+              dataKey={OUTSIDE_SHOT_PERCENT}
+              title="# of 3 pointers"
+              myPlayerStateData={myPlayerStateData}
+              shouldDisable={
+                Boolean(editingVariable) &&
+                editingVariable !== OUTSIDE_SHOT_PERCENT
+              }
+              setEditingVariable={setEditingVariable}
+            />
+            <RevealingIcon
+              reveal={understandsMultiplication}
+              icon={
+                <Typography
+                  className={classes.boxText}
+                  style={{ color: '#C96049' }}
+                >
+                  {' '}
+                  x{' '}
+                </Typography>
+              }
+            />
+            <Variable
+              dataKey={UNDERSTANDS_SUCCESS_SHOTS}
+              isEnabled={() => understandsSuccess}
+              title="Success% of outside shots"
+              value={String(OUTSIDE_SHOT_SUCCESS_VALUE)}
+            />
+          </div>
+        </div>
+      </TransformComponent>
     </div>
   );
 }
