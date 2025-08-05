@@ -6,6 +6,7 @@ The full terms of this copyright and license should always be found in the root 
 */
 import BasketballGame from './basketball';
 import NewGame from './concert-ticket-sales';
+import TestBaseGame from './test-base';
 import {
   GameStateHandler,
   GameStateHandlerArgs,
@@ -13,7 +14,7 @@ import {
 import { PlayerStateData } from '../store/slices/game';
 
 export interface Game {
-  id: 'basketball' | 'concert-ticket-sales';
+  id: 'basketball' | 'concert-ticket-sales' | 'test-base';
   name: string;
   problem: string;
   config: Phaser.Types.Core.GameConfig;
@@ -32,4 +33,4 @@ export interface Game {
   createController: (args: GameStateHandlerArgs) => GameStateHandler;
 }
 
-export const GAMES: Game[] = [BasketballGame, NewGame];
+export const GAMES: Game[] = [BasketballGame, NewGame, TestBaseGame];
