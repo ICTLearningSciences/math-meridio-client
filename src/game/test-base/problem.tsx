@@ -4,28 +4,28 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import BasketballGame from './basketball';
-import NewGame from './concert-ticket-sales';
-import TestBaseGame from './test-base';
-import {
-  GameStateHandler,
-  GameStateHandlerArgs,
-} from '../classes/game-state-handler';
+import React from 'react';
+import { Typography } from '@mui/material';
+import { GameStateHandler } from '../../classes/game-state-handler';
+import BasketballGame from '.';
+import stadiumSeats from './stadium_seats.jpg';
 
-export interface Game {
-  id: 'basketball' | 'concert-ticket-sales' | 'test-base';
-  name: string;
-  problem: string;
-  config: Phaser.Types.Core.GameConfig;
-  persistTruthGlobalStateData: string[];
-  showProblem: (controller: GameStateHandler) => JSX.Element;
-  showSolution: (controller: GameStateHandler) => JSX.Element;
-  showSimulation: (
-    controller: GameStateHandler,
-    simulation?: string
-  ) => JSX.Element;
-  showResult: (controller: GameStateHandler) => JSX.Element;
-  createController: (args: GameStateHandlerArgs) => GameStateHandler;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function ProblemComponent(props: {
+  controller: GameStateHandler;
+}): JSX.Element {
+  return (
+    <div>
+      <img
+        style={{
+          width: '50%',
+          height: 'auto',
+          float: 'right',
+          marginLeft: '10px',
+        }}
+        src={stadiumSeats}
+      ></img>
+      <Typography>{BasketballGame.problem}</Typography>
+    </div>
+  );
 }
-
-export const GAMES: Game[] = [BasketballGame, NewGame, TestBaseGame];

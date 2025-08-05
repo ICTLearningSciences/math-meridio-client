@@ -40,6 +40,23 @@ export function ExistingStages(props: {
   if (!stages.length) {
     return <></>;
   }
+  const titleGroupByKeys = ['Test Base', 'Concert', 'Basketball'];
+
+  const groupedStages = titleGroupByKeys.map((groupKey) => ({
+    groupByKey: groupKey,
+    stages: stages
+      .filter((stage) => stage.title.includes(groupKey))
+      .sort((a, b) => {
+        const aNumber = parseInt(a.title.split('.')[0]) || 0;
+        const bNumber = parseInt(b.title.split('.')[0]) || 0;
+        return aNumber - bNumber;
+      }),
+  }));
+
+  const unmatchedStages = stages.filter(
+    (stage) =>
+      !titleGroupByKeys.some((groupKey) => stage.title.includes(groupKey))
+  );
 
   return (
     <ColumnDiv
@@ -47,20 +64,40 @@ export function ExistingStages(props: {
         width: '95%',
       }}
     >
-      {stages.map((stage) => {
-        return (
-          <ExistingStageItem
-            key={stage._id}
-            stage={stage}
-            editStage={() => {
-              editStage(stage);
-            }}
-            goToStage={() => {
-              props.goToStage(stage);
-            }}
-          />
-        );
-      })}
+      {groupedStages.map((group) => (
+        <div key={group.groupByKey}>
+          <h2>{group.groupByKey}</h2>
+          {group.stages.map((stage) => (
+            <ExistingStageItem
+              key={stage._id}
+              stage={stage}
+              editStage={() => {
+                editStage(stage);
+              }}
+              goToStage={() => {
+                props.goToStage(stage);
+              }}
+            />
+          ))}
+        </div>
+      ))}
+      {unmatchedStages.length > 0 && (
+        <div>
+          <h2>Unsorted</h2>
+          {unmatchedStages.map((stage) => (
+            <ExistingStageItem
+              key={stage._id}
+              stage={stage}
+              editStage={() => {
+                editStage(stage);
+              }}
+              goToStage={() => {
+                props.goToStage(stage);
+              }}
+            />
+          ))}
+        </div>
+      )}
     </ColumnDiv>
   );
 }
