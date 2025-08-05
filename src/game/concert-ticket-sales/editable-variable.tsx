@@ -15,6 +15,7 @@ import {
 import { useDebouncedCallback } from '../../hooks/use-debounced-callback';
 import { didGameStateDataChange } from '../../helpers';
 import { GameStateData } from './solution';
+
 export const EditableVariable = React.memo(
   function EditableVariable(props: {
     dataKey: string;
@@ -80,6 +81,7 @@ export const EditableVariable = React.memo(
           {title}
         </Typography>
         <TextField
+          className="panningDisabled"
           value={value || 0}
           variant="standard"
           type="number"

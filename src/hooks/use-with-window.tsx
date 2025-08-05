@@ -4,28 +4,37 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { Typography } from '@mui/material';
-import { GameStateHandler } from '../../classes/game-state-handler';
-import BasketballGame from '.';
-import stadiumSeats from './stadium_seats.jpg';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function ProblemComponent(props: {
-  controller: GameStateHandler;
-}): JSX.Element {
-  return (
-    <div>
-      <img
-        style={{
-          width: '50%',
-          height: 'auto',
-          float: 'right',
-          marginLeft: '10px',
-        }}
-        src={stadiumSeats}
-      />
-      <Typography>{BasketballGame.problem}</Typography>
-    </div>
-  );
+import { useEffect, useState } from 'react';
+
+export interface WindowSize {
+  isMobile: boolean;
+  windowWidth: number;
+  windowHeight: number;
+}
+
+export function useWithWindow(): WindowSize {
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [windowWidth, setWindowWidth] = useState<number>(0);
+  const [windowHeight, setWindowHeight] = useState<number>(0);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const isMobile = window.innerWidth <= 870;
+      setWindowHeight(window.innerHeight);
+      setWindowWidth(window.innerWidth);
+      setIsMobile(isMobile);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  return {
+    isMobile,
+    windowWidth,
+    windowHeight,
+  };
 }
