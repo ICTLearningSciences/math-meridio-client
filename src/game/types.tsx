@@ -11,6 +11,7 @@ import {
   GameStateHandler,
   GameStateHandlerArgs,
 } from '../classes/game-state-handler';
+import { PlayerStateData } from '../store/slices/game';
 
 export interface Game {
   id: 'basketball' | 'concert-ticket-sales' | 'test-base';
@@ -23,6 +24,10 @@ export interface Game {
   showSimulation: (
     controller: GameStateHandler,
     simulation?: string
+  ) => JSX.Element;
+  showPlayerStrategy: (
+    data: PlayerStateData,
+    controller: GameStateHandler
   ) => JSX.Element;
   showResult: (controller: GameStateHandler) => JSX.Element;
   createController: (args: GameStateHandlerArgs) => GameStateHandler;

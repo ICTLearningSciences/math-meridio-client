@@ -22,7 +22,7 @@ import { DiscussionStageHandler } from '../../classes/discussion-stage-handler';
 
 import { ProblemComponent } from './problem';
 import { SolutionComponent } from './solution';
-import { SimulationComponent } from './simulation';
+import { PlayerStrategy, SimulationComponent } from './simulation';
 import { ResultComponent } from './results';
 import { PlayerStateData } from '../../store/slices/game';
 import { SIMULTAION_VIEWED_KEY } from '../../helpers';
@@ -241,6 +241,9 @@ const BasketballGame: Game = {
   },
   showSimulation: (controller: GameStateHandler) => {
     return <SimulationComponent controller={controller} />;
+  },
+  showPlayerStrategy: (data: PlayerStateData, controller: GameStateHandler) => {
+    return <PlayerStrategy data={data} controller={controller} />;
   },
   showResult: (controller: GameStateHandler) => {
     return <ResultComponent controller={controller} />;
