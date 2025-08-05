@@ -219,7 +219,7 @@ export function ResultComponent(props: {
         <Tab label="Profits" />
         <Tab label="Tickets Sold" />
       </Tabs>
-      <Box sx={{ width: '100%', mt: 2 }}>
+      <Box sx={{ width: '100%', height: '100%', mt: 2 }}>
         {tabValue === 0 && (
           <Stack direction="column" alignItems="center">
             <BarChart

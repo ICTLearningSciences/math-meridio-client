@@ -4,8 +4,10 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
+import { TransformComponent, useControls } from 'react-zoom-pan-pinch';
 import { Card, Typography } from '@mui/material';
+
 import { GameStateHandler } from '../../classes/game-state-handler';
 import { PlayerStateData } from '../../store/slices/game';
 import { makeStyles } from 'tss-react/mui';
@@ -39,6 +41,7 @@ export function SolutionComponent(props: {
 }): JSX.Element {
   const { controller } = props;
   const { classes } = useStyles();
+  const { zoomIn, zoomOut } = useControls();
   const [gameStateData, setGameStateData] = React.useState<GameStateData>({});
   const [players, setPlayers] = React.useState<Player[]>([]);
   const [playerStateData, setPlayerStateData] = React.useState<
@@ -58,6 +61,20 @@ export function SolutionComponent(props: {
     React.useState(false);
   const [understandsAddition, setUnderstandsAddition] = React.useState(false);
   const [editingVariable, setEditingVariable] = React.useState('');
+
+  const ref = useRef<HTMLDivElement | null>(null);
+  const [width, setWidth] = React.useState<number>(0);
+  const [height, setHeight] = React.useState<number>(0);
+
+  React.useEffect(() => {
+    if (ref?.current) {
+      new ResizeObserver(() => {
+        setWidth(ref?.current?.clientWidth || 0);
+        setHeight(ref?.current?.clientHeight || 0);
+      }).observe(ref?.current);
+    }
+  }, []);
+
   React.useEffect(() => {
     !understandsTicketPrices &&
       setUnderstandsTicketPrices(
@@ -126,6 +143,14 @@ export function SolutionComponent(props: {
     });
     setMyPlayerStateData(data);
   }, [playerStateData, players]);
+
+  React.useEffect(() => {
+    if (width < 500 || height < 500) {
+      zoomOut(1);
+    } else {
+      zoomIn(1);
+    }
+  }, [width, height]);
 
   function Variable(props: {
     dataKey: string;
@@ -210,202 +235,226 @@ export function SolutionComponent(props: {
 
   return (
     <div
+      ref={ref}
       className="column center-div"
       style={{
-        height: window.innerHeight - 400,
+        height: '100%',
+        width: '100%',
         backgroundImage: `url(${stageBg})`,
         backgroundSize: 'cover',
         backgroundRepeat: 'no-repeat',
         backgroundPosition: 'center',
       }}
     >
-      <Variable
-        title="Total # of tickets to sell"
-        dataKey=""
-        isEnabled={() => true}
-        value={String(TOTAL_NUMBER_OF_TICKETS)}
-        forceShow={true}
-      />
-      <div className="row center-div">
-        <Variable
-          dataKey={UNDERSTANDS_TICKET_PRICES_KEY}
-          isEnabled={() => understandsTicketPrices}
-          title="Price per VIP ticket"
-          prefix="$"
-          value={String(VIP_TICKET_PRICE)}
-        />
-        <RevealingIcon
-          reveal={understandsMultiplication}
-          icon={
-            <Typography className={classes.boxText} style={{ color: '#fff' }}>
-              {' '}
-              x{' '}
-            </Typography>
-          }
-        />
-        <EditableVariable
-          updatePlayerStateData={(newValue: number) => {
-            controller.newPlayerStateData(
-              [
-                {
-                  key: VIP_TICKET_PERCENT_KEY,
-                  value: newValue,
-                },
-              ],
-              controller.player.clientId
-            );
-          }}
-          dataKey={VIP_TICKET_PERCENT_KEY}
-          title="# of VIP tickets"
-          myPlayerStateData={myPlayerStateData}
-          shouldDisable={
-            Boolean(editingVariable) &&
-            editingVariable !== VIP_TICKET_PERCENT_KEY
-          }
-          setEditingVariable={setEditingVariable}
-        />
-        <RevealingIcon
-          reveal={understandsMultiplication}
-          icon={
-            <Typography className={classes.boxText} style={{ color: '#fff' }}>
-              {' '}
-              x{' '}
-            </Typography>
-          }
-        />
-        <Variable
-          dataKey={UNDERSTANDS_CONVERSION_RATE_KEY}
-          isEnabled={() => understandsSellThroughRates}
-          title="Conversion Rate"
-          value={String(VIP_TICKET_CONVERSION_RATE)}
-        />
-      </div>
-      <RevealingIcon
-        reveal={understandsAddition}
-        icon={
-          <Typography className={classes.boxText} style={{ color: '#fff' }}>
-            {' '}
-            +{' '}
-          </Typography>
-        }
-      />
-      <div className="row center-div">
-        <Variable
-          isEnabled={() => understandsTicketPrices}
-          dataKey={UNDERSTANDS_TICKET_PRICES_KEY}
-          title="Price per reserved ticket"
-          prefix="$"
-          value={String(RESERVED_TICKET_PRICE)}
-        />
-        <RevealingIcon
-          reveal={understandsMultiplication}
-          icon={
-            <Typography className={classes.boxText} style={{ color: '#fff' }}>
-              {' '}
-              x{' '}
-            </Typography>
-          }
-        />
-        <EditableVariable
-          updatePlayerStateData={(newValue: number) => {
-            controller.newPlayerStateData(
-              [
-                {
-                  key: RESERVED_TICKET_PERCENT_KEY,
-                  value: newValue,
-                },
-              ],
-              controller.player.clientId
-            );
-          }}
-          dataKey={RESERVED_TICKET_PERCENT_KEY}
-          title="# of Reserved tickets"
-          myPlayerStateData={myPlayerStateData}
-          shouldDisable={
-            Boolean(editingVariable) &&
-            editingVariable !== RESERVED_TICKET_PERCENT_KEY
-          }
-          setEditingVariable={setEditingVariable}
-        />
-        <RevealingIcon
-          reveal={understandsMultiplication}
-          icon={
-            <Typography className={classes.boxText} style={{ color: '#fff' }}>
-              {' '}
-              x{' '}
-            </Typography>
-          }
-        />
-        <Variable
-          isEnabled={() => understandsSellThroughRates}
-          dataKey={UNDERSTANDS_CONVERSION_RATE_KEY}
-          title="Conversion Rate"
-          value={String(RESERVED_TICKET_CONVERSION_RATE)}
-        />
-      </div>
-      <RevealingIcon
-        reveal={understandsAddition}
-        icon={
-          <Typography className={classes.boxText} style={{ color: '#fff' }}>
-            {' '}
-            +{' '}
-          </Typography>
-        }
-      />
-      <div className="row center-div">
-        <Variable
-          dataKey={UNDERSTANDS_TICKET_PRICES_KEY}
-          isEnabled={() => understandsTicketPrices}
-          title="Price per GA ticket"
-          prefix="$"
-          value={String(GENERAL_ADMISSION_TICKET_PRICE)}
-        />
-        <RevealingIcon
-          reveal={understandsMultiplication}
-          icon={
-            <Typography className={classes.boxText} style={{ color: '#fff' }}>
-              {' '}
-              x{' '}
-            </Typography>
-          }
-        />
-        <EditableVariable
-          updatePlayerStateData={(newValue: number) => {
-            controller.newPlayerStateData(
-              [
-                {
-                  key: GENERAL_ADMISSION_TICKET_PERCENT_KEY,
-                  value: newValue,
-                },
-              ],
-              controller.player.clientId
-            );
-          }}
-          dataKey={GENERAL_ADMISSION_TICKET_PERCENT_KEY}
-          title="# of GA tickets"
-          myPlayerStateData={myPlayerStateData}
-          shouldDisable={
-            Boolean(editingVariable) &&
-            editingVariable !== GENERAL_ADMISSION_TICKET_PERCENT_KEY
-          }
-          setEditingVariable={setEditingVariable}
-        />
-        <RevealingIcon
-          reveal={understandsMultiplication}
-          icon={
-            <Typography className={classes.boxText} style={{ color: '#fff' }}>
-              {' '}
-              x{' '}
-            </Typography>
-          }
-        />
-        <Variable
-          dataKey={UNDERSTANDS_CONVERSION_RATE_KEY}
-          isEnabled={() => understandsSellThroughRates}
-          title="Conversion Rate"
-          value={String(GENERAL_ADMISSION_TICKET_CONVERSION_RATE)}
-        />
-      </div>
+      <TransformComponent>
+        <div className="column center-div">
+          <Variable
+            title="Total # of tickets to sell"
+            dataKey=""
+            isEnabled={() => true}
+            value={String(TOTAL_NUMBER_OF_TICKETS)}
+            forceShow={true}
+          />
+          <div className="row center-div">
+            <Variable
+              dataKey={UNDERSTANDS_TICKET_PRICES_KEY}
+              isEnabled={() => understandsTicketPrices}
+              title="Price per VIP ticket"
+              prefix="$"
+              value={String(VIP_TICKET_PRICE)}
+            />
+            <RevealingIcon
+              reveal={understandsMultiplication}
+              icon={
+                <Typography
+                  className={classes.boxText}
+                  style={{ color: '#fff' }}
+                >
+                  {' '}
+                  x{' '}
+                </Typography>
+              }
+            />
+            <EditableVariable
+              updatePlayerStateData={(newValue: number) => {
+                controller.newPlayerStateData(
+                  [
+                    {
+                      key: VIP_TICKET_PERCENT_KEY,
+                      value: newValue,
+                    },
+                  ],
+                  controller.player.clientId
+                );
+              }}
+              dataKey={VIP_TICKET_PERCENT_KEY}
+              title="# of VIP tickets"
+              myPlayerStateData={myPlayerStateData}
+              shouldDisable={
+                Boolean(editingVariable) &&
+                editingVariable !== VIP_TICKET_PERCENT_KEY
+              }
+              setEditingVariable={setEditingVariable}
+            />
+            <RevealingIcon
+              reveal={understandsMultiplication}
+              icon={
+                <Typography
+                  className={classes.boxText}
+                  style={{ color: '#fff' }}
+                >
+                  {' '}
+                  x{' '}
+                </Typography>
+              }
+            />
+            <Variable
+              dataKey={UNDERSTANDS_CONVERSION_RATE_KEY}
+              isEnabled={() => understandsSellThroughRates}
+              title="Conversion Rate"
+              value={String(VIP_TICKET_CONVERSION_RATE)}
+            />
+          </div>
+          <RevealingIcon
+            reveal={understandsAddition}
+            icon={
+              <Typography className={classes.boxText} style={{ color: '#fff' }}>
+                {' '}
+                +{' '}
+              </Typography>
+            }
+          />
+          <div className="row center-div">
+            <Variable
+              isEnabled={() => understandsTicketPrices}
+              dataKey={UNDERSTANDS_TICKET_PRICES_KEY}
+              title="Price per reserved ticket"
+              prefix="$"
+              value={String(RESERVED_TICKET_PRICE)}
+            />
+            <RevealingIcon
+              reveal={understandsMultiplication}
+              icon={
+                <Typography
+                  className={classes.boxText}
+                  style={{ color: '#fff' }}
+                >
+                  {' '}
+                  x{' '}
+                </Typography>
+              }
+            />
+            <EditableVariable
+              updatePlayerStateData={(newValue: number) => {
+                controller.newPlayerStateData(
+                  [
+                    {
+                      key: RESERVED_TICKET_PERCENT_KEY,
+                      value: newValue,
+                    },
+                  ],
+                  controller.player.clientId
+                );
+              }}
+              dataKey={RESERVED_TICKET_PERCENT_KEY}
+              title="# of Reserved tickets"
+              myPlayerStateData={myPlayerStateData}
+              shouldDisable={
+                Boolean(editingVariable) &&
+                editingVariable !== RESERVED_TICKET_PERCENT_KEY
+              }
+              setEditingVariable={setEditingVariable}
+            />
+            <RevealingIcon
+              reveal={understandsMultiplication}
+              icon={
+                <Typography
+                  className={classes.boxText}
+                  style={{ color: '#fff' }}
+                >
+                  {' '}
+                  x{' '}
+                </Typography>
+              }
+            />
+            <Variable
+              isEnabled={() => understandsSellThroughRates}
+              dataKey={UNDERSTANDS_CONVERSION_RATE_KEY}
+              title="Conversion Rate"
+              value={String(RESERVED_TICKET_CONVERSION_RATE)}
+            />
+          </div>
+          <RevealingIcon
+            reveal={understandsAddition}
+            icon={
+              <Typography className={classes.boxText} style={{ color: '#fff' }}>
+                {' '}
+                +{' '}
+              </Typography>
+            }
+          />
+          <div className="row center-div">
+            <Variable
+              dataKey={UNDERSTANDS_TICKET_PRICES_KEY}
+              isEnabled={() => understandsTicketPrices}
+              title="Price per GA ticket"
+              prefix="$"
+              value={String(GENERAL_ADMISSION_TICKET_PRICE)}
+            />
+            <RevealingIcon
+              reveal={understandsMultiplication}
+              icon={
+                <Typography
+                  className={classes.boxText}
+                  style={{ color: '#fff' }}
+                >
+                  {' '}
+                  x{' '}
+                </Typography>
+              }
+            />
+            <EditableVariable
+              updatePlayerStateData={(newValue: number) => {
+                controller.newPlayerStateData(
+                  [
+                    {
+                      key: GENERAL_ADMISSION_TICKET_PERCENT_KEY,
+                      value: newValue,
+                    },
+                  ],
+                  controller.player.clientId
+                );
+              }}
+              dataKey={GENERAL_ADMISSION_TICKET_PERCENT_KEY}
+              title="# of GA tickets"
+              myPlayerStateData={myPlayerStateData}
+              shouldDisable={
+                Boolean(editingVariable) &&
+                editingVariable !== GENERAL_ADMISSION_TICKET_PERCENT_KEY
+              }
+              setEditingVariable={setEditingVariable}
+            />
+            <RevealingIcon
+              reveal={understandsMultiplication}
+              icon={
+                <Typography
+                  className={classes.boxText}
+                  style={{ color: '#fff' }}
+                >
+                  {' '}
+                  x{' '}
+                </Typography>
+              }
+            />
+            <Variable
+              dataKey={UNDERSTANDS_CONVERSION_RATE_KEY}
+              isEnabled={() => understandsSellThroughRates}
+              title="Conversion Rate"
+              value={String(GENERAL_ADMISSION_TICKET_CONVERSION_RATE)}
+            />
+          </div>
+        </div>
+      </TransformComponent>
     </div>
   );
 }

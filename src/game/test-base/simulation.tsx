@@ -10,7 +10,7 @@ import { GameStateHandler } from '../../classes/game-state-handler';
 import { useWithPhaserGame } from '../../hooks/use-with-phaser-game';
 import { PlayerStateData } from '../../store/slices/game';
 import EventSystem from '../event-system';
-import { Button, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
 import { ConcertTicketSalesSimulationData } from './SimulationScene';
 import {
   VIP_TICKET_PERCENT_KEY,
@@ -25,108 +25,87 @@ import {
   RESERVED_TICKET_PRICE,
 } from '.';
 
+export function PlayerStrategy(props: {
+  data: PlayerStateData;
+  controller: GameStateHandler;
+}): JSX.Element {
+  const psd = props.data;
+  const controller = props.controller;
+  const player = controller.players.find((p) => p.clientId === psd.player);
+  const vipTicketsUpForSale =
+    psd.gameStateData.find((d) => d.key === VIP_TICKET_PERCENT_KEY)?.value || 0;
+  const reservedTicketsUpForSale =
+    psd.gameStateData.find((d) => d.key === RESERVED_TICKET_PERCENT_KEY)
+      ?.value || 0;
+  const generalAdmissionTicketsUpForSale =
+    psd.gameStateData.find(
+      (d) => d.key === GENERAL_ADMISSION_TICKET_PERCENT_KEY
+    )?.value || 0;
+
+  const canSimulate = Boolean(
+    parseInt(vipTicketsUpForSale) +
+      parseInt(reservedTicketsUpForSale) +
+      parseInt(generalAdmissionTicketsUpForSale) ===
+      TOTAL_NUMBER_OF_TICKETS
+  );
+
+  function simulate(): void {
+    if (!canSimulate) return;
+    const simData: ConcertTicketSalesSimulationData = {
+      player: psd.player,
+      generalAdmissionTicketsUpForSale: generalAdmissionTicketsUpForSale,
+      generalAdmissionTicketsSold: Math.round(
+        generalAdmissionTicketsUpForSale *
+          GENERAL_ADMISSION_TICKET_CONVERSION_RATE
+      ),
+      reservedTicketsUpForSale: reservedTicketsUpForSale,
+      reservedTicketsSold: Math.round(
+        reservedTicketsUpForSale * RESERVED_TICKET_CONVERSION_RATE
+      ),
+      vipTicketsUpForSale: vipTicketsUpForSale,
+      vipTicketsSold: Math.round(
+        vipTicketsUpForSale * VIP_TICKET_CONVERSION_RATE
+      ),
+      totalProfit: 0,
+    };
+    simData.totalProfit =
+      simData.generalAdmissionTicketsSold * GENERAL_ADMISSION_TICKET_PRICE +
+      simData.vipTicketsSold * VIP_TICKET_PRICE +
+      simData.reservedTicketsSold * RESERVED_TICKET_PRICE;
+    EventSystem.emit('destroy');
+    EventSystem.emit('simulate', simData);
+  }
+
+  return (
+    <div onClick={simulate}>
+      <Typography style={{ fontWeight: 'bold' }}>
+        {player?.name}&apos;s strategy:
+      </Typography>
+      <Typography>
+        {vipTicketsUpForSale} vip, {reservedTicketsUpForSale} reserved,{' '}
+        {generalAdmissionTicketsUpForSale} general admission
+      </Typography>
+    </div>
+  );
+}
+
 export function SimulationComponent(props: {
   controller: GameStateHandler;
 }): JSX.Element {
-  const { controller } = props;
   const gameContainerRef = React.useRef<HTMLDivElement | null>(null);
   const { startPhaserGame } = useWithPhaserGame(gameContainerRef);
-  const [simulation, setSimulation] = React.useState<PlayerStateData>();
-
-  React.useEffect(() => {
-    EventSystem.on('simulate', (sim: PlayerStateData) => setSimulation(sim));
-  }, []);
 
   React.useEffect(() => {
     startPhaserGame(props.controller.game, props.controller, 'Simulation');
   }, [props.controller]);
-
-  function PlayerStrategy(props: { data: PlayerStateData }): JSX.Element {
-    const psd = props.data;
-    const player = controller.players.find((p) => p.clientId === psd.player);
-    const vipTicketsUpForSale =
-      psd.gameStateData.find((d) => d.key === VIP_TICKET_PERCENT_KEY)?.value ||
-      0;
-    const reservedTicketsUpForSale =
-      psd.gameStateData.find((d) => d.key === RESERVED_TICKET_PERCENT_KEY)
-        ?.value || 0;
-    const generalAdmissionTicketsUpForSale =
-      psd.gameStateData.find(
-        (d) => d.key === GENERAL_ADMISSION_TICKET_PERCENT_KEY
-      )?.value || 0;
-
-    const canSimulate = Boolean(
-      parseInt(vipTicketsUpForSale) +
-        parseInt(reservedTicketsUpForSale) +
-        parseInt(generalAdmissionTicketsUpForSale) ===
-        TOTAL_NUMBER_OF_TICKETS
-    );
-
-    function simulate(): void {
-      const simData: ConcertTicketSalesSimulationData = {
-        player: psd.player,
-        generalAdmissionTicketsUpForSale: generalAdmissionTicketsUpForSale,
-        generalAdmissionTicketsSold: Math.round(
-          generalAdmissionTicketsUpForSale *
-            GENERAL_ADMISSION_TICKET_CONVERSION_RATE
-        ),
-        reservedTicketsUpForSale: reservedTicketsUpForSale,
-        reservedTicketsSold: Math.round(
-          reservedTicketsUpForSale * RESERVED_TICKET_CONVERSION_RATE
-        ),
-        vipTicketsUpForSale: vipTicketsUpForSale,
-        vipTicketsSold: Math.round(
-          vipTicketsUpForSale * VIP_TICKET_CONVERSION_RATE
-        ),
-        totalProfit: 0,
-      };
-      simData.totalProfit =
-        simData.generalAdmissionTicketsSold * GENERAL_ADMISSION_TICKET_PRICE +
-        simData.vipTicketsSold * VIP_TICKET_PRICE +
-        simData.reservedTicketsSold * RESERVED_TICKET_PRICE;
-      EventSystem.emit('destroy');
-      EventSystem.emit('simulate', simData);
-    }
-
-    return (
-      <Button
-        variant="contained"
-        color={psd.player === simulation?.player ? 'secondary' : 'primary'}
-        style={{
-          textTransform: 'none',
-          flexDirection: 'column',
-        }}
-        disabled={!canSimulate}
-        onClick={simulate}
-      >
-        <Typography style={{ fontWeight: 'bold' }}>
-          {player?.name}&apos;s strategy:
-        </Typography>
-        <Typography
-        // style={{ display: insideShots ? '' : 'none' }}
-        >
-          {vipTicketsUpForSale} vip, {reservedTicketsUpForSale} reserved,{' '}
-          {generalAdmissionTicketsUpForSale} general admission
-        </Typography>
-      </Button>
-    );
-  }
 
   return (
     <>
       <div
         id="game-container"
         ref={gameContainerRef}
-        style={{ height: window.innerHeight / 2 - 150 }}
+        style={{ height: '100%' }}
       />
-      <div
-        className="row center-div"
-        style={{ width: '100%', justifyContent: 'space-evenly', marginTop: 5 }}
-      >
-        {controller.playerStateData.map((psd) => (
-          <PlayerStrategy key={psd.player} data={psd} />
-        ))}
-      </div>
     </>
   );
 }

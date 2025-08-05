@@ -24,7 +24,7 @@ export function ProblemComponent(props: {
           marginLeft: '10px',
         }}
         src={stadiumSeats}
-      ></img>
+      />
       <Typography>{BasketballGame.problem}</Typography>
     </div>
   );

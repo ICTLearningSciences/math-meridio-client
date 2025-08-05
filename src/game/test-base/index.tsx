@@ -22,7 +22,7 @@ import { DiscussionStageHandler } from '../../classes/discussion-stage-handler';
 
 import { ProblemComponent } from './problem';
 import { SolutionComponent } from './solution';
-import { SimulationComponent } from './simulation';
+import { PlayerStrategy, SimulationComponent } from './simulation';
 import { ResultComponent } from './results';
 import { PlayerStateData } from '../../store/slices/game';
 import { SIMULTAION_VIEWED_KEY } from '../../helpers';
@@ -207,7 +207,7 @@ export class BasketballStateHandler extends GameStateHandler {
   }
 }
 
-const BasketballGame: Game = {
+const BaseTestGame: Game = {
   id: 'test-base',
   name: 'Test Base: Concert Ticket Management',
   problem: `Our concert venue isn't meeting its profit goals, and we need your help to fix it. You and the sales team must figure out what's wrong with our current ticket strategy and how to adjust it to maximize revenue. For each show, we can sell 100 tickets. VIP tickets earn the most but are hardest to sell, while Reserved and General Admission earn less but sell more easily.`,
@@ -239,6 +239,9 @@ const BasketballGame: Game = {
   showSolution: (controller: GameStateHandler) => {
     return <SolutionComponent controller={controller} />;
   },
+  showPlayerStrategy: (data: PlayerStateData, controller: GameStateHandler) => {
+    return <PlayerStrategy data={data} controller={controller} />;
+  },
   showSimulation: (controller: GameStateHandler) => {
     return <SimulationComponent controller={controller} />;
   },
@@ -249,4 +252,4 @@ const BasketballGame: Game = {
     new BasketballStateHandler(args),
 };
 
-export default BasketballGame;
+export default BaseTestGame;
