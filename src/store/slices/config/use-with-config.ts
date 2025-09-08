@@ -30,10 +30,19 @@ export function useWithConfig() {
     if (openAiModels.modelList.length === 0) {
       throw new Error('No OpenAI service models found');
     }
+
+    const has4oMini = openAiModels.modelList.find(
+      (model) => model.name === 'gpt-4o-mini'
+    );
+    if (has4oMini) {
+      return {
+        serviceName: AiServiceNames.OPEN_AI,
+        model: 'gpt-4o-mini',
+      };
+    }
     return {
       serviceName: AiServiceNames.OPEN_AI,
-      // TODO: make this dynamic again
-      model: 'gpt-4o',
+      model: openAiModels.modelList[0].name,
     };
   }
 
