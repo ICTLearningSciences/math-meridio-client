@@ -75,13 +75,14 @@ export function useWithPlayer() {
         ...SPRITE_ACCESSORY,
       ];
       const items_ids = items.map((i) => i.id);
-      let sprites = await requestAvatarItems(desc, items, 20);
-      sprites = sprites.filter((s) => items_ids.includes(s.id));
+      let spriteIds = await requestAvatarItems(desc, items, 20);
+      spriteIds = spriteIds.filter((s) => items_ids.includes(s));
       const message =
-        sprites.length >= 5
+        spriteIds.length >= 5
           ? 'Select an avatar or try describing your avatar again:'
           : 'Too few results. Describe avatar again or use a random one:';
       const avatars: Avatars[] = [];
+      const sprites = items.filter((i) => spriteIds.includes(i.id));
       for (let i = 0; i < 10; i++) {
         const avatar: Avatar[] = [];
         const bodies = sprites.filter((s) => s.type.endsWith('body'));
@@ -163,7 +164,7 @@ export function useWithPlayer() {
     desc: string,
     items: Avatar[],
     n: number
-  ): Promise<Avatar[]> {
+  ): Promise<string[]> {
     try {
       const request: GenericLlmRequest = {
         prompts: [
@@ -172,7 +173,7 @@ export function useWithPlayer() {
             promptRole: PromptRoles.USER,
           },
           {
-            promptText: `Based on the following description, choose ${n} items to add from the list of items above.`,
+            promptText: `Based on the following description, choose ${n} items to add from the list of items above. The items you pick should be relevant to the description. ONLY respond with id of the item, following the json schema.`,
             promptRole: PromptRoles.USER,
           },
           {
@@ -183,17 +184,15 @@ export function useWithPlayer() {
         targetAiServiceModel: firstAvailableAzureServiceModel(),
         outputDataType: PromptOutputTypes.JSON,
         responseFormat: `
-            Please only respond in JSON.
+            Please only respond in an array of strings in JSON.
             Validate that your response is in valid JSON.
             Respond in this format:
-              [{
-                  "type": "string"        // the type of the item
-                  "id": "string"          // the id of the item
-                  "description": "string" // the description of the item
-              }]
+              [
+                  "string"          // the id of the item
+              ]
           `,
       };
-      const res = await jsonLlmRequest<Avatar[]>(request, pickAvatarSchema);
+      const res = await jsonLlmRequest<string[]>(request, pickAvatarSchema);
       return res;
     } catch (err) {
       return [];
