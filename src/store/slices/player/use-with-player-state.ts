@@ -20,14 +20,9 @@ import { useWithConfig } from '../config/use-with-config';
 export const pickAvatarSchema: Schema = {
   type: 'array',
   items: {
-    type: 'object',
-    properties: {
-      type: { type: 'string' },
-      id: { type: 'string' },
-      description: { type: 'string' },
-    },
+    type: 'string',
   },
-  required: ['id', 'type', 'description'],
+  required: [],
 };
 
 export interface Avatars {
@@ -76,7 +71,9 @@ export function useWithPlayer() {
       ];
       const items_ids = items.map((i) => i.id);
       let spriteIds = await requestAvatarItems(desc, items, 20);
+      console.log('spriteIds', spriteIds);
       spriteIds = spriteIds.filter((s) => items_ids.includes(s));
+      console.log('spriteIds filtered', spriteIds);
       const message =
         spriteIds.length >= 5
           ? 'Select an avatar or try describing your avatar again:'
