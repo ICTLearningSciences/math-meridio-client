@@ -6,7 +6,6 @@ The full terms of this copyright and license should always be found in the root 
 */
 import BasketballGame from './basketball';
 import NewGame from './concert-ticket-sales';
-import TestBaseGame from './test-base';
 import {
   GameStateHandler,
   GameStateHandlerArgs,
@@ -33,4 +32,4 @@ export interface Game {
   createController: (args: GameStateHandlerArgs) => GameStateHandler;
 }
 
-export const GAMES: Game[] = [BasketballGame, NewGame, TestBaseGame];
+export const GAMES: Game[] = [BasketballGame, NewGame];
