@@ -77,7 +77,16 @@ export function PlayerStrategy(props: {
   }
 
   return (
-    <div onClick={simulate}>
+    <div
+      onClick={simulate}
+      style={{
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
       <Typography style={{ fontWeight: 'bold' }}>
         {player?.name}&apos;s strategy:
       </Typography>

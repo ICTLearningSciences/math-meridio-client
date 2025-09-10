@@ -112,7 +112,11 @@ function SimulationSpace(props: {
         >
           {controller.playerStateData.map((psd) => {
             return (
-              <MenuItem key={psd.player} value={psd.player}>
+              <MenuItem
+                key={psd.player}
+                value={psd.player}
+                style={{ width: '100%', padding: 0, margin: 0 }}
+              >
                 {game.showPlayerStrategy(psd, controller)}
               </MenuItem>
             );
