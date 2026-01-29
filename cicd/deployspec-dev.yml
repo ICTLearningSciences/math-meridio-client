@@ -10,6 +10,7 @@ env:
     S3_DEPLOY_BUCKET_DEV: "/mathm/dev/s3-websites/NAME"
     CDN_ID_DEV: "/mathm/dev/CLOUDFRONT_DISTRIBUTION_ID"
     REACT_APP_GQL_SECRET: "/mathmeridio/dev/gql_secret"
+    REACT_APP_GOOGLE_CLIENT_ID: "/mathmeridio/shared/google_client_id"
 
 phases:
   install:
