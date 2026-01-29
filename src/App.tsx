@@ -9,18 +9,22 @@ import { Provider } from 'react-redux';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 
 import { Header } from './components/header';
-import LoginPage from './components/login-page';
+import LoginPage from './components/no_auth_login';
 import AvatarPage from './components/avatar-page';
 import GamePage from './components/game/game-page';
 import RoomPage from './components/game/room-page';
 import PhaserTestPage from './components/phaser-test-page';
 import { StageBuilderPage } from './components/discussion-stage-builder/stage-builder-page';
+import GoogleLoginPage from './components/google_login/login';
 
 import { store } from './store';
 import { useWithHydrateRedux } from './store/use-with-hydrate-redux';
+import { useWithLogin } from './store/slices/login/use-with-login';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 function MainApp() {
   useWithHydrateRedux(); // NOTE: make sure to have this at the earliest point w/ store
+  const useLogin = useWithLogin();
   const router = createBrowserRouter([
     {
       path: '/',
@@ -29,6 +33,17 @@ function MainApp() {
           <Header />
           <div className="page">
             <RoomPage />
+          </div>
+        </>
+      ),
+    },
+    {
+      path: '/google-login',
+      element: (
+        <>
+          <Header />
+          <div className="page">
+            <GoogleLoginPage useLogin={useLogin} />
           </div>
         </>
       ),
@@ -109,12 +124,15 @@ function MainApp() {
 }
 
 function App(): JSX.Element {
+  const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '123';
   return (
-    <Provider store={store}>
-      <div style={{ height: '100vh' }}>
-        <MainApp />
-      </div>
-    </Provider>
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <Provider store={store}>
+        <div style={{ height: '100vh' }}>
+          <MainApp />
+        </div>
+      </Provider>
+    </GoogleOAuthProvider>
   );
 }
 

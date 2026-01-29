@@ -6,6 +6,7 @@ The full terms of this copyright and license should always be found in the root 
 */
 export const PLAYER_DATA = '@playerData';
 export const SESSION_ID = '@sessionId';
+export const ACCESS_TOKEN_KEY = '@accessToken';
 export function localStorageGet(key: string): unknown | null {
   if (typeof window === 'undefined') {
     return null;

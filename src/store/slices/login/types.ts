@@ -4,24 +4,36 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { combineReducers, configureStore } from '@reduxjs/toolkit';
-import gameData from './slices/game';
-import playerData from './slices/player';
-import stages from './slices/stages';
-import config from './slices/config';
-import login from './slices/login';
+import { LoginService } from '.';
 
-export const store = configureStore({
-  reducer: combineReducers({
-    gameData,
-    playerData,
-    stages,
-    config,
-    login,
-  }),
-});
+export enum UserRole {
+  USER = 'USER',
+  CONTENT_MANAGER = 'CONTENT_MANAGER',
+  ADMIN = 'ADMIN',
+}
 
-// Infer the `RootState` and `AppDispatch` types from the store itself
-export type RootState = ReturnType<typeof store.getState>;
-// Inferred type: {posts: PostsState, comments: CommentsState, users: UsersState}
-export type AppDispatch = typeof store.dispatch;
+export enum EducationalRole {
+  STUDENT = 'STUDENT',
+  INSTRUCTOR = 'INSTRUCTOR',
+}
+
+export interface UserAccessToken {
+  user: User;
+  accessToken: string;
+  expirationDate: string;
+}
+
+export interface User {
+  _id: string;
+  googleId: string;
+  name: string;
+  email: string;
+  userRole: UserRole;
+  loginService: LoginService;
+  lastLoginAt: Date;
+  educationalRole?: EducationalRole;
+}
+
+export interface UpdateUserInfo {
+  name?: string;
+}

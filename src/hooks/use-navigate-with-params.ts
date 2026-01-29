@@ -4,24 +4,24 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { combineReducers, configureStore } from '@reduxjs/toolkit';
-import gameData from './slices/game';
-import playerData from './slices/player';
-import stages from './slices/stages';
-import config from './slices/config';
-import login from './slices/login';
+import { useNavigate } from 'react-router-dom';
 
-export const store = configureStore({
-  reducer: combineReducers({
-    gameData,
-    playerData,
-    stages,
-    config,
-    login,
-  }),
-});
+export function useNavigateWithParams() {
+  const navigate = useNavigate();
+  const search = typeof window === 'undefined' ? '' : window.location.search;
+  const searchParams = new URLSearchParams(search);
 
-// Infer the `RootState` and `AppDispatch` types from the store itself
-export type RootState = ReturnType<typeof store.getState>;
-// Inferred type: {posts: PostsState, comments: CommentsState, users: UsersState}
-export type AppDispatch = typeof store.dispatch;
+  const navigateWithParams = (path: string, options = {}) => {
+    // Build the new URL with all existing parameters
+    const origin = typeof window === 'undefined' ? '' : window.location.origin;
+    const url = new URL(path, origin);
+    searchParams.forEach((value, key) => {
+      url.searchParams.set(key, value);
+    });
+
+    // Navigate to the new URL
+    navigate(`${url.pathname}${url.search}`, options);
+  };
+
+  return navigateWithParams;
+}
