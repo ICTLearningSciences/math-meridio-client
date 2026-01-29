@@ -4,7 +4,28 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { LoginService } from '.';
+
+export interface Avatar {
+  type: string;
+  id: string;
+  description: string;
+  variant?: number;
+  variants?: string[];
+}
+
+export interface Player {
+  _id: string;
+  googleId: string;
+  email: string;
+  userRole: UserRole;
+  loginService: LoginService;
+  lastLoginAt: Date;
+  educationalRole?: EducationalRole;
+  clientId: string;
+  name: string;
+  description: string;
+  avatar: Avatar[];
+}
 
 export enum UserRole {
   USER = 'USER',
@@ -18,22 +39,11 @@ export enum EducationalRole {
 }
 
 export interface UserAccessToken {
-  user: User;
+  user: Player;
   accessToken: string;
   expirationDate: string;
 }
 
-export interface User {
-  _id: string;
-  googleId: string;
-  name: string;
-  email: string;
-  userRole: UserRole;
-  loginService: LoginService;
-  lastLoginAt: Date;
-  educationalRole?: EducationalRole;
-}
-
-export interface UpdateUserInfo {
-  name?: string;
+export enum LoginService {
+  GOOGLE = 'GOOGLE',
 }

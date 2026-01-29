@@ -5,13 +5,20 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import { execGql } from '../../../api-helpers';
-import { ACCESS_TOKEN_KEY, localStorageGet } from '../../local-storage';
-import { UpdateUserInfo, User, UserAccessToken } from './types';
+import { UserAccessToken } from './types';
 
 export const userDataQuery = `
   _id
   googleId
   name
+  description
+  avatar {
+    id
+    type
+    description
+    variant
+    variants
+  }
   email
   userRole
   loginService
@@ -44,29 +51,6 @@ export async function loginGoogle(
       axiosConfig: {
         withCredentials: true,
       },
-    }
-  );
-}
-
-export async function updateUserInfo(userInfo: UpdateUserInfo): Promise<User> {
-  const accessToken = localStorageGet(ACCESS_TOKEN_KEY) as string;
-  if (!accessToken) throw new Error('No access token');
-  return execGql<User>(
-    {
-      query: `
-  mutation UpdateUserInfo($userInfo: UserInputType!) {
-            updateUserInfo(userInfo: $userInfo) {
-                  ${userDataQuery}
-                }
-           }
-      `,
-      variables: {
-        userInfo: userInfo,
-      },
-    },
-    {
-      dataPath: 'updateUserInfo',
-      accessToken: accessToken,
     }
   );
 }

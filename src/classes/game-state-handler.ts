@@ -23,7 +23,7 @@ import {
 import { GenericLlmRequest, TargetAiModelServiceType } from '../types';
 import { CancelToken } from 'axios';
 import { Subscriber } from '../store/slices/game/use-with-game-state';
-import { Player } from '../store/slices/player';
+import { Player } from '../store/slices/player/types';
 import { DiscussionStageHandler } from './discussion-stage-handler';
 import { CurrentStage, DiscussionCurrentStage } from '../game/basketball';
 import { getFirstStepId } from '../helpers';
@@ -247,7 +247,7 @@ export abstract class GameStateHandler implements Subscriber {
   }
 
   updateRoomStageStepId(stageId: string, stepId: string) {
-    if (this.player.clientId !== this.globalStateData.roomOwnerId) {
+    if (this.player._id !== this.globalStateData.roomOwnerId) {
       return;
     }
     this.updateRoomGameData({
@@ -295,7 +295,7 @@ export abstract class GameStateHandler implements Subscriber {
   simulationEnded(): void {
     const curStage = this.getCurrentStage();
     if (curStage?.stage.stageType === 'simulation') {
-      this.viewedSimulation(this.player.clientId);
+      this.viewedSimulation(this.player._id);
     }
   }
 }

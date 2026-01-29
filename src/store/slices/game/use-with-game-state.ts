@@ -29,7 +29,7 @@ import { GAMES, Game } from '../../../game/types';
 import { CancelToken } from 'axios';
 import { syncLlmRequest } from '../../../hooks/use-with-synchronous-polling';
 import { useWithStages } from '../stages/use-with-stages';
-import { Player } from '../player';
+import { Player } from '../player/types';
 import { equals, SIMULTAION_VIEWED_KEY } from '../../../helpers';
 import EventSystem from '../../../game/event-system';
 import { v4 as uuidv4 } from 'uuid';
@@ -61,7 +61,7 @@ export function useWithGame() {
   const ownerIsPresent = React.useMemo(() => {
     if (loadStatus.status === LoadStatus.IN_PROGRESS) return true;
     return room?.gameData.players.some(
-      (p) => p.clientId === room?.gameData.globalStateData.roomOwnerId
+      (p) => p._id === room?.gameData.globalStateData.roomOwnerId
     );
   }, [room, player, loadStatus]);
 
@@ -210,13 +210,13 @@ export function useWithGame() {
 
   function _joinRoom(room: string) {
     if (!player || loadStatus.status === LoadStatus.IN_PROGRESS) return;
-    dispatch(joinRoom({ roomId: room, playerId: player.clientId }));
+    dispatch(joinRoom({ roomId: room, playerId: player._id }));
   }
 
   function _leaveRoom() {
     if (!player || !room) return;
     localStorageClear(SESSION_ID);
-    dispatch(leaveRoom({ roomId: room._id, playerId: player.clientId }));
+    dispatch(leaveRoom({ roomId: room._id, playerId: player._id }));
   }
 
   function _createRoom(gameId: string) {
@@ -227,7 +227,7 @@ export function useWithGame() {
       createAndJoinRoom({
         gameId: game.id,
         gameName: game.name,
-        playerId: player.clientId,
+        playerId: player._id,
         persistTruthGlobalStateData: game.persistTruthGlobalStateData,
       })
     );
@@ -257,7 +257,7 @@ export function useWithGame() {
     }
     if (
       msg.sender === SenderType.SYSTEM &&
-      room.gameData.globalStateData.roomOwnerId !== player.clientId
+      room.gameData.globalStateData.roomOwnerId !== player._id
     ) {
       console.log('not the room owner, skipping message');
       return;

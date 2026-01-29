@@ -55,7 +55,7 @@ export class BasketballStateHandler extends GameStateHandler {
   constructor(args: GameStateHandlerArgs) {
     super({ ...args, defaultStageId: 'de0b94b9-1fc2-4ea1-995e-21a75670c16d' });
     this.discussionStageHandler = new DiscussionStageHandler(
-      this.player.clientId,
+      this.player._id,
       this.globalStateData,
       args.sendMessage,
       args.setResponsePending,
@@ -245,7 +245,7 @@ export class BasketballStateHandler extends GameStateHandler {
         } as any,
         playerStateData: [
           {
-            player: this.player.clientId,
+            player: this.player._id,
             animation: '',
             gameStateData: [{ key: 'Points per outside shot', value: value }],
           },
@@ -261,7 +261,7 @@ export class BasketballStateHandler extends GameStateHandler {
         } as any,
         playerStateData: [
           {
-            player: this.player.clientId,
+            player: this.player._id,
             animation: '',
             gameStateData: [{ key: 'Points per inside shot', value: value }],
           },
@@ -277,7 +277,7 @@ export class BasketballStateHandler extends GameStateHandler {
         } as any,
         playerStateData: [
           {
-            player: this.player.clientId,
+            player: this.player._id,
             animation: '',
             gameStateData: [{ key: 'Points per mid shot', value: value }],
           },

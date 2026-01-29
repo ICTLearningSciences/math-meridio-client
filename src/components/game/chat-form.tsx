@@ -55,7 +55,7 @@ export default function ChatForm(props: {
     const msg: ChatMessage = {
       id: uuid(),
       sender: SenderType.PLAYER,
-      senderId: player?.clientId,
+      senderId: player?._id,
       senderName: player?.name,
       message: input,
       sessionId: sessionId as string,

@@ -20,6 +20,10 @@ export function useNavigateWithParams() {
     });
 
     // Navigate to the new URL
+    console.log(
+      'navigating from navigate-with-params to',
+      `${url.pathname}${url.search}`
+    );
     navigate(`${url.pathname}${url.search}`, options);
   };
 

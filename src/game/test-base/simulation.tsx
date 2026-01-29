@@ -31,7 +31,7 @@ export function PlayerStrategy(props: {
 }): JSX.Element {
   const psd = props.data;
   const controller = props.controller;
-  const player = controller.players.find((p) => p.clientId === psd.player);
+  const player = controller.players.find((p) => p._id === psd.player);
   const vipTicketsUpForSale =
     psd.gameStateData.find((d) => d.key === VIP_TICKET_PERCENT_KEY)?.value || 0;
   const reservedTicketsUpForSale =

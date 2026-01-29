@@ -9,7 +9,6 @@ import { Provider } from 'react-redux';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 
 import { Header } from './components/header';
-import LoginPage from './components/no_auth_login';
 import AvatarPage from './components/avatar-page';
 import GamePage from './components/game/game-page';
 import RoomPage from './components/game/room-page';
@@ -19,7 +18,7 @@ import GoogleLoginPage from './components/google_login/login';
 
 import { store } from './store';
 import { useWithHydrateRedux } from './store/use-with-hydrate-redux';
-import { useWithLogin } from './store/slices/login/use-with-login';
+import { useWithLogin } from './store/slices/player/use-with-login';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
 function MainApp() {
@@ -44,17 +43,6 @@ function MainApp() {
           <Header />
           <div className="page">
             <GoogleLoginPage useLogin={useLogin} />
-          </div>
-        </>
-      ),
-    },
-    {
-      path: '/login',
-      element: (
-        <>
-          <Header />
-          <div className="page">
-            <LoginPage />
           </div>
         </>
       ),

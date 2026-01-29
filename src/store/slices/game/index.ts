@@ -5,7 +5,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { Player } from '../player';
+import { Player } from '../player/types';
 import * as api from '../../../api';
 import { LoadStatus, LoadingState } from '../../../types';
 

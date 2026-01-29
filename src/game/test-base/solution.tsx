@@ -11,7 +11,7 @@ import { Card, Typography } from '@mui/material';
 import { GameStateHandler } from '../../classes/game-state-handler';
 import { PlayerStateData } from '../../store/slices/game';
 import { makeStyles } from 'tss-react/mui';
-import { Player } from '../../store/slices/player';
+import { Player } from '../../store/slices/player/types';
 import { checkGameAndPlayerStateForValue } from '../../components/discussion-stage-builder/helpers';
 
 import stageBg from './stage.jpg';
@@ -50,7 +50,7 @@ export function SolutionComponent(props: {
   const [myPlayerStateData, setMyPlayerStateData] =
     React.useState<GameStateData>({});
   const curPlayerStateData = playerStateData.find(
-    (p) => p.player === controller.player.clientId
+    (p) => p.player === controller.player._id
   );
 
   const [understandsTicketPrices, setUnderstandsTicketPrices] =
@@ -136,7 +136,7 @@ export function SolutionComponent(props: {
   React.useEffect(() => {
     const data: GameStateData = {};
     const gameState =
-      playerStateData.find((p) => p.player === controller.player.clientId)
+      playerStateData.find((p) => p.player === controller.player._id)
         ?.gameStateData || [];
     gameState.forEach((d) => {
       data[d.key] = d.value;
@@ -284,7 +284,7 @@ export function SolutionComponent(props: {
                       value: newValue,
                     },
                   ],
-                  controller.player.clientId
+                  controller.player._id
                 );
               }}
               dataKey={VIP_TICKET_PERCENT_KEY}
@@ -353,7 +353,7 @@ export function SolutionComponent(props: {
                       value: newValue,
                     },
                   ],
-                  controller.player.clientId
+                  controller.player._id
                 );
               }}
               dataKey={RESERVED_TICKET_PERCENT_KEY}
@@ -422,7 +422,7 @@ export function SolutionComponent(props: {
                       value: newValue,
                     },
                   ],
-                  controller.player.clientId
+                  controller.player._id
                 );
               }}
               dataKey={GENERAL_ADMISSION_TICKET_PERCENT_KEY}

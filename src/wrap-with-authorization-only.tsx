@@ -20,28 +20,25 @@ const withAuthorizationOnly = (Component: any) => (props: any) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { roomsLoadStatus } = useAppSelector((state) => state.gameData);
-  const { player, loadStatus: playerLoadStatus } = useAppSelector(
-    (state) => state.playerData
-  );
+  const { player, loginStatus } = useAppSelector((state) => state.playerData);
   const { loadStagesStatus } = useAppSelector((state) => state.stages);
-
-  // const { loadStatus, player } = useWithPlayer();
 
   React.useEffect(() => {
     if (
-      playerLoadStatus.status === LoadStatus.NONE ||
-      playerLoadStatus.status === LoadStatus.NOT_LOGGED_IN ||
-      playerLoadStatus.status === LoadStatus.FAILED ||
-      !player
+      loginStatus.status === LoadStatus.NONE ||
+      loginStatus.status === LoadStatus.NOT_LOGGED_IN ||
+      loginStatus.status === LoadStatus.FAILED
     ) {
       dispatch(clearPlayer());
-      navigate('/login');
+      console.log('navigating to google-login');
+      navigate('/google-login');
       return;
     }
-    if (playerLoadStatus.status === LoadStatus.DONE && !player.description) {
+    if (loginStatus.status === LoadStatus.DONE && !player?.description) {
+      console.log('navigating to avatar-creator');
       navigate('/avatar-creator');
     }
-  }, [playerLoadStatus.status]);
+  }, [loginStatus.status, player]);
 
   React.useEffect(() => {
     if (loadStagesStatus === LoadStatus.NONE) {
@@ -55,12 +52,8 @@ const withAuthorizationOnly = (Component: any) => (props: any) => {
       dispatch(fetchRooms({})).then((res) => {
         const rooms = res.payload as Room[];
         for (const room of rooms) {
-          if (
-            room.gameData?.players.find((p) => p.clientId === player.clientId)
-          ) {
-            dispatch(
-              leaveRoom({ playerId: player.clientId, roomId: room._id })
-            );
+          if (room.gameData?.players.find((p) => p._id === player._id)) {
+            dispatch(leaveRoom({ playerId: player._id, roomId: room._id }));
           }
         }
       });
@@ -68,8 +61,8 @@ const withAuthorizationOnly = (Component: any) => (props: any) => {
   }, [player, roomsLoadStatus.status]);
 
   if (
-    playerLoadStatus.status === LoadStatus.NONE ||
-    playerLoadStatus.status === LoadStatus.IN_PROGRESS
+    loginStatus.status === LoadStatus.NONE ||
+    loginStatus.status === LoadStatus.IN_PROGRESS
   ) {
     return (
       <div className="root center-div">
@@ -78,7 +71,7 @@ const withAuthorizationOnly = (Component: any) => (props: any) => {
     );
   }
 
-  return playerLoadStatus.status === LoadStatus.DONE ? (
+  return loginStatus.status === LoadStatus.DONE ? (
     <Component {...props} />
   ) : (
     <div className="root center-div">

@@ -5,11 +5,11 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import React, { useEffect } from 'react';
-import { UseWithLogin } from '../../store/slices/login/use-with-login';
-import { LoginStatus } from '../../store/slices/login/index';
 import { useGoogleLogin } from '@react-oauth/google';
 import { LoginUI } from './login-ui';
 import { useNavigateWithParams } from '../../hooks/use-navigate-with-params';
+import { UseWithLogin } from '../../store/slices/player/use-with-login';
+import { LoadStatus } from '../../types';
 export default function Login(props: { useLogin: UseWithLogin }): JSX.Element {
   const navigate = useNavigateWithParams();
   const { useLogin } = props;
@@ -27,11 +27,12 @@ export default function Login(props: { useLogin: UseWithLogin }): JSX.Element {
       return;
     }
     // TODO: navigate to the home page
-    navigate('/login');
+    console.log('navigating to home');
+    navigate('/');
   }
 
   useEffect(() => {
-    if (loginState.loginStatus === LoginStatus.AUTHENTICATED) {
+    if (loginState.loginStatus.status === LoadStatus.DONE) {
       handleLoginNavigate();
     }
   }, [loginState.loginStatus]);

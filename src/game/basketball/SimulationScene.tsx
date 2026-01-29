@@ -16,7 +16,7 @@ import {
 } from './solution';
 import { SenderType } from '../../store/slices/game';
 import { localStorageGet, SESSION_ID } from '../../store/local-storage';
-import { Player } from '../../store/slices/player';
+import { Player } from '../../store/slices/player/types';
 
 export interface BasketballSimulationData {
   player: string;
@@ -89,9 +89,8 @@ export class SimulationScene extends GameScene {
     this.destroySprite(this.mySprite);
     this.mySprite = this.renderSpriteAvatar(
       simulation.playerAvatar?.avatar ||
-        this.gameStateHandler.players.find(
-          (p) => p.clientId === simulation.player
-        )!.avatar,
+        this.gameStateHandler.players.find((p) => p._id === simulation.player)!
+          .avatar,
       {
         x: this.bg.displayWidth / 2,
         y: 500,

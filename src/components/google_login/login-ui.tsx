@@ -6,11 +6,12 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React from 'react';
 import { ColumnCenterDiv, ColumnDiv } from '../../styled-components';
-import { LoginState, LoginStatus } from '../../store/slices/login';
+import { PlayerStateData } from '../../store/slices/player';
 import { Button, CircularProgress } from '@mui/material';
+import { LoadStatus } from '../../types';
 
 export function LoginUI(props: {
-  loginState: LoginState;
+  loginState: PlayerStateData;
   login: () => void;
   loginText: string;
   titleText?: string;
@@ -36,11 +37,8 @@ export function LoginUI(props: {
           {titleText || 'Meridio Math'}
         </span>
       </ColumnDiv>
-      <span style={{ fontSize: '28px', fontWeight: 'bold' }}>
-        Presented by USC Center for Generative AI and Society
-      </span>
       <div>
-        {loginState.loginStatus === LoginStatus.IN_PROGRESS ? (
+        {loginState.loginStatus.status === LoadStatus.IN_PROGRESS ? (
           <CircularProgress />
         ) : (
           <ColumnDiv

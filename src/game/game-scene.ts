@@ -23,7 +23,7 @@ import {
   addTween,
   animateText,
 } from './phaser-helpers';
-import { Avatar } from '../store/slices/player';
+import { Avatar } from '../store/slices/player/types';
 import { GameStateHandler } from '../classes/game-state-handler';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

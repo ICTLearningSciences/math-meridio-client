@@ -113,17 +113,17 @@ export function ResultComponent(props: {
     for (let index = 0; index < controller.players.length; index++) {
       const player = controller.players[index];
       const playerMade = [
-        simulationData[player.clientId]?.vipTicketsSold,
-        simulationData[player.clientId]?.reservedTicketsSold,
-        simulationData[player.clientId]?.generalAdmissionTicketsSold,
+        simulationData[player._id]?.vipTicketsSold,
+        simulationData[player._id]?.reservedTicketsSold,
+        simulationData[player._id]?.generalAdmissionTicketsSold,
       ];
       const playerMissed = [
-        simulationData[player.clientId]?.vipTicketsUpForSale -
-          simulationData[player.clientId]?.vipTicketsSold,
-        simulationData[player.clientId]?.reservedTicketsUpForSale -
-          simulationData[player.clientId]?.reservedTicketsSold,
-        simulationData[player.clientId]?.generalAdmissionTicketsUpForSale -
-          simulationData[player.clientId]?.generalAdmissionTicketsSold,
+        simulationData[player._id]?.vipTicketsUpForSale -
+          simulationData[player._id]?.vipTicketsSold,
+        simulationData[player._id]?.reservedTicketsUpForSale -
+          simulationData[player._id]?.reservedTicketsSold,
+        simulationData[player._id]?.generalAdmissionTicketsUpForSale -
+          simulationData[player._id]?.generalAdmissionTicketsSold,
       ];
 
       switch (index) {
@@ -147,19 +147,18 @@ export function ResultComponent(props: {
     }
     profitFromVipTickets = controller.players.map(
       (player) =>
-        (simulationData[player.clientId]?.vipTicketsSold || 0) *
-        VIP_TICKET_PRICE
+        (simulationData[player._id]?.vipTicketsSold || 0) * VIP_TICKET_PRICE
     );
 
     profitFromReservedTickets = controller.players.map(
       (player) =>
-        (simulationData[player.clientId]?.reservedTicketsSold || 0) *
+        (simulationData[player._id]?.reservedTicketsSold || 0) *
         RESERVED_TICKET_PRICE
     );
 
     profitFromGeneralAdmissionTickets = controller.players.map(
       (player) =>
-        (simulationData[player.clientId]?.generalAdmissionTicketsSold || 0) *
+        (simulationData[player._id]?.generalAdmissionTicketsSold || 0) *
         GENERAL_ADMISSION_TICKET_PRICE
     );
     playerLabels = controller.players.map((player) => player.name);

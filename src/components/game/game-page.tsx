@@ -174,6 +174,7 @@ function GamePage(): JSX.Element {
 
   React.useEffect(() => {
     if (!room) {
+      console.log('navigating to home');
       navigate('/');
     }
     if (!alreadyShownPopup && !ownerIsPresent) {

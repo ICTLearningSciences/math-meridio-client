@@ -98,17 +98,17 @@ export function ResultComponent(props: {
     for (let index = 0; index < controller.players.length; index++) {
       const player = controller.players[index];
       const playerMade = [
-        simulationData[player.clientId]?.insideShotsMade,
-        simulationData[player.clientId]?.midShotsMade,
-        simulationData[player.clientId]?.outsideShotsMade,
+        simulationData[player._id]?.insideShotsMade,
+        simulationData[player._id]?.midShotsMade,
+        simulationData[player._id]?.outsideShotsMade,
       ];
       const playerMissed = [
-        simulationData[player.clientId]?.insideShots -
-          simulationData[player.clientId]?.insideShotsMade,
-        simulationData[player.clientId]?.midShots -
-          simulationData[player.clientId]?.midShotsMade,
-        simulationData[player.clientId]?.outsideShots -
-          simulationData[player.clientId]?.outsideShotsMade,
+        simulationData[player._id]?.insideShots -
+          simulationData[player._id]?.insideShotsMade,
+        simulationData[player._id]?.midShots -
+          simulationData[player._id]?.midShotsMade,
+        simulationData[player._id]?.outsideShots -
+          simulationData[player._id]?.outsideShotsMade,
       ];
 
       switch (index) {
@@ -132,19 +132,18 @@ export function ResultComponent(props: {
     }
     insideScores = controller.players.map(
       (player) =>
-        (simulationData[player.clientId]?.insideShotsMade || 0) *
+        (simulationData[player._id]?.insideShotsMade || 0) *
         INSIDE_SHOT_POINTS_VALUE
     );
 
     midScores = controller.players.map(
       (player) =>
-        (simulationData[player.clientId]?.midShotsMade || 0) *
-        MID_SHOT_POINTS_VALUE
+        (simulationData[player._id]?.midShotsMade || 0) * MID_SHOT_POINTS_VALUE
     );
 
     outsideScores = controller.players.map(
       (player) =>
-        (simulationData[player.clientId]?.outsideShotsMade || 0) *
+        (simulationData[player._id]?.outsideShotsMade || 0) *
         OUTSIDE_SHOT_POINTS_VALUE
     );
     playerLabels = controller.players.map((player) => player.name);

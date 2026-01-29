@@ -11,7 +11,7 @@ import axios from 'axios';
 import { IStage } from './components/discussion-stage-builder/types';
 import { DiscussionStage } from './components/discussion-stage-builder/types';
 import { isDiscussionStage } from './components/discussion-stage-builder/types';
-import { Avatar } from './store/slices/player';
+import { Avatar } from './store/slices/player/types';
 import {
   SPRITE_BODY,
   SPRITE_CLOTHES,

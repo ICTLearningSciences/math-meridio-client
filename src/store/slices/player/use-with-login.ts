@@ -8,28 +8,28 @@ import { useAppSelector, useAppDispatch } from '../../hooks';
 import * as loginActions from './index';
 import { useEffect } from 'react';
 import { ACCESS_TOKEN_KEY, localStorageGet } from '../../local-storage';
-import { UpdateUserInfo, User, UserAccessToken } from './types';
+import { UserAccessToken } from './types';
+import { PlayerStateData } from './index';
+import { LoadStatus } from '../../../types';
 
 export interface UseWithLogin {
-  state: loginActions.LoginState;
+  state: PlayerStateData;
   logout: () => Promise<void>;
   loginWithGoogle: (
     googleAccessToken: string
   ) => Promise<UserAccessToken | undefined>;
   refreshAccessToken: () => void;
-  setUser: (user: UserAccessToken) => void;
-  updateUserInfo: (userInfo: UpdateUserInfo) => Promise<User>;
 }
 
 // Gives you a way to interface with the redux store (which has the user information)
 export function useWithLogin(): UseWithLogin {
   const dispatch = useAppDispatch();
-  const state: loginActions.LoginState = useAppSelector((state) => state.login);
+  const state: PlayerStateData = useAppSelector((state) => state.playerData);
 
   useEffect(() => {
     if (
-      state.loginStatus === loginActions.LoginStatus.AUTHENTICATED ||
-      state.loginStatus === loginActions.LoginStatus.IN_PROGRESS
+      state.loginStatus.status === LoadStatus.DONE ||
+      state.loginStatus.status === LoadStatus.IN_PROGRESS
     ) {
       return;
     }
@@ -37,20 +37,20 @@ export function useWithLogin(): UseWithLogin {
     if (token) {
       refreshAccessToken();
     } else {
+      console.log('logging out');
       dispatch(loginActions.logout());
     }
-  }, [state.loginStatus]);
+  }, [state.loginStatus.status]);
 
   async function loginWithGoogle(googleAccessToken: string) {
     if (
-      state.loginStatus === loginActions.LoginStatus.NONE ||
-      state.loginStatus === loginActions.LoginStatus.NOT_LOGGED_IN ||
-      state.loginStatus === loginActions.LoginStatus.FAILED
+      state.loginStatus.status === LoadStatus.NONE ||
+      state.loginStatus.status === LoadStatus.NOT_LOGGED_IN ||
+      state.loginStatus.status === LoadStatus.FAILED
     ) {
       return await dispatch(
         loginActions.login({
           accessToken: googleAccessToken,
-          service: loginActions.LoginService.GOOGLE,
         })
       ).unwrap();
     }
@@ -58,9 +58,9 @@ export function useWithLogin(): UseWithLogin {
 
   function refreshAccessToken() {
     if (
-      state.loginStatus === loginActions.LoginStatus.NONE ||
-      state.loginStatus === loginActions.LoginStatus.NOT_LOGGED_IN ||
-      state.loginStatus === loginActions.LoginStatus.FAILED
+      state.loginStatus.status === LoadStatus.NONE ||
+      state.loginStatus.status === LoadStatus.NOT_LOGGED_IN ||
+      state.loginStatus.status === LoadStatus.FAILED
     ) {
       dispatch(loginActions.refreshAccessToken());
     }
@@ -70,21 +70,10 @@ export function useWithLogin(): UseWithLogin {
     await dispatch(loginActions.logout());
   }
 
-  async function setUser(user: UserAccessToken) {
-    dispatch(loginActions.setUser(user));
-  }
-
-  async function updateUserInfo(userInfo: UpdateUserInfo): Promise<User> {
-    const user = await dispatch(loginActions._updateUserInfo(userInfo));
-    return user.payload as User;
-  }
-
   return {
     state,
     logout,
     loginWithGoogle,
     refreshAccessToken,
-    setUser,
-    updateUserInfo,
   };
 }

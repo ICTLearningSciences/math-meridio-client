@@ -12,27 +12,29 @@ import { useWithPlayer } from '../store/slices/player/use-with-player-state';
 import { LoadStatus } from '../types';
 
 function LoginPage(): JSX.Element {
-  const { player, loadStatus, saveStatus } = useAppSelector(
+  const { player, loginStatus, saveStatus } = useAppSelector(
     (state) => state.playerData
   );
   const [username, setUsername] = React.useState<string>('');
   const isLoading =
-    loadStatus.status === LoadStatus.NONE ||
-    loadStatus.status === LoadStatus.IN_PROGRESS;
+    loginStatus.status === LoadStatus.NONE ||
+    loginStatus.status === LoadStatus.IN_PROGRESS;
 
   const navigate = useNavigate();
   const { createPlayerName } = useWithPlayer();
 
   React.useEffect(() => {
-    if (loadStatus.status !== LoadStatus.DONE) return;
+    if (loginStatus.status !== LoadStatus.DONE) return;
     if (player) {
       if (player.description) {
+        console.log('navigating to home');
         navigate('/');
       } else {
+        console.log('navigating to avatar-creator');
         navigate('/avatar-creator');
       }
     }
-  }, [player, loadStatus]);
+  }, [player, loginStatus]);
 
   return (
     <div className="root column center-div">

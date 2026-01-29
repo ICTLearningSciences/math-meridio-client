@@ -4,8 +4,8 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { v4 as uuid } from 'uuid';
-import { Avatar, savePlayer } from '.';
+import { Avatar } from './types';
+import { savePlayer } from './index';
 import { jsonLlmRequest } from '../../../classes/api-helpers';
 import {
   GenericLlmRequest,
@@ -31,18 +31,19 @@ export interface Avatars {
 
 export function useWithPlayer() {
   const dispatch = useAppDispatch();
-  const { player, loadStatus, saveStatus } = useAppSelector(
+  const { player, loginStatus, saveStatus } = useAppSelector(
     (state) => state.playerData
   );
   const { firstAvailableAzureServiceModel } = useWithConfig();
 
   function createPlayerName(name: string): void {
+    if (!player) return;
     dispatch(
       savePlayer({
-        clientId: uuid(),
-        name: name,
-        avatar: [],
-        description: '',
+        playerId: player._id,
+        player: {
+          name: name,
+        },
       })
     );
   }
@@ -51,10 +52,11 @@ export function useWithPlayer() {
     if (!player) return;
     dispatch(
       savePlayer({
-        clientId: player.clientId,
-        name: player.name,
-        avatar: avatar,
-        description: description,
+        playerId: player._id,
+        player: {
+          avatar: avatar,
+          description: description,
+        },
       })
     );
   }
@@ -71,9 +73,7 @@ export function useWithPlayer() {
       ];
       const items_ids = items.map((i) => i.id);
       let spriteIds = await requestAvatarItems(desc, items, 20);
-      console.log('spriteIds', spriteIds);
       spriteIds = spriteIds.filter((s) => items_ids.includes(s));
-      console.log('spriteIds filtered', spriteIds);
       const message =
         spriteIds.length >= 5
           ? 'Select an avatar or try describing your avatar again:'
@@ -198,7 +198,7 @@ export function useWithPlayer() {
 
   return {
     player,
-    loadStatus,
+    loginStatus,
     saveStatus,
     createPlayerName,
     saveAvatar,

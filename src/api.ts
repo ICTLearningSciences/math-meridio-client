@@ -13,10 +13,11 @@ import {
   PromptStageStepGql,
 } from './components/discussion-stage-builder/types';
 import { GenericLlmRequest } from './types';
-import { Player } from './store/slices/player';
+import { Player } from './store/slices/player/types';
 import { ChatMessage, GameData, Room } from './store/slices/game';
 import { extractErrorMessageFromError, requireEnv } from './helpers';
 import { Config } from './store/slices/config';
+import { userDataQuery } from './store/slices/player/api';
 
 type OpenAiJobId = string;
 export const LLM_API_ENDPOINT =
@@ -203,26 +204,13 @@ export const fullDiscussionStageQueryData = `
   }
 `;
 
-export const fullPlayerQueryData = `
-  clientId
-  name
-  description
-  avatar {
-    id
-    type
-    description
-    variant
-    variants
-  }
-`;
-
 export const fullRoomQueryData = `
   _id
   name
   gameData {
     gameId
     players {
-      ${fullPlayerQueryData}
+      ${userDataQuery}
     }
     chat {
       id
@@ -334,7 +322,7 @@ export async function fetchPlayer(id: string): Promise<Player> {
       query: `
         query FetchPlayer($id: String!) {
           fetchPlayer(id: $id) {
-            ${fullPlayerQueryData}
+            ${userDataQuery}
           }
         }`,
       variables: {
@@ -348,17 +336,21 @@ export async function fetchPlayer(id: string): Promise<Player> {
   return data;
 }
 
-export async function addOrUpdatePlayer(player: Player): Promise<Player> {
+export async function addOrUpdatePlayer(
+  playerId: string,
+  playerFieldsToUpdate: Partial<Player>
+): Promise<Player> {
   const data = await execGql<Player>(
     {
       query: `
-        mutation AddOrUpdatePlayer($player: PlayerInput!) {
-          addOrUpdatePlayer(player: $player) {
-            ${fullPlayerQueryData}
+        mutation AddOrUpdatePlayer($playerId: String!, $playerFieldsToUpdate: PlayerInput!) {
+          addOrUpdatePlayer(playerId: $playerId, playerFieldsToUpdate: $playerFieldsToUpdate) {
+            ${userDataQuery}
           }
         }`,
       variables: {
-        player,
+        playerId: playerId,
+        playerFieldsToUpdate: playerFieldsToUpdate,
       },
     },
     {

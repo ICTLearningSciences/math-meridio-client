@@ -45,7 +45,7 @@ import {
   PlayerStateData,
   GameStateData,
 } from '../store/slices/game';
-import { Player } from '../store/slices/player';
+import { Player } from '../store/slices/player/types';
 import { SESSION_ID } from '../store/local-storage';
 import { localStorageGet } from '../store/local-storage';
 import { DiscussionCurrentStage } from '../game/basketball';

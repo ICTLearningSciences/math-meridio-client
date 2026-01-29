@@ -4,7 +4,6 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-export const PLAYER_DATA = '@playerData';
 export const SESSION_ID = '@sessionId';
 export const ACCESS_TOKEN_KEY = '@accessToken';
 export function localStorageGet(key: string): unknown | null {

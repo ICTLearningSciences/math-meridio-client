@@ -171,8 +171,8 @@ export default function ChatThread(props: {
     }
   };
 
-  players?.forEach((iterPlayer: { clientId: string }) => {
-    GetMyColor(iterPlayer.clientId, iterPlayer.clientId == player?.clientId);
+  players?.forEach((iterPlayer: { _id: string }) => {
+    GetMyColor(iterPlayer._id, iterPlayer._id == player?._id);
   });
   React.useEffect(() => {
     const objDiv = document.getElementById('chat-thread');
@@ -199,8 +199,7 @@ export default function ChatThread(props: {
       <Stack direction="column">
         {messages.map((msg, idx) => {
           const myMessage =
-            msg.sender === SenderType.PLAYER &&
-            msg.senderId === player?.clientId;
+            msg.sender === SenderType.PLAYER && msg.senderId === player?._id;
 
           if (msg.sender == SenderType.SYSTEM) {
             currMessageOwner = 'System';
@@ -226,7 +225,7 @@ export default function ChatThread(props: {
                   textAlign={myMessage ? 'left' : 'right'}
                 >
                   {msg.sender === SenderType.PLAYER
-                    ? msg.senderId === player?.clientId
+                    ? msg.senderId === player?._id
                       ? 'You'
                       : msg.senderName
                     : 'System'}
@@ -241,7 +240,7 @@ export default function ChatThread(props: {
                 {!skipAvatar &&
                   (msg.sender === SenderType.PLAYER ? (
                     <AvatarSprite
-                      player={players?.find((p) => p.clientId === msg.senderId)}
+                      player={players?.find((p) => p._id === msg.senderId)}
                       bgColor={bubbleColor}
                     />
                   ) : (

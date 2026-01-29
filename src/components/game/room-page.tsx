@@ -35,14 +35,14 @@ function RoomPage(): JSX.Element {
   const [selectedGame, setSelectedGame] = React.useState<string>();
   const rooms = _rooms.filter((r) => r.gameData?.gameId === selectedGame);
   const myRooms = rooms.filter(
-    (r) => r.gameData.globalStateData.roomOwnerId === player?.clientId
+    (r) => r.gameData.globalStateData.roomOwnerId === player?._id
   );
   const notMyRooms = rooms.filter(
     (r) => !myRooms.some((presentRoom) => presentRoom._id === r._id)
   );
   const roomsWithOwnerPresent = notMyRooms.filter((r) =>
     r.gameData.players.some(
-      (p) => p.clientId === r.gameData.globalStateData.roomOwnerId
+      (p) => p._id === r.gameData.globalStateData.roomOwnerId
     )
   );
   const roomsWithoutOwnerPresent = notMyRooms.filter(
@@ -63,6 +63,7 @@ function RoomPage(): JSX.Element {
 
   React.useEffect(() => {
     if (room) {
+      console.log('navigating to game');
       navigate(`/game/${room._id}`);
     }
   }, [room]);

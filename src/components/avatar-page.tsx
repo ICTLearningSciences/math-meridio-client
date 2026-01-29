@@ -21,7 +21,7 @@ import {
 import { LoadStatus } from '../types';
 
 function AvatarPage(): JSX.Element {
-  const { player, loadStatus, saveStatus } = useAppSelector(
+  const { player, loginStatus, saveStatus } = useAppSelector(
     (state) => state.playerData
   );
   const gameContainerRef = React.useRef<HTMLDivElement | null>(null);
@@ -31,24 +31,25 @@ function AvatarPage(): JSX.Element {
 
   React.useEffect(() => {
     if (
-      loadStatus.status === LoadStatus.NONE ||
-      loadStatus.status === LoadStatus.IN_PROGRESS
+      loginStatus.status === LoadStatus.NONE ||
+      loginStatus.status === LoadStatus.IN_PROGRESS
     ) {
       return;
     }
     if (
-      loadStatus.status === LoadStatus.NOT_LOGGED_IN ||
-      loadStatus.status === LoadStatus.FAILED ||
+      loginStatus.status === LoadStatus.NOT_LOGGED_IN ||
+      loginStatus.status === LoadStatus.FAILED ||
       !player ||
       !player.name
     ) {
-      navigate('/login');
+      console.log('navigating to login');
+      navigate('/google-login');
       return;
     }
     startPhaserGame(AvatarCreator, undefined, 'AvatarCreator');
     EventSystem.on('sceneCreated', () => setSceneCreated(true));
     EventSystem.on('avatarSelected', onAvatarSelected);
-  }, [loadStatus]);
+  }, [loginStatus]);
 
   /**
    * Let's hard-code everything for now since player creation
@@ -80,6 +81,7 @@ function AvatarPage(): JSX.Element {
   React.useEffect(() => {
     if (!isSaving) return;
     if (saveStatus.status === LoadStatus.DONE) {
+      console.log('navigating to home');
       navigate('/');
       setIsSaving(false);
     } else if (saveStatus.status === LoadStatus.FAILED) {
@@ -133,8 +135,8 @@ function AvatarPage(): JSX.Element {
   /** end hard-coding */
 
   if (
-    loadStatus.status === LoadStatus.NONE ||
-    loadStatus.status === LoadStatus.IN_PROGRESS
+    loginStatus.status === LoadStatus.NONE ||
+    loginStatus.status === LoadStatus.IN_PROGRESS
   ) {
     return (
       <div>

@@ -26,7 +26,7 @@ import {
 } from '.';
 import { SenderType } from '../../store/slices/game';
 import { localStorageGet, SESSION_ID } from '../../store/local-storage';
-import { Avatar, Player } from '../../store/slices/player';
+import { Avatar, Player } from '../../store/slices/player/types';
 import {
   arrayNRandom,
   getRandomAvatar,
@@ -602,7 +602,7 @@ export class SimulationScene extends GameScene {
     const avatar =
       this.simulation!.playerAvatar?.avatar ||
       this.gameStateHandler!.players.find(
-        (p) => p.clientId === this.simulation!.player
+        (p) => p._id === this.simulation!.player
       )!.avatar;
     this.mySprite = this.renderSpriteAvatar(avatar, {
       x: this.bg.displayWidth * 0.51,
