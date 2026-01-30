@@ -20,6 +20,7 @@ export interface UseWithLogin {
     educationalLoginRole: EducationalRole
   ) => Promise<UserAccessToken | undefined>;
   refreshAccessToken: () => void;
+  setViewingAs: (educationalRole: EducationalRole) => void;
 }
 
 // Gives you a way to interface with the redux store (which has the user information)
@@ -42,6 +43,10 @@ export function useWithLogin(): UseWithLogin {
       dispatch(loginActions.logout());
     }
   }, [state.loginStatus.status]);
+
+  function setViewingAs(educationalRole: EducationalRole) {
+    dispatch(loginActions.setViewingAs(educationalRole));
+  }
 
   async function loginWithGoogle(
     googleAccessToken: string,
@@ -80,5 +85,6 @@ export function useWithLogin(): UseWithLogin {
     logout,
     loginWithGoogle,
     refreshAccessToken,
+    setViewingAs,
   };
 }

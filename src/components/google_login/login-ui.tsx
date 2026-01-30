@@ -9,15 +9,22 @@ import { ColumnCenterDiv, ColumnDiv } from '../../styled-components';
 import { PlayerStateData } from '../../store/slices/player';
 import { Button, CircularProgress } from '@mui/material';
 import { LoadStatus } from '../../types';
+import { EducationalRole } from '../../store/slices/player/types';
 
 export function LoginUI(props: {
   loginState: PlayerStateData;
+  setViewingAs: (educationalRole: EducationalRole) => void;
   instructorloginGoogle: () => void;
   studentloginGoogle: () => void;
   titleText?: string;
 }) {
-  const { loginState, instructorloginGoogle, studentloginGoogle, titleText } =
-    props;
+  const {
+    loginState,
+    setViewingAs,
+    instructorloginGoogle,
+    studentloginGoogle,
+    titleText,
+  } = props;
 
   return (
     <ColumnCenterDiv
@@ -55,7 +62,10 @@ export function LoginUI(props: {
               <Button
                 variant="contained"
                 color="primary"
-                onClick={studentloginGoogle}
+                onClick={() => {
+                  setViewingAs(EducationalRole.STUDENT);
+                  studentloginGoogle();
+                }}
                 style={{
                   fontSize: '16px',
                   margin: '10px',
@@ -74,7 +84,10 @@ export function LoginUI(props: {
               <Button
                 variant="outlined"
                 color="primary"
-                onClick={instructorloginGoogle}
+                onClick={() => {
+                  setViewingAs(EducationalRole.INSTRUCTOR);
+                  instructorloginGoogle();
+                }}
                 style={{
                   fontSize: '16px',
                   margin: '10px',

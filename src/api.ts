@@ -404,13 +404,14 @@ export async function createAndJoinRoom(
   playerId: string,
   gameId: string,
   gameName: string,
-  persistTruthGlobalStateData: string[]
+  persistTruthGlobalStateData: string[],
+  classId?: string
 ): Promise<Room> {
   const data = await execGql<Room>(
     {
       query: `
-        mutation CreateAndJoinRoom($playerId: String!, $gameId: String!, $gameName: String!, $persistTruthGlobalStateData: [String]) {
-          createAndJoinRoom(playerId: $playerId, gameId: $gameId, gameName: $gameName, persistTruthGlobalStateData: $persistTruthGlobalStateData) {
+        mutation CreateAndJoinRoom($playerId: String!, $gameId: String!, $gameName: String!, $persistTruthGlobalStateData: [String], $classId: String) {
+          createAndJoinRoom(playerId: $playerId, gameId: $gameId, gameName: $gameName, persistTruthGlobalStateData: $persistTruthGlobalStateData, classId: $classId) {
             ${fullRoomQueryData}
           }
         }`,
@@ -419,6 +420,7 @@ export async function createAndJoinRoom(
         gameId,
         gameName,
         persistTruthGlobalStateData,
+        classId,
       },
     },
     {

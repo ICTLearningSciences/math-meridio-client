@@ -14,7 +14,7 @@ import { EducationalRole } from '../../store/slices/player/types';
 export default function Login(props: { useLogin: UseWithLogin }): JSX.Element {
   const navigate = useNavigateWithParams();
   const { useLogin } = props;
-  const { loginWithGoogle, state: loginState } = useLogin;
+  const { loginWithGoogle, state: loginState, setViewingAs } = useLogin;
   const instructorloginGoogle = useGoogleLogin({
     onSuccess: (tokenResponse) => {
       loginWithGoogle(
@@ -65,6 +65,7 @@ export default function Login(props: { useLogin: UseWithLogin }): JSX.Element {
     >
       <LoginUI
         loginState={loginState}
+        setViewingAs={setViewingAs}
         instructorloginGoogle={instructorloginGoogle}
         studentloginGoogle={studentloginGoogle}
       />

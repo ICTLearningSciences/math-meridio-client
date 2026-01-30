@@ -6,7 +6,7 @@ The full terms of this copyright and license should always be found in the root 
 */
 export const SESSION_ID = '@sessionId';
 export const ACCESS_TOKEN_KEY = '@accessToken';
-export function localStorageGet(key: string): unknown | null {
+export function localStorageGet<T>(key: string): T | null {
   if (typeof window === 'undefined') {
     return null;
   }
@@ -15,10 +15,18 @@ export function localStorageGet(key: string): unknown | null {
     return null;
   }
   try {
-    return JSON.parse(item);
+    return JSON.parse(item) as T;
   } catch (err) {
-    return item;
+    return item as T;
   }
+}
+
+export function requireLocalStorageGet<T>(key: string): T {
+  const item = localStorageGet<T>(key);
+  if (!item) {
+    throw new Error(`Item ${key} not found in localStorage`);
+  }
+  return item;
 }
 
 export function localStorageStore(key: string, value: unknown): void {
