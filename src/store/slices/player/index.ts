@@ -7,7 +7,7 @@ The full terms of this copyright and license should always be found in the root 
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import * as api from '../../../api';
 import { LoadStatus, LoadingState } from '../../../types';
-import { UserRole } from './types';
+import { EducationalRole, UserRole } from './types';
 import { refreshAccessToken as _refreshAccessToken, loginGoogle } from './api';
 import { extractErrorMessageFromError } from '../../../helpers';
 import {
@@ -59,9 +59,12 @@ export const refreshAccessToken = createAsyncThunk(
 
 export const login = createAsyncThunk(
   'login/login',
-  async (args: { accessToken: string }) => {
+  async (args: {
+    accessToken: string;
+    educationalLoginRole: EducationalRole;
+  }) => {
     try {
-      return await loginGoogle(args.accessToken);
+      return await loginGoogle(args.accessToken, args.educationalLoginRole);
     } catch (err: unknown) {
       console.error(err);
       throw new Error(extractErrorMessageFromError(err));

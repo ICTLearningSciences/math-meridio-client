@@ -12,11 +12,12 @@ import { LoadStatus } from '../../types';
 
 export function LoginUI(props: {
   loginState: PlayerStateData;
-  login: () => void;
-  loginText: string;
+  instructorloginGoogle: () => void;
+  studentloginGoogle: () => void;
   titleText?: string;
 }) {
-  const { loginState, login, loginText, titleText } = props;
+  const { loginState, instructorloginGoogle, studentloginGoogle, titleText } =
+    props;
 
   return (
     <ColumnCenterDiv
@@ -46,19 +47,44 @@ export function LoginUI(props: {
               alignItems: 'center',
             }}
           >
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => login()}
+            <ColumnDiv
               style={{
-                fontSize: '16px',
-                margin: '10px',
-                width: 300,
+                alignItems: 'center',
               }}
-              data-cy="login-btn"
             >
-              {loginText}
-            </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={studentloginGoogle}
+                style={{
+                  fontSize: '16px',
+                  margin: '10px',
+                  width: 300,
+                }}
+                data-cy="login-btn"
+              >
+                Student Login
+              </Button>
+            </ColumnDiv>
+            <ColumnDiv
+              style={{
+                alignItems: 'center',
+              }}
+            >
+              <Button
+                variant="outlined"
+                color="primary"
+                onClick={instructorloginGoogle}
+                style={{
+                  fontSize: '16px',
+                  margin: '10px',
+                  width: 300,
+                }}
+                data-cy="login-btn"
+              >
+                Instructor Login
+              </Button>
+            </ColumnDiv>
           </ColumnDiv>
         )}
       </div>

@@ -5,7 +5,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import { execGql } from '../../../api-helpers';
-import { UserAccessToken } from './types';
+import { EducationalRole, UserAccessToken } from './types';
 
 export const userDataQuery = `
   _id
@@ -27,13 +27,14 @@ export const userDataQuery = `
 `;
 
 export async function loginGoogle(
-  accessToken: string
+  accessToken: string,
+  educationalLoginRole: EducationalRole
 ): Promise<UserAccessToken> {
   return await execGql<UserAccessToken>(
     {
       query: `
-        mutation LoginGoogle($accessToken: String!) {
-          loginGoogle(accessToken: $accessToken) {
+        mutation LoginGoogle($accessToken: String!, $educationalLoginRole: String!) {
+          loginGoogle(accessToken: $accessToken, educationalLoginRole: $educationalLoginRole) {
             user {
               ${userDataQuery}
             }
@@ -43,6 +44,7 @@ export async function loginGoogle(
       `,
       variables: {
         accessToken: accessToken,
+        educationalLoginRole: educationalLoginRole,
       },
     },
     // login responds with set-cookie, w/o withCredentials it doesnt get stored

@@ -8,7 +8,7 @@ import { useAppSelector, useAppDispatch } from '../../hooks';
 import * as loginActions from './index';
 import { useEffect } from 'react';
 import { ACCESS_TOKEN_KEY, localStorageGet } from '../../local-storage';
-import { UserAccessToken } from './types';
+import { EducationalRole, UserAccessToken } from './types';
 import { PlayerStateData } from './index';
 import { LoadStatus } from '../../../types';
 
@@ -16,7 +16,8 @@ export interface UseWithLogin {
   state: PlayerStateData;
   logout: () => Promise<void>;
   loginWithGoogle: (
-    googleAccessToken: string
+    googleAccessToken: string,
+    educationalLoginRole: EducationalRole
   ) => Promise<UserAccessToken | undefined>;
   refreshAccessToken: () => void;
 }
@@ -42,7 +43,10 @@ export function useWithLogin(): UseWithLogin {
     }
   }, [state.loginStatus.status]);
 
-  async function loginWithGoogle(googleAccessToken: string) {
+  async function loginWithGoogle(
+    googleAccessToken: string,
+    educationalLoginRole: EducationalRole
+  ) {
     if (
       state.loginStatus.status === LoadStatus.NONE ||
       state.loginStatus.status === LoadStatus.NOT_LOGGED_IN ||
@@ -51,6 +55,7 @@ export function useWithLogin(): UseWithLogin {
       return await dispatch(
         loginActions.login({
           accessToken: googleAccessToken,
+          educationalLoginRole: educationalLoginRole,
         })
       ).unwrap();
     }
