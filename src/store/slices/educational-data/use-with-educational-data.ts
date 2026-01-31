@@ -5,6 +5,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import { useAppDispatch, useAppSelector } from '../../hooks';
+import { ChatMessage, GameData, Room } from '../game';
 import * as educationalDataActions from './index';
 import {
   ClassMembership,
@@ -123,6 +124,75 @@ export function useWithEducationalData() {
     ).unwrap();
   }
 
+  async function joinGameRoom(
+    gameRoomId: string,
+    playerId: string
+  ): Promise<Room> {
+    return await dispatch(
+      educationalDataActions.joinGameRoom({ gameRoomId, playerId })
+    ).unwrap();
+  }
+
+  async function leaveGameRoom(
+    gameRoomId: string,
+    playerId: string
+  ): Promise<Room> {
+    return await dispatch(
+      educationalDataActions.leaveGameRoom({ gameRoomId, playerId })
+    ).unwrap();
+  }
+
+  async function deleteGameRoom(gameRoomId: string): Promise<Room> {
+    return await dispatch(
+      educationalDataActions.deleteGameRoom({ gameRoomId })
+    ).unwrap();
+  }
+
+  async function renameGameRoom(
+    gameRoomId: string,
+    name: string
+  ): Promise<Room> {
+    return await dispatch(
+      educationalDataActions.renameGameRoom({ gameRoomId, name })
+    ).unwrap();
+  }
+
+  async function updateGameRoomGameData(
+    gameRoomId: string,
+    gameData: Partial<GameData>
+  ): Promise<Room> {
+    return await dispatch(
+      educationalDataActions.updateGameRoomGameData({ gameRoomId, gameData })
+    ).unwrap();
+  }
+
+  async function sendGameRoomMessage(
+    gameRoomId: string,
+    message: ChatMessage
+  ): Promise<Room> {
+    return await dispatch(
+      educationalDataActions.sendGameRoomMessage({ gameRoomId, message })
+    ).unwrap();
+  }
+
+  async function createAndJoinGameRoom(
+    gameId: string,
+    gameName: string,
+    playerId: string,
+    persistTruthGlobalStateData: string[],
+    classId: string
+  ): Promise<Room> {
+    return await dispatch(
+      educationalDataActions.createAndJoinGameRoom({
+        gameId,
+        gameName,
+        playerId,
+        persistTruthGlobalStateData,
+        classId,
+      })
+    ).unwrap();
+  }
+
   return {
     fetchInstructorDataHydration,
     fetchStudentDataHydration,
@@ -136,6 +206,13 @@ export function useWithEducationalData() {
     unblockStudentFromClass,
     adjustClassroomArchiveStatus,
     updateClassNameDescription,
+    joinGameRoom,
+    leaveGameRoom,
+    deleteGameRoom,
+    renameGameRoom,
+    updateGameRoomGameData,
+    sendGameRoomMessage,
+    createAndJoinGameRoom,
     educationalData: state,
   };
 }

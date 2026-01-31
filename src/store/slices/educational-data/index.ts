@@ -6,11 +6,17 @@ The full terms of this copyright and license should always be found in the root 
 */
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import * as api from './api';
+import * as mainApi from '../../../api';
 import { LoadStatus, LoadingState } from '../../../types';
 import { ClassMembership, Classroom } from './types';
 import { Player } from '../player/types';
-import { Room } from '../game';
-import { addOrUpdateClass, addOrUpdateClassMembership } from './helpers';
+import { ChatMessage, GameData, Room } from '../game';
+import {
+  addOrUpdateClass,
+  addOrUpdateClassMembership,
+  addOrUpdateGameRoom,
+  removeGameRoom,
+} from './helpers';
 export interface EducationalDataStateData {
   classes: Classroom[];
   rooms: Room[];
@@ -123,12 +129,105 @@ export const updateClassNameDescription = createAsyncThunk(
   }
 );
 
+export const joinGameRoom = createAsyncThunk(
+  'educationalData/joinGameRoom',
+  async (args: { gameRoomId: string; playerId: string }): Promise<Room> => {
+    return await mainApi.joinRoom(args.playerId, args.gameRoomId);
+  }
+);
+
+export const leaveGameRoom = createAsyncThunk(
+  'educationalData/leaveGameRoom',
+  async (args: { gameRoomId: string; playerId: string }): Promise<Room> => {
+    return await mainApi.leaveRoom(args.playerId, args.gameRoomId);
+  }
+);
+
+export const deleteGameRoom = createAsyncThunk(
+  'educationalData/deleteGameRoom',
+  async (args: { gameRoomId: string }): Promise<Room> => {
+    return await mainApi.deleteRoom(args.gameRoomId);
+  }
+);
+
+export const renameGameRoom = createAsyncThunk(
+  'educationalData/renameGameRoom',
+  async (args: { gameRoomId: string; name: string }): Promise<Room> => {
+    return await mainApi.renameRoom(args.name, args.gameRoomId);
+  }
+);
+
+export const updateGameRoomGameData = createAsyncThunk(
+  'educationalData/updateGameRoomGameData',
+  async (args: {
+    gameRoomId: string;
+    gameData: Partial<GameData>;
+  }): Promise<Room> => {
+    return await mainApi.updateRoom(args.gameRoomId, args.gameData);
+  }
+);
+
+export const sendGameRoomMessage = createAsyncThunk(
+  'educationalData/sendGameRoomMessage',
+  async (args: { gameRoomId: string; message: ChatMessage }): Promise<Room> => {
+    return await mainApi.sendMessage(args.gameRoomId, args.message);
+  }
+);
+
+export const createAndJoinGameRoom = createAsyncThunk(
+  'educationalData/createAndJoinGameRoom',
+  async (args: {
+    gameId: string;
+    gameName: string;
+    playerId: string;
+    persistTruthGlobalStateData: string[];
+    classId: string;
+  }): Promise<Room> => {
+    return await mainApi.createAndJoinRoom(
+      args.playerId,
+      args.gameId,
+      args.gameName,
+      args.persistTruthGlobalStateData,
+      args.classId
+    );
+  }
+);
+
 export const educationalDataSlice = createSlice({
   name: 'educationalData',
   initialState,
   reducers: {},
   extraReducers: (builder) => {
     builder
+
+      .addCase(createAndJoinGameRoom.fulfilled, (state, action) => {
+        addOrUpdateGameRoom(state, action.payload);
+      })
+
+      .addCase(sendGameRoomMessage.fulfilled, (state, action) => {
+        addOrUpdateGameRoom(state, action.payload);
+      })
+
+      .addCase(updateGameRoomGameData.fulfilled, (state, action) => {
+        addOrUpdateGameRoom(state, action.payload);
+      })
+
+      .addCase(renameGameRoom.fulfilled, (state, action) => {
+        addOrUpdateGameRoom(state, action.payload);
+      })
+
+      .addCase(deleteGameRoom.fulfilled, (state, action) => {
+        removeGameRoom(state, action.payload);
+      })
+
+      .addCase(joinGameRoom.fulfilled, (state, action) => {
+        addOrUpdateGameRoom(state, action.payload);
+      })
+
+      .addCase(leaveGameRoom.fulfilled, (state, action) => {
+        removeGameRoom(state, action.payload);
+      })
+
       .addCase(fetchInstructorDataHydration.pending, (state) => {
         state.hydrationLoadStatus = {
           status: LoadStatus.IN_PROGRESS,

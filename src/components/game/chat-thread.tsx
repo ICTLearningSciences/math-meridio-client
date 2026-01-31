@@ -5,6 +5,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import { makeStyles } from 'tss-react/mui';
+import { useParams } from 'react-router-dom';
 import { useAppSelector } from '../../store/hooks';
 import {
   Avatar,
@@ -19,6 +20,7 @@ import { SenderType } from '../../store/slices/game';
 import { FadingText } from '../fading-text';
 import React from 'react';
 import AvatarSprite from '../avatar-sprite';
+import { useWithEducationalData } from '../../store/slices/educational-data/use-with-educational-data';
 
 const useStyles = makeStyles()(() => ({
   chatThread: {
@@ -84,13 +86,12 @@ export default function ChatThread(props: {
   const { responsePending } = props;
   const { classes } = useStyles();
   const { player } = useAppSelector((state) => state.playerData);
-  const messages = useAppSelector(
-    (state) => state.gameData.room?.gameData.chat || []
-  );
+  const { roomId } = useParams<{ roomId: string }>();
+  const { educationalData } = useWithEducationalData();
+  const room = educationalData.rooms.find((r) => r._id === roomId);
 
-  const players = useAppSelector(
-    (state) => state.gameData.room?.gameData.players
-  );
+  const messages = room?.gameData.chat || [];
+  const players = room?.gameData.players;
 
   enum PlayerColors {
     Blue = 'info.main',

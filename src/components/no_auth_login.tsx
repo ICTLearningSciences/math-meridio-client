@@ -28,7 +28,7 @@ function LoginPage(): JSX.Element {
     if (player) {
       if (player.description) {
         console.log('navigating to home');
-        navigate('/');
+        navigate('/classes');
       } else {
         console.log('navigating to avatar-creator');
         navigate('/avatar-creator');

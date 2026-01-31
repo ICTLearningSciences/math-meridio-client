@@ -5,7 +5,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import GridLayout from 'react-grid-layout';
 import { TransformWrapper } from 'react-zoom-pan-pinch';
 import {
@@ -30,6 +30,7 @@ import ChatThread from './chat-thread';
 import ChatForm from './chat-form';
 import { useAppSelector } from '../../store/hooks';
 import { useWithGame } from '../../store/slices/game/use-with-game-state';
+import { useWithEducationalData } from '../../store/slices/educational-data/use-with-educational-data';
 import withAuthorizationOnly from '../../wrap-with-authorization-only';
 import Popup from '../popup';
 import { useWithConfig } from '../../store/slices/config/use-with-config';
@@ -142,7 +143,10 @@ function SimulationSpace(props: {
 }
 
 function GamePage(): JSX.Element {
-  const { room, simulation } = useAppSelector((state) => state.gameData);
+  const { simulation } = useAppSelector((state) => state.gameData);
+  const { roomId } = useParams<{ roomId: string }>();
+  const { educationalData } = useWithEducationalData();
+  const room = educationalData.rooms.find((r) => r._id === roomId);
   const {
     game,
     gameStateHandler,
@@ -175,7 +179,7 @@ function GamePage(): JSX.Element {
   React.useEffect(() => {
     if (!room) {
       console.log('navigating to home');
-      navigate('/');
+      navigate('/classes');
     }
     if (!alreadyShownPopup && !ownerIsPresent) {
       setPopupOpen(true);

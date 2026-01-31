@@ -35,6 +35,7 @@ export interface ChatMessage {
 export interface Room {
   _id: string;
   name: string;
+  classId?: string;
   gameData: GameData;
 }
 
@@ -101,12 +102,14 @@ export const createAndJoinRoom = createAsyncThunk(
     gameName: string;
     playerId: string;
     persistTruthGlobalStateData: string[];
+    classId: string;
   }): Promise<Room> => {
     return api.createAndJoinRoom(
       args.playerId,
       args.gameId,
       args.gameName,
-      args.persistTruthGlobalStateData
+      args.persistTruthGlobalStateData,
+      args.classId
     );
   }
 );

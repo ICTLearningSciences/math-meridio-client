@@ -44,7 +44,7 @@ export default function Login(props: { useLogin: UseWithLogin }): JSX.Element {
     }
     // TODO: navigate to the home page
     console.log('navigating to home');
-    navigate('/');
+    navigate('/classes');
   }
 
   useEffect(() => {

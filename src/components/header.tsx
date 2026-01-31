@@ -26,7 +26,7 @@ export function Header() {
 
   function homeButtonClick() {
     leaveRoom();
-    navigate('/');
+    navigate('/classes');
   }
 
   return (
@@ -58,7 +58,7 @@ export function Header() {
             style={{ color: 'white' }}
             onClick={() => {
               if (isEditing) {
-                renameRoom(name);
+                renameRoom(room?._id || '', name);
                 setIsEditing(false);
               } else {
                 setIsEditing(true);

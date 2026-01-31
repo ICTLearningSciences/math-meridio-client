@@ -207,6 +207,7 @@ export const fullDiscussionStageQueryData = `
 export const fullRoomQueryData = `
   _id
   name
+  classId
   gameData {
     gameId
     players {
@@ -405,7 +406,7 @@ export async function createAndJoinRoom(
   gameId: string,
   gameName: string,
   persistTruthGlobalStateData: string[],
-  classId?: string
+  classId: string
 ): Promise<Room> {
   const data = await execGql<Room>(
     {

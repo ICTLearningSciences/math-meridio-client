@@ -10,20 +10,12 @@ import {
   GameData,
   GlobalStateData,
   PlayerStateData,
-  Room,
   SenderType,
-  createAndJoinRoom,
-  deleteRoom,
   fetchRoom,
-  joinRoom,
-  leaveRoom,
-  renameRoom,
-  sendMessage,
   updateRoomGameData,
 } from '.';
 import { GenericLlmRequest, LoadStatus } from '../../../types';
 import { useAppDispatch, useAppSelector } from '../../hooks';
-import { fetchRooms } from '../../../api';
 import { GameStateHandler } from '../../../classes/game-state-handler';
 import { GAMES, Game } from '../../../game/types';
 import { CancelToken } from 'axios';
@@ -39,6 +31,8 @@ import {
   SESSION_ID,
 } from '../../local-storage';
 import { useWithConfig } from '../config/use-with-config';
+import { useWithEducationalData } from '../educational-data/use-with-educational-data';
+import { useParams } from 'react-router-dom';
 export abstract class Subscriber {
   abstract newChatLogReceived(chatLog: ChatMessage[]): void;
   abstract simulationEnded(): void;
@@ -50,7 +44,11 @@ export abstract class Subscriber {
 export function useWithGame() {
   const dispatch = useAppDispatch();
   const { player } = useAppSelector((state) => state.playerData);
-  const { room, loadStatus } = useAppSelector((state) => state.gameData);
+  const { classId, roomId } = useParams();
+  const { loadStatus } = useAppSelector((state) => state.gameData);
+  const room = useAppSelector((state) =>
+    state.educationalData.rooms.find((r) => r._id === roomId)
+  );
   const [responsePending, setResponsePending] = React.useState<boolean>(false);
   const { firstAvailableAzureServiceModel } = useWithConfig();
   const { loadDiscussionStages } = useWithStages();
@@ -75,7 +73,16 @@ export function useWithGame() {
   const [lastPlayers, setLastPlayers] = React.useState<Player[]>();
   const [gameStateHandler, setGameStateHandler] =
     React.useState<GameStateHandler>();
-  const chatLog = useAppSelector((state) => state.gameData.room?.gameData.chat);
+  const {
+    deleteGameRoom,
+    renameGameRoom,
+    updateGameRoomGameData,
+    sendGameRoomMessage,
+    joinGameRoom,
+    leaveGameRoom,
+    createAndJoinGameRoom,
+  } = useWithEducationalData();
+
   React.useEffect(() => {
     if (!room || equals(lastChatLog, room.gameData.chat)) return;
     for (let i = 0; i < subscribers.length; i++) {
@@ -204,42 +211,27 @@ export function useWithGame() {
     setSubscribers([]);
   }
 
-  async function loadRooms(game: string): Promise<Room[]> {
-    return await fetchRooms(game);
-  }
-
-  function _joinRoom(room: string) {
-    if (!player || loadStatus.status === LoadStatus.IN_PROGRESS) return;
-    dispatch(joinRoom({ roomId: room, playerId: player._id }));
-  }
-
   function _leaveRoom() {
     if (!player || !room) return;
     localStorageClear(SESSION_ID);
-    dispatch(leaveRoom({ roomId: room._id, playerId: player._id }));
+    leaveGameRoom(room._id, player._id);
   }
 
   function _createRoom(gameId: string) {
     if (!player || loadStatus.status === LoadStatus.IN_PROGRESS) return;
     const game = GAMES.find((g) => g.id === gameId);
     if (!game) return;
-    dispatch(
-      createAndJoinRoom({
-        gameId: game.id,
-        gameName: game.name,
-        playerId: player._id,
-        persistTruthGlobalStateData: game.persistTruthGlobalStateData,
-      })
+    if (!classId) {
+      console.error('classId is required to create a room');
+      return;
+    }
+    createAndJoinGameRoom(
+      game.id,
+      game.name,
+      player._id,
+      game.persistTruthGlobalStateData,
+      classId
     );
-  }
-
-  function _deleteRoom(id: string) {
-    dispatch(deleteRoom({ roomId: id }));
-  }
-
-  function _renameRoom(name: string) {
-    if (!player || !room) return;
-    dispatch(renameRoom({ roomId: room._id, name }));
   }
 
   function _setResponsePending(pending: boolean) {
@@ -249,6 +241,7 @@ export function useWithGame() {
   function _sendMessage(msg: ChatMessage) {
     if (!player || !room) return;
     if (msg.sender === SenderType.SYSTEM && !msg.message) return;
+    const chatLog = room.gameData.chat;
     if (
       msg.sender === SenderType.SYSTEM &&
       msg.message === chatLog?.[chatLog.length - 1]?.message
@@ -262,16 +255,14 @@ export function useWithGame() {
       console.log('not the room owner, skipping message');
       return;
     }
-    operationQueue.current.push(() =>
-      dispatch(sendMessage({ roomId: room._id, message: msg }))
-    );
+    operationQueue.current.push(() => sendGameRoomMessage(room._id, msg));
     processQueue();
   }
 
   function _updateRoomGameData(gameData: Partial<GameData>): void {
     if (!player || !room) return;
     operationQueue.current.push(() =>
-      dispatch(updateRoomGameData({ roomId: room._id, gameData }))
+      updateGameRoomGameData(room._id, gameData)
     );
     processQueue();
   }
@@ -303,12 +294,11 @@ export function useWithGame() {
     launchGame,
     addNewSubscriber,
     removeAllSubscribers,
-    loadRooms,
-    joinRoom: _joinRoom,
+    joinRoom: joinGameRoom,
     leaveRoom: _leaveRoom,
     createRoom: _createRoom,
-    deleteRoom: _deleteRoom,
-    renameRoom: _renameRoom,
+    deleteRoom: deleteGameRoom,
+    renameRoom: renameGameRoom,
     sendMessage: _sendMessage,
     updateRoomGameData: _updateRoomGameData,
     responsePending,

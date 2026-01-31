@@ -5,6 +5,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import { EducationalDataStateData } from '.';
+import { Room } from '../game';
 import { ClassMembership, Classroom } from './types';
 
 export function addOrUpdateClassMembership(
@@ -35,4 +36,25 @@ export function addOrUpdateClass(
   } else {
     state.classes.push(updatedClass);
   }
+}
+
+export function addOrUpdateGameRoom(
+  state: EducationalDataStateData,
+  updatedRoom: Room
+) {
+  const existingRoomIdx = state.rooms.findIndex(
+    (r) => r._id === updatedRoom._id
+  );
+  if (existingRoomIdx !== -1) {
+    state.rooms[existingRoomIdx] = updatedRoom;
+  } else {
+    state.rooms.push(updatedRoom);
+  }
+}
+
+export function removeGameRoom(
+  state: EducationalDataStateData,
+  removedRoom: Room
+) {
+  state.rooms = state.rooms.filter((r) => r._id !== removedRoom._id);
 }
