@@ -37,6 +37,34 @@ export async function createClassroom(): Promise<Classroom> {
   );
 }
 
+export async function updateClassNameDescription(
+  classId: string,
+  name: string,
+  description: string
+): Promise<Classroom> {
+  const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
+  return await execGql<Classroom>(
+    {
+      query: `
+          mutation UpdateClassNameDescription($classId: String!, $name: String!, $description: String!) {
+            updateClassNameDescription(classId: $classId, name: $name, description: $description) {
+                ${classroomDataQuery}
+            }
+          }
+            `,
+      variables: {
+        classId,
+        name,
+        description,
+      },
+    },
+    {
+      dataPath: 'updateClassNameDescription',
+      accessToken: accessToken,
+    }
+  );
+}
+
 export async function createNewClassInviteCode(
   classId: string,
   validUntil: Date,
@@ -118,12 +146,36 @@ export async function joinClassroom(
   );
 }
 
+export async function leaveClassroom(
+  classId: string
+): Promise<ClassMembership> {
+  const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
+  return await execGql<ClassMembership>(
+    {
+      query: `
+  mutation LeaveClassroom($classId: String!) {
+    leaveClassroom(classId: $classId) {
+        ${classMembershipDataQuery}
+    }
+  }
+            `,
+      variables: {
+        classId,
+      },
+    },
+    {
+      dataPath: 'leaveClassroom',
+      accessToken: accessToken,
+    }
+  );
+}
+
 export async function removeStudentFromClass(
   studentId: string,
   classId: string
-): Promise<JoinClassroomResponse> {
+): Promise<ClassMembership> {
   const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
-  return await execGql<JoinClassroomResponse>(
+  return await execGql<ClassMembership>(
     {
       query: `
   mutation RemoveStudentFromClass($studentId: String!, $classId: String!) {
@@ -271,5 +323,3 @@ export async function fetchStudentDataHydration(): Promise<FetchEducationalDataH
     }
   );
 }
-
-// fetchStudentDataHydration

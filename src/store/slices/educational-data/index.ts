@@ -10,6 +10,7 @@ import { LoadStatus, LoadingState } from '../../../types';
 import { ClassMembership, Classroom } from './types';
 import { Player } from '../player/types';
 import { Room } from '../game';
+import { addOrUpdateClass, addOrUpdateClassMembership } from './helpers';
 export interface EducationalDataStateData {
   classes: Classroom[];
   rooms: Room[];
@@ -38,6 +39,87 @@ export const fetchStudentDataHydration = createAsyncThunk(
   'educationalData/fetchStudentDataHydration',
   async () => {
     return await api.fetchStudentDataHydration();
+  }
+);
+
+export const createClassroom = createAsyncThunk(
+  'educationalData/createClassroom',
+  async () => {
+    return await api.createClassroom();
+  }
+);
+
+export const createNewClassInviteCode = createAsyncThunk(
+  'educationalData/createNewClassInviteCode',
+  async (args: { classId: string; validUntil: Date; numUses: number }) => {
+    return await api.createNewClassInviteCode(
+      args.classId,
+      args.validUntil,
+      args.numUses
+    );
+  }
+);
+
+export const revokeClassInviteCode = createAsyncThunk(
+  'educationalData/revokeClassInviteCode',
+  async (args: { classId: string; classroomCode: string }) => {
+    return await api.revokeClassInviteCode(args.classId, args.classroomCode);
+  }
+);
+
+export const joinClassroom = createAsyncThunk(
+  'educationalData/joinClassroom',
+  async (args: { inviteCode: string }) => {
+    return await api.joinClassroom(args.inviteCode);
+  }
+);
+
+export const leaveClassroom = createAsyncThunk(
+  'educationalData/leaveClassroom',
+  async (args: { classId: string }) => {
+    return await api.leaveClassroom(args.classId);
+  }
+);
+
+export const removeStudentFromClass = createAsyncThunk(
+  'educationalData/removeStudentFromClass',
+  async (args: { studentId: string; classId: string }) => {
+    return await api.removeStudentFromClass(args.studentId, args.classId);
+  }
+);
+
+export const blockStudentFromClass = createAsyncThunk(
+  'educationalData/blockStudentFromClass',
+  async (args: { studentId: string; classId: string }) => {
+    return await api.blockStudentFromClass(args.studentId, args.classId);
+  }
+);
+
+export const unblockStudentFromClass = createAsyncThunk(
+  'educationalData/unblockStudentFromClass',
+  async (args: { studentId: string; classId: string }) => {
+    return await api.unblockStudentFromClass(args.studentId, args.classId);
+  }
+);
+
+export const adjustClassroomArchiveStatus = createAsyncThunk(
+  'educationalData/adjustClassroomArchiveStatus',
+  async (args: { classId: string; setArchived: boolean }) => {
+    return await api.adjustClassroomArchiveStatus(
+      args.classId,
+      args.setArchived
+    );
+  }
+);
+
+export const updateClassNameDescription = createAsyncThunk(
+  'educationalData/updateClassNameDescription',
+  async (args: { classId: string; name: string; description: string }) => {
+    return await api.updateClassNameDescription(
+      args.classId,
+      args.name,
+      args.description
+    );
   }
 );
 
@@ -105,6 +187,51 @@ export const educationalDataSlice = createSlice({
           endedAt: Date.now.toString(),
           error: undefined,
         };
+      })
+
+      .addCase(createClassroom.fulfilled, (state, action) => {
+        state.classes.push(action.payload);
+      })
+
+      .addCase(createNewClassInviteCode.fulfilled, (state, action) => {
+        state.classes = state.classes.map((c) =>
+          c._id === action.payload._id ? action.payload : c
+        );
+      })
+
+      .addCase(revokeClassInviteCode.fulfilled, (state, action) => {
+        state.classes = state.classes.map((c) =>
+          c._id === action.payload._id ? action.payload : c
+        );
+      })
+
+      .addCase(joinClassroom.fulfilled, (state, action) => {
+        addOrUpdateClassMembership(state, action.payload.classMembership);
+        addOrUpdateClass(state, action.payload.classroom);
+      })
+
+      .addCase(leaveClassroom.fulfilled, (state, action) => {
+        addOrUpdateClassMembership(state, action.payload);
+      })
+
+      .addCase(removeStudentFromClass.fulfilled, (state, action) => {
+        addOrUpdateClassMembership(state, action.payload);
+      })
+
+      .addCase(blockStudentFromClass.fulfilled, (state, action) => {
+        addOrUpdateClassMembership(state, action.payload);
+      })
+
+      .addCase(unblockStudentFromClass.fulfilled, (state, action) => {
+        addOrUpdateClassMembership(state, action.payload);
+      })
+
+      .addCase(adjustClassroomArchiveStatus.fulfilled, (state, action) => {
+        addOrUpdateClass(state, action.payload);
+      })
+
+      .addCase(updateClassNameDescription.fulfilled, (state, action) => {
+        addOrUpdateClass(state, action.payload);
       });
   },
 });

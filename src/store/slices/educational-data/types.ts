@@ -17,6 +17,7 @@ export interface InviteCode {
 export interface Classroom {
   _id: string;
   name: string;
+  description?: string;
   teacherId: string;
   inviteCodes: InviteCode[];
   createdAt: Date;
@@ -26,6 +27,7 @@ export interface Classroom {
 export const classroomDataQuery = `
     _id
     name
+    description
     teacherId
     inviteCodes {
         code

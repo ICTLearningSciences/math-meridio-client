@@ -6,7 +6,12 @@ The full terms of this copyright and license should always be found in the root 
 */
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import * as educationalDataActions from './index';
-import { FetchEducationalDataHydrationResponse } from './types';
+import {
+  ClassMembership,
+  Classroom,
+  FetchEducationalDataHydrationResponse,
+  JoinClassroomResponse,
+} from './types';
 
 export function useWithEducationalData() {
   const dispatch = useAppDispatch();
@@ -24,9 +29,113 @@ export function useWithEducationalData() {
     ).unwrap();
   }
 
+  async function createClassroom(): Promise<Classroom> {
+    return await dispatch(educationalDataActions.createClassroom()).unwrap();
+  }
+
+  async function createNewClassInviteCode(
+    classId: string,
+    validUntil: Date,
+    numUses: number
+  ): Promise<Classroom> {
+    return await dispatch(
+      educationalDataActions.createNewClassInviteCode({
+        classId,
+        validUntil,
+        numUses,
+      })
+    ).unwrap();
+  }
+
+  async function revokeClassInviteCode(
+    classId: string,
+    classroomCode: string
+  ): Promise<Classroom> {
+    return await dispatch(
+      educationalDataActions.revokeClassInviteCode({ classId, classroomCode })
+    ).unwrap();
+  }
+
+  async function joinClassroom(
+    inviteCode: string
+  ): Promise<JoinClassroomResponse> {
+    return await dispatch(
+      educationalDataActions.joinClassroom({ inviteCode })
+    ).unwrap();
+  }
+
+  async function leaveClassroom(classId: string): Promise<ClassMembership> {
+    return await dispatch(
+      educationalDataActions.leaveClassroom({ classId })
+    ).unwrap();
+  }
+
+  async function removeStudentFromClass(
+    studentId: string,
+    classId: string
+  ): Promise<ClassMembership> {
+    return await dispatch(
+      educationalDataActions.removeStudentFromClass({ studentId, classId })
+    ).unwrap();
+  }
+
+  async function blockStudentFromClass(
+    studentId: string,
+    classId: string
+  ): Promise<ClassMembership> {
+    return await dispatch(
+      educationalDataActions.blockStudentFromClass({ studentId, classId })
+    ).unwrap();
+  }
+
+  async function unblockStudentFromClass(
+    studentId: string,
+    classId: string
+  ): Promise<ClassMembership> {
+    return await dispatch(
+      educationalDataActions.unblockStudentFromClass({ studentId, classId })
+    ).unwrap();
+  }
+
+  async function adjustClassroomArchiveStatus(
+    classId: string,
+    setArchived: boolean
+  ): Promise<Classroom> {
+    return await dispatch(
+      educationalDataActions.adjustClassroomArchiveStatus({
+        classId,
+        setArchived,
+      })
+    ).unwrap();
+  }
+
+  async function updateClassNameDescription(
+    classId: string,
+    name: string,
+    description: string
+  ): Promise<Classroom> {
+    return await dispatch(
+      educationalDataActions.updateClassNameDescription({
+        classId,
+        name,
+        description,
+      })
+    ).unwrap();
+  }
+
   return {
-    state,
     fetchInstructorDataHydration,
     fetchStudentDataHydration,
+    createClassroom,
+    createNewClassInviteCode,
+    revokeClassInviteCode,
+    joinClassroom,
+    leaveClassroom,
+    removeStudentFromClass,
+    blockStudentFromClass,
+    unblockStudentFromClass,
+    adjustClassroomArchiveStatus,
+    updateClassNameDescription,
+    educationalData: state,
   };
 }
