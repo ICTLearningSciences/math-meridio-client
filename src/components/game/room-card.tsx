@@ -64,10 +64,7 @@ export default function RoomCard(props: {
             Game: {room.gameData.gameId}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Current Stage: {room.gameData.globalStateData.curStageId}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Current Step: {room.gameData.globalStateData.curStepId}
+            Current Phase: {room.gameData.globalStateData.curStageId}
           </Typography>
           <Typography variant="body2" color="text.secondary">
             Players: {room.gameData.players.map((p) => p.name).join(', ')}

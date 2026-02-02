@@ -21,6 +21,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Paper,
   Table,
   TableBody,
   TableCell,
@@ -29,9 +30,11 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import { Chat } from '@mui/icons-material';
 import { useWithEducationalData } from '../../store/slices/educational-data/use-with-educational-data';
 import { LoadStatus } from '../../types';
 import { ClassMembershipStatus } from '../../store/slices/educational-data/types';
+import { Room } from '../../store/slices/game';
 
 export default function TeacherSelectedClassPage(): JSX.Element {
   const { classId } = useParams<{ classId: string }>();
@@ -50,6 +53,7 @@ export default function TeacherSelectedClassPage(): JSX.Element {
   const [className, setClassName] = React.useState('');
   const [classDescription, setClassDescription] = React.useState('');
   const [updating, setUpdating] = React.useState(false);
+  const [chatDialogRoom, setChatDialogRoom] = React.useState<Room | null>(null);
 
   const classroom = educationalData.classes.find((c) => c._id === classId);
   const classRooms = educationalData.rooms.filter((r) => r.classId === classId);
@@ -106,6 +110,14 @@ export default function TeacherSelectedClassPage(): JSX.Element {
     } finally {
       setUpdating(false);
     }
+  };
+
+  const handleOpenChatDialog = (room: Room) => {
+    setChatDialogRoom(room);
+  };
+
+  const handleCloseChatDialog = () => {
+    setChatDialogRoom(null);
   };
 
   if (educationalData.hydrationLoadStatus.status === LoadStatus.IN_PROGRESS) {
@@ -235,9 +247,21 @@ export default function TeacherSelectedClassPage(): JSX.Element {
               </Typography>
             ) : (
               classRooms.map((room) => {
-                const roomStudents = room.gameData.players.filter((p) =>
+                // Active students currently in the room
+                const activeRoomStudents = room.gameData.players.filter((p) =>
                   students.some((s) => s._id === p._id)
                 );
+
+                // All students who have ever sent messages in the room
+                const allRoomStudentIds = new Set(
+                  room.gameData.chat
+                    .map((msg) => msg.senderId)
+                    .filter((senderId) =>
+                      students.some((s) => s._id === senderId)
+                    )
+                );
+                const totalStudents = allRoomStudentIds.size;
+                const activeStudents = activeRoomStudents.length;
 
                 return (
                   <Card
@@ -246,48 +270,48 @@ export default function TeacherSelectedClassPage(): JSX.Element {
                     style={{ marginBottom: 15 }}
                   >
                     <CardContent>
-                      <Typography variant="h6">{room.name}</Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Game: {room.gameData.gameId}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        style={{ marginBottom: 10 }}
+                      <div
+                        className="row"
+                        style={{
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                        }}
                       >
-                        {roomStudents.length} students
-                      </Typography>
-
-                      {roomStudents.length > 0 && (
-                        <Table size="small">
-                          <TableHead>
-                            <TableRow>
-                              <TableCell>Student Name</TableCell>
-                              <TableCell>Messages Sent</TableCell>
-                              <TableCell>Join Time</TableCell>
-                            </TableRow>
-                          </TableHead>
-                          <TableBody>
-                            {roomStudents.map((student) => {
-                              const messageCount = room.gameData.chat.filter(
-                                (msg) => msg.senderId === student._id
-                              ).length;
-
-                              return (
-                                <TableRow key={student._id}>
-                                  <TableCell>{student.name}</TableCell>
-                                  <TableCell>{messageCount}</TableCell>
-                                  <TableCell>
-                                    {new Date(
-                                      student.lastLoginAt
-                                    ).toLocaleString()}
-                                  </TableCell>
-                                </TableRow>
-                              );
-                            })}
-                          </TableBody>
-                        </Table>
-                      )}
+                        <div style={{ flex: 1 }}>
+                          <Typography variant="h6">{room.name}</Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Game: {room.gameData.gameId}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Current Phase:{' '}
+                            {room.gameData.globalStateData.curStageId || 'N/A'}
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            style={{ marginTop: 5 }}
+                          >
+                            {totalStudents} students ({activeStudents} active) |{' '}
+                            {room.gameData.chat.length} messages
+                          </Typography>
+                        </div>
+                        <div
+                          style={{
+                            display: 'flex',
+                            gap: 10,
+                            alignItems: 'center',
+                          }}
+                        >
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            startIcon={<Chat />}
+                            onClick={() => handleOpenChatDialog(room)}
+                          >
+                            View Chat
+                          </Button>
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
                 );
@@ -407,6 +431,84 @@ export default function TeacherSelectedClassPage(): JSX.Element {
           >
             {updating ? 'Updating...' : 'Update'}
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Chat Log Dialog */}
+      <Dialog
+        open={Boolean(chatDialogRoom)}
+        onClose={handleCloseChatDialog}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>
+          Chat Log - {chatDialogRoom?.name}
+          <Typography variant="body2" color="text.secondary">
+            {chatDialogRoom?.gameData.chat.length || 0} messages
+          </Typography>
+        </DialogTitle>
+        <DialogContent dividers>
+          {chatDialogRoom && chatDialogRoom.gameData.chat.length === 0 ? (
+            <Typography variant="body2" color="text.secondary">
+              No messages yet
+            </Typography>
+          ) : (
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 10,
+                maxHeight: 500,
+                overflowY: 'auto',
+              }}
+            >
+              {chatDialogRoom?.gameData.chat.map((msg, index) => {
+                const sender = chatDialogRoom.gameData.players.find(
+                  (p) => p._id === msg.senderId
+                );
+                const isSystem = msg.sender === 'SYSTEM';
+
+                return (
+                  <Paper
+                    key={msg.id || index}
+                    elevation={1}
+                    style={{
+                      padding: 10,
+                      backgroundColor: isSystem ? '#f5f5f5' : '#fff',
+                    }}
+                  >
+                    <div
+                      className="row"
+                      style={{
+                        justifyContent: 'space-between',
+                        marginBottom: 5,
+                      }}
+                    >
+                      <Typography variant="body2" fontWeight="bold">
+                        {isSystem
+                          ? 'System'
+                          : sender?.name || msg.senderName || 'Unknown'}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {msg.sender}
+                      </Typography>
+                    </div>
+                    <Typography variant="body1">{msg.message}</Typography>
+                    {msg.mcqChoices && msg.mcqChoices.length > 0 && (
+                      <div style={{ marginTop: 5 }}>
+                        <Typography variant="caption" color="text.secondary">
+                          Choices: {msg.mcqChoices.join(', ')}
+                        </Typography>
+                      </div>
+                    )}
+                  </Paper>
+                );
+              })}
+            </div>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseChatDialog}>Close</Button>
         </DialogActions>
       </Dialog>
     </div>
