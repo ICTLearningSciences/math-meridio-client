@@ -12,6 +12,7 @@ import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { clearPlayer } from '../store/slices/player';
 import { useWithGame } from '../store/slices/game/use-with-game-state';
 import AvatarSprite from './avatar-sprite';
+import { useWithLogin } from '../store/slices/player/use-with-login';
 
 export function Header() {
   const dispatch = useAppDispatch();
@@ -19,7 +20,7 @@ export function Header() {
   const { room } = useAppSelector((state) => state.gameData);
   const [name, setName] = React.useState<string>(room?.name || '');
   const [isEditing, setIsEditing] = React.useState<boolean>(false);
-
+  const { logout } = useWithLogin();
   const { pathname } = useLocation();
   const { leaveRoom, renameRoom } = useWithGame();
   const navigate = useNavigate();
@@ -89,7 +90,10 @@ export function Header() {
             variant="outlined"
             disabled={!player}
             style={{ height: 'fit-content', color: 'white', marginRight: 5 }}
-            onClick={() => dispatch(clearPlayer())}
+            onClick={() => {
+              dispatch(clearPlayer());
+              logout();
+            }}
           >
             Logout
           </Button>
