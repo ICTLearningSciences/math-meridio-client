@@ -6,8 +6,12 @@ The full terms of this copyright and license should always be found in the root 
 */
 import { ClassMembership, ClassMembershipStatus, Classroom, FetchEducationalDataHydrationResponse } from "../../src/store/slices/educational-data/types";
 
-export interface FetchEducationalDataHydrationResponseGql {
+export interface FetchStudentEducationalDataHydrationResponseGql {
     fetchStudentDataHydration: FetchEducationalDataHydrationResponse;
+}
+
+export interface FetchInstructorEducationalDataHydrationResponseGql {
+    fetchInstructorDataHydration: FetchEducationalDataHydrationResponse;
 }
 
 export function defaultClassroomData(classroomOwnerId: string): Classroom {
@@ -31,9 +35,20 @@ export function defaultClassroomMembershipData(classroomId: string, userId: stri
 }
 
 
-export function fetchEducationalDataHydrationResponse(): FetchEducationalDataHydrationResponseGql {
+export function fetchStudentDataHydrationResponse(): FetchStudentEducationalDataHydrationResponseGql {
     return {
         fetchStudentDataHydration: {
+            classes: [],
+            rooms: [],
+            students: [],
+            classMemberships: [],
+        }
+    }
+}
+
+export function fetchInstructorDataHydrationResponse(): FetchInstructorEducationalDataHydrationResponseGql {
+    return {
+        fetchInstructorDataHydration: {
             classes: [],
             rooms: [],
             students: [],

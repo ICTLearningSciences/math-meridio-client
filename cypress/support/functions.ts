@@ -8,7 +8,7 @@ import { ACCESS_TOKEN_KEY } from "../../src/store/local-storage";
 import { fetchConfigResponse } from "../fixtures/fetch-config";
 import { fetchRoomsResponse } from "../fixtures/fetch-rooms";
 import { fetchDiscussionStagesResponse } from "../fixtures/fetch-discussion-stages";
-import { fetchEducationalDataHydrationResponse } from "../fixtures/fetch-educational-data-hydration";
+import { fetchInstructorDataHydrationResponse, fetchStudentDataHydrationResponse } from "../fixtures/fetch-educational-data-hydration";
 import { refreshAccessTokenResponse } from "../fixtures/refresh-access-token";
 import { EducationalRole, UserRole } from "../fixtures/types";
 
@@ -146,7 +146,8 @@ export function cyMockDefault(
     ),
     mockGQL('FetchDiscussionStages', fetchDiscussionStagesResponse),
     mockGQL('FetchConfig', fetchConfigResponse),
-    mockGQL('FetchStudentDataHydration', fetchEducationalDataHydrationResponse()),
+    mockGQL('FetchStudentDataHydration', fetchStudentDataHydrationResponse()),
+    mockGQL('FetchInstructorDataHydration', fetchInstructorDataHydrationResponse()),
     mockGQL('FetchRooms', fetchRoomsResponse()),
   ]);
 }
