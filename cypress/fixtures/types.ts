@@ -4,8 +4,6 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { v4 as uuidv4 } from 'uuid';
-
 export enum PromptOutputTypes {
   TEXT = 'TEXT',
   JSON = 'JSON',
@@ -38,22 +36,6 @@ export interface FlowItemGQL {
   clientId: string;
   name: string;
   steps: DiscussionStageStepGQL[];
-}
-export function defaultDicussionStage(): DiscussionStage {
-  return {
-    _id: uuidv4(),
-    clientId: uuidv4(),
-    stageType: 'discussion',
-    title: 'New Discussion Stage',
-    description: '',
-    flowsList: [
-      {
-        clientId: uuidv4(),
-        name: 'Flow 1',
-        steps: [],
-      },
-    ],
-  };
 }
 
 export interface SimulationStage extends IStage {
@@ -190,3 +172,74 @@ export interface ConditionalActivityStep extends StageBuilderStep {
   stepType: DiscussionStageStepType.CONDITIONAL;
   conditionals: LogicStepConditional[];
 }
+
+export enum AiServiceNames {
+  AZURE = 'AZURE_OPEN_AI',
+  OPEN_AI = 'OPEN_AI',
+  GEMINI = 'GEMINI',
+  ASK_SAGE = 'ASK_SAGE',
+  ANTHROPIC = 'ANTHROPIC',
+  CAMO_GPT = 'CAMO_GPT',
+}
+
+export interface ServiceModelInfo {
+  name: string;
+  maxTokens: number;
+  supportsWebSearch: boolean;
+  onlyAdminUse?: boolean;
+  disabled?: boolean;
+}
+
+
+export interface Config {
+  aiServiceModelConfigs: AiServiceModelConfigs[];
+}
+
+export type AiServiceModelConfigs = {
+  serviceName: AiServiceNames;
+  modelList: ServiceModelInfo[];
+};
+
+export interface Avatar {
+    type: string;
+    id: string;
+    description: string;
+    variant?: number;
+    variants?: string[];
+  }
+  
+  export interface Player {
+    _id: string;
+    googleId: string;
+    email: string;
+    userRole: UserRole;
+    loginService: LoginService;
+    lastLoginAt: Date;
+    educationalRole?: EducationalRole;
+    clientId: string;
+    name: string;
+    description: string;
+    avatar: Avatar[];
+  }
+  
+  export enum UserRole {
+    USER = 'USER',
+    CONTENT_MANAGER = 'CONTENT_MANAGER',
+    ADMIN = 'ADMIN',
+  }
+  
+  export enum EducationalRole {
+    STUDENT = 'STUDENT',
+    INSTRUCTOR = 'INSTRUCTOR',
+  }
+  
+  export interface UserAccessToken {
+    user: Player;
+    accessToken: string;
+    expirationDate: string;
+  }
+  
+  export enum LoginService {
+    GOOGLE = 'GOOGLE',
+  }
+  

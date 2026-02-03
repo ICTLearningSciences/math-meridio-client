@@ -4,6 +4,14 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
+import { ACCESS_TOKEN_KEY } from "../../src/store/local-storage";
+import { fetchConfigResponse } from "../fixtures/fetch-config";
+import { fetchRoomsResponse } from "../fixtures/fetch-rooms";
+import { fetchDiscussionStagesResponse } from "../fixtures/fetch-discussion-stages";
+import { fetchEducationalDataHydrationResponse } from "../fixtures/fetch-educational-data-hydration";
+import { refreshAccessTokenResponse } from "../fixtures/refresh-access-token";
+import { EducationalRole, UserRole } from "../fixtures/types";
+
 interface StaticResponse {
   /**
    * Serve a fixture as the response body.
@@ -113,16 +121,34 @@ export function cyInterceptGraphQL(cy: CypressGlobal, mocks: MockGraphQLQuery[])
   });
 }
 
+export function cyMockLogin(cy: CypressGlobal): void {
+  cy.setLocalStorage(ACCESS_TOKEN_KEY, 'fake-access-token');
+  cy.setCookie('refreshTokenDev', 'fake-refresh-token', { secure: true });
+}
+
 export function cyMockDefault(
   cy: CypressGlobal,
   args: {
+    userRole?: UserRole;  
+    userEducationalRole?: EducationalRole;
     gqlQueries?: MockGraphQLQuery[];
   } = {}
 ) {
   const gqlQueries = args?.gqlQueries || [];
-  cy.clearLocalStorage();
   cySetup(cy);
-  cyInterceptGraphQL(cy, [...gqlQueries]);
+  cyMockLogin(cy);
+  cyInterceptGraphQL(cy, [
+    ...gqlQueries,
+    // Defaults
+    mockGQL(
+      'RefreshAccessToken',
+      refreshAccessTokenResponse(args.userRole || UserRole.USER, args.userEducationalRole || EducationalRole.STUDENT)
+    ),
+    mockGQL('FetchDiscussionStages', fetchDiscussionStagesResponse),
+    mockGQL('FetchConfig', fetchConfigResponse),
+    mockGQL('FetchStudentDataHydration', fetchEducationalDataHydrationResponse()),
+    mockGQL('FetchRooms', fetchRoomsResponse()),
+  ]);
 }
 
 interface MockedResData<T> {

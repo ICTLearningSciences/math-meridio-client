@@ -12,15 +12,15 @@ import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { clearPlayer } from '../store/slices/player';
 import { useWithGame } from '../store/slices/game/use-with-game-state';
 import AvatarSprite from './avatar-sprite';
-import { useWithLogin } from '../store/slices/player/use-with-login';
+import { UseWithLogin } from '../store/slices/player/use-with-login';
 
-export function Header() {
+export function Header(props: { useLogin: UseWithLogin }) {
   const dispatch = useAppDispatch();
   const { player } = useAppSelector((state) => state.playerData);
   const { room } = useAppSelector((state) => state.gameData);
   const [name, setName] = React.useState<string>(room?.name || '');
   const [isEditing, setIsEditing] = React.useState<boolean>(false);
-  const { logout } = useWithLogin();
+  const { logout } = props.useLogin;
   const { pathname } = useLocation();
   const { leaveRoom, renameRoom } = useWithGame();
   const navigate = useNavigate();

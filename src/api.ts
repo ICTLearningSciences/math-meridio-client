@@ -9,6 +9,7 @@ import { AiServicesJobStatusResponseTypes } from './ai-services/ai-service-types
 import { execGql, execHttp } from './api-helpers';
 import {
   DiscussionStage,
+  DiscussionStageGQL,
   DiscussionStageStepType,
   PromptStageStepGql,
 } from './components/discussion-stage-builder/types';
@@ -246,12 +247,12 @@ export const fullRoomQueryData = `
 
 export function convertDiscussionStageToGQl(
   stage: DiscussionStage
-): DiscussionStage {
-  const copy: DiscussionStage = JSON.parse(JSON.stringify(stage));
+): DiscussionStageGQL {
+  const copy: DiscussionStageGQL = JSON.parse(JSON.stringify(stage));
   copy.flowsList.forEach((flow) => {
     flow.steps.forEach((step) => {
       if (step.stepType === DiscussionStageStepType.PROMPT) {
-        const _step: PromptStageStepGql = step as PromptStageStepGql;
+        const _step = step as PromptStageStepGql;
         if (_step.jsonResponseData) {
           _step.jsonResponseData = JSON.stringify(_step.jsonResponseData);
         }
@@ -262,13 +263,13 @@ export function convertDiscussionStageToGQl(
 }
 
 export function convertGqlToDiscussionStage(
-  stage: DiscussionStage
+  stage: DiscussionStageGQL
 ): DiscussionStage {
   const copy: DiscussionStage = JSON.parse(JSON.stringify(stage));
   copy.flowsList.forEach((flow) => {
     flow.steps.forEach((step) => {
       if (step.stepType === DiscussionStageStepType.PROMPT) {
-        const _step: PromptStageStepGql = step as PromptStageStepGql;
+        const _step = step as PromptStageStepGql;
         if (typeof _step.jsonResponseData === 'string') {
           _step.jsonResponseData = JSON.parse(_step.jsonResponseData as string);
         }
@@ -282,7 +283,7 @@ export async function addOrUpdateDiscussionStage(
   stage: DiscussionStage,
   password: string
 ): Promise<DiscussionStage> {
-  const res = await execGql<DiscussionStage>(
+  const res = await execGql<DiscussionStageGQL>(
     {
       query: `mutation AddOrUpdateDiscussionStage($stage: DiscussionStageInputType!) {
         addOrUpdateDiscussionStage(stage: $stage) {
@@ -302,10 +303,10 @@ export async function addOrUpdateDiscussionStage(
 }
 
 export async function fetchDiscussionStages(): Promise<DiscussionStage[]> {
-  const res = await execGql<DiscussionStage[]>(
+  const res = await execGql<DiscussionStageGQL[]>(
     {
       query: `query FetchDiscussionStages{
-        fetchDiscussionStages { 
+        fetchDiscussionStages {
           ${fullDiscussionStageQueryData}
         }
       }`,
