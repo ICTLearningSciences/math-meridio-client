@@ -357,7 +357,11 @@ function GamePage(): JSX.Element {
   if (!gameStateHandler || !game) {
     return (
       <div className="root center-div">
-        <Button onClick={launchGame} disabled={Boolean(gameStateHandler)}>
+        <Button
+          onClick={launchGame}
+          disabled={Boolean(gameStateHandler)}
+          data-cy="begin-game-button"
+        >
           Begin
         </Button>
       </div>

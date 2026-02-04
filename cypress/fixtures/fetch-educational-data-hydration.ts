@@ -14,9 +14,9 @@ export interface FetchInstructorEducationalDataHydrationResponseGql {
     fetchInstructorDataHydration: FetchEducationalDataHydrationResponse;
 }
 
-export function defaultClassroomData(classroomOwnerId: string): Classroom {
+export function defaultClassroomData(classroomOwnerId: string, classroomId: string): Classroom {
     return {
-        _id: "my-classroom-id",
+        _id: classroomId,
         name: "My Classroom",
         description: "My Classroom Description",
         createdAt: new Date(),

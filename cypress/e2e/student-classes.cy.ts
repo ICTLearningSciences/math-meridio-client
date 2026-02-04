@@ -4,11 +4,16 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { cyMockDefault } from "../support/functions";
+import { cyMockDefault, mockGQL } from "../support/functions";
 import { EducationalRole } from "../fixtures/types";
+import { joinClassroomResponse } from "../fixtures/join-class";
+import { defaultUser } from "../fixtures/refresh-access-token";
+import { createAndJoinRoomResponse, defaultRoomData } from "../fixtures/create-and-join-room";
+import { updateRoomResponse } from "../fixtures/update-room";
+import { fetchRoomResponse } from "../fixtures/fetch-room";
 
 describe("Student classes screen", () => {
-
+  const user = defaultUser;
   it("Shows students classes screen", () => {
     cyMockDefault(cy,
       {
@@ -17,6 +22,45 @@ describe("Student classes screen", () => {
     cy.visit("/");
     cy.contains("My Classes")
     cy.contains("You haven't joined any classes yet.")
+  })
+
+  it("student can join a class", () => {
+    cyMockDefault(cy,
+      {
+        userEducationalRole: EducationalRole.STUDENT,
+        gqlQueries: [
+          mockGQL('JoinClassroom', joinClassroomResponse(user, "test-class-id")),
+        ]
+      });
+    cy.visit("/");
+    cy.contains("My Classes")
+    cy.contains("You haven't joined any classes yet.")
+
+    cy.get("[data-cy='join-class-invite-code-input']").type("test-invite-code");
+    cy.get("[data-cy='join-class-join-button']").click();
+    cy.contains("New Class For Testing")
+  })
+
+  it.only("student can create a game room in a classroom", ()=>{
+    cyMockDefault(cy,
+      {
+        userEducationalRole: EducationalRole.STUDENT,
+        gqlQueries: [
+          mockGQL('JoinClassroom', joinClassroomResponse(user, "test-class-id")),
+          mockGQL('CreateAndJoinRoom', createAndJoinRoomResponse(user, "test-class-id", "basketball")),
+          mockGQL('UpdateRoom', updateRoomResponse(defaultRoomData("test-class-id", user, "basketball"))),
+          mockGQL('FetchRoom', fetchRoomResponse(defaultRoomData("test-class-id", user, "basketball"))),
+        ]
+      });
+    cy.visit("/");
+    cy.get("[data-cy='join-class-invite-code-input']").type("test-invite-code");
+    cy.get("[data-cy='join-class-join-button']").click();
+    cy.get("[data-cy='student-classroom-card-test-class-id']").click();
+    cy.contains("My Classroom")
+    cy.get("[data-cy='game-card-basketball']").click();
+    cy.get("[data-cy='create-game-room-button']").click();
+    cy.get("[data-cy='begin-game-button']").click();
+    cy.contains("Simulation")
   })
 
 })

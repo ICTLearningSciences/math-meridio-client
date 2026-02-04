@@ -16,7 +16,7 @@ import {
 import { GenericLlmRequest } from './types';
 import { Player } from './store/slices/player/types';
 import { ChatMessage, GameData, Room } from './store/slices/game';
-import { extractErrorMessageFromError, requireEnv } from './helpers';
+import { extractErrorMessageFromError } from './helpers';
 import { Config } from './store/slices/config';
 import { userDataQuery } from './store/slices/player/api';
 
@@ -571,7 +571,8 @@ export async function sendMessage(
 }
 
 export async function fetchAbeConfig(): Promise<Config> {
-  const abeEndpoint = requireEnv('REACT_APP_ABE_GQL_ENDPOINT');
+  const abeEndpoint =
+    process.env.REACT_APP_ABE_GQL_ENDPOINT || '/graphql/graphql';
   const data = await execGql<Config>(
     {
       query: `

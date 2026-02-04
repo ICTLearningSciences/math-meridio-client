@@ -20,20 +20,19 @@ import {
   CircularProgress,
   Typography,
 } from '@mui/material';
-import { useWithEducationalData } from '../../store/slices/educational-data/use-with-educational-data';
-import { useAppSelector } from '../../store/hooks';
-import { LoadStatus } from '../../types';
-import { GAMES, Game } from '../../game/types';
+import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
+import { useAppSelector } from '../../../store/hooks';
+import { LoadStatus } from '../../../types';
+import { GAMES, Game } from '../../../game/types';
+import { StudentRoomCard } from './student-room-card';
 
 export default function StudentSelectedClassPage(): JSX.Element {
   const navigate = useNavigate();
   const { classId } = useParams<{ classId: string }>();
-  const { createAndJoinGameRoom, joinGameRoom, educationalData } =
-    useWithEducationalData();
+  const { createAndJoinGameRoom, educationalData } = useWithEducationalData();
   const { player } = useAppSelector((state) => state.playerData);
   const [selectedGame, setSelectedGame] = React.useState<Game>();
   const [creating, setCreating] = React.useState(false);
-  const [joining, setJoining] = React.useState<string>();
 
   const classroom = educationalData.classes.find((c) => c._id === classId);
   const classRooms = educationalData.rooms.filter((r) => r.classId === classId);
@@ -64,19 +63,6 @@ export default function StudentSelectedClassPage(): JSX.Element {
     }
   };
 
-  const handleJoinRoom = async (roomId: string) => {
-    if (!player) return;
-    setJoining(roomId);
-    try {
-      await joinGameRoom(roomId, player._id);
-      navigate(`/classes/${classId}/room/${roomId}`);
-    } catch (err) {
-      console.error('Failed to join room', err);
-    } finally {
-      setJoining(undefined);
-    }
-  };
-
   if (educationalData.hydrationLoadStatus.status === LoadStatus.IN_PROGRESS) {
     return (
       <div className="root center-div">
@@ -94,6 +80,24 @@ export default function StudentSelectedClassPage(): JSX.Element {
       </div>
     );
   }
+
+  if (!player)
+    return (
+      <div className="root center-div">
+        <Typography variant="h6" color="error">
+          Player not found
+        </Typography>
+      </div>
+    );
+
+  if (!classId)
+    return (
+      <div className="root center-div">
+        <Typography variant="h6" color="error">
+          Class ID not found
+        </Typography>
+      </div>
+    );
 
   return (
     <div
@@ -128,6 +132,7 @@ export default function StudentSelectedClassPage(): JSX.Element {
         <div className="row list center-div">
           {GAMES.map((game) => (
             <Card
+              data-cy={`game-card-${game.id}`}
               key={game.id}
               style={{
                 width: 300,
@@ -166,6 +171,7 @@ export default function StudentSelectedClassPage(): JSX.Element {
           </Typography>
 
           <Button
+            data-cy="create-game-room-button"
             variant="contained"
             color="primary"
             onClick={handleCreateRoom}
@@ -181,56 +187,13 @@ export default function StudentSelectedClassPage(): JSX.Element {
             </Typography>
           ) : (
             gameRooms.map((room) => {
-              const isInRoom = room.gameData.players.some(
-                (p) => p._id === player?._id
-              );
-              const ownerPresent = room.gameData.players.some(
-                (p) => p._id === room.gameData.globalStateData.roomOwnerId
-              );
-
               return (
-                <Card key={room._id} style={{ width: '100%' }}>
-                  <CardContent>
-                    <div
-                      className="row"
-                      style={{
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <div>
-                        <Typography variant="h6">{room.name}</Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {room.gameData.players.length}{' '}
-                          {room.gameData.players.length === 1
-                            ? 'player'
-                            : 'players'}
-                        </Typography>
-                        {!ownerPresent && (
-                          <Typography
-                            variant="body2"
-                            color="warning.main"
-                            style={{ marginTop: 5 }}
-                          >
-                            Owner not present
-                          </Typography>
-                        )}
-                      </div>
-                      <Button
-                        variant={isInRoom ? 'contained' : 'outlined'}
-                        color="primary"
-                        onClick={() => handleJoinRoom(room._id)}
-                        disabled={joining === room._id}
-                      >
-                        {joining === room._id
-                          ? 'Joining...'
-                          : isInRoom
-                          ? 'Rejoin'
-                          : 'Join'}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                <StudentRoomCard
+                  key={room._id}
+                  room={room}
+                  player={player}
+                  classId={classId}
+                />
               );
             })
           )}

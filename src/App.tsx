@@ -6,7 +6,7 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React from 'react';
 import { Provider } from 'react-redux';
-import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+import { RouterProvider, createBrowserRouter, Outlet } from 'react-router-dom';
 
 import { Header } from './components/header';
 import AvatarPage from './components/avatar-page';
@@ -23,136 +23,88 @@ import {
 
 import { store } from './store';
 import { useWithHydrateRedux } from './store/use-with-hydrate-redux';
-import {
-  UseWithLogin,
-  useWithLogin,
-} from './store/slices/player/use-with-login';
+import { useWithLogin } from './store/slices/player/use-with-login';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
+// Layout component that provides useLogin to all routes
+function RootLayout() {
+  const useLogin = useWithLogin();
+
+  return (
+    <>
+      <Header useLogin={useLogin} />
+      <div className="page">
+        <Outlet />
+      </div>
+    </>
+  );
+}
+
+// Wrapper for GoogleLoginPage to provide useLogin
+function GoogleLoginPageWrapper() {
+  const useLogin = useWithLogin();
+  return <GoogleLoginPage useLogin={useLogin} />;
+}
+
 // Create router OUTSIDE the component so it's only created once
-const router = (useLogin: UseWithLogin) =>
-  createBrowserRouter([
-    {
-      path: '/',
-      element: (
-        <>
-          <Header useLogin={useLogin} />
-          <div className="page">
-            <RoomPage />
-          </div>
-        </>
-      ),
-    },
-    {
-      path: '/google-login',
-      element: (
-        <>
-          <Header useLogin={useLogin} />
-          <div className="page">
-            <GoogleLoginPage useLogin={useLogin} />
-          </div>
-        </>
-      ),
-    },
-    {
-      path: '/avatar-creator',
-      element: (
-        <>
-          <Header useLogin={useLogin} />
-          <div className="page">
-            <AvatarPage />
-          </div>
-        </>
-      ),
-    },
-    {
-      path: '/classes',
-      element: (
-        <>
-          <Header useLogin={useLogin} />
-          <div className="page">
-            <ClassesPage />
-          </div>
-        </>
-      ),
-    },
-    {
-      path: '/classes/:classId',
-      element: (
-        <>
-          <Header useLogin={useLogin} />
-          <div className="page">
-            <SelectedClassPage />
-          </div>
-        </>
-      ),
-    },
-    {
-      path: '/classes/:classId/room/:roomId',
-      element: (
-        <>
-          <Header useLogin={useLogin} />
-          <div className="page">
-            <RoomViewPage />
-          </div>
-        </>
-      ),
-    },
-    {
-      path: '/game',
-      element: (
-        <>
-          <Header useLogin={useLogin} />
-          <div className="page">
-            <GamePage />
-          </div>
-        </>
-      ),
-    },
-    {
-      path: '/game/:roomId',
-      element: (
-        <>
-          <Header useLogin={useLogin} />
-          <div className="page">
-            <GamePage />
-          </div>
-        </>
-      ),
-    },
-    {
-      path: '/discussion-builder',
-      element: (
-        <>
-          <Header useLogin={useLogin} />
-          <div className="page">
-            <StageBuilderPage
-              goToStage={() => {
-                console.log('');
-              }}
-            />
-          </div>
-        </>
-      ),
-    },
-    // test stuff only remove later
-    {
-      path: '/phaser',
-      element: (
-        <>
-          <Header useLogin={useLogin} />
-          <div className="page">
-            <PhaserTestPage />
-          </div>
-        </>
-      ),
-    },
-  ]);
+const router = createBrowserRouter([
+  {
+    element: <RootLayout />,
+    children: [
+      {
+        path: '/',
+        element: <RoomPage />,
+      },
+      {
+        path: '/google-login',
+        element: <GoogleLoginPageWrapper />,
+      },
+      {
+        path: '/avatar-creator',
+        element: <AvatarPage />,
+      },
+      {
+        path: '/classes',
+        element: <ClassesPage />,
+      },
+      {
+        path: '/classes/:classId',
+        element: <SelectedClassPage />,
+      },
+      {
+        path: '/classes/:classId/room/:roomId',
+        element: <RoomViewPage />,
+      },
+      {
+        path: '/game',
+        element: <GamePage />,
+      },
+      {
+        path: '/game/:roomId',
+        element: <GamePage />,
+      },
+      {
+        path: '/discussion-builder',
+        element: (
+          <StageBuilderPage
+            goToStage={() => {
+              console.log('');
+            }}
+          />
+        ),
+      },
+      // test stuff only remove later
+      {
+        path: '/phaser',
+        element: <PhaserTestPage />,
+      },
+    ],
+  },
+]);
 
 function MainApp() {
-  useWithHydrateRedux(); // NOTE: make sure to have this at the earliest point w/ store
-  const useLogin = useWithLogin();
-  return <RouterProvider router={router(useLogin)} />;
+  useWithHydrateRedux();
+  return <RouterProvider router={router} />;
 }
 
 function App(): JSX.Element {

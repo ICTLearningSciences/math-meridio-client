@@ -11,23 +11,14 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import {
-  Button,
-  Card,
-  CardActionArea,
-  CardContent,
-  CircularProgress,
-  TextField,
-  Typography,
-} from '@mui/material';
-import { useWithEducationalData } from '../../store/slices/educational-data/use-with-educational-data';
-import { LoadStatus } from '../../types';
-import { ClassMembershipStatus } from '../../store/slices/educational-data/types';
-import { extractErrorMessageFromError } from '../../helpers';
+import { Button, CircularProgress, TextField, Typography } from '@mui/material';
+import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
+import { LoadStatus } from '../../../types';
+import { ClassMembershipStatus } from '../../../store/slices/educational-data/types';
+import { extractErrorMessageFromError } from '../../../helpers';
+import { StudentClassroomCard } from './student-classroom-card';
 
 export default function StudentLandingPage(): JSX.Element {
-  const navigate = useNavigate();
   const { joinClassroom, educationalData } = useWithEducationalData();
   const [inviteCode, setInviteCode] = React.useState('');
   const [joining, setJoining] = React.useState(false);
@@ -55,10 +46,6 @@ export default function StudentLandingPage(): JSX.Element {
     } finally {
       setJoining(false);
     }
-  };
-
-  const handleClassClick = (classId: string) => {
-    navigate(`/classes/${classId}`);
   };
 
   if (educationalData.hydrationLoadStatus.status === LoadStatus.IN_PROGRESS) {
@@ -92,6 +79,7 @@ export default function StudentLandingPage(): JSX.Element {
         </Typography>
         <div className="row" style={{ gap: 10, alignItems: 'flex-start' }}>
           <TextField
+            data-cy="join-class-invite-code-input"
             fullWidth
             label="Class Invite Code"
             value={inviteCode}
@@ -102,6 +90,7 @@ export default function StudentLandingPage(): JSX.Element {
             disabled={joining}
           />
           <Button
+            data-cy="join-class-join-button"
             variant="contained"
             color="primary"
             onClick={handleJoinClass}
@@ -121,50 +110,12 @@ export default function StudentLandingPage(): JSX.Element {
           </Typography>
         ) : (
           myClasses.map((classroom) => {
-            const studentCount = educationalData.classMemberships.filter(
-              (cm) =>
-                cm.classId === classroom._id &&
-                cm.status === ClassMembershipStatus.MEMBER
-            ).length;
-
             return (
-              <Card
+              <StudentClassroomCard
                 key={classroom._id}
-                style={{
-                  width: '100%',
-                }}
-              >
-                <CardActionArea onClick={() => handleClassClick(classroom._id)}>
-                  <CardContent>
-                    <div
-                      className="row"
-                      style={{
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <div>
-                        <Typography variant="h6">{classroom.name}</Typography>
-                        {classroom.description && (
-                          <Typography variant="body2" color="text.secondary">
-                            {classroom.description}
-                          </Typography>
-                        )}
-                      </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <Typography variant="body2" color="text.secondary">
-                          {studentCount}{' '}
-                          {studentCount === 1 ? 'student' : 'students'}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Created:{' '}
-                          {new Date(classroom.createdAt).toLocaleDateString()}
-                        </Typography>
-                      </div>
-                    </div>
-                  </CardContent>
-                </CardActionArea>
-              </Card>
+                classroom={classroom}
+                classMemberships={myClassMemberships}
+              />
             );
           })
         )}

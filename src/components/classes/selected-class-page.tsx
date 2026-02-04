@@ -13,7 +13,7 @@ The full terms of this copyright and license should always be found in the root 
 import React from 'react';
 import { useAppSelector } from '../../store/hooks';
 import { EducationalRole } from '../../store/slices/player/types';
-import StudentSelectedClassPage from './student-selected-class-page';
+import StudentSelectedClassPage from './student-view/student-selected-class-page';
 import TeacherSelectedClassPage from './teacher-selected-class-page';
 import withAuthorizationOnly from '../../wrap-with-authorization-only';
 
