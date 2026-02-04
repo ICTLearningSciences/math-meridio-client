@@ -82,8 +82,9 @@ const useStyles = makeStyles()(() => ({
 
 export default function ChatThread(props: {
   responsePending: boolean;
+  waitingForPlayers: string[];
 }): JSX.Element {
-  const { responsePending } = props;
+  const { responsePending, waitingForPlayers } = props;
   const { classes } = useStyles();
   const { player } = useAppSelector((state) => state.playerData);
   const { roomId } = useParams<{ roomId: string }>();
@@ -92,8 +93,10 @@ export default function ChatThread(props: {
 
   const messages = room?.gameData.chat || [];
   const players = room?.gameData.players;
-
-  console.log('ChatThread: messages', messages);
+  const playersBeingWaitedFor = players?.filter((p) =>
+    waitingForPlayers.includes(p._id)
+  );
+  console.log('ChatThread: playersBeingWaitedFor', playersBeingWaitedFor);
 
   enum PlayerColors {
     Blue = 'info.main',
@@ -329,6 +332,21 @@ export default function ChatThread(props: {
                 />
               </Typography>
             </Paper>
+          </Stack>
+        )}
+        {playersBeingWaitedFor && playersBeingWaitedFor.length > 0 && (
+          <Stack
+            direction="column"
+            key={`waiting-for-players`}
+            sx={{ p: 1 }}
+            spacing={2}
+          >
+            <b>Waiting for responses from:</b>
+            {playersBeingWaitedFor.map((p) => (
+              <Typography key={`waiting-for-player-${p._id}`} color={'black'}>
+                {p.name}
+              </Typography>
+            ))}
           </Stack>
         )}
       </Stack>

@@ -153,6 +153,7 @@ function GamePage(): JSX.Element {
     responsePending,
     ownerIsPresent,
     launchGame,
+    waitingForPlayers,
   } = useWithGame();
   const navigate = useNavigate();
   const { windowHeight, windowWidth } = useWithWindow();
@@ -461,7 +462,10 @@ function GamePage(): JSX.Element {
             padding: 10,
           }}
         >
-          <ChatThread responsePending={responsePending} />
+          <ChatThread
+            responsePending={responsePending}
+            waitingForPlayers={waitingForPlayers}
+          />
           <ChatForm />
         </Stack>
       </GridLayout>

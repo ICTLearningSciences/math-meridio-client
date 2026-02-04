@@ -174,4 +174,14 @@ describe("Chat room screen", () => {
         cy.contains("It looks like you did not provide a proper response to my question")
     })
 
+    // TODO:
+    // Have the current step set to a request user input step with waitForAllStudentResponses
+    // ENSURE it waits until a message comes in from all students
+    
+    describe("waitForAllStudentResponses is true", () => {
+        it("the game will wait for all students to respond before progressing to the next step")
+
+        // AWAY status should be set in the playerStateData as awayForStepIds: string[] = ["step-id"]
+        it("the game will continue if at least 1 student responds for the step and all others are set as AWAY for that step")
+    })
 })

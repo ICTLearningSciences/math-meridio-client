@@ -70,6 +70,9 @@ export function useWithGame() {
   const [lastPlayers, setLastPlayers] = React.useState<Player[]>();
   const [gameStateHandler, setGameStateHandler] =
     React.useState<GameStateHandler>();
+  const [waitingForPlayers, setWaitingForPlayers] = React.useState<string[]>(
+    []
+  );
   const {
     deleteGameRoom,
     renameGameRoom,
@@ -83,7 +86,6 @@ export function useWithGame() {
 
   React.useEffect(() => {
     if (!room || equals(lastChatLog, room.gameData.chat)) return;
-    console.log('new chat log received', room.gameData.chat);
     for (let i = 0; i < subscribers.length; i++) {
       const updateFunction = subscribers[i].newChatLogReceived.bind(
         subscribers[i]
@@ -187,6 +189,7 @@ export function useWithGame() {
       },
       viewedSimulation: _viewedSimulation,
       targetAiServiceModel: firstAvailableAzureServiceModel(),
+      onWaitingForPlayers: setWaitingForPlayers,
     });
     if (!poll.current) {
       poll.current = setInterval(() => {
@@ -295,5 +298,6 @@ export function useWithGame() {
     updateRoomGameData: _updateRoomGameData,
     responsePending,
     ownerIsPresent,
+    waitingForPlayers,
   };
 }

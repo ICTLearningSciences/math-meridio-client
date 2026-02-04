@@ -57,6 +57,7 @@ export class BasketballStateHandler extends GameStateHandler {
     this.discussionStageHandler = new DiscussionStageHandler(
       this.player._id,
       this.globalStateData,
+      this.playerStateData,
       args.sendMessage,
       args.setResponsePending,
       args.executePrompt,
@@ -64,7 +65,8 @@ export class BasketballStateHandler extends GameStateHandler {
       args.targetAiServiceModel,
       undefined,
       this.newPlayerStateData.bind(this),
-      undefined
+      undefined,
+      args.onWaitingForPlayers
     );
 
     this.initializeGame = this.initializeGame.bind(this);

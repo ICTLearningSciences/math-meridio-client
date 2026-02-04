@@ -42,7 +42,8 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "message": "{{response_to_strategy}}",
                           "saveResponseVariableName": "",
                           "disableFreeInput": false,
-                          "predefinedResponses": []
+                          "predefinedResponses": [],
+"requireAllUserInputs": false
                       }
                   ]
               }
@@ -67,7 +68,8 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "message": "We're currently losing, and we can't change our players—but we can change our strategy.\n\nWhat combination of shot types will help us close the gap and come out on top?",
                           "saveResponseVariableName": "user_hypothesis",
                           "disableFreeInput": false,
-                          "predefinedResponses": []
+                          "predefinedResponses": [],
+"requireAllUserInputs": false
                       },
                       {
                           "lastStep": false,
@@ -123,7 +125,8 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "message": "Why would this strategy be better?",
                           "saveResponseVariableName": "why_their_strategy",
                           "disableFreeInput": false,
-                          "predefinedResponses": []
+                          "predefinedResponses": [],
+"requireAllUserInputs": false
                       },
                       {
                           "lastStep": false,
@@ -223,7 +226,8 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "message": "{{key_concept_ai_response}}",
                           "saveResponseVariableName": "recent_response",
                           "disableFreeInput": false,
-                          "predefinedResponses": []
+                          "predefinedResponses": [],
+"requireAllUserInputs": false
                       }
                   ]
               }
@@ -248,7 +252,8 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "message": "Please explain what variables we are able to freely change.",
                           "saveResponseVariableName": "recent_message",
                           "disableFreeInput": false,
-                          "predefinedResponses": []
+                          "predefinedResponses": [],
+"requireAllUserInputs": false
                       },
                       {
                           "lastStep": false,
@@ -270,7 +275,8 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "message": "Please explain the algorithm for determining the number of points we make in a game for a single shot type.",
                           "saveResponseVariableName": "algorithm_explanation",
                           "disableFreeInput": false,
-                          "predefinedResponses": []
+                          "predefinedResponses": [],
+"requireAllUserInputs": false
                       },
                       {
                           "lastStep": true,
@@ -307,7 +313,8 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "message": "Can we do even better than this? What strategy should we try next?",
                           "saveResponseVariableName": "user_hypothesis",
                           "disableFreeInput": false,
-                          "predefinedResponses": []
+                          "predefinedResponses": [],
+"requireAllUserInputs": false
                       },
                       {
                           "lastStep": true,
@@ -373,7 +380,8 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "message": "Have you ever taken a penalty kick before? What’s your usual strategy when trying to score a goal?",
                           "saveResponseVariableName": "user_response",
                           "disableFreeInput": false,
-                          "predefinedResponses": []
+                          "predefinedResponses": [],
+"requireAllUserInputs": false
                       },
                       {
                           "lastStep": false,
@@ -452,7 +460,8 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "message": "What strategy would you like to take?",
                           "saveResponseVariableName": "user_response",
                           "disableFreeInput": false,
-                          "predefinedResponses": []
+                          "predefinedResponses": [],
+"requireAllUserInputs": false
                       },
                       {
                           "lastStep": false,
@@ -474,7 +483,8 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "message": "",
                           "saveResponseVariableName": "user_kicking_seq",
                           "disableFreeInput": false,
-                          "predefinedResponses": []
+                          "predefinedResponses": [],
+"requireAllUserInputs": false
                       },
                       {
                           "lastStep": true,
@@ -511,7 +521,8 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "message": "Great, we’re all set to simulate your 10 kicks! Do you have any questions about your strategy or sequence?",
                           "saveResponseVariableName": "user_feedback",
                           "disableFreeInput": false,
-                          "predefinedResponses": []
+                          "predefinedResponses": [],
+"requireAllUserInputs": false
                       },
                       {
                           "lastStep": false,
@@ -567,7 +578,8 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "message": "{{response_to_strategy}}",
                           "saveResponseVariableName": "",
                           "disableFreeInput": false,
-                          "predefinedResponses": []
+                          "predefinedResponses": [],
+"requireAllUserInputs": false
                       }
                   ]
               }
@@ -592,7 +604,8 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "message": "What mix of tickets should we sell to make the most money?",
                           "saveResponseVariableName": "user_hypothesis",
                           "disableFreeInput": false,
-                          "predefinedResponses": []
+                          "predefinedResponses": [],
+"requireAllUserInputs": false
                       },
                       {
                           "lastStep": false,
@@ -602,7 +615,8 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "message": "Why do you think this strategy would do better?",
                           "saveResponseVariableName": "why_their_strategy",
                           "disableFreeInput": false,
-                          "predefinedResponses": []
+                          "predefinedResponses": [],
+"requireAllUserInputs": false
                       },
                       {
                           "lastStep": true,
@@ -630,7 +644,8 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "message": "Sounds like you’re having a hard time coming up with a strategy.\n\nLet’s try this:\nWe can sell 100 tickets total, and we get to decide how many of each type to sell. To achive the highest revenue, how many should be VIP, how many should be General Admission, and how many should be Reserved?",
                           "saveResponseVariableName": "user_hypothesis",
                           "disableFreeInput": false,
-                          "predefinedResponses": []
+                          "predefinedResponses": [],
+"requireAllUserInputs": false
                       },
                       {
                           "lastStep": false,
@@ -667,7 +682,8 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "message": "{{responseMessage}}",
                           "saveResponseVariableName": "user_hypothesis",
                           "disableFreeInput": false,
-                          "predefinedResponses": []
+                          "predefinedResponses": [],
+"requireAllUserInputs": false
                       }
                   ]
               }
@@ -765,7 +781,8 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "message": "To begin, consider how to calculate revenue from a single ticket type. We already know one variable is the number of tickets sold. What other value must we include to accurately compute total revenue for that ticket category?",
                           "saveResponseVariableName": "user_response",
                           "disableFreeInput": false,
-                          "predefinedResponses": []
+                          "predefinedResponses": [],
+"requireAllUserInputs": false
                       },
                       {
                           "lastStep": true,
@@ -815,7 +832,8 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "message": "{{responseMessage}}",
                           "saveResponseVariableName": "user_response",
                           "disableFreeInput": false,
-                          "predefinedResponses": []
+                          "predefinedResponses": [],
+"requireAllUserInputs": false
                       }
                   ]
               },
@@ -838,7 +856,8 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "message": "Now, how do you think we can find the grand total revenue from all the tickets we are selling?",
                           "saveResponseVariableName": "algorithm_explanation",
                           "disableFreeInput": false,
-                          "predefinedResponses": []
+                          "predefinedResponses": [],
+"requireAllUserInputs": false
                       },
                       {
                           "lastStep": false,
@@ -882,7 +901,8 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "message": "",
                           "saveResponseVariableName": "algorithm_explanation",
                           "disableFreeInput": false,
-                          "predefinedResponses": []
+                          "predefinedResponses": [],
+"requireAllUserInputs": false
                       }
                   ]
               }
@@ -907,7 +927,8 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "message": "Can we do even better than this? What new ticket sales distribution strategy should we try next?",
                           "saveResponseVariableName": "user_hypothesis",
                           "disableFreeInput": false,
-                          "predefinedResponses": []
+                          "predefinedResponses": [],
+"requireAllUserInputs": false
                       },
                       {
                           "lastStep": false,
@@ -944,7 +965,8 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "message": "{{responseMessage}}",
                           "saveResponseVariableName": "user_hypothesis",
                           "disableFreeInput": false,
-                          "predefinedResponses": []
+                          "predefinedResponses": [],
+"requireAllUserInputs": false
                       },
                       {
                           "lastStep": true,
@@ -1020,7 +1042,8 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "message": "Can we do even better than this? What new ticket sales distribution strategy should we try next?",
                           "saveResponseVariableName": "user_hypothesis",
                           "disableFreeInput": false,
-                          "predefinedResponses": []
+                          "predefinedResponses": [],
+"requireAllUserInputs": false
                       },
                       {
                           "lastStep": false,
@@ -1057,7 +1080,8 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "message": "{{responseMessage}}",
                           "saveResponseVariableName": "user_hypothesis",
                           "disableFreeInput": false,
-                          "predefinedResponses": []
+                          "predefinedResponses": [],
+"requireAllUserInputs": false
                       },
                       {
                           "lastStep": true,
@@ -1118,7 +1142,8 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "message": "To begin, consider how to calculate revenue from a single ticket type. We already know one variable is the number of tickets sold. What other value must we include to accurately compute total revenue for that ticket category?",
                           "saveResponseVariableName": "user_response",
                           "disableFreeInput": false,
-                          "predefinedResponses": []
+                          "predefinedResponses": [],
+"requireAllUserInputs": false
                       },
                       {
                           "lastStep": true,
@@ -1175,7 +1200,8 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "message": "{{responseMessage}}",
                           "saveResponseVariableName": "user_response",
                           "disableFreeInput": false,
-                          "predefinedResponses": []
+                          "predefinedResponses": [],
+"requireAllUserInputs": false
                       }
                   ]
               },
@@ -1198,7 +1224,8 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "message": "Now, how do you think we can find the grand total revenue from all the tickets we are selling?",
                           "saveResponseVariableName": "algorithm_explanation",
                           "disableFreeInput": false,
-                          "predefinedResponses": []
+                          "predefinedResponses": [],
+"requireAllUserInputs": false
                       },
                       {
                           "lastStep": false,
@@ -1242,7 +1269,8 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "message": "",
                           "saveResponseVariableName": "algorithm_explanation",
                           "disableFreeInput": false,
-                          "predefinedResponses": []
+                          "predefinedResponses": [],
+"requireAllUserInputs": false
                       }
                   ]
               },
@@ -1294,7 +1322,8 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "message": "The first thing we need to figure out is how many tickets we expect to sell. If we know how many tickets we put up for sale, what should we add to the calculation to determine how many we will expect to sell?",
                           "saveResponseVariableName": "user_response",
                           "disableFreeInput": false,
-                          "predefinedResponses": []
+                          "predefinedResponses": [],
+"requireAllUserInputs": false
                       },
                       {
                           "lastStep": false,
@@ -1331,7 +1360,8 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "message": "{{responseMessage}}",
                           "saveResponseVariableName": "user_response",
                           "disableFreeInput": false,
-                          "predefinedResponses": []
+                          "predefinedResponses": [],
+"requireAllUserInputs": false
                       },
                       {
                           "stepId": "d2bf811b-afe2-41c9-a604-ef99facc77d0",
@@ -1356,7 +1386,8 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "message": "We are now only missing 1 part of the equation to determine our revenue for a single ticket type. Any ideas what that might be?",
                           "saveResponseVariableName": "user_response",
                           "disableFreeInput": false,
-                          "predefinedResponses": []
+                          "predefinedResponses": [],
+"requireAllUserInputs": false
                       },
                       {
                           "lastStep": false,
@@ -1393,7 +1424,8 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "message": "{{responseMessage}}",
                           "saveResponseVariableName": "user_response",
                           "disableFreeInput": false,
-                          "predefinedResponses": []
+                          "predefinedResponses": [],
+"requireAllUserInputs": false
                       }
                   ]
               }
@@ -1440,7 +1472,8 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "message": "What mix of tickets should we sell to make the most money?",
                           "saveResponseVariableName": "user_hypothesis",
                           "disableFreeInput": false,
-                          "predefinedResponses": []
+                          "predefinedResponses": [],
+"requireAllUserInputs": false
                       },
                       {
                           "lastStep": false,
@@ -1450,7 +1483,8 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "message": "Why do you think this strategy would do better?",
                           "saveResponseVariableName": "why_their_strategy",
                           "disableFreeInput": false,
-                          "predefinedResponses": []
+                          "predefinedResponses": [],
+"requireAllUserInputs": false
                       },
                       {
                           "lastStep": true,
@@ -1478,7 +1512,8 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "message": "Sounds like you’re having a hard time coming up with a strategy.\n\nLet’s try this:\nWe can sell 100 tickets total, and we get to decide how many of each type to sell. To achive the highest revenue, how many should be VIP, how many should be General Admission, and how many should be Reserved?",
                           "saveResponseVariableName": "user_hypothesis",
                           "disableFreeInput": false,
-                          "predefinedResponses": []
+                          "predefinedResponses": [],
+"requireAllUserInputs": false
                       },
                       {
                           "lastStep": false,
@@ -1515,7 +1550,8 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "message": "{{responseMessage}}",
                           "saveResponseVariableName": "user_hypothesis",
                           "disableFreeInput": false,
-                          "predefinedResponses": []
+                          "predefinedResponses": [],
+                          "requireAllUserInputs": false
                       }
                   ]
               }

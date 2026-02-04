@@ -62,6 +62,7 @@ export interface GameStateHandlerArgs {
   gameData: GameData;
   viewedSimulation: (playerId: string) => void;
   targetAiServiceModel: TargetAiModelServiceType;
+  onWaitingForPlayers: (waitingForPlayerIds: string[]) => void;
 }
 
 export abstract class GameStateHandler implements Subscriber {
@@ -82,7 +83,7 @@ export abstract class GameStateHandler implements Subscriber {
   dbDiscussionStages: DiscussionStage[];
   stageList: CurrentStage<IStage>[] = [];
   viewedSimulation: (playerId: string) => void;
-
+  onWaitingForPlayers: (waitingForPlayerIds: string[]) => void;
   player: Player;
   players: Player[] = [];
   chatLog: ChatMessage[] = [];
@@ -111,6 +112,7 @@ export abstract class GameStateHandler implements Subscriber {
     this.setResponsePending = args.setResponsePending;
     this.onDiscussionFinished = args.onDiscussionFinished;
     this.viewedSimulation = args.viewedSimulation;
+    this.onWaitingForPlayers = args.onWaitingForPlayers;
     // bind functions to this
     this.onDiscussionFinished = this.onDiscussionFinished?.bind(this);
   }
@@ -215,6 +217,15 @@ export abstract class GameStateHandler implements Subscriber {
 
   playerStateUpdated(newGameState: PlayerStateData[]): void {
     this.playerStateData = newGameState;
+    const curStage = this.getCurrentStage();
+    const curStep = this.getCurrentDiscussionStageStep();
+    if (curStage && curStep && isDiscussionStage(curStage.stage)) {
+      this.discussionStageHandler.playerStateUpdated(
+        curStage as DiscussionCurrentStage,
+        curStep,
+        newGameState
+      );
+    }
   }
 
   playersUpdated(players: Player[]): void {

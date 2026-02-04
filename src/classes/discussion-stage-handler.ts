@@ -62,6 +62,13 @@ function getDefaultUserResponseHandleState(): UserResponseHandleState {
   };
 }
 
+interface StepResponseTracking {
+  stepId: string;
+  requiredPlayerIds: string[];
+  responses: Map<string, string>; // playerId -> message
+  allResponsesReceivedOnce: boolean; // once true, no longer require all responses for this step
+}
+
 export type CollectedDiscussionData = Record<
   string,
   string | number | boolean | string[]
@@ -70,6 +77,7 @@ export type CollectedDiscussionData = Record<
 export class DiscussionStageHandler {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   stateData: CollectedDiscussionData;
+  playerStateData: PlayerStateData[];
   chatLog: ChatMessage[] = [];
   playerId: string;
   errorMessage: string | null = null;
@@ -88,6 +96,8 @@ export class DiscussionStageHandler {
   exitEarlyCondition?: (data: CollectedDiscussionData) => boolean;
   updateRoomStageStepId: (stageId: string, stepId: string) => void;
   globalStateData: GlobalStateData;
+  stepResponseTracking: Record<string, StepResponseTracking> = {};
+  onWaitingForPlayers?: (waitingForPlayerIds: string[]) => void;
 
   getStepById(
     discussionStage: DiscussionCurrentStage,
@@ -171,6 +181,7 @@ export class DiscussionStageHandler {
   constructor(
     playerId: string,
     globalStateData: GlobalStateData,
+    playerStateData: PlayerStateData[],
     sendMessage: (msg: ChatMessage) => void,
     setResponsePending: (pending: boolean) => void,
     executePrompt: (
@@ -181,9 +192,11 @@ export class DiscussionStageHandler {
     targetAiServiceModel: TargetAiModelServiceType,
     onDiscussionFinished?: (discussionData: CollectedDiscussionData) => void,
     newPlayerStateData?: (data: GameStateData[], playerId: string) => void,
-    exitEarlyCondition?: (data: CollectedDiscussionData) => boolean
+    exitEarlyCondition?: (data: CollectedDiscussionData) => boolean,
+    onWaitingForPlayers?: (waitingForPlayerIds: string[]) => void
   ) {
     this.globalStateData = globalStateData;
+    this.playerStateData = playerStateData;
     this.stateData = {};
     this.stepIdsSinceLastInput = [];
     this.userResponseHandleState = getDefaultUserResponseHandleState();
@@ -196,9 +209,12 @@ export class DiscussionStageHandler {
     this.playerId = playerId;
     this.updateRoomStageStepId = updateRoomStageStepId;
     this.targetAiServiceModel = targetAiServiceModel;
+    this.onWaitingForPlayers = onWaitingForPlayers;
+    this.stepResponseTracking = {};
     // bind functions to this
     this.exitEarlyCondition = this.exitEarlyCondition?.bind(this);
     this.newPlayerStateData = this.newPlayerStateData?.bind(this);
+    this.onWaitingForPlayers = this.onWaitingForPlayers?.bind(this);
     this.executeDiscussionStageStep =
       this.executeDiscussionStageStep.bind(this);
     this.handleStep = this.handleStep.bind(this);
@@ -319,6 +335,107 @@ export class DiscussionStageHandler {
       this.sendErrorMessage(err.message);
       return;
     }
+  }
+
+  // Helper methods for multi-user response tracking
+  isWaitingForMultiUserResponses(curStep: DiscussionStageStep): boolean {
+    if (curStep.stepType !== DiscussionStageStepType.REQUEST_USER_INPUT) {
+      return false;
+    }
+    const requestUserInputStep = curStep as RequestUserInputStageStep;
+    if (!requestUserInputStep.requireAllUserInputs) {
+      return false;
+    }
+    const tracking = this.stepResponseTracking[curStep.stepId];
+    if (!tracking) {
+      return false;
+    }
+    return !tracking.allResponsesReceivedOnce;
+  }
+
+  initializeResponseTracking(stepId: string, playerIds: string[]): void {
+    console.log(
+      'DSH: initializing response tracking for step',
+      stepId,
+      playerIds
+    );
+    this.stepResponseTracking[stepId] = {
+      stepId,
+      requiredPlayerIds: playerIds,
+      responses: new Map(),
+      allResponsesReceivedOnce: false,
+    };
+    this.notifyWaitingForPlayers(stepId);
+  }
+
+  recordPlayerResponse(
+    stepId: string,
+    playerId: string,
+    message: string
+  ): void {
+    const tracking = this.stepResponseTracking[stepId];
+    if (!tracking) return;
+    tracking.responses.set(playerId, message);
+    this.notifyWaitingForPlayers(stepId);
+  }
+
+  allPlayersResponded(stepId: string): boolean {
+    const tracking = this.stepResponseTracking[stepId];
+    if (!tracking) return false;
+    return tracking.requiredPlayerIds.every((playerId) =>
+      tracking.responses.has(playerId)
+    );
+  }
+
+  getAggregatedMessages(stepId: string): string {
+    const tracking = this.stepResponseTracking[stepId];
+    if (!tracking) return '';
+    const messages: string[] = [];
+    for (const playerId of tracking.requiredPlayerIds) {
+      const message = tracking.responses.get(playerId);
+      if (message) {
+        messages.push(`${playerId}: ${message}`);
+      }
+    }
+    return messages.join('\n');
+  }
+
+  getWaitingForPlayerIds(stepId: string): string[] {
+    const tracking = this.stepResponseTracking[stepId];
+    if (!tracking) return [];
+    return tracking.requiredPlayerIds.filter(
+      (playerId) => !tracking.responses.has(playerId)
+    );
+  }
+
+  notifyWaitingForPlayers(stepId: string): void {
+    if (this.onWaitingForPlayers) {
+      this.onWaitingForPlayers(this.getWaitingForPlayerIds(stepId));
+    }
+  }
+
+  markAllResponsesReceived(stepId: string): void {
+    const tracking = this.stepResponseTracking[stepId];
+    if (tracking) {
+      tracking.allResponsesReceivedOnce = true;
+    }
+    if (this.onWaitingForPlayers) {
+      this.onWaitingForPlayers([]);
+    }
+  }
+
+  removePlayerFromTracking(stepId: string, playerId: string): boolean {
+    const tracking = this.stepResponseTracking[stepId];
+    if (!tracking) return false;
+
+    const index = tracking.requiredPlayerIds.indexOf(playerId);
+    if (index > -1) {
+      tracking.requiredPlayerIds.splice(index, 1);
+      tracking.responses.delete(playerId);
+      this.notifyWaitingForPlayers(stepId);
+      return true;
+    }
+    return false;
   }
 
   getNextStepFromConditional(
@@ -446,6 +563,19 @@ export class DiscussionStageHandler {
       step.predefinedResponses,
       this.stateData
     );
+
+    // Initialize multi-user response tracking if required
+    // Only initialize if we haven't already received all responses for this step
+    if (step.requireAllUserInputs) {
+      console.log('DSH: initializing response tracking for step', step.stepId);
+      const existingTracking = this.stepResponseTracking[step.stepId];
+      if (!existingTracking || !existingTracking.allResponsesReceivedOnce) {
+        const allPlayerIds = this.playerStateData.map((p) => p.player);
+        console.log('DSH: all player ids', allPlayerIds);
+        this.initializeResponseTracking(step.stepId, allPlayerIds);
+      }
+    }
+
     // wait 1 second
     this.setResponsePending(true);
     await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -623,7 +753,33 @@ export class DiscussionStageHandler {
     const newMessage = chatLog[chatLog.length - 1];
     if (newMessage.sender === SenderType.PLAYER) {
       console.log('DSH: new chat log received', newMessage.message);
-      this.handleNewUserMessage(curStage, curStep, newMessage.message);
+
+      // Check if we're waiting for multiple user responses
+      if (this.isWaitingForMultiUserResponses(curStep)) {
+        // Record this player's response
+        const senderId = newMessage.senderId;
+        if (senderId) {
+          this.recordPlayerResponse(
+            curStep.stepId,
+            senderId,
+            newMessage.message
+          );
+
+          // Check if all players have responded
+          if (this.allPlayersResponded(curStep.stepId)) {
+            // Aggregate all messages and proceed
+            const aggregatedMessage = this.getAggregatedMessages(
+              curStep.stepId
+            );
+            this.markAllResponsesReceived(curStep.stepId);
+            this.handleNewUserMessage(curStage, curStep, aggregatedMessage);
+          }
+          // If not all players have responded yet, just wait
+        }
+      } else {
+        // Normal single-user flow
+        this.handleNewUserMessage(curStage, curStep, newMessage.message);
+      }
     }
   }
 
@@ -754,9 +910,39 @@ export class DiscussionStageHandler {
     return;
   }
 
-  playerStateUpdated(newState: PlayerStateData[]): void {
-    console.log('DSH: player state updated', newState);
-    return;
+  playerStateUpdated(
+    curStage: DiscussionCurrentStage,
+    curStep: DiscussionStageStep,
+    newState: PlayerStateData[]
+  ): void {
+    console.log('DSH: player state updated', curStage, curStep, newState);
+    this.playerStateData = newState;
+
+    // Check if we're waiting for multi-user responses
+    if (this.isWaitingForMultiUserResponses(curStep)) {
+      const tracking = this.stepResponseTracking[curStep.stepId];
+      const currentPlayerIds = newState.map((p) => p.player);
+
+      // Find players who left (were in tracking but no longer in playerStateData)
+      const removedPlayers = tracking.requiredPlayerIds.filter(
+        (playerId) => !currentPlayerIds.includes(playerId)
+      );
+
+      // Remove each departed player from tracking
+      for (const playerId of removedPlayers) {
+        this.removePlayerFromTracking(curStep.stepId, playerId);
+      }
+
+      // Check if all remaining players have responded
+      if (
+        removedPlayers.length > 0 &&
+        this.allPlayersResponded(curStep.stepId)
+      ) {
+        const aggregatedMessage = this.getAggregatedMessages(curStep.stepId);
+        this.markAllResponsesReceived(curStep.stepId);
+        this.handleNewUserMessage(curStage, curStep, aggregatedMessage);
+      }
+    }
   }
 
   playersUpdated(newState: Player[]): void {
