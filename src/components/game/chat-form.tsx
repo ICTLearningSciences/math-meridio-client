@@ -92,6 +92,7 @@ export default function ChatForm(props: {
       <FormControl variant="outlined" style={{ flex: 1 }}>
         <InputLabel>Chat:</InputLabel>
         <OutlinedInput
+          data-cy="chat-input"
           label="Chat:"
           type="text"
           value={input}
@@ -118,6 +119,7 @@ export default function ChatForm(props: {
           endAdornment={
             <InputAdornment position="end">
               <IconButton
+                data-cy="send-message-button"
                 type="submit"
                 color="primary"
                 edge="end"

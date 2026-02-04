@@ -11,11 +11,9 @@ import {
   GlobalStateData,
   PlayerStateData,
   SenderType,
-  fetchRoom,
-  updateRoomGameData,
 } from '.';
 import { GenericLlmRequest, LoadStatus } from '../../../types';
-import { useAppDispatch, useAppSelector } from '../../hooks';
+import { useAppSelector } from '../../hooks';
 import { GameStateHandler } from '../../../classes/game-state-handler';
 import { GAMES, Game } from '../../../game/types';
 import { CancelToken } from 'axios';
@@ -42,7 +40,6 @@ export abstract class Subscriber {
 }
 
 export function useWithGame() {
-  const dispatch = useAppDispatch();
   const { player } = useAppSelector((state) => state.playerData);
   const { classId, roomId } = useParams();
   const { loadStatus } = useAppSelector((state) => state.gameData);
@@ -81,10 +78,12 @@ export function useWithGame() {
     joinGameRoom,
     leaveGameRoom,
     createAndJoinGameRoom,
+    fetchRoom,
   } = useWithEducationalData();
 
   React.useEffect(() => {
     if (!room || equals(lastChatLog, room.gameData.chat)) return;
+    console.log('new chat log received', room.gameData.chat);
     for (let i = 0; i < subscribers.length; i++) {
       const updateFunction = subscribers[i].newChatLogReceived.bind(
         subscribers[i]
@@ -191,9 +190,7 @@ export function useWithGame() {
     });
     if (!poll.current) {
       poll.current = setInterval(() => {
-        operationQueue.current.push(() =>
-          dispatch(fetchRoom({ roomId: room._id }))
-        );
+        operationQueue.current.push(() => fetchRoom(room._id));
         processQueue();
       }, 1000);
     }
@@ -270,20 +267,15 @@ export function useWithGame() {
   function _viewedSimulation(playerId: string): void {
     if (!room) return;
     operationQueue.current.push(() =>
-      dispatch(
-        updateRoomGameData({
-          roomId: room._id,
-          gameData: {
-            playerStateData: [
-              {
-                player: playerId,
-                animation: '',
-                gameStateData: [{ key: SIMULTAION_VIEWED_KEY, value: true }],
-              },
-            ],
+      updateGameRoomGameData(room._id, {
+        playerStateData: [
+          {
+            player: playerId,
+            animation: '',
+            gameStateData: [{ key: SIMULTAION_VIEWED_KEY, value: true }],
           },
-        })
-      )
+        ],
+      })
     );
     processQueue();
   }

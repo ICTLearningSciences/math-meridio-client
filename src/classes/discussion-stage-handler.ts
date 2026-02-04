@@ -536,6 +536,8 @@ export class DiscussionStageHandler {
     //   return;
     // }
 
+    console.log('handling new user message', message);
+
     if (!curStep) {
       throw new Error('No current step found');
     }
@@ -612,12 +614,15 @@ export class DiscussionStageHandler {
     curStep: DiscussionStageStep,
     chatLog: ChatMessage[]
   ) {
+    console.log('DSH: new chat log received', chatLog);
     this.chatLog = chatLog;
     if (chatLog.length === 0) {
       return;
     }
+    console.log('DSH: new chat log received', chatLog.length);
     const newMessage = chatLog[chatLog.length - 1];
     if (newMessage.sender === SenderType.PLAYER) {
+      console.log('DSH: new chat log received', newMessage.message);
       this.handleNewUserMessage(curStage, curStep, newMessage.message);
     }
   }

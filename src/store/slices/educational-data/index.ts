@@ -174,6 +174,13 @@ export const sendGameRoomMessage = createAsyncThunk(
   }
 );
 
+export const fetchRoom = createAsyncThunk(
+  'educationalData/fetchRoom',
+  async (args: { roomId: string }): Promise<Room> => {
+    return await mainApi.fetchRoom(args.roomId);
+  }
+);
+
 export const createAndJoinGameRoom = createAsyncThunk(
   'educationalData/createAndJoinGameRoom',
   async (args: {
@@ -204,11 +211,15 @@ export const educationalDataSlice = createSlice({
         addOrUpdateGameRoom(state, action.payload);
       })
 
-      .addCase(sendGameRoomMessage.fulfilled, (state, action) => {
-        addOrUpdateGameRoom(state, action.payload);
-      })
+      // .addCase(sendGameRoomMessage.fulfilled, (state, action) => {
+      //   addOrUpdateGameRoom(state, action.payload);
+      // })
 
-      .addCase(updateGameRoomGameData.fulfilled, (state, action) => {
+      // .addCase(updateGameRoomGameData.fulfilled, (state, action) => {
+      //   addOrUpdateGameRoom(state, action.payload);
+      // })
+
+      .addCase(fetchRoom.fulfilled, (state, action) => {
         addOrUpdateGameRoom(state, action.payload);
       })
 

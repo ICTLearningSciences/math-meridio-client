@@ -5,28 +5,36 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import { Game } from "../../src/game/types";
-import { Room } from "../../src/store/slices/game";
+import { Room, SenderType } from "../../src/store/slices/game";
 import { Player } from "./types";
+import { v4 as uuidv4 } from 'uuid';
 
 
 export interface CreateAndJoinRoomResponse {
     createAndJoinRoom: Room;
 }
 
-export function defaultRoomData(classId: string, user: Player, gameId: string): Room {
+export function defaultNbaStarterRoomData(classId: string, user: Player): Room {
     return {
         "_id": "test-room-id",
-        "name": gameId,
+        "name": "NBA Starter Room",
         "classId": classId,
         "gameData": {
-            "gameId": gameId,
+            "gameId": "basketball",
             "players": [
                 user
             ],
-            "chat": [],
+            "chat": [
+                {
+                    id: uuidv4(),
+                    sender: SenderType.SYSTEM,
+                    message: `We're currently losing, and we can't change our players—but we can change our strategy. What combination of shot types will help us close the gap and come out on top?`,
+                    sessionId: "test-session-id", 
+                }
+            ],
             "globalStateData": {
-                "curStageId": "",
-                "curStepId": "",
+                "curStageId": "collect-variables",
+                "curStepId": "d8741382-e1a9-457f-898e-e3062c23832a",
                 "roomOwnerId": user._id,
                 "gameStateData": []
             },
@@ -41,8 +49,8 @@ export function defaultRoomData(classId: string, user: Player, gameId: string): 
     }
 }
 
-export function createAndJoinRoomResponse(user: Player, classId: string, gameId: string): CreateAndJoinRoomResponse {
+export function createAndJoinRoomResponse(roomResponse: Room): CreateAndJoinRoomResponse {
     return {
-        createAndJoinRoom: defaultRoomData(classId, user, gameId)
+        createAndJoinRoom: roomResponse
     }
 }

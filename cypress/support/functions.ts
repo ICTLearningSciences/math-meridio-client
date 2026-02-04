@@ -11,6 +11,7 @@ import { fetchDiscussionStagesResponse } from "../fixtures/fetch-discussion-stag
 import { fetchInstructorDataHydrationResponse, fetchStudentDataHydrationResponse } from "../fixtures/fetch-educational-data-hydration";
 import { refreshAccessTokenResponse } from "../fixtures/refresh-access-token";
 import { EducationalRole, UserRole } from "../fixtures/types";
+import { asyncStartRequestRes } from "../fixtures/llm-requests/async-start-request";
 
 interface StaticResponse {
   /**
@@ -189,5 +190,45 @@ export function cyMockMultipleResponses<T>(
       })
     );
     numCalls++;
+  });
+}
+
+export function cyMockOpenAiCall(
+  cy: CypressGlobal,
+  params: {
+    statusCode?: number;
+    response?: any;
+    delay?: number;
+  } = {}
+) {
+  cy.intercept('**/generic_llm_request/**', (req) => {
+    req.alias = 'genericLlmRequest';
+    req.reply(
+      staticResponse({
+        statusCode: 200,
+        body: {
+          data: asyncStartRequestRes,
+        },
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        delayMs: 0,
+      })
+    );
+  });
+  cy.intercept('**/generic_llm_request_status/**', (req) => {
+    req.alias = 'genericLlmRequestStatus';
+    req.reply(
+      staticResponse({
+        statusCode: 200,
+        body: {
+          data: params.response || "No Response Text Provided",
+        },
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        delayMs: params.delay || 0,
+      })
+    );
   });
 }

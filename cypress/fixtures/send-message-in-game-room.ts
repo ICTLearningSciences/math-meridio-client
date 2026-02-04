@@ -4,15 +4,24 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { Room } from "../../src/store/slices/game";
+import { ChatMessage, Room } from "../../src/store/slices/game";
 
-
-export interface UpdateRoomResponse {
-    updateRoom: Room;
+export interface SendMessageInGameRoomResponse {
+    sendMessage: Room;
 }
 
-export function updateRoomResponse(updatedRoom: Room): UpdateRoomResponse {
+export function sendMessageInGameRoomResponse(roomUpdatedWithMessage: Room): SendMessageInGameRoomResponse {
     return {
-        updateRoom: updatedRoom
+        sendMessage: roomUpdatedWithMessage
+    }
+}
+
+export function addMessageToRoom(room: Room, newMessage: ChatMessage): Room {
+    return {
+        ...room,
+        gameData: {
+            ...room.gameData,
+            chat: [...room.gameData.chat, newMessage]
+        }
     }
 }

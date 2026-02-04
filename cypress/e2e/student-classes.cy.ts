@@ -8,7 +8,7 @@ import { cyMockDefault, mockGQL } from "../support/functions";
 import { EducationalRole } from "../fixtures/types";
 import { joinClassroomResponse } from "../fixtures/join-class";
 import { defaultUser } from "../fixtures/refresh-access-token";
-import { createAndJoinRoomResponse, defaultRoomData } from "../fixtures/create-and-join-room";
+import { createAndJoinRoomResponse, defaultNbaStarterRoomData } from "../fixtures/create-and-join-room";
 import { updateRoomResponse } from "../fixtures/update-room";
 import { fetchRoomResponse } from "../fixtures/fetch-room";
 
@@ -38,18 +38,19 @@ describe("Student classes screen", () => {
 
     cy.get("[data-cy='join-class-invite-code-input']").type("test-invite-code");
     cy.get("[data-cy='join-class-join-button']").click();
-    cy.contains("New Class For Testing")
+    cy.contains("My Classroom")
   })
 
-  it.only("student can create a game room in a classroom", ()=>{
+  it("student can create a game room in a classroom", ()=>{
+    const defaultRoom = defaultNbaStarterRoomData("test-class-id", user);
     cyMockDefault(cy,
       {
         userEducationalRole: EducationalRole.STUDENT,
         gqlQueries: [
           mockGQL('JoinClassroom', joinClassroomResponse(user, "test-class-id")),
-          mockGQL('CreateAndJoinRoom', createAndJoinRoomResponse(user, "test-class-id", "basketball")),
-          mockGQL('UpdateRoom', updateRoomResponse(defaultRoomData("test-class-id", user, "basketball"))),
-          mockGQL('FetchRoom', fetchRoomResponse(defaultRoomData("test-class-id", user, "basketball"))),
+          mockGQL('CreateAndJoinRoom', createAndJoinRoomResponse(defaultRoom)),
+          mockGQL('UpdateRoom', updateRoomResponse(defaultRoom)),
+          mockGQL('FetchRoom', fetchRoomResponse(defaultRoom)),
         ]
       });
     cy.visit("/");

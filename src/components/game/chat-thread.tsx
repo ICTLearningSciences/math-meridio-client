@@ -93,6 +93,8 @@ export default function ChatThread(props: {
   const messages = room?.gameData.chat || [];
   const players = room?.gameData.players;
 
+  console.log('ChatThread: messages', messages);
+
   enum PlayerColors {
     Blue = 'info.main',
     Green = 'success.main',
