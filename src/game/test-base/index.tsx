@@ -86,7 +86,8 @@ export class BasketballStateHandler extends GameStateHandler {
       undefined,
       this.newPlayerStateData.bind(this),
       undefined,
-      args.onWaitingForPlayers
+      args.onWaitingForPlayers,
+      args.updateRoomGameData
     );
 
     this.initializeGame = this.initializeGame.bind(this);

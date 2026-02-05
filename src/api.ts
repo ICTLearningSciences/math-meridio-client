@@ -19,6 +19,7 @@ import { ChatMessage, GameData, Room } from './store/slices/game';
 import { extractErrorMessageFromError } from './helpers';
 import { Config } from './store/slices/config';
 import { userDataQuery } from './store/slices/player/api';
+import { ACCESS_TOKEN_KEY, localStorageGet } from './store/local-storage';
 
 type OpenAiJobId = string;
 export const LLM_API_ENDPOINT =
@@ -212,6 +213,10 @@ export const fullRoomQueryData = `
   classId
   gameData {
     gameId
+    heartBeats {
+      player
+      timestamp
+    }
     players {
       ${userDataQuery}
     }
@@ -384,6 +389,7 @@ export async function fetchRooms(game: string): Promise<Room[]> {
 }
 
 export async function fetchRoom(roomId: string): Promise<Room> {
+  const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
   const data = await execGql<Room>(
     {
       query: `
@@ -398,6 +404,7 @@ export async function fetchRoom(roomId: string): Promise<Room> {
     },
     {
       dataPath: 'fetchRoom',
+      accessToken: accessToken || undefined,
     }
   );
   return data;

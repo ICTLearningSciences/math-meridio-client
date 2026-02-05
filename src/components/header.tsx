@@ -10,9 +10,9 @@ import { Button, IconButton, TextField, Typography } from '@mui/material';
 import { Create, Home, Save } from '@mui/icons-material';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { clearPlayer } from '../store/slices/player';
-import { useWithGame } from '../store/slices/game/use-with-game-state';
 import AvatarSprite from './avatar-sprite';
 import { UseWithLogin } from '../store/slices/player/use-with-login';
+import { useWithEducationalData } from '../store/slices/educational-data/use-with-educational-data';
 
 export function Header(props: { useLogin: UseWithLogin }) {
   const dispatch = useAppDispatch();
@@ -22,11 +22,11 @@ export function Header(props: { useLogin: UseWithLogin }) {
   const [isEditing, setIsEditing] = React.useState<boolean>(false);
   const { logout } = props.useLogin;
   const { pathname } = useLocation();
-  const { leaveRoom, renameRoom } = useWithGame();
+  const { leaveGameRoom, renameGameRoom } = useWithEducationalData();
   const navigate = useNavigate();
 
   function homeButtonClick() {
-    leaveRoom();
+    leaveGameRoom(room?._id || '', player?._id || '');
     navigate('/classes');
   }
 
@@ -59,7 +59,7 @@ export function Header(props: { useLogin: UseWithLogin }) {
             style={{ color: 'white' }}
             onClick={() => {
               if (isEditing) {
-                renameRoom(room?._id || '', name);
+                renameGameRoom(room?._id || '', name);
                 setIsEditing(false);
               } else {
                 setIsEditing(true);
@@ -81,7 +81,7 @@ export function Header(props: { useLogin: UseWithLogin }) {
               marginRight: 5,
               padding: 0,
             }}
-            onClick={leaveRoom}
+            onClick={() => leaveGameRoom(room?._id || '', player?._id || '')}
           >
             Leave Room
           </Button>

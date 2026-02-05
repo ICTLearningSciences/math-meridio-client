@@ -83,6 +83,7 @@ export function useWithGame() {
     createAndJoinGameRoom,
     fetchRoom,
   } = useWithEducationalData();
+  console.log(gameStateHandler)
 
   React.useEffect(() => {
     if (!room || equals(lastChatLog, room.gameData.chat)) return;
@@ -104,7 +105,7 @@ export function useWithGame() {
       updateFunction(room.gameData.globalStateData);
     }
     setLastGlobalState(room.gameData.globalStateData);
-  }, [room?.gameData.globalStateData]);
+  }, [JSON.stringify(room?.gameData.globalStateData)]);
 
   React.useEffect(() => {
     if (!room || equals(lastPlayerState, room.gameData.playerStateData)) return;

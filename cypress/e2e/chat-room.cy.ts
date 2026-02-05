@@ -179,9 +179,13 @@ describe("Chat room screen", () => {
     // ENSURE it waits until a message comes in from all students
     
     describe("waitForAllStudentResponses is true", () => {
+
+        // NOTE: to emulate, just add messages from each student 1 at a time in the FetchRoom responses.
         it("the game will wait for all students to respond before progressing to the next step")
 
         // AWAY status should be set in the playerStateData as awayForStepIds: string[] = ["step-id"]
         it("the game will continue if at least 1 student responds for the step and all others are set as AWAY for that step")
+
+        it("if the step does not get passed, the game will NOT require all students to respond again.")
     })
 })
