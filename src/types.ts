@@ -4,6 +4,11 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
+import {
+  DiscussionStage,
+  IStage,
+} from './components/discussion-stage-builder/types';
+
 export enum PromptOutputTypes {
   TEXT = 'TEXT',
   JSON = 'JSON',
@@ -91,3 +96,17 @@ export interface PageInfo {
   startCursor: string;
   endCursor: string;
 }
+
+export type DiscussionCurrentStage = CurrentStage<DiscussionStage>;
+
+export interface CurrentStage<T extends IStage> {
+  id: string;
+  stage: T;
+  action?: () => void;
+  beforeStart?: () => void;
+  getNextStage: (collectedData: CollectedDiscussionData) => string;
+}
+export type CollectedDiscussionData = Record<
+  string,
+  string | number | boolean | string[]
+>;

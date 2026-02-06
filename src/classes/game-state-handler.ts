@@ -20,12 +20,17 @@ import {
   PlayerStateData,
   SenderType,
 } from '../store/slices/game';
-import { GenericLlmRequest, TargetAiModelServiceType } from '../types';
+import {
+  CollectedDiscussionData,
+  CurrentStage,
+  GenericLlmRequest,
+  TargetAiModelServiceType,
+} from '../types';
 import { CancelToken } from 'axios';
 import { Subscriber } from '../store/slices/game/use-with-game-state';
 import { Player } from '../store/slices/player/types';
 import { DiscussionStageHandler } from './discussion-stage-handler';
-import { CurrentStage, DiscussionCurrentStage } from '../game/basketball';
+import { DiscussionCurrentStage } from '../game/basketball';
 import { getFirstStepId } from '../helpers';
 
 interface UserResponseHandleState {
@@ -40,11 +45,6 @@ function getDefaultUserResponseHandleState(): UserResponseHandleState {
     responseNavigations: [],
   };
 }
-
-export type CollectedDiscussionData = Record<
-  string,
-  string | number | boolean | string[]
->;
 
 export interface GameStateHandlerArgs {
   sendMessage: (msg: ChatMessage) => void;
@@ -194,7 +194,7 @@ export abstract class GameStateHandler implements Subscriber {
       }
       if (isDiscussionStage(newStage.stage)) {
         this.discussionStageHandler.onDiscussionFinished =
-          newStage.onStageFinished;
+          newStage.getNextStage;
         await this.discussionStageHandler.executeDiscussionStageStep(
           newStage as CurrentStage<DiscussionStage>,
           newGlobalState.curStepId
@@ -294,8 +294,7 @@ export abstract class GameStateHandler implements Subscriber {
     const curStep = this.getCurrentDiscussionStageStep();
     if (curStage && curStep && isDiscussionStage(curStage.stage)) {
       console.log('returning to step', curStep);
-      this.discussionStageHandler.onDiscussionFinished =
-        curStage.onStageFinished;
+      this.discussionStageHandler.onDiscussionFinished = curStage.getNextStage;
       this.discussionStageHandler.executeDiscussionStageStep(
         curStage as CurrentStage<DiscussionStage>,
         curStep.stepId

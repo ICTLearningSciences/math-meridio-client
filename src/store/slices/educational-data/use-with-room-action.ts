@@ -6,7 +6,6 @@ The full terms of this copyright and license should always be found in the root 
 */
 import * as roomActionApi from '../../../room-action-api';
 import { RoomActionQueueEntry } from '../../../room-action-api';
-import { useState } from 'react';
 
 export function useWithRoomAction() {
   async function fetchRoomActions(

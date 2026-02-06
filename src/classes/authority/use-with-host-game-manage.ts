@@ -8,7 +8,7 @@ import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { useWithEducationalData as useWithEducationalDataHook } from '../../store/slices/educational-data/use-with-educational-data';
 import { useParams } from 'react-router-dom';
 import { useWithStages } from '../../store/slices/stages/use-with-stages';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Game, GAMES } from '../../game/types';
 import { localStorageStore, SESSION_ID } from '../../store/local-storage';
 import { v4 as uuidv4 } from 'uuid';

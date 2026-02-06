@@ -5,6 +5,10 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 
+// BACKLOG:
+//      - add a new way for the game processor to detect when a simulation ends to know when to progress (if notified of simulation ending AND stage.clientId === "wait-for-simulation", then call stage.getNextStage)
+//      -
+
 // Actions + Processed
 // 1. PLAYER_SEND_MESSAGE
 //      - Add message into room
@@ -41,8 +45,6 @@ The full terms of this copyright and license should always be found in the root 
 
 // 4. UPDATE_PLAYER_STATE_DATA
 //      - call updatePlayerStateData
-//      - call syncGlobalTruthDataToPlayers
-//      - call syncGlobalGameStateKeysToPlayers
 
 // Handling Stage Step Types (executeDiscussionStageStep)
 // Note: stages will be processed quickly until
@@ -53,50 +55,65 @@ The full terms of this copyright and license should always be found in the root 
 //      - if requireAllUserInputs, update globalStateData with initializeResponseTracking
 //      - setResponsePending(true)
 //      - add the message to the games chat list (with sessionId)
-//      -
 //      - setResponsePending(false)
+//      - setLocalGlobalStateData(updateStateWithNextStep())
 
 // SYSTEM_MESSAGE
 //      - setResponsePending(true)
 //      - wait 1 second
 //      - send the message (with sessionId)
 //      - setResponsePending(false)
+//      - setLocalGlobalStateData(updateStateWithNextStep())
 
 // PROMPT
+//      - Mostly the same
+//      - EXCEPT make sure newPlayerStateData is updated with updatePlayerStateData
+//      - EXCEPT make sure to just add error message to the chat log instead of sendMessage
+//      - setLocalGlobalStateData(updateStateWithNextStep())
 
 // CONDITIONAL
+//      - setLocalGlobalStateData(updateStateWithNextStep())
 
+// necessary functions
 
-
-
+// syncGameStateToBackend()
+//      - ENSURE only called by room owner
+//      - fires and forgets update backend with most recent data
 
 // NEW PURE FUNCTIONS
 
-// syncGameStateToBackend()
+// ---- DONE ----
+// updateGameDataWithNextStep(curGlobalStateData, curStage: Stage, curStep: Step): updatedGameData
+//      - if step.lastStep, call stage.getNextStage(globalStateData)
+//      - applyNextStepToGlobalStateData (same as getNextStep but accepts and updates the global state data, and returns the updated globalStateData)
+//      - return updated globalStateData
 
+// ---- DONE ----
 // initializeResponseTracking(globalStateDate, requestUserInputStep): globalStateData
 //      - Check if we already have a stepResponseTracking in the globalStateData.gameStateData for this step
 //      - If already exists, return with no updates
 //      - If doesn't already exist, then add to stepResponseTracking in globalStateData.gameStateData
 
+// ---- DONE ----
 // updateGlobalStateData(curGlobalStateData, newData): updatedGlobalStateData
 //  - if the key already exists in the global state AND is within this games persistTruthGlobalStateData AND is already set to "true", do nothing
 //  - else update/insert key,value into globalStateData.gameStateData
 
+// ---- DONE ----
 // updatePlayerStateData(curPlayerStateData, newData): updatedPlayerStatedata
 //  - if the key already exists for the user AND is within this games persistTruthGlobalStateData AND is already set to "true", do nothing
 //  - else update/insert key,value into globalStateData.gameStateData
 
+// ---- DONE ----
 // syncGlobalTruthDataToPlayers(globalStateData, truthPersistFields, playerStateData): updatedPlayerStateData
 //  - for every field we persist true for
 //     - if that field is in the globalStateData AND is "true"
 //          - update/inster that field within every playerStateData
 
+// ---- DONE ----
 // syncGlobalGameStateKeysToPlayers(globalStateData, playerStateData): updatedPlayerStateData
 //  - for each globalStateData.gameStateData key
 //      - for each player
 //          - if key is not in playerStateData, add it
-
-
 
 // EDGE CASES

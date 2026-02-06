@@ -11,24 +11,23 @@ import {
 } from '../ai-services/ai-service-types';
 import {
   convertCollectedDataToGSData,
-  processPredefinedResponses,
   receivedExpectedData,
   recursivelyConvertExpectedDataToAiPromptString,
   recursiveUpdateAdditionalInfo,
   replaceStoredDataInString,
-  sortMessagesByResponseWeight,
 } from '../components/discussion-stage-builder/helpers';
 import {
   Checking,
   ConditionalActivityStep,
   DiscussionStageStep,
   DiscussionStageStepType,
-  PredefinedResponse,
   PromptStageStep,
   RequestUserInputStageStep,
   SystemMessageStageStep,
 } from '../components/discussion-stage-builder/types';
 import {
+  CollectedDiscussionData,
+  DiscussionCurrentStage,
   GenericLlmRequest,
   PromptOutputTypes,
   PromptRoles,
@@ -48,25 +47,7 @@ import {
 import { Player } from '../store/slices/player/types';
 import { SESSION_ID } from '../store/local-storage';
 import { localStorageGet } from '../store/local-storage';
-import { DiscussionCurrentStage } from '../game/basketball';
-interface UserResponseHandleState {
-  responseNavigations: {
-    response: string;
-    jumpToStepId: string;
-  }[];
-}
-
-interface StepResponseTracking {
-  stepId: string;
-  requiredPlayerIds: string[];
-  responses: Map<string, string>; // playerId -> message
-  allResponsesReceivedOnce: boolean; // once true, no longer require all responses for this step
-}
-
-export type CollectedDiscussionData = Record<
-  string,
-  string | number | boolean | string[]
->;
+import { StepResponseTracking } from './authority/pure-state-modifiers';
 
 export class DiscussionStageHandler {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

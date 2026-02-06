@@ -6,7 +6,6 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React from 'react';
 import {
-  CollectedDiscussionData,
   GameStateHandler,
   GameStateHandlerArgs,
 } from '../../classes/game-state-handler';
@@ -14,7 +13,6 @@ import { Game } from '../types';
 import { SimulationScene } from './SimulationScene';
 
 import {
-  DiscussionStage,
   IStage,
   SimulationStage,
 } from '../../components/discussion-stage-builder/types';
@@ -26,6 +24,7 @@ import { PlayerStrategy, SimulationComponent } from './simulation';
 import { ResultComponent } from './results';
 import { PlayerStateData } from '../../store/slices/game';
 import { SIMULTAION_VIEWED_KEY } from '../../helpers';
+import { CurrentStage } from '../../types';
 
 const introductionDiscussionStage = '64de5488-c851-41b3-8347-18ffa340c753';
 const collectStrategyDiscussionStage = 'e20e0247-03a2-485f-b0be-b12ceb2af8b9';
@@ -58,16 +57,6 @@ export const GENERAL_ADMISSION_TICKET_CONVERSION_RATE = 0.6;
 
 export const TOTAL_NUMBER_OF_TICKETS = 100;
 
-export interface CurrentStage<T extends IStage> {
-  id: string;
-  stage: T;
-  action?: () => void;
-  beforeStart?: () => void;
-  onStageFinished: (collectedData: CollectedDiscussionData) => void;
-}
-
-export type DiscussionCurrentStage = CurrentStage<DiscussionStage>;
-
 export class BasketballStateHandler extends GameStateHandler {
   currentStage: CurrentStage<IStage> | undefined;
   discussionStageHandler: DiscussionStageHandler;
@@ -86,8 +75,7 @@ export class BasketballStateHandler extends GameStateHandler {
       undefined,
       this.newPlayerStateData.bind(this),
       undefined,
-      args.onWaitingForPlayers,
-      args.updateRoomGameData
+      args.onWaitingForPlayers
     );
 
     this.initializeGame = this.initializeGame.bind(this);
@@ -127,29 +115,29 @@ export class BasketballStateHandler extends GameStateHandler {
       {
         id: 'intro-discussion',
         stage: introDiscussionStage,
-        onStageFinished: () => {
-          this.updateStageByStageListId('collect-strategy');
+        getNextStage: () => {
+          return 'collect-strategy';
         },
       },
       {
         id: 'collect-strategy',
         stage: collectStrategyStage,
-        onStageFinished: () => {
-          this.updateStageByStageListId('understanding-equation');
+        getNextStage: () => {
+          return 'understanding-equation';
         },
       },
       {
         id: 'understanding-equation',
         stage: understandingEquationStage,
-        onStageFinished: () => {
-          this.updateStageByStageListId('select-strategy');
+        getNextStage: () => {
+          return 'select-strategy';
         },
       },
       {
         id: 'select-strategy',
         stage: selectStrategyStage,
-        onStageFinished: () => {
-          this.updateStageByStageListId('wait-for-simulation');
+        getNextStage: () => {
+          return 'wait-for-simulation';
         },
       },
       {
@@ -159,22 +147,22 @@ export class BasketballStateHandler extends GameStateHandler {
           clientId: 'wait-for-simulation',
           stageType: 'simulation',
         } as SimulationStage,
-        onStageFinished: () => {
-          this.updateStageByStageListId('determine-best-strategy');
+        getNextStage: () => {
+          return 'determine-best-strategy';
         },
       },
       {
         id: 'determine-best-strategy',
         stage: determineBestStrategyStage,
-        onStageFinished: () => {
-          this.updateStageByStageListId('finished');
+        getNextStage: () => {
+          return 'finished';
         },
       },
       {
         id: 'finished',
         stage: finishedStage,
-        onStageFinished: () => {
-          // nothing
+        getNextStage: () => {
+          return '';
         },
       },
     ];
@@ -205,7 +193,7 @@ export class BasketballStateHandler extends GameStateHandler {
       if (!stage) {
         throw new Error('missing stage');
       }
-      stage.onStageFinished({});
+      // stage.getNextStage({});
     }
   }
 }
