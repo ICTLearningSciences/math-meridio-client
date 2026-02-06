@@ -39,14 +39,8 @@ export interface Room {
   gameData: GameData;
 }
 
-export interface HeartBeat {
-  player: string;
-  timestamp: Date;
-}
-
 export interface GameData {
   gameId: string;
-  heartBeats: HeartBeat[];
   players: Player[];
   chat: ChatMessage[];
   globalStateData: GlobalStateData;

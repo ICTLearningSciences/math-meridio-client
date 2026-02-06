@@ -213,10 +213,6 @@ export const fullRoomQueryData = `
   classId
   gameData {
     gameId
-    heartBeats {
-      player
-      timestamp
-    }
     players {
       ${userDataQuery}
     }

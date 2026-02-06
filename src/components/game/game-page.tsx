@@ -154,7 +154,7 @@ function GamePage(): JSX.Element {
     ownerIsPresent,
     launchGame,
     waitingForPlayers,
-    sendMessage
+    sendMessage,
   } = useWithGame();
   const navigate = useNavigate();
   const { windowHeight, windowWidth } = useWithWindow();

@@ -235,59 +235,7 @@ export class BasketballStateHandler extends GameStateHandler {
     }
   }
 
-  async handleNewUserMessage(message: string) {
-    // super.handleNewUserMessage(message);
-    // todo (not hard-coded)
-    const msg = message.toLowerCase();
-    if (msg.includes('outside shot')) {
-      const value = msg.includes('3') || msg.includes('three') ? 3 : undefined;
-      this.updateRoomGameData({
-        globalStateData: {
-          gameStateData: [{ key: 'Points per outside shot', value: value }],
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any,
-        playerStateData: [
-          {
-            player: this.player._id,
-            animation: '',
-            gameStateData: [{ key: 'Points per outside shot', value: value }],
-          },
-        ],
-      });
-    }
-    if (msg.includes('inside shot')) {
-      const value = msg.includes('2') || msg.includes('two') ? 2 : undefined;
-      this.updateRoomGameData({
-        globalStateData: {
-          gameStateData: [{ key: 'Points per inside shot', value: value }],
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any,
-        playerStateData: [
-          {
-            player: this.player._id,
-            animation: '',
-            gameStateData: [{ key: 'Points per inside shot', value: value }],
-          },
-        ],
-      });
-    }
-    if (msg.includes('mid shot')) {
-      const value = msg.includes('2') || msg.includes('two') ? 2 : undefined;
-      this.updateRoomGameData({
-        globalStateData: {
-          gameStateData: [{ key: 'Points per mid shot', value: value }],
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any,
-        playerStateData: [
-          {
-            player: this.player._id,
-            animation: '',
-            gameStateData: [{ key: 'Points per mid shot', value: value }],
-          },
-        ],
-      });
-    }
-  }
+  async handleNewUserMessage(message: string) {}
 }
 
 const BasketballGame: Game = {

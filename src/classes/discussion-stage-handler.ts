@@ -56,12 +56,6 @@ interface UserResponseHandleState {
   }[];
 }
 
-function getDefaultUserResponseHandleState(): UserResponseHandleState {
-  return {
-    responseNavigations: [],
-  };
-}
-
 interface StepResponseTracking {
   stepId: string;
   requiredPlayerIds: string[];
@@ -88,7 +82,6 @@ export class DiscussionStageHandler {
     llmRequest: GenericLlmRequest,
     cancelToken?: CancelToken
   ) => Promise<AiServicesResponseTypes>;
-  userResponseHandleState: UserResponseHandleState;
   stepIdsSinceLastInput: string[]; // used to prevent infinite loops, should never repeat a step until we've had some sort of user input.
   lastFailedStepId: string | null = null;
   onDiscussionFinished?: (discussionData: CollectedDiscussionData) => void;
@@ -199,7 +192,6 @@ export class DiscussionStageHandler {
     this.playerStateData = playerStateData;
     this.stateData = {};
     this.stepIdsSinceLastInput = [];
-    this.userResponseHandleState = getDefaultUserResponseHandleState();
     this.sendMessage = sendMessage;
     this.executePrompt = executePrompt;
     this.setResponsePending = setResponsePending;
@@ -218,15 +210,7 @@ export class DiscussionStageHandler {
     this.executeDiscussionStageStep =
       this.executeDiscussionStageStep.bind(this);
     this.handleStep = this.handleStep.bind(this);
-    this.handleSystemMessageStep = this.handleSystemMessageStep.bind(this);
-    this.handleRequestUserInputStep =
-      this.handleRequestUserInputStep.bind(this);
     this.handleNewUserMessage = this.handleNewUserMessage.bind(this);
-    this.handlePromptStep = this.handlePromptStep.bind(this);
-    this.getNextStep = this.getNextStep.bind(this);
-    this.getStepById = this.getStepById.bind(this);
-    this.addResponseNavigation = this.addResponseNavigation.bind(this);
-    this.handleExtractMcqChoices = this.handleExtractMcqChoices.bind(this);
     this.onDiscussionFinished = this.onDiscussionFinished?.bind(this);
     this.updateRoomStageStepId = this.updateRoomStageStepId.bind(this);
     this.updateRoomWithNextStep = this.updateRoomWithNextStep.bind(this);
@@ -237,8 +221,6 @@ export class DiscussionStageHandler {
     this.handlePromptStep = this.handlePromptStep.bind(this);
     this.getNextStep = this.getNextStep.bind(this);
     this.getStepById = this.getStepById.bind(this);
-    this.addResponseNavigation = this.addResponseNavigation.bind(this);
-    this.handleExtractMcqChoices = this.handleExtractMcqChoices.bind(this);
   }
 
   /**
@@ -259,7 +241,6 @@ export class DiscussionStageHandler {
       throw new Error('No initial step found');
     }
     this.stepIdsSinceLastInput = [];
-    this.userResponseHandleState = getDefaultUserResponseHandleState();
     return await this.handleStep(discussionStage, curStep);
   }
 
@@ -308,7 +289,7 @@ export class DiscussionStageHandler {
         );
       case DiscussionStageStepType.CONDITIONAL:
         // A conditional step is just an extra condition to determine the next step
-        // So we can just call updateRoomWithNextStep with the step
+        // So we can just call updateRoomWithNextStep with the step, where it will determine the next step based on the conditional
         return await this.updateRoomWithNextStep(discussionStage, step);
       default:
         throw new Error(`Unknown step type: ${step}`);
@@ -559,11 +540,6 @@ export class DiscussionStageHandler {
     discussionStage: DiscussionCurrentStage,
     step: RequestUserInputStageStep
   ) {
-    const processedPredefinedResponses = processPredefinedResponses(
-      step.predefinedResponses,
-      this.stateData
-    );
-
     // Initialize multi-user response tracking if required
     // Only initialize if we haven't already received all responses for this step
     if (step.requireAllUserInputs) {
@@ -586,44 +562,11 @@ export class DiscussionStageHandler {
       sender: SenderType.SYSTEM,
       displayType: MessageDisplayType.TEXT,
       disableUserInput: step.disableFreeInput,
-      mcqChoices: this.handleExtractMcqChoices(processedPredefinedResponses),
+      mcqChoices: [],
       sessionId: sessionId as string,
     });
     this.setResponsePending(false);
     // Will now wait for user input before progressing to next step
-  }
-
-  handleExtractMcqChoices(predefinedResponses: PredefinedResponse[]): string[] {
-    const finalRes: string[] = [];
-    for (let i = 0; i < predefinedResponses.length; i++) {
-      const res = predefinedResponses[i];
-      if (res.isArray) {
-        const responsesArray = res.message.split(',');
-        if (res.jumpToStepId) {
-          for (let j = 0; j < responsesArray.length; j++) {
-            this.addResponseNavigation(responsesArray[j], res.jumpToStepId);
-          }
-        }
-        finalRes.push(...responsesArray);
-      } else {
-        const resString = replaceStoredDataInString(
-          res.message,
-          this.stateData
-        );
-        if (res.jumpToStepId) {
-          this.addResponseNavigation(resString, res.jumpToStepId);
-        }
-        finalRes.push(resString);
-      }
-    }
-    return sortMessagesByResponseWeight(finalRes, predefinedResponses);
-  }
-
-  addResponseNavigation(response: string, jumpToStepId: string) {
-    this.userResponseHandleState.responseNavigations.push({
-      response,
-      jumpToStepId,
-    });
   }
 
   getStoredArray(str: string) {
@@ -678,28 +621,6 @@ export class DiscussionStageHandler {
       console.log('step is not a request user input step, skipping');
       return;
     }
-    const requestUserInputStep = curStep as RequestUserInputStageStep;
-    if (requestUserInputStep.predefinedResponses.length > 0) {
-      const predefinedResponseMatch =
-        requestUserInputStep.predefinedResponses.find(
-          (response) => response.message === message
-        );
-      if (predefinedResponseMatch) {
-        if (predefinedResponseMatch.jumpToStepId) {
-          const jumpStep = this.getStepById(
-            curStage,
-            predefinedResponseMatch.jumpToStepId
-          );
-          if (!jumpStep) {
-            this.sendErrorMessage(
-              `Unable to find target step ${predefinedResponseMatch.jumpToStepId} for predefined input ${predefinedResponseMatch.message}, maybe you deleted it and forgot to update this step?`
-            );
-            return;
-          }
-          return jumpStep;
-        }
-      }
-    }
     const userInputStep = curStep as RequestUserInputStageStep;
     if (userInputStep.saveResponseVariableName) {
       this.stateData[userInputStep.saveResponseVariableName] = message;
@@ -711,31 +632,6 @@ export class DiscussionStageHandler {
           this.playerId
         );
     }
-    if (this.userResponseHandleState.responseNavigations.length > 0) {
-      for (
-        let i = 0;
-        i < this.userResponseHandleState.responseNavigations.length;
-        i++
-      ) {
-        const responseNavigation =
-          this.userResponseHandleState.responseNavigations[i];
-        if (responseNavigation.response === message) {
-          const jumpStep = this.getStepById(
-            curStage,
-            responseNavigation.jumpToStepId
-          );
-          if (!jumpStep) {
-            this.sendErrorMessage(
-              `Unable to find target step ${responseNavigation.jumpToStepId} for predefined input ${responseNavigation.response}, maybe you deleted it and forgot to update this step?`
-            );
-            return;
-          }
-          return jumpStep;
-        }
-      }
-    }
-    // reset user response handle state since we handled the user response
-    this.userResponseHandleState = getDefaultUserResponseHandleState();
     return this.updateRoomWithNextStep(curStage, curStep);
   }
 

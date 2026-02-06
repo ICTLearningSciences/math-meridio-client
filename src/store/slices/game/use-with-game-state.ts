@@ -83,7 +83,7 @@ export function useWithGame() {
     createAndJoinGameRoom,
     fetchRoom,
   } = useWithEducationalData();
-  console.log(gameStateHandler)
+  console.log(gameStateHandler);
 
   React.useEffect(() => {
     if (!room || equals(lastChatLog, room.gameData.chat)) return;

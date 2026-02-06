@@ -1,0 +1,102 @@
+/*
+This software is Copyright ©️ 2020 The University of Southern California. All Rights Reserved. 
+Permission to use, copy, modify, and distribute this software and its documentation for educational, research and non-profit purposes, without fee, and without a written agreement is hereby granted, provided that the above copyright notice and subject to the full license file found in the root of this software deliverable. Permission to make commercial use of this software may be obtained by contacting:  USC Stevens Center for Innovation University of Southern California 1150 S. Olive Street, Suite 2300, Los Angeles, CA 90115, USA Email: accounting@stevens.usc.edu
+
+The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
+*/
+
+// Actions + Processed
+// 1. PLAYER_SEND_MESSAGE
+//      - Add message into room
+//      - If we are not currently in a request user input step, do nothing.
+//      - if (userInputStep.saveResponseVariableName)
+//          - add to localStateData (contains all aggregated LLM response data)
+//          - call updateGlobalStateData
+//          - call updatePlayerStateData
+//          - call syncGlobalTruthDataToPlayers
+//          - call syncGlobalGameStateKeysToPlayers
+//      - Check if this step is requiring all users to give input.
+//          - If true (waiting for all users)
+//              - Pull stepResponseTracking from globalStateData
+//              - Record this players response for this step (append if already exists)
+//              - Check if we've received messages from all users for this step yet.
+//                  - If true, then aggregate messages and send to process
+//                  - If false, RETURN EARLY. We must wait for all users to give input.
+//      - If false (not waiting for all users), then send single message to process
+//      - update globalStateData with next step
+
+// 2. PLAYER_LEAVES_ROOM
+//      - remove player from gameData.players
+//      - remove player from gameData.playerStateData
+//      - Check if the current step is a request user input
+//              - Check we've received messages from all users for this step yet.
+//                  - If true, then aggregate messages and send to process.
+//                  - If false, do nothing.
+
+// 3. JOIN_ROOM
+//      - ENSURE student not already part of room.
+//      - ENSURE that if the room has a classId, that the student is part of that class.
+//      - push playerId into gameData.players
+//      - push new playerData into gameData.playerStateData, copying the globalStateData.gameStateData into the users gameStateData
+
+// 4. UPDATE_PLAYER_STATE_DATA
+//      - call updatePlayerStateData
+//      - call syncGlobalTruthDataToPlayers
+//      - call syncGlobalGameStateKeysToPlayers
+
+// Handling Stage Step Types (executeDiscussionStageStep)
+// Note: stages will be processed quickly until
+
+//  - BEFORE processing a step, do same initial checks as executeDiscussionStageStep + handleStep
+
+// REQUEST_USER_INPUT
+//      - if requireAllUserInputs, update globalStateData with initializeResponseTracking
+//      - setResponsePending(true)
+//      - add the message to the games chat list (with sessionId)
+//      -
+//      - setResponsePending(false)
+
+// SYSTEM_MESSAGE
+//      - setResponsePending(true)
+//      - wait 1 second
+//      - send the message (with sessionId)
+//      - setResponsePending(false)
+
+// PROMPT
+
+// CONDITIONAL
+
+
+
+
+
+// NEW PURE FUNCTIONS
+
+// syncGameStateToBackend()
+
+// initializeResponseTracking(globalStateDate, requestUserInputStep): globalStateData
+//      - Check if we already have a stepResponseTracking in the globalStateData.gameStateData for this step
+//      - If already exists, return with no updates
+//      - If doesn't already exist, then add to stepResponseTracking in globalStateData.gameStateData
+
+// updateGlobalStateData(curGlobalStateData, newData): updatedGlobalStateData
+//  - if the key already exists in the global state AND is within this games persistTruthGlobalStateData AND is already set to "true", do nothing
+//  - else update/insert key,value into globalStateData.gameStateData
+
+// updatePlayerStateData(curPlayerStateData, newData): updatedPlayerStatedata
+//  - if the key already exists for the user AND is within this games persistTruthGlobalStateData AND is already set to "true", do nothing
+//  - else update/insert key,value into globalStateData.gameStateData
+
+// syncGlobalTruthDataToPlayers(globalStateData, truthPersistFields, playerStateData): updatedPlayerStateData
+//  - for every field we persist true for
+//     - if that field is in the globalStateData AND is "true"
+//          - update/inster that field within every playerStateData
+
+// syncGlobalGameStateKeysToPlayers(globalStateData, playerStateData): updatedPlayerStateData
+//  - for each globalStateData.gameStateData key
+//      - for each player
+//          - if key is not in playerStateData, add it
+
+
+
+// EDGE CASES
