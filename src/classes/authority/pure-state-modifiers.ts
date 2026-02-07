@@ -13,36 +13,21 @@ import {
   DiscussionStageStepType,
 } from '../../components/discussion-stage-builder/types';
 import { getFirstStepId } from '../../helpers';
-import { localStorageGet, SESSION_ID } from '../../store/local-storage';
-import { GameData, GameStateData, SenderType } from '../../store/slices/game';
+import { GameData, GameStateData } from '../../store/slices/game';
 import { CollectedDiscussionData, DiscussionCurrentStage } from '../../types';
-import { v4 as uuidv4 } from 'uuid';
-export const STEP_RESPONSE_TRACKING_KEY = 'stepResponseTracking';
-export interface StepResponseTracking {
-  stepId: string;
-  requiredPlayerIds: string[];
-  responses: Map<string, string>; // playerId -> message
-  allResponsesReceivedOnce: boolean; // once true, no longer require all responses for this step
-}
-
-export function addSystemMessageToGameData(
-  gameData: GameData,
-  newMessage: string
-): GameData {
-  const sessionId = localStorageGet<string>(SESSION_ID);
-  gameData.chat.push({
-    id: uuidv4(),
-    sender: SenderType.SYSTEM,
-    message: newMessage,
-    sessionId: sessionId || '',
-  });
-  return gameData;
-}
+import {
+  everyPlayerHasRespondedToStep,
+  getGameDataCopy,
+  getResponseTrackingFromGameState,
+  STEP_RESPONSE_TRACKING_KEY,
+  StepResponseTracking,
+} from './state-modifier-helpers';
 
 /**
  * Initializes the response tracking for the whole game,
  */
-export function initializeResponseTracking(gameData: GameData): GameData {
+export function initializeResponseTracking(_gameData: GameData): GameData {
+  const gameData: GameData = getGameDataCopy(_gameData);
   const existingTracking = gameData.globalStateData.gameStateData.find(
     (gameDataKeyValue) => gameDataKeyValue.key === STEP_RESPONSE_TRACKING_KEY
   );
@@ -51,7 +36,7 @@ export function initializeResponseTracking(gameData: GameData): GameData {
   }
   const newTracking = {
     key: STEP_RESPONSE_TRACKING_KEY,
-    value: {},
+    value: [],
   };
   gameData.globalStateData.gameStateData.push(newTracking);
   return gameData;
@@ -61,10 +46,10 @@ export function initializeResponseTracking(gameData: GameData): GameData {
  * Adds response tracking for a step to the global state data
  */
 export function addResponseTrackingForStep(
-  gameData: GameData,
-  playersInRoom: string[],
+  _gameData: GameData,
   stepId: string
 ): GameData {
+  const gameData: GameData = getGameDataCopy(_gameData);
   const updatedGameData = initializeResponseTracking(gameData);
   const existingTrackingItem =
     updatedGameData.globalStateData.gameStateData.find(
@@ -84,8 +69,8 @@ export function addResponseTrackingForStep(
 
   existingTracking.push({
     stepId,
-    requiredPlayerIds: playersInRoom,
-    responses: new Map(),
+    requiredPlayerIds: _gameData.players.map((p) => p._id),
+    responses: {},
     allResponsesReceivedOnce: false,
   });
 
@@ -101,14 +86,63 @@ export function addResponseTrackingForStep(
   return updatedGameData;
 }
 
+export function recordPlayerResponseForStep(
+  _gameData: GameData,
+  stepId: string,
+  playerId: string,
+  message: string
+): GameData {
+  let gameData: GameData = getGameDataCopy(_gameData);
+  gameData = addResponseTrackingForStep(gameData, stepId);
+  const { index: stepTrackingIndex, value: allStepResponseTracking } =
+    getResponseTrackingFromGameState(gameData);
+  const stepResponseTrackingIdx = allStepResponseTracking.findIndex(
+    (stepResponseTracking) => stepResponseTracking.stepId === stepId
+  );
+  if (stepResponseTrackingIdx === -1) {
+    throw new Error(`Step response tracking not found for step ${stepId}`);
+  }
+  console.log(
+    'allStepResponseTracking',
+    JSON.stringify(allStepResponseTracking, null, 2)
+  );
+  const existingMessage =
+    allStepResponseTracking[stepResponseTrackingIdx].responses[playerId];
+  if (existingMessage) {
+    // append to existing message
+    allStepResponseTracking[stepResponseTrackingIdx].responses[playerId] =
+      existingMessage + '\t' + message;
+  } else {
+    // new message
+    allStepResponseTracking[stepResponseTrackingIdx].responses[playerId] =
+      message;
+  }
+
+  const everyPlayerHasResponded = everyPlayerHasRespondedToStep(
+    allStepResponseTracking[stepResponseTrackingIdx]
+  );
+
+  if (everyPlayerHasResponded) {
+    allStepResponseTracking[stepResponseTrackingIdx].allResponsesReceivedOnce =
+      true;
+  }
+
+  gameData.globalStateData.gameStateData[stepTrackingIndex] = {
+    key: STEP_RESPONSE_TRACKING_KEY,
+    value: allStepResponseTracking,
+  };
+  return gameData;
+}
+
 /**
  * Updates the global game state data with the new data
  */
 export function updateGlobalStateData(
-  gameData: GameData,
+  _gameData: GameData,
   persistTruthFields: string[],
   newData: GameStateData[]
 ): GameData {
+  const gameData: GameData = getGameDataCopy(_gameData);
   for (const newGameData of newData) {
     const existingGameDataItem = gameData.globalStateData.gameStateData.find(
       (gameDataKeyValue) => gameDataKeyValue.key === newGameData.key
@@ -133,11 +167,12 @@ export function updateGlobalStateData(
  * Updates the players individual game state data with the new data
  */
 export function updatePlayerStateData(
-  gameData: GameData,
+  _gameData: GameData,
   persistTruthFields: string[],
   playerId: string,
   _newPlayerGameStateData: GameStateData[]
 ): GameData {
+  const gameData: GameData = getGameDataCopy(_gameData);
   for (const newPlayerGameStateData of _newPlayerGameStateData) {
     const existingPlayerDataItem = gameData.playerStateData.find(
       (playerData) => playerData.player === playerId
@@ -172,9 +207,10 @@ export function updatePlayerStateData(
  * @returns the updated game data
  */
 export function syncGlobalTruthDataToPlayers(
-  gameData: GameData,
+  _gameData: GameData,
   persistTruthFields: string[]
 ): GameData {
+  const gameData: GameData = getGameDataCopy(_gameData);
   for (const persistTruthFieldKey of persistTruthFields) {
     const globalTruthData = gameData.globalStateData.gameStateData.find(
       (gameDataKeyValue) => gameDataKeyValue.key === persistTruthFieldKey
@@ -202,7 +238,10 @@ export function syncGlobalTruthDataToPlayers(
 /**
  * For every key in the global state data, sync the value to the players if the key is not already in the players game state data
  */
-export function syncGlobalGameStateKeysToPlayers(gameData: GameData): GameData {
+export function syncGlobalGameStateKeysToPlayers(
+  _gameData: GameData
+): GameData {
+  const gameData: GameData = getGameDataCopy(_gameData);
   for (const globalGameStateData of gameData.globalStateData.gameStateData) {
     for (const playerData of gameData.playerStateData) {
       const existingPlayerGameStateData = playerData.gameStateData.find(
@@ -288,11 +327,12 @@ export function getNextStepFromConditionalStage(
 }
 
 export function updateGameDataWithNextStep(
-  gameData: GameData,
+  _gameData: GameData,
   collectedDiscussionData: CollectedDiscussionData,
   curStage: DiscussionCurrentStage,
   curStep: DiscussionStageStep
 ): GameData {
+  const gameData: GameData = getGameDataCopy(_gameData);
   if (curStep.lastStep) {
     const nextStage = curStage.getNextStage(collectedDiscussionData);
     const nextStep = getFirstStepId(curStage.stage);

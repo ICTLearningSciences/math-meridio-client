@@ -82,6 +82,9 @@ The full terms of this copyright and license should always be found in the root 
 
 // NEW PURE FUNCTIONS
 
+// recordPlayerResponseForStep()
+//      -
+
 // ---- DONE ----
 // updateGameDataWithNextStep(curGlobalStateData, curStage: Stage, curStep: Step): updatedGameData
 //      - if step.lastStep, call stage.getNextStage(globalStateData)
