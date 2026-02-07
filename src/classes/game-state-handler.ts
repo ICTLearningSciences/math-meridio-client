@@ -30,7 +30,7 @@ import { CancelToken } from 'axios';
 import { Subscriber } from '../store/slices/game/use-with-game-state';
 import { Player } from '../store/slices/player/types';
 import { DiscussionStageHandler } from './discussion-stage-handler';
-import { DiscussionCurrentStage } from '../game/basketball';
+import { DiscussionCurrentStage } from '../types';
 import { getFirstStepId } from '../helpers';
 
 interface UserResponseHandleState {

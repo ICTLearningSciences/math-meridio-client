@@ -63,6 +63,7 @@ export interface GlobalStateData {
   curStageId: string;
   curStepId: string;
   roomOwnerId: string;
+  discussionDataStringified: string;
   gameStateData: GameStateData[];
 }
 

@@ -47,7 +47,7 @@ import {
 import { Player } from '../store/slices/player/types';
 import { SESSION_ID } from '../store/local-storage';
 import { localStorageGet } from '../store/local-storage';
-import { StepResponseTracking } from './authority/pure-state-modifiers';
+import { StepResponseTracking } from './authority/state-modifier-helpers';
 
 export class DiscussionStageHandler {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -324,7 +324,7 @@ export class DiscussionStageHandler {
     this.stepResponseTracking[stepId] = {
       stepId,
       requiredPlayerIds: playerIds,
-      responses: new Map(),
+      responses: {},
       allResponsesReceivedOnce: false,
     };
     this.notifyWaitingForPlayers(stepId);
@@ -337,15 +337,15 @@ export class DiscussionStageHandler {
   ): void {
     const tracking = this.stepResponseTracking[stepId];
     if (!tracking) return;
-    tracking.responses.set(playerId, message);
+    tracking.responses[playerId] = message;
     this.notifyWaitingForPlayers(stepId);
   }
 
   allPlayersResponded(stepId: string): boolean {
     const tracking = this.stepResponseTracking[stepId];
     if (!tracking) return false;
-    return tracking.requiredPlayerIds.every((playerId) =>
-      tracking.responses.has(playerId)
+    return tracking.requiredPlayerIds.every(
+      (playerId) => tracking.responses[playerId]
     );
   }
 
@@ -354,7 +354,7 @@ export class DiscussionStageHandler {
     if (!tracking) return '';
     const messages: string[] = [];
     for (const playerId of tracking.requiredPlayerIds) {
-      const message = tracking.responses.get(playerId);
+      const message = tracking.responses[playerId];
       if (message) {
         messages.push(`${playerId}: ${message}`);
       }
@@ -366,7 +366,7 @@ export class DiscussionStageHandler {
     const tracking = this.stepResponseTracking[stepId];
     if (!tracking) return [];
     return tracking.requiredPlayerIds.filter(
-      (playerId) => !tracking.responses.has(playerId)
+      (playerId) => !tracking.responses[playerId]
     );
   }
 
@@ -393,7 +393,7 @@ export class DiscussionStageHandler {
     const index = tracking.requiredPlayerIds.indexOf(playerId);
     if (index > -1) {
       tracking.requiredPlayerIds.splice(index, 1);
-      tracking.responses.delete(playerId);
+      delete tracking.responses[playerId];
       this.notifyWaitingForPlayers(stepId);
       return true;
     }

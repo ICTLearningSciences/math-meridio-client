@@ -51,6 +51,7 @@ describe('pure-state-modifiers', () => {
           curStageId: 'stage1',
           roomOwnerId: 'test-room-owner-id',
           curStepId: 'step1',
+          discussionDataStringified: '',
           gameStateData: [],
         },
       };
@@ -79,6 +80,7 @@ describe('pure-state-modifiers', () => {
         globalStateData: {
           curStageId: 'stage1',
           roomOwnerId: 'test-room-owner-id',
+          discussionDataStringified: '{}',
           curStepId: 'step1',
           gameStateData: [],
         },
@@ -110,6 +112,7 @@ describe('pure-state-modifiers', () => {
           curStageId: 'stage1',
           roomOwnerId: 'test-room-owner-id',
           curStepId: 'step1',
+          discussionDataStringified: '{}',
           gameStateData: [],
         },
       };
@@ -134,6 +137,7 @@ describe('pure-state-modifiers', () => {
         globalStateData: {
           curStageId: 'stage1',
           roomOwnerId: 'test-room-owner-id',
+          discussionDataStringified: '{}',
           curStepId: 'step1',
           gameStateData: [],
         },
@@ -160,6 +164,7 @@ describe('pure-state-modifiers', () => {
           curStageId: 'stage1',
           roomOwnerId: 'test-room-owner-id',
           curStepId: 'step1',
+          discussionDataStringified: '{}',
           gameStateData: [],
         },
       };
@@ -183,6 +188,7 @@ describe('pure-state-modifiers', () => {
           curStageId: 'stage1',
           roomOwnerId: 'test-room-owner-id',
           curStepId: 'step1',
+          discussionDataStringified: '{}',
           gameStateData: [],
         },
       };
@@ -209,6 +215,7 @@ describe('pure-state-modifiers', () => {
           curStageId: 'stage1',
           roomOwnerId: 'test-room-owner-id',
           curStepId: 'step1',
+          discussionDataStringified: '{}',
           gameStateData: [],
         },
       };
@@ -242,6 +249,7 @@ describe('pure-state-modifiers', () => {
           curStageId: 'stage1',
           roomOwnerId: 'test-room-owner-id',
           curStepId: 'step1',
+          discussionDataStringified: '{}',
           gameStateData: [],
         },
       };
@@ -276,6 +284,7 @@ describe('pure-state-modifiers', () => {
           curStageId: 'stage1',
           roomOwnerId: 'test-room-owner-id',
           curStepId: 'step1',
+          discussionDataStringified: '{}',
           gameStateData: [],
         },
       };
@@ -306,6 +315,7 @@ describe('pure-state-modifiers', () => {
           curStageId: 'stage1',
           roomOwnerId: 'test-room-owner-id',
           curStepId: 'step1',
+          discussionDataStringified: '{}',
           gameStateData: [],
         },
       };
@@ -353,6 +363,7 @@ describe('pure-state-modifiers', () => {
           curStageId: 'stage1',
           roomOwnerId: 'test-room-owner-id',
           curStepId: 'step1',
+          discussionDataStringified: '{}',
           gameStateData: [],
         },
       };
@@ -400,6 +411,7 @@ describe('pure-state-modifiers', () => {
           curStageId: 'stage1',
           roomOwnerId: 'test-room-owner-id',
           curStepId: 'step1',
+          discussionDataStringified: '{}',
           gameStateData: [],
         },
       };
@@ -440,6 +452,7 @@ describe('pure-state-modifiers', () => {
           curStageId: 'stage1',
           roomOwnerId: 'test-room-owner-id',
           curStepId: 'step1',
+          discussionDataStringified: '{}',
           gameStateData: [],
         },
       };
@@ -488,6 +501,7 @@ describe('pure-state-modifiers', () => {
           curStageId: 'stage1',
           roomOwnerId: 'test-room-owner-id',
           curStepId: 'step1',
+          discussionDataStringified: '{}',
           gameStateData: [],
         },
       };
@@ -537,6 +551,7 @@ describe('pure-state-modifiers', () => {
           curStageId: 'stage1',
           roomOwnerId: 'test-room-owner-id',
           curStepId: 'step1',
+          discussionDataStringified: '{}',
           gameStateData: [],
         },
       };

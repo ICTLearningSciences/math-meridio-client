@@ -26,10 +26,7 @@ import {
   NumericOperations,
   DiscussionStage,
 } from '../../../components/discussion-stage-builder/types';
-import {
-  CollectedDiscussionData,
-  DiscussionCurrentStage,
-} from '../../../types';
+import { DiscussionCurrentStage } from '../../../types';
 import { createBaseGameData } from './helpers';
 
 // Builder for SystemMessageStageStep
@@ -169,6 +166,7 @@ describe('next-step-management', () => {
       const gameData = createBaseGameData();
       gameData.globalStateData.curStageId = 'current-stage';
       gameData.globalStateData.curStepId = 'last-step';
+      gameData.globalStateData.discussionDataStringified = JSON.stringify({});
 
       // Create a stage with a flow containing steps
       const stage = createMockDiscussionStage([
@@ -185,27 +183,21 @@ describe('next-step-management', () => {
       const curStage = createMockCurrentStage(stage, 'next-stage-id');
       const curStep = createSystemMessageStep('last-step', { lastStep: true });
 
-      const collectedData: CollectedDiscussionData = {};
-
-      const result = updateGameDataWithNextStep(
-        gameData,
-        collectedData,
-        curStage,
-        curStep
-      );
+      const result = updateGameDataWithNextStep(gameData, curStage, curStep);
 
       // Should move to next stage
       expect(result.globalStateData.curStageId).toBe('next-stage-id');
       // Should reset to first step of the stage (based on getFirstStepId which returns flowsList[0].steps[0].stepId)
       expect(result.globalStateData.curStepId).toBe('step-1');
       // Should have called getNextStage
-      expect(curStage.getNextStage).toHaveBeenCalledWith(collectedData);
+      expect(curStage.getNextStage).toHaveBeenCalled();
     });
 
     it('should use jumpToStepId when present (non-conditional, non-lastStep)', () => {
       const gameData = createBaseGameData();
       gameData.globalStateData.curStageId = 'current-stage';
       gameData.globalStateData.curStepId = 'step-with-jump';
+      gameData.globalStateData.discussionDataStringified = JSON.stringify({});
 
       const stage = createMockDiscussionStage([
         {
@@ -226,14 +218,7 @@ describe('next-step-management', () => {
         jumpToStepId: 'target-step',
       });
 
-      const collectedData: CollectedDiscussionData = {};
-
-      const result = updateGameDataWithNextStep(
-        gameData,
-        collectedData,
-        curStage,
-        curStep
-      );
+      const result = updateGameDataWithNextStep(gameData, curStage, curStep);
 
       // Should jump to the target step
       expect(result.globalStateData.curStepId).toBe('target-step');
@@ -245,6 +230,9 @@ describe('next-step-management', () => {
       const gameData = createBaseGameData();
       gameData.globalStateData.curStageId = 'current-stage';
       gameData.globalStateData.curStepId = 'conditional-step';
+      gameData.globalStateData.discussionDataStringified = JSON.stringify({
+        userChoice: 'option1',
+      });
 
       const stage = createMockDiscussionStage([
         {
@@ -291,16 +279,7 @@ describe('next-step-management', () => {
         ),
       ]);
 
-      const collectedData: CollectedDiscussionData = {
-        userChoice: 'option1',
-      };
-
-      const result = updateGameDataWithNextStep(
-        gameData,
-        collectedData,
-        curStage,
-        curStep
-      );
+      const result = updateGameDataWithNextStep(gameData, curStage, curStep);
 
       expect(result.globalStateData.curStepId).toBe('target-step-1');
     });
@@ -309,6 +288,9 @@ describe('next-step-management', () => {
       const gameData = createBaseGameData();
       gameData.globalStateData.curStageId = 'current-stage';
       gameData.globalStateData.curStepId = 'conditional-step';
+      gameData.globalStateData.discussionDataStringified = JSON.stringify({
+        score: 95,
+      });
 
       const stage = createMockDiscussionStage([
         {
@@ -355,16 +337,7 @@ describe('next-step-management', () => {
         ),
       ]);
 
-      const collectedData: CollectedDiscussionData = {
-        score: 95,
-      };
-
-      const result = updateGameDataWithNextStep(
-        gameData,
-        collectedData,
-        curStage,
-        curStep
-      );
+      const result = updateGameDataWithNextStep(gameData, curStage, curStep);
 
       expect(result.globalStateData.curStepId).toBe('high-score-step');
     });
@@ -373,6 +346,9 @@ describe('next-step-management', () => {
       const gameData = createBaseGameData();
       gameData.globalStateData.curStageId = 'current-stage';
       gameData.globalStateData.curStepId = 'conditional-step';
+      gameData.globalStateData.discussionDataStringified = JSON.stringify({
+        isComplete: 'true',
+      });
 
       const stage = createMockDiscussionStage([
         {
@@ -405,17 +381,7 @@ describe('next-step-management', () => {
         ),
       ]);
 
-      // Test with string 'true'
-      const collectedData: CollectedDiscussionData = {
-        isComplete: 'true',
-      };
-
-      const result = updateGameDataWithNextStep(
-        gameData,
-        collectedData,
-        curStage,
-        curStep
-      );
+      const result = updateGameDataWithNextStep(gameData, curStage, curStep);
 
       expect(result.globalStateData.curStepId).toBe('completed-step');
     });
@@ -424,6 +390,9 @@ describe('next-step-management', () => {
       const gameData = createBaseGameData();
       gameData.globalStateData.curStageId = 'current-stage';
       gameData.globalStateData.curStepId = 'conditional-step';
+      gameData.globalStateData.discussionDataStringified = JSON.stringify({
+        items: ['item1', 'item2', 'item3', 'item4'],
+      });
 
       const stage = createMockDiscussionStage([
         {
@@ -470,16 +439,7 @@ describe('next-step-management', () => {
         ),
       ]);
 
-      const collectedData: CollectedDiscussionData = {
-        items: ['item1', 'item2', 'item3', 'item4'],
-      };
-
-      const result = updateGameDataWithNextStep(
-        gameData,
-        collectedData,
-        curStage,
-        curStep
-      );
+      const result = updateGameDataWithNextStep(gameData, curStage, curStep);
 
       expect(result.globalStateData.curStepId).toBe('many-items-step');
     });
@@ -488,6 +448,9 @@ describe('next-step-management', () => {
       const gameData = createBaseGameData();
       gameData.globalStateData.curStageId = 'current-stage';
       gameData.globalStateData.curStepId = 'conditional-step';
+      gameData.globalStateData.discussionDataStringified = JSON.stringify({
+        answer: 'This is a long answer with more than 10 characters',
+      });
 
       const stage = createMockDiscussionStage([
         {
@@ -534,16 +497,7 @@ describe('next-step-management', () => {
         ),
       ]);
 
-      const collectedData: CollectedDiscussionData = {
-        answer: 'This is a long answer with more than 10 characters',
-      };
-
-      const result = updateGameDataWithNextStep(
-        gameData,
-        collectedData,
-        curStage,
-        curStep
-      );
+      const result = updateGameDataWithNextStep(gameData, curStage, curStep);
 
       expect(result.globalStateData.curStepId).toBe('long-answer-step');
     });
@@ -552,6 +506,9 @@ describe('next-step-management', () => {
       const gameData = createBaseGameData();
       gameData.globalStateData.curStageId = 'current-stage';
       gameData.globalStateData.curStepId = 'conditional-step';
+      gameData.globalStateData.discussionDataStringified = JSON.stringify({
+        selectedOptions: ['premium', 'feature1', 'feature2'],
+      });
 
       const stage = createMockDiscussionStage([
         {
@@ -598,16 +555,7 @@ describe('next-step-management', () => {
         ),
       ]);
 
-      const collectedData: CollectedDiscussionData = {
-        selectedOptions: ['premium', 'feature1', 'feature2'],
-      };
-
-      const result = updateGameDataWithNextStep(
-        gameData,
-        collectedData,
-        curStage,
-        curStep
-      );
+      const result = updateGameDataWithNextStep(gameData, curStage, curStep);
 
       expect(result.globalStateData.curStepId).toBe('premium-step');
     });
@@ -616,6 +564,9 @@ describe('next-step-management', () => {
       const gameData = createBaseGameData();
       gameData.globalStateData.curStageId = 'current-stage';
       gameData.globalStateData.curStepId = 'conditional-step';
+      gameData.globalStateData.discussionDataStringified = JSON.stringify({
+        feedback: 'The service was excellent and very helpful',
+      });
 
       const stage = createMockDiscussionStage([
         {
@@ -662,16 +613,7 @@ describe('next-step-management', () => {
         ),
       ]);
 
-      const collectedData: CollectedDiscussionData = {
-        feedback: 'The service was excellent and very helpful',
-      };
-
-      const result = updateGameDataWithNextStep(
-        gameData,
-        collectedData,
-        curStage,
-        curStep
-      );
+      const result = updateGameDataWithNextStep(gameData, curStage, curStep);
 
       expect(result.globalStateData.curStepId).toBe('positive-step');
     });
@@ -680,6 +622,9 @@ describe('next-step-management', () => {
       const gameData = createBaseGameData();
       gameData.globalStateData.curStageId = 'current-stage';
       gameData.globalStateData.curStepId = 'conditional-step';
+      gameData.globalStateData.discussionDataStringified = JSON.stringify({
+        value: 10,
+      });
 
       const stage = createMockDiscussionStage([
         {
@@ -741,16 +686,7 @@ describe('next-step-management', () => {
         ),
       ]);
 
-      const collectedData: CollectedDiscussionData = {
-        value: 10,
-      };
-
-      const result = updateGameDataWithNextStep(
-        gameData,
-        collectedData,
-        curStage,
-        curStep
-      );
+      const result = updateGameDataWithNextStep(gameData, curStage, curStep);
 
       // Should match the first condition even though all three would be true
       expect(result.globalStateData.curStepId).toBe('first-match');
@@ -760,6 +696,7 @@ describe('next-step-management', () => {
       const gameData = createBaseGameData();
       gameData.globalStateData.curStageId = 'current-stage';
       gameData.globalStateData.curStepId = 'step-2';
+      gameData.globalStateData.discussionDataStringified = JSON.stringify({});
 
       const stage = createMockDiscussionStage([
         {
@@ -776,14 +713,7 @@ describe('next-step-management', () => {
       const curStage = createMockCurrentStage(stage);
       const curStep = createSystemMessageStep('step-2');
 
-      const collectedData: CollectedDiscussionData = {};
-
-      const result = updateGameDataWithNextStep(
-        gameData,
-        collectedData,
-        curStage,
-        curStep
-      );
+      const result = updateGameDataWithNextStep(gameData, curStage, curStep);
 
       // Should move to the next step in sequence
       expect(result.globalStateData.curStepId).toBe('step-3');
@@ -794,6 +724,7 @@ describe('next-step-management', () => {
       const gameData = createBaseGameData();
       gameData.globalStateData.curStageId = 'current-stage';
       gameData.globalStateData.curStepId = 'nonexistent-step';
+      gameData.globalStateData.discussionDataStringified = JSON.stringify({});
 
       const stage = createMockDiscussionStage([
         {
@@ -808,10 +739,8 @@ describe('next-step-management', () => {
       const curStage = createMockCurrentStage(stage);
       const curStep = createSystemMessageStep('nonexistent-step');
 
-      const collectedData: CollectedDiscussionData = {};
-
       expect(() => {
-        updateGameDataWithNextStep(gameData, collectedData, curStage, curStep);
+        updateGameDataWithNextStep(gameData, curStage, curStep);
       }).toThrow('Unable to find flow for step: nonexistent-step');
     });
 
@@ -819,6 +748,7 @@ describe('next-step-management', () => {
       const gameData = createBaseGameData();
       gameData.globalStateData.curStageId = 'current-stage';
       gameData.globalStateData.curStepId = 'missing-step';
+      gameData.globalStateData.discussionDataStringified = JSON.stringify({});
 
       // Create a flow but the step won't be in it
       const stage = createMockDiscussionStage([
@@ -834,10 +764,8 @@ describe('next-step-management', () => {
       const curStage = createMockCurrentStage(stage);
       const curStep = createSystemMessageStep('missing-step');
 
-      const collectedData: CollectedDiscussionData = {};
-
       expect(() => {
-        updateGameDataWithNextStep(gameData, collectedData, curStage, curStep);
+        updateGameDataWithNextStep(gameData, curStage, curStep);
       }).toThrow('Unable to find flow for step: missing-step');
     });
 
@@ -845,6 +773,7 @@ describe('next-step-management', () => {
       const gameData = createBaseGameData();
       gameData.globalStateData.curStageId = 'current-stage';
       gameData.globalStateData.curStepId = 'last-step-no-jump';
+      gameData.globalStateData.discussionDataStringified = JSON.stringify({});
 
       const stage = createMockDiscussionStage([
         {
@@ -860,10 +789,8 @@ describe('next-step-management', () => {
       const curStage = createMockCurrentStage(stage);
       const curStep = createSystemMessageStep('last-step-no-jump');
 
-      const collectedData: CollectedDiscussionData = {};
-
       expect(() => {
-        updateGameDataWithNextStep(gameData, collectedData, curStage, curStep);
+        updateGameDataWithNextStep(gameData, curStage, curStep);
       }).toThrow('No next step found');
     });
 
@@ -871,6 +798,7 @@ describe('next-step-management', () => {
       const gameData = createBaseGameData();
       gameData.globalStateData.curStageId = 'current-stage';
       gameData.globalStateData.curStepId = 'step-1';
+      gameData.globalStateData.discussionDataStringified = JSON.stringify({});
 
       const originalStageId = gameData.globalStateData.curStageId;
       const originalStepId = gameData.globalStateData.curStepId;
@@ -888,14 +816,7 @@ describe('next-step-management', () => {
       const curStage = createMockCurrentStage(stage);
       const curStep = createSystemMessageStep('step-1');
 
-      const collectedData: CollectedDiscussionData = {};
-
-      const result = updateGameDataWithNextStep(
-        gameData,
-        collectedData,
-        curStage,
-        curStep
-      );
+      const result = updateGameDataWithNextStep(gameData, curStage, curStep);
 
       // Result should have changed
       expect(result.globalStateData.curStepId).toBe('step-2');

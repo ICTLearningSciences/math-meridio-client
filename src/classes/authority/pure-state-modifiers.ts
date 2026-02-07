@@ -263,8 +263,11 @@ export function syncGlobalGameStateKeysToPlayers(
  */
 export function getNextStepFromConditionalStage(
   step: ConditionalActivityStep,
-  collectedDiscussionData: CollectedDiscussionData
+  gameData: GameData
 ): string {
+  const collectedDiscussionData: CollectedDiscussionData = JSON.parse(
+    gameData.globalStateData.discussionDataStringified
+  );
   const hydratedConditionals = step.conditionals.map((c) => ({
     ...c,
     expectedValue: replaceStoredDataInString(
@@ -326,11 +329,13 @@ export function getNextStepFromConditionalStage(
 
 export function updateGameDataWithNextStep(
   _gameData: GameData,
-  collectedDiscussionData: CollectedDiscussionData,
   curStage: DiscussionCurrentStage,
   curStep: DiscussionStageStep
 ): GameData {
   const gameData: GameData = getGameDataCopy(_gameData);
+  const collectedDiscussionData: CollectedDiscussionData = JSON.parse(
+    gameData.globalStateData.discussionDataStringified
+  );
   if (curStep.lastStep) {
     const nextStage = curStage.getNextStage(collectedDiscussionData);
     const nextStep = getFirstStepId(curStage.stage);
@@ -345,7 +350,7 @@ export function updateGameDataWithNextStep(
   if (curStep.stepType === DiscussionStageStepType.CONDITIONAL) {
     const nextStep = getNextStepFromConditionalStage(
       curStep as ConditionalActivityStep,
-      collectedDiscussionData
+      gameData
     );
     if (nextStep) {
       gameData.globalStateData.curStepId = nextStep;

@@ -51,6 +51,7 @@ export function createBaseGameData(): GameData {
     globalStateData: {
       curStageId: 'stage1',
       roomOwnerId: 'test-room-owner-id',
+      discussionDataStringified: '',
       curStepId: 'step1',
       gameStateData: [],
     },

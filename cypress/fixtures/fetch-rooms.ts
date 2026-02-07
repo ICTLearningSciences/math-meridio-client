@@ -33,6 +33,7 @@ export function freshRoomData(attendingRoomOwner: Player): Room {
                 "curStageId": "",
                 "curStepId": "",
                 "roomOwnerId": attendingRoomOwner._id,
+                "discussionDataStringified": "",
                 "gameStateData": []
             },
             "playerStateData": [

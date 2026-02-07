@@ -231,6 +231,7 @@ export const fullRoomQueryData = `
       curStageId
       curStepId
       roomOwnerId
+      discussionDataStringified
       gameStateData {
         key
         value

@@ -56,22 +56,21 @@ The full terms of this copyright and license should always be found in the root 
 //      - setResponsePending(true)
 //      - add the message to the games chat list (with sessionId)
 //      - setResponsePending(false)
-//      - setLocalGlobalStateData(updateStateWithNextStep())
 
 // SYSTEM_MESSAGE
 //      - setResponsePending(true)
 //      - wait 1 second
 //      - send the message (with sessionId)
 //      - setResponsePending(false)
+//      - THIS SHOULD BE DONE BY THE CALLER, THIS WOULD BE A SIDE EFFECT setLocalGlobalStateData(updateStateWithNextStep())
+
+// CONDITIONAL
 //      - setLocalGlobalStateData(updateStateWithNextStep())
 
 // PROMPT
 //      - Mostly the same
 //      - EXCEPT make sure newPlayerStateData is updated with updatePlayerStateData
 //      - EXCEPT make sure to just add error message to the chat log instead of sendMessage
-//      - setLocalGlobalStateData(updateStateWithNextStep())
-
-// CONDITIONAL
 //      - setLocalGlobalStateData(updateStateWithNextStep())
 
 // necessary functions
