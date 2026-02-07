@@ -18,12 +18,8 @@ import {
   addResponseTrackingForStep,
   recordPlayerResponseForStep,
 } from '../pure-state-modifiers';
-import {
-  EducationalRole,
-  LoginService,
-  Player,
-  UserRole,
-} from '../../../store/slices/player/types';
+import { Player } from '../../../store/slices/player/types';
+import { createMockPlayer } from './helpers';
 
 // Mock the localStorage module
 jest.mock('../../../store/local-storage', () => ({
@@ -35,22 +31,6 @@ jest.mock('../../../store/local-storage', () => ({
 jest.mock('uuid', () => ({
   v4: jest.fn(() => 'test-uuid-1234'),
 }));
-
-function createMockPlayer(id: string, name: string): Player {
-  return {
-    _id: id,
-    name,
-    googleId: id,
-    description: '',
-    avatar: [],
-    email: `${id}@example.com`,
-    userRole: UserRole.USER,
-    loginService: LoginService.GOOGLE,
-    lastLoginAt: new Date(),
-    educationalRole: EducationalRole.STUDENT,
-    clientId: id,
-  };
-}
 
 describe('pure-state-modifiers', () => {
   beforeEach(() => {
