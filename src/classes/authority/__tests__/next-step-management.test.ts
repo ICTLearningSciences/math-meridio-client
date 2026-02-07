@@ -14,151 +14,17 @@ The full terms of this copyright and license should always be found in the root 
 /// <reference types="jest" />
 import { updateGameDataWithNextStep } from '../pure-state-modifiers';
 import {
-  DiscussionStageStep,
-  DiscussionStageStepType,
   Checking,
-  ConditionalActivityStep,
-  SystemMessageStageStep,
-  RequestUserInputStageStep,
-  PromptStageStep,
-  PromptOutputTypes,
-  LogicStepConditional,
   NumericOperations,
-  DiscussionStage,
 } from '../../../components/discussion-stage-builder/types';
-import { DiscussionCurrentStage } from '../../../types';
-import { createBaseGameData } from './helpers';
-
-// Builder for SystemMessageStageStep
-function createSystemMessageStep(
-  stepId: string,
-  options: {
-    message?: string;
-    lastStep?: boolean;
-    jumpToStepId?: string;
-  } = {}
-): SystemMessageStageStep {
-  return {
-    stepId,
-    stepType: DiscussionStageStepType.SYSTEM_MESSAGE,
-    message: options.message || 'System message',
-    lastStep: options.lastStep || false,
-    jumpToStepId: options.jumpToStepId,
-  };
-}
-
-// Builder for RequestUserInputStageStep
-export function createRequestUserInputStep(
-  stepId: string,
-  options: {
-    message?: string;
-    saveResponseVariableName?: string;
-    lastStep?: boolean;
-    jumpToStepId?: string;
-    disableFreeInput?: boolean;
-    requireAllUserInputs?: boolean;
-  } = {}
-): RequestUserInputStageStep {
-  return {
-    stepId,
-    stepType: DiscussionStageStepType.REQUEST_USER_INPUT,
-    message: options.message || 'Enter your response',
-    saveResponseVariableName:
-      options.saveResponseVariableName || 'userResponse',
-    disableFreeInput: options.disableFreeInput || false,
-    predefinedResponses: [],
-    requireAllUserInputs: options.requireAllUserInputs || false,
-    lastStep: options.lastStep || false,
-    jumpToStepId: options.jumpToStepId,
-  };
-}
-
-// Builder for PromptStageStep
-export function createPromptStep(
-  stepId: string,
-  options: {
-    promptText?: string;
-    lastStep?: boolean;
-    jumpToStepId?: string;
-  } = {}
-): PromptStageStep {
-  return {
-    stepId,
-    stepType: DiscussionStageStepType.PROMPT,
-    promptText: options.promptText || 'Prompt text',
-    responseFormat: 'text',
-    includeChatLogContext: false,
-    outputDataType: PromptOutputTypes.TEXT,
-    customSystemRole: '',
-    lastStep: options.lastStep || false,
-    jumpToStepId: options.jumpToStepId,
-  };
-}
-
-// Builder for ConditionalActivityStep
-export function createConditionalStep(
-  stepId: string,
-  conditionals: LogicStepConditional[],
-  options: {
-    lastStep?: boolean;
-    jumpToStepId?: string;
-  } = {}
-): ConditionalActivityStep {
-  return {
-    stepId,
-    stepType: DiscussionStageStepType.CONDITIONAL,
-    conditionals,
-    lastStep: options.lastStep || false,
-    jumpToStepId: options.jumpToStepId,
-  };
-}
-
-// Helper to create a conditional
-export function createConditional(
-  stateDataKey: string,
-  checking: Checking,
-  operation: NumericOperations,
-  expectedValue: string,
-  targetStepId: string
-): LogicStepConditional {
-  return {
-    stateDataKey,
-    checking,
-    operation,
-    expectedValue,
-    targetStepId,
-  };
-}
-
-// Helper to create a mock stage with flows
-export function createMockDiscussionStage(
-  flows: { name: string; steps: DiscussionStageStep[] }[]
-): DiscussionStage {
-  return {
-    _id: 'stage-id',
-    title: 'Test Stage',
-    description: 'Test Description',
-    stageType: 'discussion',
-    clientId: 'stage-id',
-    flowsList: flows.map((flow) => ({
-      clientId: flow.name,
-      name: flow.name,
-      steps: flow.steps,
-    })),
-  };
-}
-
-// Helper to create a mock DiscussionCurrentStage
-export function createMockCurrentStage(
-  stage: DiscussionStage,
-  nextStageId = 'next-stage-id'
-): DiscussionCurrentStage {
-  return {
-    id: 'stage-id',
-    stage,
-    getNextStage: jest.fn(() => nextStageId),
-  };
-}
+import {
+  createBaseGameData,
+  createMockDiscussionStage,
+  createMockCurrentStage,
+  createConditionalStep,
+  createConditional,
+  createSystemMessageStep,
+} from './helpers';
 
 describe('next-step-management', () => {
   describe('updateGameDataWithNextStep', () => {

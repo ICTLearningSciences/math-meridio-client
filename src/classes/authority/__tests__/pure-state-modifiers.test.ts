@@ -6,7 +6,11 @@ The full terms of this copyright and license should always be found in the root 
 */
 
 /// <reference types="jest" />
-import { GameData, SenderType } from '../../../store/slices/game';
+import {
+  GameData,
+  MessageDisplayType,
+  SenderType,
+} from '../../../store/slices/game';
 import { localStorageGet, SESSION_ID } from '../../../store/local-storage';
 import {
   addSystemMessageToGameData,
@@ -19,7 +23,7 @@ import {
   recordPlayerResponseForStep,
 } from '../pure-state-modifiers';
 import { Player } from '../../../store/slices/player/types';
-import { createMockPlayer } from './helpers';
+import { createBaseGameData, createMockPlayer } from './helpers';
 
 // Mock the localStorage module
 jest.mock('../../../store/local-storage', () => ({
@@ -42,19 +46,7 @@ describe('pure-state-modifiers', () => {
       const mockSessionId = 'test-session-123';
       (localStorageGet as jest.Mock).mockReturnValue(mockSessionId);
 
-      const gameData: GameData = {
-        chat: [],
-        players: [],
-        gameId: 'basketball',
-        playerStateData: [],
-        globalStateData: {
-          curStageId: 'stage1',
-          roomOwnerId: 'test-room-owner-id',
-          curStepId: 'step1',
-          discussionDataStringified: '',
-          gameStateData: [],
-        },
-      };
+      const gameData: GameData = createBaseGameData();
 
       const message = 'Test system message';
       const result = addSystemMessageToGameData(gameData, message);
@@ -62,6 +54,7 @@ describe('pure-state-modifiers', () => {
       expect(result.chat).toHaveLength(1);
       expect(result.chat[0]).toEqual({
         id: 'test-uuid-1234',
+        displayType: MessageDisplayType.TEXT,
         sender: SenderType.SYSTEM,
         message: 'Test system message',
         sessionId: 'test-session-123',

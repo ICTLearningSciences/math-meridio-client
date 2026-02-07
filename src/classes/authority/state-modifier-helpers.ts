@@ -4,7 +4,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { GameData } from '../../store/slices/game';
+import { GameData, MessageDisplayType } from '../../store/slices/game';
 import { localStorageGet } from '../../store/local-storage';
 import { SESSION_ID } from '../../store/local-storage';
 import { v4 as uuidv4 } from 'uuid';
@@ -18,7 +18,14 @@ export interface StepResponseTracking {
 }
 
 export function getGameDataCopy(gameData: GameData): GameData {
-  return JSON.parse(JSON.stringify(gameData));
+  const copy: GameData = JSON.parse(JSON.stringify(gameData));
+  return {
+    ...copy,
+    players: copy.players.map((player) => ({
+      ...player,
+      lastLoginAt: new Date(player.lastLoginAt),
+    })),
+  };
 }
 
 export interface GetResponseTrackingFromGameState {
@@ -54,9 +61,28 @@ export function addSystemMessageToGameData(
     sender: SenderType.SYSTEM,
     message: newMessage,
     sessionId: sessionId || '',
+    displayType: MessageDisplayType.TEXT,
   });
   return gameData;
 }
+
+export function addPromptResponseToGameData(
+  _gameData: GameData,
+  newMessage: string
+): GameData {
+  const gameData: GameData = getGameDataCopy(_gameData);
+  const sessionId = localStorageGet<string>(SESSION_ID);
+  gameData.chat.push({
+    id: uuidv4(),
+    sender: SenderType.SYSTEM,
+    message: newMessage,
+    sessionId: sessionId || '',
+    displayType: MessageDisplayType.TEXT,
+    isPromptResponse: true,
+  });
+  return gameData;
+}
+
 export function everyPlayerHasRespondedToStep(
   stepResponseTracking: StepResponseTracking
 ): boolean {
