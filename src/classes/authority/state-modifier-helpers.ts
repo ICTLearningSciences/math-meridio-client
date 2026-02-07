@@ -66,3 +66,72 @@ export function everyPlayerHasRespondedToStep(
     stepResponseTracking.requiredPlayerIds.length
   );
 }
+
+export function evaluateCondition(
+  stateValue: string | number | boolean | string[],
+  operator: string,
+  expectedValue: string
+): boolean {
+  if (
+    typeof stateValue !== 'string' &&
+    typeof stateValue !== 'number' &&
+    typeof stateValue !== 'boolean'
+  ) {
+    throw new Error(
+      `Expected a string, number, or boolean for state value, but got ${typeof stateValue}`
+    );
+  }
+
+  if (typeof stateValue === 'string') {
+    return comparisonOperators(operator, stateValue, expectedValue);
+  }
+
+  if (typeof stateValue === 'number') {
+    try {
+      return comparisonOperators(operator, stateValue, Number(expectedValue));
+    } catch (error) {
+      throw new Error(
+        `expectdValue should be a parsable number, but got ${expectedValue}`
+      );
+    }
+  }
+
+  if (typeof stateValue === 'boolean') {
+    if (expectedValue !== 'true' && expectedValue !== 'false') {
+      throw new Error(
+        `expectedValue should be 'true' or 'false', but got ${expectedValue}`
+      );
+    }
+    return comparisonOperators(operator, stateValue, expectedValue === 'true');
+  }
+  throw new Error(
+    `Expected a string, number, or boolean for state value, but got ${typeof stateValue}`
+  );
+}
+
+function comparisonOperators(
+  operator: string,
+  stateValue: string | number | boolean | string[],
+  expectedValue: string | number | boolean | string[]
+): boolean {
+  switch (operator) {
+    case '==':
+      return stateValue === expectedValue;
+    case '===':
+      return stateValue === expectedValue;
+    case '!=':
+      return stateValue !== expectedValue;
+    case '!==':
+      return stateValue !== expectedValue;
+    case '>':
+      return stateValue > expectedValue;
+    case '<':
+      return stateValue < expectedValue;
+    case '>=':
+      return stateValue >= expectedValue;
+    case '<=':
+      return stateValue <= expectedValue;
+    default:
+      throw new Error(`Unsupported operator: ${operator}`);
+  }
+}

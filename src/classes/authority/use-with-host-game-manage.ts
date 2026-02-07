@@ -4,7 +4,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { useAppDispatch, useAppSelector } from '../../store/hooks';
+import { useAppSelector } from '../../store/hooks';
 import { useWithEducationalData as useWithEducationalDataHook } from '../../store/slices/educational-data/use-with-educational-data';
 import { useParams } from 'react-router-dom';
 import { useWithStages } from '../../store/slices/stages/use-with-stages';
@@ -13,17 +13,11 @@ import { Game, GAMES } from '../../game/types';
 import { localStorageStore, SESSION_ID } from '../../store/local-storage';
 import { v4 as uuidv4 } from 'uuid';
 import * as roomApi from '../../room-action-api';
-import {
-  fetchRoom,
-  GameData,
-  GlobalStateData,
-  Room,
-} from '../../store/slices/game';
+import { GameData, GlobalStateData, Room } from '../../store/slices/game';
 import React from 'react';
 import { useWithRoomAction } from '../../store/slices/educational-data/use-with-room-action';
 import { RoomActionQueueEntry } from '../../room-action-api';
 export function useWithHostGameManagement() {
-  const dispatch = useAppDispatch();
   const useWithEducationalData = useWithEducationalDataHook();
   const { player } = useAppSelector((state) => state.playerData);
   const { discussionStages } = useWithStages();
@@ -39,6 +33,10 @@ export function useWithHostGameManagement() {
   const room = useAppSelector((state) =>
     state.educationalData.rooms.find((r) => r._id === roomId)
   );
+
+  console.log('localGlobalStateData', localGlobalStateData);
+  console.log('localActionQueue', localActionQueue);
+  console.log(discussionStages);
 
   async function launchGame() {
     if (!room || !player) return undefined;
@@ -96,5 +94,6 @@ export function useWithHostGameManagement() {
   return {
     game,
     launchGame,
+    syncRoomData,
   };
 }

@@ -16,6 +16,7 @@ import { getFirstStepId } from '../../helpers';
 import { GameData, GameStateData } from '../../store/slices/game';
 import { CollectedDiscussionData, DiscussionCurrentStage } from '../../types';
 import {
+  evaluateCondition,
   everyPlayerHasRespondedToStep,
   getGameDataCopy,
   getResponseTrackingFromGameState,
@@ -102,10 +103,6 @@ export function recordPlayerResponseForStep(
   if (stepResponseTrackingIdx === -1) {
     throw new Error(`Step response tracking not found for step ${stepId}`);
   }
-  console.log(
-    'allStepResponseTracking',
-    JSON.stringify(allStepResponseTracking, null, 2)
-  );
   const existingMessage =
     allStepResponseTracking[stepResponseTrackingIdx].responses[playerId];
   if (existingMessage) {
@@ -293,10 +290,11 @@ export function getNextStepFromConditionalStage(
     }
 
     if (condition.checking === Checking.VALUE) {
-      const expression = `${String(stateValue)} ${condition.operation} ${
+      const conditionTrue = evaluateCondition(
+        stateValue,
+        condition.operation,
         condition.expectedValue
-      }`;
-      const conditionTrue = new Function(`return ${expression};`)();
+      );
       if (conditionTrue) {
         return condition.targetStepId;
       }
