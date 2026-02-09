@@ -10,6 +10,7 @@ import {
   Avatar,
   AvatarProps,
   Box,
+  Divider,
   Paper,
   Stack,
   styled,
@@ -17,8 +18,11 @@ import {
 } from '@mui/material';
 import { SenderType } from '../../store/slices/game';
 import { FadingText } from '../fading-text';
-import React from 'react';
+import React, { useMemo } from 'react';
 import AvatarSprite from '../avatar-sprite';
+import { ColumnDiv, RowDiv } from '../../styled-components';
+import { Player } from '../../store/slices/player';
+import AwayPopup from '../away-popup';
 
 const useStyles = makeStyles()(() => ({
   chatThread: {
@@ -174,6 +178,42 @@ export default function ChatThread(props: {
   players?.forEach((iterPlayer: { clientId: string }) => {
     GetMyColor(iterPlayer.clientId, iterPlayer.clientId == player?.clientId);
   });
+
+
+  function WaitingForPlayer(props: {player: Player, isFirstPlayer: boolean, isPlayer: boolean}) {
+    const { player, isFirstPlayer, isPlayer } = props;
+    return(
+      <RowDiv key={`waiting-for-player-${player.name}`} style={{
+        backgroundColor: "lightyellow",
+        borderRadius: 10,
+        opacity: isFirstPlayer ? 1 : 0.8,
+        marginTop: 8
+      }}>
+        <RowDiv>
+        <AvatarSprite
+          player={player}
+          bgColor={PlayerColors.Blue}
+          border={false}
+        />
+      <Typography key={`waiting-for-player-${player.name}`} color={'black'}>
+        <b>{player.name}</b>
+      </Typography>
+      </RowDiv>
+      {isPlayer ? (
+        <Typography color={'black'} style={{
+          width:"100%",
+          textAlign: "center",
+        }}>
+          (You)
+        </Typography>
+      ) : (
+        undefined
+      )}
+
+      </RowDiv>
+    )
+  }
+
   React.useEffect(() => {
     const objDiv = document.getElementById('chat-thread');
     if (objDiv) {
@@ -187,6 +227,7 @@ export default function ChatThread(props: {
   let prevMessageOwner = '';
   let currMessageOwner = '';
   let skipAvatar = false;
+  const [awayPopupOpen, setAwayPopupOpen] = React.useState(true);
   return (
     <div
       id="chat-thread"
@@ -329,7 +370,39 @@ export default function ChatThread(props: {
             </Paper>
           </Stack>
         )}
+                {players && players.length > 0 && (
+          <Stack
+            direction="column"
+            key={`waiting-for-players`}
+            sx={{ p: 1 }}
+            spacing={2}
+            style={{
+              backgroundColor: "#1a699c",
+              borderRadius: 10,
+              marginLeft: "auto",
+              marginRight: "auto",
+              width: "fit-content",
+              boxShadow: "0 0 10px 0 rgba(0, 0, 0, 0.1)",
+              padding: 10,
+              color:"white"
+            }}
+          >
+            <b>Waiting for response from:</b>
+            {/* {players.length > 0 && (
+              <WaitingForPlayer key={`waiting-for-player-${players[0].name}`} player={players[0]} isFirstPlayer={true} isPlayer={players[0].clientId === player?.clientId} />
+            )}
+            <Typography color={'white'} style={{
+              marginTop: 5
+            }}>
+              <b>Up Next:</b>
+            </Typography> */}
+            {players.length > 1 && (
+              <WaitingForPlayer key={`waiting-for-player-${players[1].name}`} player={players[1]} isFirstPlayer={true} isPlayer={false} />
+            )}
+          </Stack>
+        )}
       </Stack>
+      <AwayPopup open={awayPopupOpen} onClose={() => setAwayPopupOpen(false)} />
     </div>
   );
 }
