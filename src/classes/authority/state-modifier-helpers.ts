@@ -66,6 +66,26 @@ export function addSystemMessageToGameData(
   return gameData;
 }
 
+export function addUserMessageToChat(
+  _gameData: GameData,
+  newMessage: string,
+  senderId: string,
+  senderName: string
+): GameData {
+  const gameData: GameData = getGameDataCopy(_gameData);
+  const sessionId = localStorageGet<string>(SESSION_ID);
+  gameData.chat.push({
+    id: uuidv4(),
+    sender: SenderType.PLAYER,
+    senderId: senderId,
+    senderName: senderName,
+    message: newMessage,
+    sessionId: sessionId || '',
+    displayType: MessageDisplayType.TEXT,
+  });
+  return gameData;
+}
+
 export function addPromptResponseToGameData(
   _gameData: GameData,
   newMessage: string

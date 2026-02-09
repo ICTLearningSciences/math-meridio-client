@@ -44,6 +44,7 @@ export function createMockPlayer(id: string, name: string): Player {
 
 export function createBaseGameData(): GameData {
   return {
+    persistTruthGlobalStateData: [],
     chat: [],
     players: [
       createMockPlayer('player1', 'Player 1'),
@@ -95,8 +96,7 @@ export function createRequestUserInputStep(
     stepId,
     stepType: DiscussionStageStepType.REQUEST_USER_INPUT,
     message: options.message || 'Enter your response',
-    saveResponseVariableName:
-      options.saveResponseVariableName || 'userResponse',
+    saveResponseVariableName: options.saveResponseVariableName || '',
     disableFreeInput: options.disableFreeInput || false,
     predefinedResponses: options.predefinedResponses || [],
     requireAllUserInputs: options.requireAllUserInputs || false,

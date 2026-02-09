@@ -6,7 +6,7 @@ The full terms of this copyright and license should always be found in the root 
 */
 import { execGql } from './api-helpers';
 import { ACCESS_TOKEN_KEY, localStorageGet } from './store/local-storage';
-import { GameData } from './store/slices/game';
+import { GameData, GameDataGQL } from './store/slices/game';
 import { Connection } from './types';
 
 const submitProcessedActionsMutation = `
@@ -134,8 +134,16 @@ export async function syncRoomData(
   gameData: GameData
 ): Promise<void> {
   const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
+
+  const gqlPreparedGameData: GameDataGQL = {
+    ...gameData,
+    players: gameData.players.map((p) => p._id),
+  };
   return execGql<void>(
-    { query: syncRoomDataMutation, variables: { roomId, gameData } },
+    {
+      query: syncRoomDataMutation,
+      variables: { roomId, gameData: gqlPreparedGameData },
+    },
     { accessToken: accessToken || undefined }
   );
 }

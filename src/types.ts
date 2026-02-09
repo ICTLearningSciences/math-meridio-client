@@ -64,7 +64,10 @@ export interface LoadingState {
 export enum AiServiceNames {
   AZURE = 'AZURE_OPEN_AI',
   OPEN_AI = 'OPEN_AI',
+  CAMO_GPT = 'CAMO_GPT',
+  ASK_SAGE = 'ASK_SAGE',
   GEMINI = 'GEMINI',
+  ANTHROPIC = 'ANTHROPIC',
 }
 
 export interface ServiceModelInfo {
@@ -110,3 +113,6 @@ export type CollectedDiscussionData = Record<
   string,
   string | number | boolean | string[]
 >;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type SolutionGameStateData = Record<string, any>;

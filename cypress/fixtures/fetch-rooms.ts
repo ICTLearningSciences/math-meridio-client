@@ -5,7 +5,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import { Room } from "../../src/store/slices/game";
-import { Player } from "./types";
+import { Player } from "../../src/store/slices/player/types";
 
 
 export interface FetchRoomsResponseGql {
@@ -24,6 +24,7 @@ export function freshRoomData(attendingRoomOwner: Player): Room {
         "name": "Concert Ticket Management Solution Space 4",
         "classId": "697d7ba20e83375926c1241b",
         "gameData": {
+            "persistTruthGlobalStateData": [],
             "gameId": "concert-ticket-sales",
             "players": [
                 attendingRoomOwner

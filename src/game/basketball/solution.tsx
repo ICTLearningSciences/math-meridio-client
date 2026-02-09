@@ -33,9 +33,7 @@ export const UNDERSTANDS_ADDITION = 'understands_addition';
 
 import courtBg from './court.png';
 import { EditableVariable } from '../../components/editable-variable';
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type GameStateData = Record<string, any>;
+import { SolutionGameStateData } from '../../types';
 
 export function SolutionComponent(props: {
   controller: GameStateHandler;
@@ -43,13 +41,14 @@ export function SolutionComponent(props: {
   const { controller } = props;
   const { classes } = useStyles();
   const { zoomIn, zoomOut } = useControls();
-  const [gameStateData, setGameStateData] = React.useState<GameStateData>({});
+  const [gameStateData, setGameStateData] =
+    React.useState<SolutionGameStateData>({});
   const [players, setPlayers] = React.useState<Player[]>([]);
   const [playerStateData, setPlayerStateData] = React.useState<
     PlayerStateData[]
   >([]);
   const [myPlayerStateData, setMyPlayerStateData] =
-    React.useState<GameStateData>({});
+    React.useState<SolutionGameStateData>({});
   const curPlayerStateData = playerStateData.find(
     (p) => p.player === controller.player._id
   );
@@ -129,7 +128,7 @@ export function SolutionComponent(props: {
   }, [controller.players]);
 
   React.useEffect(() => {
-    const data: GameStateData = {};
+    const data: SolutionGameStateData = {};
     controller.globalStateData.gameStateData.forEach((d) => {
       data[d.key] = d.value;
     });
@@ -141,7 +140,7 @@ export function SolutionComponent(props: {
   }, [controller.playerStateData]);
 
   React.useEffect(() => {
-    const data: GameStateData = {};
+    const data: SolutionGameStateData = {};
     const gameState =
       playerStateData.find((p) => p.player === controller.player._id)
         ?.gameStateData || [];

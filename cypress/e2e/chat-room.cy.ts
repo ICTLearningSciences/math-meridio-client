@@ -5,7 +5,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import { cyMockDefault, cyMockOpenAiCall, mockGQL } from "../support/functions";
-import { EducationalRole } from "../fixtures/types";
+import { EducationalRole } from "../../src/store/slices/player/types";
 import { defaultNbaStarterRoomData, createAndJoinRoomResponse } from "../fixtures/create-and-join-room";
 import { joinClassroomResponse } from "../fixtures/join-class";
 import { updateRoomResponse } from "../fixtures/update-room";

@@ -44,7 +44,12 @@ export interface GameData {
   players: Player[];
   chat: ChatMessage[];
   globalStateData: GlobalStateData;
+  persistTruthGlobalStateData: string[];
   playerStateData: PlayerStateData[];
+}
+
+export interface GameDataGQL extends Omit<GameData, 'players'> {
+  players: string[];
 }
 
 export interface GameStateData {

@@ -5,7 +5,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 
-import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperations, PromptOutputTypes } from "./types";
+import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperations, PromptOutputTypes } from "../../src/components/discussion-stage-builder/types";
 
 
 
