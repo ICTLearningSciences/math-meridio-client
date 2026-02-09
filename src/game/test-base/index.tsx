@@ -225,8 +225,8 @@ const BaseTestGame: Game = {
 
     scene: [SimulationScene],
   },
-  showProblem: (controller: GameStateHandler) => {
-    return <ProblemComponent controller={controller} />;
+  showProblem: () => {
+    return <ProblemComponent />;
   },
   showSolution: (controller: GameStateHandler) => {
     return <SolutionComponent controller={controller} />;

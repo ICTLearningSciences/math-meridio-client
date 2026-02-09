@@ -8,35 +8,27 @@ import { useAppSelector } from '../../store/hooks';
 import { useWithEducationalData as useWithEducationalDataHook } from '../../store/slices/educational-data/use-with-educational-data';
 import { useParams } from 'react-router-dom';
 import { useWithStages } from '../../store/slices/stages/use-with-stages';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Game, GAMES } from '../../game/types';
 import { localStorageStore, SESSION_ID } from '../../store/local-storage';
 import { v4 as uuidv4 } from 'uuid';
 import * as roomApi from '../../room-action-api';
 import { GameData, GlobalStateData, Room } from '../../store/slices/game';
 import React from 'react';
-import { useWithRoomAction } from '../../store/slices/educational-data/use-with-room-action';
-import { RoomActionQueueEntry } from '../../room-action-api';
+import { useWithRoomActionQueue } from './use-with-action-queue';
 export function useWithHostGameManagement() {
   const useWithEducationalData = useWithEducationalDataHook();
   const { player } = useAppSelector((state) => state.playerData);
   const { discussionStages } = useWithStages();
   const [game, setGame] = useState<Game>();
   const poll = React.useRef<NodeJS.Timeout | null>(null);
-  const { fetchRoomActions } = useWithRoomAction();
-  const [localGlobalStateData, setLocalGlobalStateData] =
-    useState<GlobalStateData>();
-  const [localActionQueue, setLocalActionQueue] = useState<
-    RoomActionQueueEntry[]
-  >([]);
+  const [localGameData, setLocalGameData] = useState<GameData>();
+  const { pollActionQueue, localActionQueue, leaveRoomAction, joinRoomAction } =
+    useWithRoomActionQueue();
   const { roomId } = useParams();
   const room = useAppSelector((state) =>
     state.educationalData.rooms.find((r) => r._id === roomId)
   );
-
-  console.log('localGlobalStateData', localGlobalStateData);
-  console.log('localActionQueue', localActionQueue);
-  console.log(discussionStages);
 
   async function launchGame() {
     if (!room || !player) return undefined;
@@ -49,7 +41,7 @@ export function useWithHostGameManagement() {
     if (!game) return undefined;
     setGame(game);
     const latestRoomData = await useWithEducationalData.fetchRoom(room._id);
-    setLocalGlobalStateData(latestRoomData.gameData.globalStateData);
+    setLocalGameData(latestRoomData.gameData);
     if (!isRoomOwner) {
       console.log('player is not the room owner, skipping game launch');
       return;
@@ -58,24 +50,6 @@ export function useWithHostGameManagement() {
       pollActionQueue(latestRoomData);
     } else {
       pollRoomState(latestRoomData);
-    }
-  }
-
-  function pollActionQueue(room: Room) {
-    if (!poll.current) {
-      poll.current = setInterval(() => {
-        fetchRoomActions(room._id).then((activeActionItems) => {
-          setLocalActionQueue((prev) => {
-            const newActionItems = activeActionItems.filter(
-              (action) =>
-                !prev.some((localAction) => localAction._id === action._id)
-            );
-            return [...prev, ...newActionItems].sort(
-              (a, b) => b.actionSentAt.getTime() - a.actionSentAt.getTime()
-            );
-          });
-        });
-      }, 1000);
     }
   }
 
@@ -90,6 +64,8 @@ export function useWithHostGameManagement() {
   async function syncRoomData(roomId: string, newGameData: GameData) {
     return await roomApi.syncRoomData(roomId, newGameData);
   }
+
+  useEffect(() => {}, []);
 
   return {
     game,

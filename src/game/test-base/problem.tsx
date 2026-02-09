@@ -10,10 +10,7 @@ import { GameStateHandler } from '../../classes/game-state-handler';
 import BasketballGame from '.';
 import stadiumSeats from './stadium_seats.jpg';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function ProblemComponent(props: {
-  controller: GameStateHandler;
-}): JSX.Element {
+export function ProblemComponent(): JSX.Element {
   return (
     <div>
       <img

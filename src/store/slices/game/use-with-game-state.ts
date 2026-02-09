@@ -52,7 +52,6 @@ export function useWithGame() {
   const poll = React.useRef<NodeJS.Timeout | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const operationQueue = React.useRef<(() => Promise<any>)[]>([]);
-  const isProcessing = React.useRef<boolean>(false);
   const ownerIsPresent = React.useMemo(() => {
     if (loadStatus.status === LoadStatus.IN_PROGRESS) return true;
     return room?.gameData.players.some(
@@ -62,12 +61,6 @@ export function useWithGame() {
 
   const [game, setGame] = React.useState<Game>();
   const [subscribers, setSubscribers] = React.useState<Subscriber[]>([]);
-  const [lastChatLog, setLastChatLog] = React.useState<ChatMessage[]>([]);
-  const [lastGlobalState, setLastGlobalState] =
-    React.useState<GlobalStateData>();
-  const [lastPlayerState, setLastPlayerState] =
-    React.useState<PlayerStateData[]>();
-  const [lastPlayers, setLastPlayers] = React.useState<Player[]>();
   const [gameStateHandler, setGameStateHandler] =
     React.useState<GameStateHandler>();
   const [waitingForPlayers, setWaitingForPlayers] = React.useState<string[]>(
@@ -81,90 +74,7 @@ export function useWithGame() {
     joinGameRoom,
     leaveGameRoom,
     createAndJoinGameRoom,
-    fetchRoom,
   } = useWithEducationalData();
-  console.log(gameStateHandler);
-
-  React.useEffect(() => {
-    if (!room || equals(lastChatLog, room.gameData.chat)) return;
-    for (let i = 0; i < subscribers.length; i++) {
-      const updateFunction = subscribers[i].newChatLogReceived.bind(
-        subscribers[i]
-      );
-      updateFunction(room.gameData.chat);
-    }
-    setLastChatLog(room.gameData.chat);
-  }, [room?.gameData.chat]);
-
-  React.useEffect(() => {
-    if (!room || equals(lastGlobalState, room.gameData.globalStateData)) return;
-    for (let i = 0; i < subscribers.length; i++) {
-      const updateFunction = subscribers[i].globalStateUpdated.bind(
-        subscribers[i]
-      );
-      updateFunction(room.gameData.globalStateData);
-    }
-    setLastGlobalState(room.gameData.globalStateData);
-  }, [JSON.stringify(room?.gameData.globalStateData)]);
-
-  React.useEffect(() => {
-    if (!room || equals(lastPlayerState, room.gameData.playerStateData)) return;
-
-    for (let i = 0; i < subscribers.length; i++) {
-      const updateFunction = subscribers[i].playerStateUpdated.bind(
-        subscribers[i]
-      );
-      updateFunction(room.gameData.playerStateData);
-    }
-    setLastPlayerState(room.gameData.playerStateData);
-  }, [room?.gameData.playerStateData]);
-
-  React.useEffect(() => {
-    if (!room || equals(lastPlayers, room.gameData.players)) return;
-    for (let i = 0; i < subscribers.length; i++) {
-      const updateFunction = subscribers[i].playersUpdated.bind(subscribers[i]);
-      updateFunction(room.gameData.players);
-    }
-    setLastPlayers(room.gameData.players);
-  }, [room?.gameData.players]);
-
-  // Function to process the next operation in the queue
-  const processQueue = React.useCallback(() => {
-    if (isProcessing.current || operationQueue.current.length === 0) return;
-    isProcessing.current = true;
-    const nextOperation = operationQueue.current.shift();
-    if (nextOperation) {
-      nextOperation().finally(() => {
-        isProcessing.current = false;
-        processQueue(); // Process the next operation
-      });
-    }
-  }, []);
-
-  React.useEffect(() => {
-    if (!room && poll.current) {
-      clearInterval(poll.current);
-    }
-  }, [room, loadStatus]);
-
-  React.useEffect(() => {
-    EventSystem.on('simulate', () => {
-      for (let i = 0; i < subscribers.length; i++) {
-        const updateFunction = subscribers[i].simulationEnded.bind(
-          subscribers[i]
-        );
-        updateFunction();
-      }
-    });
-  }, [subscribers.length]);
-
-  React.useEffect(() => {
-    return () => {
-      if (poll.current) {
-        clearInterval(poll.current);
-      }
-    };
-  }, []);
 
   async function launchGame() {
     if (!room || !player) return undefined;
@@ -192,24 +102,9 @@ export function useWithGame() {
       targetAiServiceModel: firstAvailableAzureServiceModel(),
       onWaitingForPlayers: setWaitingForPlayers,
     });
-    if (!poll.current) {
-      poll.current = setInterval(() => {
-        operationQueue.current.push(() => fetchRoom(room._id));
-        processQueue();
-      }, 1000);
-    }
-    addNewSubscriber(controller);
     setGame(game);
     setGameStateHandler(controller);
     controller.initializeGame();
-  }
-
-  function addNewSubscriber(subscriber: Subscriber) {
-    setSubscribers([...subscribers, subscriber]);
-  }
-
-  function removeAllSubscribers() {
-    setSubscribers([]);
   }
 
   function _leaveRoom() {
@@ -257,7 +152,6 @@ export function useWithGame() {
       return;
     }
     operationQueue.current.push(() => sendGameRoomMessage(room._id, msg));
-    processQueue();
   }
 
   function _updateRoomGameData(gameData: Partial<GameData>): void {
@@ -265,7 +159,6 @@ export function useWithGame() {
     operationQueue.current.push(() =>
       updateGameRoomGameData(room._id, gameData)
     );
-    processQueue();
   }
 
   function _viewedSimulation(playerId: string): void {
@@ -281,15 +174,12 @@ export function useWithGame() {
         ],
       })
     );
-    processQueue();
   }
 
   return {
     game,
     gameStateHandler,
     launchGame,
-    addNewSubscriber,
-    removeAllSubscribers,
     joinRoom: joinGameRoom,
     leaveRoom: _leaveRoom,
     createRoom: _createRoom,

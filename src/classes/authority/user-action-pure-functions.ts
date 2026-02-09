@@ -147,6 +147,11 @@ export function processActionUpdatePlayerStateDataAction(
   _gameData: GameData,
   action: RoomActionQueueEntry
 ): GameData {
+  if (action.actionType !== RoomActionType.UPDATE_ROOM) {
+    throw new Error(
+      'Incorrect action type provided to processActionUpdatePlayerStateDataAction'
+    );
+  }
   let gameData = getGameDataCopy(_gameData);
   const newPlayerData: GameStateData[] = JSON.parse(action.payload);
   gameData = updatePlayerStateData(

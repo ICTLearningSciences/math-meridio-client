@@ -181,6 +181,17 @@ export const fetchRoom = createAsyncThunk(
   }
 );
 
+export const createNewRoom = createAsyncThunk(
+  'educationalData/createNewRoom',
+  async (args: {
+    gameId: string;
+    gameName: string;
+    classId?: string;
+  }): Promise<Room> => {
+    return await api.createNewRoom(args.gameId, args.gameName, args.classId);
+  }
+);
+
 export const createAndJoinGameRoom = createAsyncThunk(
   'educationalData/createAndJoinGameRoom',
   async (args: {
@@ -206,6 +217,10 @@ export const educationalDataSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
+
+      .addCase(createNewRoom.fulfilled, (state, action) => {
+        addOrUpdateGameRoom(state, action.payload);
+      })
 
       .addCase(createAndJoinGameRoom.fulfilled, (state, action) => {
         addOrUpdateGameRoom(state, action.payload);
