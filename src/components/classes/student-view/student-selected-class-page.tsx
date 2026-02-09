@@ -35,9 +35,9 @@ export default function StudentSelectedClassPage(): JSX.Element {
   const [creating, setCreating] = React.useState(false);
 
   const classroom = educationalData.classes.find((c) => c._id === classId);
-  const classRooms = educationalData.rooms.filter((r) => r.classId === classId);
+  const _gameRooms = educationalData.rooms.filter((r) => r.classId === classId);
   const gameRooms = selectedGame
-    ? classRooms.filter((r) => r.gameData.gameId === selectedGame.id)
+    ? _gameRooms.filter((r) => r.gameData.gameId === selectedGame.id)
     : [];
 
   const handleSelectGame = (game: Game) => {
