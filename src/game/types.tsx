@@ -18,13 +18,18 @@ export interface Game {
   config: Phaser.Types.Core.GameConfig;
   persistTruthGlobalStateData: string[];
   showProblem: () => JSX.Element;
-  showSolution: (uiGameData: GameData, player: Player, updatePlayerStateData: (newPlayerStateData: GameStateData[], playerId: string) => void) => JSX.Element;
-  showSimulation: (
-    game: Game,
+  showSolution: (
+    uiGameData: GameData,
+    player: Player,
+    updatePlayerStateData: (
+      newPlayerStateData: GameStateData[],
+      playerId: string
+    ) => void
   ) => JSX.Element;
+  showSimulation: (game: Game) => JSX.Element;
   showPlayerStrategy: (
     player: Player,
-    playerStateData: PlayerStateData,
+    playerStateData: PlayerStateData
   ) => JSX.Element;
   showResult: (uiGameData: GameData) => JSX.Element;
   createController: (discussionStages: DiscussionStage[]) => AbstractGameData;

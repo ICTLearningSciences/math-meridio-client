@@ -598,11 +598,10 @@ export class SimulationScene extends GameScene {
     );
     this.profitText.setDepth(1000);
 
-    const avatar =
-      this.simulation!.playerAvatar?.avatar || [];
-      // uiGameData.players.find(
-      //   (p) => p._id === this.simulation!.player
-      // )!.avatar;
+    const avatar = this.simulation!.playerAvatar?.avatar || [];
+    // uiGameData.players.find(
+    //   (p) => p._id === this.simulation!.player
+    // )!.avatar;
     this.mySprite = this.renderSpriteAvatar(avatar, {
       x: this.bg.displayWidth * 0.51,
       y: this.bg.displayHeight * 0.5,

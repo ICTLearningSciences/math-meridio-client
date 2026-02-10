@@ -18,7 +18,7 @@ export function Header(props: { useLogin: UseWithLogin }) {
   const dispatch = useAppDispatch();
   const { player } = useAppSelector((state) => state.playerData);
   const { roomId } = useParams<{ roomId: string }>();
-  const { educationalData } = useWithEducationalData(); 
+  const { educationalData } = useWithEducationalData();
   const room = educationalData.rooms.find((r) => r._id === roomId);
   const [name, setName] = React.useState<string>(room?.name || '');
   const [isEditing, setIsEditing] = React.useState<boolean>(false);

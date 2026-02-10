@@ -16,9 +16,7 @@ import {
 import { Stack, Typography, Tabs, Tab, Box } from '@mui/material';
 import { GameData } from '../../store/slices/game';
 
-export function ResultComponent(props: {
-  uiGameData: GameData;
-}): JSX.Element {
+export function ResultComponent(props: { uiGameData: GameData }): JSX.Element {
   const { uiGameData } = props;
   const [simulationData, setSimulationData] = React.useState<
     Record<string, BasketballSimulationData>

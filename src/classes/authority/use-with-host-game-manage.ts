@@ -27,7 +27,11 @@ export interface UseWithHostGameManagement {
   game?: Game;
   launchGame: () => void;
   syncRoomData: (roomId: string, newGameData: GameData) => Promise<void>;
-  createAndJoinRoom: (gameId: string, gameName: string, classId: string) => Promise<Room>;
+  createAndJoinRoom: (
+    gameId: string,
+    gameName: string,
+    classId: string
+  ) => Promise<Room>;
   ownerIsPresent?: boolean;
   waitingForPlayers: string[];
   responsePending: boolean;
@@ -58,7 +62,10 @@ export function useWithHostGameManagement(): UseWithHostGameManagement {
     return uiTriggerLocalGameData?.players.some(
       (p) => p._id === uiTriggerLocalGameData?.globalStateData.roomOwnerId
     );
-  }, [uiTriggerLocalGameData?.players, uiTriggerLocalGameData?.globalStateData.roomOwnerId]);
+  }, [
+    uiTriggerLocalGameData?.players,
+    uiTriggerLocalGameData?.globalStateData.roomOwnerId,
+  ]);
 
   const [responsePending, setResponsePending] = useState<boolean>(false);
   const {
@@ -77,7 +84,7 @@ export function useWithHostGameManagement(): UseWithHostGameManagement {
   useWithSubmitHeartBeat(roomId);
 
   async function launchGame() {
-    if (!room || !player){
+    if (!room || !player) {
       console.error('Failed to launch game because room or player is not set');
       return;
     }
@@ -92,7 +99,7 @@ export function useWithHostGameManagement(): UseWithHostGameManagement {
     const gameDataClass = game.createController(discussionStages);
     gameDataClassRef.current = gameDataClass;
 
-        // const isRoomOwner =
+    // const isRoomOwner =
     //   player._id === room.gameData.globalStateData.roomOwnerId;
     // if (!isRoomOwner) {
     //   startPollRoomState(latestRoomData);
@@ -139,8 +146,8 @@ export function useWithHostGameManagement(): UseWithHostGameManagement {
       classId
     );
     const game = GAMES.find((g) => g.id === gameId);
-    if(!game) {
-      throw new Error("Game not found for createAndJoinRoom");
+    if (!game) {
+      throw new Error('Game not found for createAndJoinRoom');
     }
     gameDataClassRef.current = game.createController(discussionStages);
     localGameDataRef.current = {
@@ -150,7 +157,7 @@ export function useWithHostGameManagement(): UseWithHostGameManagement {
         curStageId: gameDataClassRef.current?.stageList[0].stage.clientId,
         curStepId: getFirstStepId(gameDataClassRef.current?.stageList[0].stage),
       },
-    }
+    };
     setUiTriggerLocalGameData(getGameDataCopy(localGameDataRef.current));
     await submitJoinRoomAction(room, true);
     // Wait until you are in the room. (keep checking the local room state until you are in the room, for 10 seconds max)
@@ -173,7 +180,7 @@ export function useWithHostGameManagement(): UseWithHostGameManagement {
     submitUpdateMyPlayerDataAction(room, true, newPlayerStateData);
   }
 
-  console.log("uiTriggerLocalGameData", uiTriggerLocalGameData);
+  console.log('uiTriggerLocalGameData', uiTriggerLocalGameData);
 
   return {
     game: game,

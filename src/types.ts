@@ -107,7 +107,7 @@ export interface CurrentStage<T extends IStage> {
   stage: T;
   action?: () => void;
   beforeStart?: () => void;
-  getNextStage: (collectedData: CollectedDiscussionData) => string;
+  getNextStage: (collectedData: CollectedDiscussionData) => IStage;
 }
 export type CollectedDiscussionData = Record<
   string,

@@ -97,9 +97,7 @@ export function PlayerStrategy(props: {
   );
 }
 
-export function SimulationComponent(props: {
-  game: Game;
-}): JSX.Element {
+export function SimulationComponent(props: { game: Game }): JSX.Element {
   const { game } = props;
   const gameContainerRef = React.useRef<HTMLDivElement | null>(null);
   const { startPhaserGame } = useWithPhaserGame(gameContainerRef);

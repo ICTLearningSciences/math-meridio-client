@@ -159,14 +159,21 @@ function GamePage(): JSX.Element {
 
   // Use prop if provided, otherwise try to get from outlet context
   const outletContext = useOutletContext<GameManagementContext>();
-  const { launchGame, ownerIsPresent, waitingForPlayers, uiTriggerLocalGameData, player, updatePlayerStateData, game } = outletContext;
-  const { gameStateHandler, responsePending, sendMessage } =
-    useWithGame();
+  const {
+    launchGame,
+    ownerIsPresent,
+    waitingForPlayers,
+    uiTriggerLocalGameData,
+    player,
+    updatePlayerStateData,
+    game,
+  } = outletContext;
+  const { gameStateHandler, responsePending, sendMessage } = useWithGame();
   const navigate = useNavigate();
   const { windowHeight, windowWidth } = useWithWindow();
 
   // Handle case where context is not yet available
-  if (!context) {
+  if (!outletContext) {
     return (
       <div className="root center-div">
         <CircularProgress />
@@ -373,7 +380,7 @@ function GamePage(): JSX.Element {
 
   if (!game || !uiTriggerLocalGameData || !player) {
     console.log('launching game', game, uiTriggerLocalGameData, player);
-    
+
     return (
       <div className="root center-div">
         <Button
@@ -434,7 +441,11 @@ function GamePage(): JSX.Element {
               maxScale={1}
               panning={{ excluded: ['panningDisabled'] }}
             >
-              {game.showSolution(uiTriggerLocalGameData, player, updatePlayerStateData)}
+              {game.showSolution(
+                uiTriggerLocalGameData,
+                player,
+                updatePlayerStateData
+              )}
             </TransformWrapper>
           </Space>
         </Card>
@@ -484,6 +495,7 @@ function GamePage(): JSX.Element {
           <ChatThread
             responsePending={responsePending}
             waitingForPlayers={waitingForPlayers}
+            uiGameData={uiTriggerLocalGameData}
           />
           <ChatForm sendMessage={sendMessage} />
         </Stack>

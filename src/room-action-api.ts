@@ -247,5 +247,5 @@ export async function fetchRoomHeartBeatsAndActions(
   return {
     heartBeats: data.fetchRoomHeartbeats.edges.map((edge) => edge.node),
     actions: data.fetchRoomActions.edges.map((edge) => edge.node),
-  };  
+  };
 }

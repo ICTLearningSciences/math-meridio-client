@@ -12,7 +12,11 @@ import { ProblemComponent } from './problem';
 import { SolutionComponent } from './solution';
 import { PlayerStrategy, SimulationComponent } from './simulation';
 import { ResultComponent } from './results';
-import { GameData, GameStateData, PlayerStateData } from '../../store/slices/game';
+import {
+  GameData,
+  GameStateData,
+  PlayerStateData,
+} from '../../store/slices/game';
 import { SIMULTAION_VIEWED_KEY } from '../../helpers';
 import { CollectedDiscussionData, CurrentStage } from '../../types';
 import {
@@ -75,19 +79,25 @@ export class BasketballStateHandler extends AbstractGameData {
       throw new Error('missing stage');
     }
 
+    const simulationStage = {
+      _id: 'wait-for-simulation',
+      clientId: 'wait-for-simulation',
+      stageType: 'simulation',
+    } as SimulationStage;
+
     const stageList: CurrentStage<IStage>[] = [
       {
         id: 'intro-discussion',
         stage: introDiscussionStage,
         getNextStage: () => {
-          return 'collect-variables';
+          return collectVariablesStage;
         },
       },
       {
         id: 'collect-variables',
         stage: collectVariablesStage,
         getNextStage: () => {
-          return 'explain-concepts';
+          return explainConceptsStage;
         },
       },
       {
@@ -95,9 +105,9 @@ export class BasketballStateHandler extends AbstractGameData {
         stage: explainConceptsStage,
         getNextStage: (data) => {
           if (data['understands_algorithm'] !== 'true') {
-            return 'key-concepts-convo';
+            return keyConceptsConvoStage;
           } else {
-            return 'select-strategy';
+            return selectStrategyStage;
           }
         },
       },
@@ -117,9 +127,9 @@ export class BasketballStateHandler extends AbstractGameData {
         getNextStage: (data) => {
           // this.discussionStageHandler.exitEarlyCondition = undefined;
           if (data['understands_algorithm'] !== 'true') {
-            return 'key-concepts-convo';
+            return keyConceptsConvoStage;
           } else {
-            return 'select-strategy';
+            return selectStrategyStage;
           }
         },
       },
@@ -127,18 +137,14 @@ export class BasketballStateHandler extends AbstractGameData {
         id: 'select-strategy',
         stage: selectStrategyStage,
         getNextStage: () => {
-          return 'wait-for-simulation';
+          return simulationStage;
         },
       },
       {
         id: 'wait-for-simulation',
-        stage: {
-          _id: 'wait-for-simulation',
-          clientId: 'wait-for-simulation',
-          stageType: 'simulation',
-        } as SimulationStage,
+        stage: simulationStage,
         getNextStage: () => {
-          return 'discuss-new-strategy';
+          return discussNewStrategyStage;
         },
       },
       {
@@ -146,9 +152,9 @@ export class BasketballStateHandler extends AbstractGameData {
         stage: discussNewStrategyStage,
         getNextStage: (data) => {
           if (data['best_strategy_found'] === 'false') {
-            return 'discuss-best-strategy';
+            return discussBestStrategyStage;
           } else {
-            return 'finished';
+            return finishedStage;
           }
         },
       },
@@ -157,9 +163,9 @@ export class BasketballStateHandler extends AbstractGameData {
         stage: discussBestStrategyStage,
         getNextStage: (data) => {
           if (data['best_strategy_found'] === 'false') {
-            return 'discuss-best-strategy';
+            return discussBestStrategyStage;
           } else {
-            return 'finished';
+            return finishedStage;
           }
         },
       },
@@ -167,7 +173,7 @@ export class BasketballStateHandler extends AbstractGameData {
         id: 'finished',
         stage: finishedStage,
         getNextStage: () => {
-          return '';
+          return finishedStage;
         },
       },
     ];
@@ -207,8 +213,21 @@ const BasketballGame: Game = {
   showProblem: () => {
     return <ProblemComponent />;
   },
-  showSolution: (uiGameData: GameData, player: Player, updatePlayerStateData: (newPlayerStateData: GameStateData[], playerId: string) => void) => {
-    return <SolutionComponent uiGameData={uiGameData} player={player} updatePlayerStateData={updatePlayerStateData} />;
+  showSolution: (
+    uiGameData: GameData,
+    player: Player,
+    updatePlayerStateData: (
+      newPlayerStateData: GameStateData[],
+      playerId: string
+    ) => void
+  ) => {
+    return (
+      <SolutionComponent
+        uiGameData={uiGameData}
+        player={player}
+        updatePlayerStateData={updatePlayerStateData}
+      />
+    );
   },
   showSimulation: (game: Game) => {
     return <SimulationComponent game={game} />;

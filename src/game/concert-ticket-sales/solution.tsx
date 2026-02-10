@@ -8,7 +8,11 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import { TransformComponent, useControls } from 'react-zoom-pan-pinch';
 import { Card, Typography } from '@mui/material';
 
-import { GameStateData, GameData, PlayerStateData } from '../../store/slices/game';
+import {
+  GameStateData,
+  GameData,
+  PlayerStateData,
+} from '../../store/slices/game';
 import { makeStyles } from 'tss-react/mui';
 import { Player } from '../../store/slices/player/types';
 import { checkGameAndPlayerStateForValue } from '../../components/discussion-stage-builder/helpers';
@@ -35,26 +39,31 @@ import {
 export function SolutionComponent(props: {
   uiGameData: GameData;
   player: Player;
-  updatePlayerStateData: (newPlayerStateData: GameStateData[], playerId: string) => void;
+  updatePlayerStateData: (
+    newPlayerStateData: GameStateData[],
+    playerId: string
+  ) => void;
 }): JSX.Element {
   const { uiGameData, player, updatePlayerStateData } = props;
   const { classes } = useStyles();
   const { zoomIn, zoomOut } = useControls();
 
-  const playerGameStateDataRecord: Record<string, string> | undefined = useMemo(() => {
-    return uiGameData.playerStateData
-      .find((p) => p.player === player._id)
-      ?.gameStateData.reduce((acc, cur) => {
+  const playerGameStateDataRecord: Record<string, string> | undefined =
+    useMemo(() => {
+      return uiGameData.playerStateData
+        .find((p) => p.player === player._id)
+        ?.gameStateData.reduce((acc, cur) => {
+          acc[cur.key] = cur.value;
+          return acc;
+        }, {} as Record<string, string>);
+    }, [uiGameData.playerStateData, player._id]);
+  const globalGameStateDataRecord: Record<string, string> | undefined =
+    useMemo(() => {
+      return uiGameData.globalStateData.gameStateData.reduce((acc, cur) => {
         acc[cur.key] = cur.value;
         return acc;
       }, {} as Record<string, string>);
-  }, [uiGameData.playerStateData, player._id]);
-  const globalGameStateDataRecord: Record<string, string> | undefined = useMemo(() => {
-    return uiGameData.globalStateData.gameStateData.reduce((acc, cur) => {
-      acc[cur.key] = cur.value;
-      return acc;
-    }, {} as Record<string, string>);
-  }, [uiGameData.globalStateData.gameStateData]);
+    }, [uiGameData.globalStateData.gameStateData]);
 
   const [understandsTicketPrices, setUnderstandsTicketPrices] =
     React.useState(false);
@@ -144,7 +153,8 @@ export function SolutionComponent(props: {
   }): JSX.Element {
     const { isEnabled } = props;
     const data =
-      globalGameStateDataRecord?.[props.dataKey] || playerGameStateDataRecord?.[props.dataKey];
+      globalGameStateDataRecord?.[props.dataKey] ||
+      playerGameStateDataRecord?.[props.dataKey];
     const [revealed, setRevealed] = React.useState(data && isEnabled(data));
     const value =
       props.value ||

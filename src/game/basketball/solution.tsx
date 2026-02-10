@@ -35,25 +35,30 @@ import { EditableVariable } from '../../components/editable-variable';
 export function SolutionComponent(props: {
   uiGameData: GameData;
   player: Player;
-  updatePlayerStateData: (newPlayerStateData: GameStateData[], playerId: string) => void;
+  updatePlayerStateData: (
+    newPlayerStateData: GameStateData[],
+    playerId: string
+  ) => void;
 }): JSX.Element {
   const { uiGameData, player, updatePlayerStateData } = props;
   const { classes } = useStyles();
   const { zoomIn, zoomOut } = useControls();
-  const playerGameStateDataRecord: Record<string, string> | undefined = useMemo(() => {
-    return uiGameData.playerStateData
-      .find((p) => p.player === player._id)
-      ?.gameStateData.reduce((acc, cur) => {
+  const playerGameStateDataRecord: Record<string, string> | undefined =
+    useMemo(() => {
+      return uiGameData.playerStateData
+        .find((p) => p.player === player._id)
+        ?.gameStateData.reduce((acc, cur) => {
+          acc[cur.key] = cur.value;
+          return acc;
+        }, {} as Record<string, string>);
+    }, [uiGameData.playerStateData, player._id]);
+  const globalGameStateDataRecord: Record<string, string> | undefined =
+    useMemo(() => {
+      return uiGameData.globalStateData.gameStateData.reduce((acc, cur) => {
         acc[cur.key] = cur.value;
         return acc;
       }, {} as Record<string, string>);
-  }, [uiGameData.playerStateData, player._id]);
-  const globalGameStateDataRecord: Record<string, string> | undefined = useMemo(() => {
-    return uiGameData.globalStateData.gameStateData.reduce((acc, cur) => {
-      acc[cur.key] = cur.value;
-      return acc;
-    }, {} as Record<string, string>);
-  }, [uiGameData.globalStateData.gameStateData]);
+    }, [uiGameData.globalStateData.gameStateData]);
 
   const [understandsPoints, setUnderstandsPoints] = React.useState(false);
   const [understandsSuccess, setUnderstandsSuccess] = React.useState(false);
@@ -136,7 +141,8 @@ export function SolutionComponent(props: {
   }): JSX.Element {
     const { isEnabled } = props;
     const data =
-      globalGameStateDataRecord?.[props.dataKey] || playerGameStateDataRecord?.[props.dataKey];
+      globalGameStateDataRecord?.[props.dataKey] ||
+      playerGameStateDataRecord?.[props.dataKey];
     const [revealed, setRevealed] = React.useState(data && isEnabled(data));
     const value =
       props.value ||

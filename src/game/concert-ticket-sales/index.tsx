@@ -19,7 +19,11 @@ import { ProblemComponent } from './problem';
 import { SolutionComponent } from './solution';
 import { PlayerStrategy, SimulationComponent } from './simulation';
 import { ResultComponent } from './results';
-import { GameData, GameStateData, PlayerStateData } from '../../store/slices/game';
+import {
+  GameData,
+  GameStateData,
+  PlayerStateData,
+} from '../../store/slices/game';
 import { CurrentStage } from '../../types';
 import { Player } from '../../store/slices/player/types';
 
@@ -87,59 +91,59 @@ export class ConcertTicketSalesStateHandler extends AbstractGameData {
     ) {
       throw new Error('missing stage');
     }
-
+    const simulationStage = {
+      _id: 'wait-for-simulation',
+      clientId: 'wait-for-simulation',
+      stageType: 'simulation',
+    } as SimulationStage;
     const stageList: CurrentStage<IStage>[] = [
       {
         id: 'intro-discussion',
         stage: introDiscussionStage,
         getNextStage: () => {
-          return 'collect-strategy';
+          return collectStrategyStage;
         },
       },
       {
         id: 'collect-strategy',
         stage: collectStrategyStage,
         getNextStage: () => {
-          return 'understanding-equation';
+          return understandingEquationStage;
         },
       },
       {
         id: 'understanding-equation',
         stage: understandingEquationStage,
         getNextStage: () => {
-          return 'select-strategy';
+          return selectStrategyStage;
         },
       },
       {
         id: 'select-strategy',
         stage: selectStrategyStage,
         getNextStage: () => {
-          return 'wait-for-simulation';
+          return simulationStage;
         },
       },
       {
         id: 'wait-for-simulation',
-        stage: {
-          _id: 'wait-for-simulation',
-          clientId: 'wait-for-simulation',
-          stageType: 'simulation',
-        } as SimulationStage,
+        stage: simulationStage,
         getNextStage: () => {
-          return 'determine-best-strategy';
+          return determineBestStrategyStage;
         },
       },
       {
         id: 'determine-best-strategy',
         stage: determineBestStrategyStage,
         getNextStage: () => {
-          return 'finished';
+          return finishedStage;
         },
       },
       {
         id: 'finished',
         stage: finishedStage,
         getNextStage: () => {
-          return '';
+          return finishedStage;
         },
       },
     ];
@@ -176,8 +180,21 @@ const ConcertTicketSalesGame: Game = {
   showProblem: () => {
     return <ProblemComponent />;
   },
-  showSolution: (uiGameData: GameData, player: Player, updatePlayerStateData: (newPlayerStateData: GameStateData[], playerId: string) => void) => {
-    return <SolutionComponent uiGameData={uiGameData} player={player} updatePlayerStateData={updatePlayerStateData} />;
+  showSolution: (
+    uiGameData: GameData,
+    player: Player,
+    updatePlayerStateData: (
+      newPlayerStateData: GameStateData[],
+      playerId: string
+    ) => void
+  ) => {
+    return (
+      <SolutionComponent
+        uiGameData={uiGameData}
+        player={player}
+        updatePlayerStateData={updatePlayerStateData}
+      />
+    );
   },
   showSimulation: (game: Game) => {
     return <SimulationComponent game={game} />;

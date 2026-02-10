@@ -57,9 +57,9 @@ export function useWithProcessingRoomActions(
   async function processActionsAndCurStep(
     cloudActions: RoomActionQueueEntry[],
     roomId: string,
-    cancelled: boolean,
+    cancelled: boolean
   ) {
-    console.log("Starting processActionsAndCurStep");
+    console.log('Starting processActionsAndCurStep');
     if (cancelled) {
       console.log('Not processing room actions and steps because cancelled');
       return;
@@ -81,13 +81,19 @@ export function useWithProcessingRoomActions(
     processingLock.current = true;
 
     try {
-      console.log('processing room actions and steps', gameDataRef.current, discussionStages);
+      console.log(
+        'processing room actions and steps',
+        gameDataRef.current,
+        discussionStages
+      );
       const { curStep } = getCurStageAndStep(
         gameDataRef.current,
         discussionStages
       );
       const curStage = gameDataClassRef?.current?.stageList.find(
-        (stage) => stage.stage.clientId === gameDataRef?.current?.globalStateData.curStageId
+        (stage) =>
+          stage.stage.clientId ===
+          gameDataRef?.current?.globalStateData.curStageId
       );
       if (!curStage) {
         throw new Error('No gameDataClass stage found');
@@ -97,11 +103,9 @@ export function useWithProcessingRoomActions(
       const localActions = localActionQueue.current.filter(
         (action) => action.processedAt === null
       );
-      const actionsToProcess = [...cloudActions, ...localActions].filter(
-        (action) => !processedActionIds.current.has(action._id)
-      ).sort(
-        (a, b) => a.actionSentAt.getTime() - b.actionSentAt.getTime()
-      );
+      const actionsToProcess = [...cloudActions, ...localActions]
+        .filter((action) => !processedActionIds.current.has(action._id))
+        .sort((a, b) => a.actionSentAt.getTime() - b.actionSentAt.getTime());
 
       // Create a key for the current step and action count
       const currentStepKey = `${gameDataRef.current.globalStateData.curStageId}:${gameDataRef.current.globalStateData.curStepId}:${actionsToProcess.length}`;
@@ -206,7 +210,10 @@ export function useWithProcessingRoomActions(
       localActionQueue.current = localActionQueue.current.filter(
         (action) => !actionsToProcess.map((a) => a._id).includes(action._id)
       );
-      processedActionIds.current = new Set([...processedActionIds.current, ...actionsToProcess.map((a) => a._id)]);
+      processedActionIds.current = new Set([
+        ...processedActionIds.current,
+        ...actionsToProcess.map((a) => a._id),
+      ]);
       // Notify cloud of processed actions.
       const cloudActionsToSync = actionsToProcess.filter(
         (action) => action.source !== 'local'
@@ -238,7 +245,9 @@ export function useWithProcessingRoomActions(
 
   useEffect(() => {
     if (!roomId || !roomOwner || !gameDataClassRef?.current) {
-      console.error('Not polling room actions and steps because roomId or roomOwner or gameDataClassRef is not set');
+      console.error(
+        'Not polling room actions and steps because roomId or roomOwner or gameDataClassRef is not set'
+      );
       console.log('roomId', Boolean(roomId));
       console.log('roomOwner', Boolean(roomOwner));
       console.log('gameDataClassRef', Boolean(gameDataClassRef?.current));
@@ -255,7 +264,7 @@ export function useWithProcessingRoomActions(
         await processActionsAndCurStep(
           heartBeatsAndActions.actions,
           roomId,
-          cancelled,
+          cancelled
         );
         timeoutId = setTimeout(poll, 1000);
       } catch (err) {
@@ -277,7 +286,7 @@ export function useWithProcessingRoomActions(
     isRoomAuthoritativeClient: boolean,
     actionType: roomActionApi.RoomActionType,
     payload: string,
-    actionSentAt: Date,
+    actionSentAt: Date
   ): Promise<void> {
     if (isRoomAuthoritativeClient) {
       const action: RoomActionQueueEntry = {
@@ -295,11 +304,7 @@ export function useWithProcessingRoomActions(
       }
       // Room owner actions are handled right away, they do not go to the cloud.
       addToLocalActionQueue(action);
-      return await processActionsAndCurStep(
-        [action],
-        room._id,
-        false,
-      );
+      return await processActionsAndCurStep([action], room._id, false);
     }
 
     // Non-room owners submit the action to the cloud for the room owner to process.
@@ -336,7 +341,7 @@ export function useWithProcessingRoomActions(
       isRoomAuthoritativeClient,
       roomActionApi.RoomActionType.JOIN_ROOM,
       '',
-      newDate,
+      newDate
     );
   }
 
@@ -350,7 +355,7 @@ export function useWithProcessingRoomActions(
       isRoomAuthoritativeClient,
       roomActionApi.RoomActionType.LEAVE_ROOM,
       '',
-      newDate,
+      newDate
     );
   }
 
@@ -365,7 +370,7 @@ export function useWithProcessingRoomActions(
       isRoomAuthoritativeClient,
       roomActionApi.RoomActionType.SEND_MESSAGE,
       message,
-      newDate,
+      newDate
     );
   }
 
@@ -380,7 +385,7 @@ export function useWithProcessingRoomActions(
       isRoomAuthoritativeClient,
       roomActionApi.RoomActionType.UPDATE_ROOM,
       JSON.stringify(newPlayerData),
-      newDate,
+      newDate
     );
   }
 
@@ -395,10 +400,9 @@ export function useWithProcessingRoomActions(
       isRoomAuthoritativeClient,
       roomActionApi.RoomActionType.UPDATE_ROOM,
       JSON.stringify([{ key: getSimulationViewedKey(stageId), value: true }]),
-      newDate,
+      newDate
     );
   }
-
 
   return {
     localActionQueue,

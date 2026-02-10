@@ -343,13 +343,13 @@ export function updateGameDataWithNextStep(
 ): GameData {
   const gameData: GameData = getGameDataCopy(_gameData);
   const collectedDiscussionData: CollectedDiscussionData = JSON.parse(
-    gameData.globalStateData.discussionDataStringified || "{}"
+    gameData.globalStateData.discussionDataStringified || '{}'
   );
   if (curStep.lastStep) {
     const nextStage = curStage.getNextStage(collectedDiscussionData);
-    const nextStep = getFirstStepId(curStage.stage);
-    gameData.globalStateData.curStageId = nextStage;
-    gameData.globalStateData.curStepId = nextStep;
+    const nextStepId = getFirstStepId(nextStage);
+    gameData.globalStateData.curStageId = nextStage.clientId;
+    gameData.globalStateData.curStepId = nextStepId;
     return gameData;
   }
 
@@ -407,7 +407,7 @@ export function updateGameDataWithNextStep(
     // Is a simulation stage, just need to get the next stage id
     gameData.globalStateData.curStepId = curStage.getNextStage(
       collectedDiscussionData
-    );
+    ).clientId;
     return gameData;
   }
 }
