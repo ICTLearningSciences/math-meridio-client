@@ -6,7 +6,7 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React from 'react';
 
-import { GameStateHandler } from '../../classes/game-state-handler';
+import { GameStateHandler } from '../../classes/abstract-game-data';
 import { useWithPhaserGame } from '../../hooks/use-with-phaser-game';
 import { PlayerStateData } from '../../store/slices/game';
 import EventSystem from '../event-system';

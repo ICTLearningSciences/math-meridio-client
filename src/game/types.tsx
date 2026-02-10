@@ -6,11 +6,9 @@ The full terms of this copyright and license should always be found in the root 
 */
 import BasketballGame from './basketball';
 import NewGame from './concert-ticket-sales';
-import {
-  GameStateHandler,
-  GameStateHandlerArgs,
-} from '../classes/game-state-handler';
+import { AbstractGameData } from '../classes/abstract-game-data';
 import { PlayerStateData } from '../store/slices/game';
+import { DiscussionStage } from '../components/discussion-stage-builder/types';
 
 export interface Game {
   id: 'basketball' | 'concert-ticket-sales' | 'test-base';
@@ -18,18 +16,18 @@ export interface Game {
   problem: string;
   config: Phaser.Types.Core.GameConfig;
   persistTruthGlobalStateData: string[];
-  showProblem: (controller: GameStateHandler) => JSX.Element;
-  showSolution: (controller: GameStateHandler) => JSX.Element;
+  showProblem: (controller: AbstractGameData) => JSX.Element;
+  showSolution: (controller: AbstractGameData) => JSX.Element;
   showSimulation: (
-    controller: GameStateHandler,
+    controller: AbstractGameData,
     simulation?: string
   ) => JSX.Element;
   showPlayerStrategy: (
     data: PlayerStateData,
-    controller: GameStateHandler
+    controller: AbstractGameData
   ) => JSX.Element;
-  showResult: (controller: GameStateHandler) => JSX.Element;
-  createController: (args: GameStateHandlerArgs) => GameStateHandler;
+  showResult: (controller: AbstractGameData) => JSX.Element;
+  createController: (discussionStages: DiscussionStage[]) => AbstractGameData;
 }
 
 export const GAMES: Game[] = [BasketballGame, NewGame];

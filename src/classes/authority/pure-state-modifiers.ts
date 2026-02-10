@@ -11,15 +11,21 @@ import {
   ConditionalActivityStep,
   DiscussionStageStep,
   DiscussionStageStepType,
+  isDiscussionStage,
+  IStage,
 } from '../../components/discussion-stage-builder/types';
 import { getFirstStepId } from '../../helpers';
 import { GameData, GameStateData } from '../../store/slices/game';
-import { CollectedDiscussionData, DiscussionCurrentStage } from '../../types';
+import {
+  CollectedDiscussionData,
+  CurrentStage,
+  DiscussionCurrentStage,
+} from '../../types';
 import {
   evaluateCondition,
   everyPlayerHasRespondedToStep,
   getGameDataCopy,
-  getResponseTrackingFromGameState,
+  getAllStepResponseTrackingFromGameState,
   STEP_RESPONSE_TRACKING_KEY,
   StepResponseTracking,
 } from './state-modifier-helpers';
@@ -95,33 +101,32 @@ export function recordPlayerResponseForStep(
 ): GameData {
   let gameData: GameData = getGameDataCopy(_gameData);
   gameData = addResponseTrackingForStep(gameData, stepId);
-  const { index: stepTrackingIndex, value: allStepResponseTracking } =
-    getResponseTrackingFromGameState(gameData);
-  const stepResponseTrackingIdx = allStepResponseTracking.findIndex(
+  const {
+    allResponseTrackingIndexInGameStateData: stepTrackingIndex,
+    allStepResponseTracking,
+  } = getAllStepResponseTrackingFromGameState(gameData);
+  const targetStepResponseTracking = allStepResponseTracking.find(
     (stepResponseTracking) => stepResponseTracking.stepId === stepId
   );
-  if (stepResponseTrackingIdx === -1) {
+  if (!targetStepResponseTracking) {
     throw new Error(`Step response tracking not found for step ${stepId}`);
   }
-  const existingMessage =
-    allStepResponseTracking[stepResponseTrackingIdx].responses[playerId];
+  const existingMessage = targetStepResponseTracking.responses[playerId];
   if (existingMessage) {
     // append to existing message
-    allStepResponseTracking[stepResponseTrackingIdx].responses[playerId] =
+    targetStepResponseTracking.responses[playerId] =
       existingMessage + '\t' + message;
   } else {
     // new message
-    allStepResponseTracking[stepResponseTrackingIdx].responses[playerId] =
-      message;
+    targetStepResponseTracking.responses[playerId] = message;
   }
 
   const everyPlayerHasResponded = everyPlayerHasRespondedToStep(
-    allStepResponseTracking[stepResponseTrackingIdx]
+    targetStepResponseTracking
   );
 
   if (everyPlayerHasResponded) {
-    allStepResponseTracking[stepResponseTrackingIdx].allResponsesReceivedOnce =
-      true;
+    targetStepResponseTracking.allResponsesReceivedOnce = true;
   }
 
   gameData.globalStateData.gameStateData[stepTrackingIndex] = {
@@ -327,9 +332,13 @@ export function getNextStepFromConditionalStage(
   throw new Error('Failed to find next step id for ');
 }
 
+/**
+ * Updates the game data with the next step.
+ * IMPORTANT: This function assumes the current step is complete.
+ */
 export function updateGameDataWithNextStep(
   _gameData: GameData,
-  curStage: DiscussionCurrentStage,
+  curStage: CurrentStage<IStage>,
   curStep: DiscussionStageStep
 ): GameData {
   const gameData: GameData = getGameDataCopy(_gameData);
@@ -364,32 +373,41 @@ export function updateGameDataWithNextStep(
   }
 
   // find next step in the flow
-  const currentFlowList = curStage.stage.flowsList.find((flow) =>
-    flow.steps.find((step) => step.stepId === curStep.stepId)
-  );
 
-  if (!currentFlowList) {
-    throw new Error(`Unable to find flow for step: ${curStep.stepId}`);
-  }
-
-  const currentStepIndex = currentFlowList.steps.findIndex(
-    (step) => step.stepId === curStep.stepId
-  );
-
-  if (currentStepIndex === -1) {
-    throw new Error(
-      `Unable to find requested step: ${curStep.stepId} in flow ${currentFlowList.name}`
+  if (isDiscussionStage(curStage.stage)) {
+    const currentFlowList = curStage.stage.flowsList.find((flow) =>
+      flow.steps.find((step) => step.stepId === curStep.stepId)
     );
-  }
 
-  const nextStepIndex = currentStepIndex + 1;
-  if (nextStepIndex >= currentFlowList.steps.length) {
-    throw new Error(
-      'No next step found, maybe you forgot to add a jumpToStepId for the last step in a flow?'
+    if (!currentFlowList) {
+      throw new Error(`Unable to find flow for step: ${curStep.stepId}`);
+    }
+
+    const currentStepIndex = currentFlowList.steps.findIndex(
+      (step) => step.stepId === curStep.stepId
     );
+
+    if (currentStepIndex === -1) {
+      throw new Error(
+        `Unable to find requested step: ${curStep.stepId} in flow ${currentFlowList.name}`
+      );
+    }
+
+    const nextStepIndex = currentStepIndex + 1;
+    if (nextStepIndex >= currentFlowList.steps.length) {
+      throw new Error(
+        'No next step found, maybe you forgot to add a jumpToStepId for the last step in a flow?'
+      );
+    } else {
+      const nextStep = currentFlowList.steps[nextStepIndex];
+      gameData.globalStateData.curStepId = nextStep.stepId;
+      return gameData;
+    }
   } else {
-    const nextStep = currentFlowList.steps[nextStepIndex];
-    gameData.globalStateData.curStepId = nextStep.stepId;
+    // Is a simulation stage, just need to get the next stage id
+    gameData.globalStateData.curStepId = curStage.getNextStage(
+      collectedDiscussionData
+    );
     return gameData;
   }
 }

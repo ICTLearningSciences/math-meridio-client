@@ -6,6 +6,7 @@ The full terms of this copyright and license should always be found in the root 
 */
 import { fetchPlayer } from '../../api';
 import {
+  DiscussionStage,
   DiscussionStageStep,
   DiscussionStageStepType,
 } from '../../components/discussion-stage-builder/types';
@@ -162,4 +163,91 @@ export function processActionUpdatePlayerStateDataAction(
     newPlayerData
   );
   return gameData;
+}
+
+export function getCurStageAndStep(
+  gameData: GameData,
+  discussionStages: DiscussionStage[]
+): {
+  curStage: DiscussionStage;
+  curStep: DiscussionStageStep;
+} {
+  const curStage = discussionStages.find(
+    (stage) => stage._id === gameData.globalStateData.curStageId
+  );
+  if (!curStage) {
+    throw new Error('No stage found');
+  }
+  const curFlow = curStage.flowsList.find((flow) =>
+    flow.steps.find(
+      (step) => step.stepId === gameData.globalStateData.curStepId
+    )
+  );
+  if (!curFlow) {
+    throw new Error('No flow found');
+  }
+  const curStep = curFlow.steps.find(
+    (step) => step.stepId === gameData.globalStateData.curStepId
+  );
+  if (!curStep) {
+    throw new Error('No step found in flow');
+  }
+  return {
+    curStage,
+    curStep,
+  };
+}
+
+export async function processActions(
+  gameDataRef: React.MutableRefObject<GameData | undefined>,
+  discussionStages: DiscussionStage[],
+  actionsToProcess: RoomActionQueueEntry[],
+  setResponsePending: (pending: boolean) => void
+): Promise<GameData> {
+  if (!gameDataRef.current) {
+    throw new Error('No game data found');
+  }
+  for (const action of actionsToProcess) {
+    console.log('processing action', action);
+    switch (action.actionType) {
+      case RoomActionType.SEND_MESSAGE: {
+        setResponsePending(true);
+        const { curStep } = getCurStageAndStep(
+          gameDataRef.current,
+          discussionStages
+        );
+        gameDataRef.current = processPlayerSentMessageAction(
+          gameDataRef.current,
+          curStep,
+          action
+        );
+        setResponsePending(false);
+        break;
+      }
+      case RoomActionType.LEAVE_ROOM:
+        gameDataRef.current = processPlayerLeavesRoomAction(
+          gameDataRef.current,
+          action
+        );
+        break;
+      case RoomActionType.JOIN_ROOM: {
+        const requestingPlayer = await fetchPlayer(action.playerId);
+        gameDataRef.current = processPlayerJoinsRoomAction(
+          gameDataRef.current,
+          action,
+          requestingPlayer
+        );
+        break;
+      }
+      case RoomActionType.UPDATE_ROOM:
+        gameDataRef.current = processActionUpdatePlayerStateDataAction(
+          gameDataRef.current,
+          action
+        );
+        break;
+      default:
+        throw new Error(`Unknown action type: ${action.actionType}`);
+    }
+  }
+  return gameDataRef.current;
 }

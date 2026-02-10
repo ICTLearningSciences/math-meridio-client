@@ -4,66 +4,132 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { RoomActionQueueEntry } from '../../room-action-api';
 import { GameData, GameStateData, Room } from '../../store/slices/game';
 import * as roomActionApi from '../../room-action-api';
 import { v4 as uuidv4 } from 'uuid';
 import * as roomApi from '../../room-action-api';
 import {
-  processActionUpdatePlayerStateDataAction,
-  processPlayerJoinsRoomAction,
-  processPlayerLeavesRoomAction,
-  processPlayerSentMessageAction,
+  getCurStageAndStep,
+  processActions,
 } from './user-action-pure-functions';
 import {
   DiscussionStage,
-  DiscussionStageStep,
+  isDiscussionStage,
 } from '../../components/discussion-stage-builder/types';
-import { fetchPlayer, fetchPlayers } from '../../api';
-import { Player } from '../../store/slices/player/types';
+import { useWithConfig } from '../../store/slices/config/use-with-config';
+import {
+  isDiscussionStageStepComplete,
+  isSimulationStageComplete,
+  processCurStep,
+} from './step-process-pure-functions';
+import { updateGameDataWithNextStep } from './pure-state-modifiers';
+import { AbstractGameData } from '../abstract-game-data';
+import { getSimulationViewedKey } from '../../types';
 
-/**
- *
- */
 export function useWithProcessingRoomActions(
   setLocalGameData: React.Dispatch<React.SetStateAction<GameData | undefined>>,
   gameDataRef: React.MutableRefObject<GameData | undefined>,
   discussionStages: DiscussionStage[],
   roomOwner: boolean,
-  roomId?: string
+  setResponsePending: (pending: boolean) => void,
+  roomId?: string,
+  gameDataClass?: AbstractGameData
 ) {
   const localActionQueue = useRef<RoomActionQueueEntry[]>([]);
+  const { firstAvailableAzureServiceModel } = useWithConfig();
 
-  function getCurStep(
-    gameData: GameData,
-    discussionStages: DiscussionStage[]
-  ): DiscussionStageStep {
-    const curStage = discussionStages.find(
-      (stage) => stage._id === gameData.globalStateData.curStageId
+  function addToLocalActionQueue(action: RoomActionQueueEntry) {
+    localActionQueue.current = [...localActionQueue.current, action];
+  }
+
+  async function processActionsAndCurStep(
+    cloudActions: RoomActionQueueEntry[],
+    roomId: string,
+    cancelled: boolean,
+    gameDataClass: AbstractGameData
+  ) {
+    if (cancelled) return;
+    if (!gameDataRef.current) {
+      throw new Error('No game data found for processActionsAndCurStep');
+    }
+    const { curStep } = getCurStageAndStep(
+      gameDataRef.current,
+      discussionStages
+    );
+    const curStage = gameDataClass.stageList.find(
+      (stage) => stage.id === gameDataRef?.current?.globalStateData.curStageId
     );
     if (!curStage) {
-      throw new Error('No stage found');
+      throw new Error('No gameDataClass stage found');
     }
-    const curFlow = curStage.flowsList.find((flow) =>
-      flow.steps.find(
-        (step) => step.stepId === gameData.globalStateData.curStepId
-      )
+    const dataPreModification = JSON.stringify(gameDataRef.current);
+    const localActions = localActionQueue.current.filter(
+      (action) => action.processedAt === null
     );
-    if (!curFlow) {
-      throw new Error('No flow found');
-    }
-    const curStep = curFlow.steps.find(
-      (step) => step.stepId === gameData.globalStateData.curStepId
+    const actionsToProcess = [...cloudActions, ...localActions].sort(
+      (a, b) => a.actionSentAt.getTime() - b.actionSentAt.getTime()
     );
-    if (!curStep) {
-      throw new Error('No step found in flow');
+    gameDataRef.current = await processActions(
+      gameDataRef,
+      discussionStages,
+      actionsToProcess,
+      setResponsePending
+    );
+
+    // Process the current step.
+    // TODO: Probably need to check if we've already process the current step, so we don't process again (particularly for request user input steps.)
+
+    // Tech Debt: should not be defaulting to the room owner id, should be the player id that sent the message (but how to handle case of multiple users?)
+    gameDataRef.current = await processCurStep(
+      gameDataRef,
+      discussionStages,
+      setResponsePending,
+      firstAvailableAzureServiceModel(),
+      gameDataRef.current.globalStateData.roomOwnerId
+    );
+    const stepIsComplete = isDiscussionStage(curStage.stage)
+      ? await isDiscussionStageStepComplete(gameDataRef, discussionStages)
+      : await isSimulationStageComplete(gameDataRef);
+
+    if (stepIsComplete) {
+      gameDataRef.current = updateGameDataWithNextStep(
+        gameDataRef.current,
+        curStage,
+        curStep
+      );
     }
-    return curStep;
+
+    setLocalGameData(gameDataRef.current);
+
+    // Cleanup
+    // Remove processed actions from the local action queue.
+    localActionQueue.current = localActionQueue.current.filter(
+      (action) => !actionsToProcess.includes(action)
+    );
+    // Notify cloud of processed actions.
+    const cloudActionsToSync = actionsToProcess.filter(
+      (action) => action.source !== 'local'
+    );
+    if (cloudActionsToSync.length > 0) {
+      await notifyOfProcessedActions(
+        cloudActionsToSync.map((action) => action._id),
+        true
+      );
+    }
+    // Sync any changes to the game state to the cloud
+    const dataPostModification = JSON.stringify(gameDataRef.current);
+    if (dataPostModification === dataPreModification) {
+      console.log('No changes were made to the game data, not syncing.');
+    } else {
+      console.log('Changes were made to the game data, saving to the cloud');
+      await roomActionApi.syncRoomData(roomId, gameDataRef.current);
+    }
   }
 
   useEffect(() => {
-    if (!roomId || !roomOwner) return;
+    if (!roomId || !roomOwner || !gameDataClass) return;
     let cancelled = false;
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
@@ -71,24 +137,12 @@ export function useWithProcessingRoomActions(
       try {
         const heartBeatsAndActions =
           await roomApi.fetchRoomHeartBeatsAndActions(roomId);
-
-        if (cancelled) return;
-        const pulledActions = heartBeatsAndActions.actions.filter(
-          (action) => action.processedAt === null
+        await processActionsAndCurStep(
+          heartBeatsAndActions.actions,
+          roomId,
+          cancelled,
+          gameDataClass
         );
-        const localActions = localActionQueue.current.filter(
-          (action) => action.processedAt === null
-        );
-        const actionsToProcess = [...pulledActions, ...localActions].sort(
-          (a, b) => a.actionSentAt.getTime() - b.actionSentAt.getTime()
-        );
-        gameDataRef.current = await processActions(
-          gameDataRef,
-          discussionStages,
-          actionsToProcess,
-          roomId
-        );
-        setLocalGameData(gameDataRef.current);
         timeoutId = setTimeout(poll, 1000);
       } catch (err) {
         console.error(err);
@@ -102,95 +156,15 @@ export function useWithProcessingRoomActions(
       cancelled = true;
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [roomId, discussionStages]);
-
-  async function processActions(
-    gameDataRef: React.MutableRefObject<GameData | undefined>,
-    discussionStages: DiscussionStage[],
-    actionsToProcess: RoomActionQueueEntry[],
-    targetRoomId: string
-  ): Promise<GameData> {
-    const dataPreModification = gameDataRef.current;
-    if (!gameDataRef.current) {
-      throw new Error('No game data found');
-    }
-    for (const action of actionsToProcess) {
-      console.log('processing action', action);
-      switch (action.actionType) {
-        case roomActionApi.RoomActionType.SEND_MESSAGE: {
-          const curStep = getCurStep(gameDataRef.current, discussionStages);
-          gameDataRef.current = processPlayerSentMessageAction(
-            gameDataRef.current,
-            curStep,
-            action
-          );
-          break;
-        }
-        case roomActionApi.RoomActionType.LEAVE_ROOM:
-          gameDataRef.current = processPlayerLeavesRoomAction(
-            gameDataRef.current,
-            action
-          );
-          break;
-        case roomActionApi.RoomActionType.JOIN_ROOM: {
-          const requestingPlayer = await fetchPlayer(action.playerId);
-          gameDataRef.current = processPlayerJoinsRoomAction(
-            gameDataRef.current,
-            action,
-            requestingPlayer
-          );
-          break;
-        }
-        case roomActionApi.RoomActionType.UPDATE_ROOM:
-          gameDataRef.current = processActionUpdatePlayerStateDataAction(
-            gameDataRef.current,
-            action
-          );
-          break;
-        default:
-          throw new Error(`Unknown action type: ${action.actionType}`);
-      }
-    }
-    // Notify cloud of processed actions.
-    const cloudActionsToSync = actionsToProcess.filter(
-      (action) => action.source !== 'local'
-    );
-    if (cloudActionsToSync.length > 0) {
-      notifyOfProcessedActions(
-        cloudActionsToSync.map((action) => action._id),
-        true
-      );
-    }
-    // Remove processed actions from the local action queue.
-    localActionQueue.current = localActionQueue.current.filter(
-      (action) => !actionsToProcess.includes(action)
-    );
-    // Sync any changes to the cloud;
-    const dataPostModification = gameDataRef.current;
-    if (
-      JSON.stringify(dataPostModification) ===
-      JSON.stringify(dataPreModification)
-    ) {
-      console.log('No changes were made to the game data, not syncing.');
-    } else {
-      console.log('Changes were made to the game data, saving to the cloud');
-      if (!targetRoomId) {
-        throw new Error('No room id found for syncing to backend');
-      }
-      await roomActionApi.syncRoomData(
-        targetRoomId || roomId || '',
-        dataPostModification
-      );
-    }
-    return gameDataRef.current;
-  }
+  }, [roomId, discussionStages, gameDataClass]);
 
   async function submitRoomAction(
     room: Room,
     isRoomAuthoritativeClient: boolean,
     actionType: roomActionApi.RoomActionType,
     payload: string,
-    actionSentAt: Date
+    actionSentAt: Date,
+    gameDataClass: AbstractGameData
   ): Promise<void> {
     if (isRoomAuthoritativeClient) {
       const action: RoomActionQueueEntry = {
@@ -203,15 +177,17 @@ export function useWithProcessingRoomActions(
         processedAt: null,
         source: 'local',
       };
+      if (!gameDataClass) {
+        throw new Error('Game data class not found for submitRoomAction');
+      }
       // Room owner actions are handled right away, they do not go to the cloud.
-      gameDataRef.current = await processActions(
-        gameDataRef,
-        discussionStages,
+      addToLocalActionQueue(action);
+      return await processActionsAndCurStep(
         [action],
-        room._id
+        room._id,
+        false,
+        gameDataClass
       );
-      setLocalGameData(gameDataRef.current);
-      return await Promise.resolve();
     }
 
     // Non-room owners submit the action to the cloud for the room owner to process.
@@ -243,12 +219,16 @@ export function useWithProcessingRoomActions(
     isRoomAuthoritativeClient: boolean
   ) {
     const newDate = new Date();
+    if (!gameDataClass) {
+      throw new Error('Game data class not found for submitJoinRoomAction');
+    }
     await submitRoomAction(
       room,
       isRoomAuthoritativeClient,
       roomActionApi.RoomActionType.JOIN_ROOM,
       '',
-      newDate
+      newDate,
+      gameDataClass
     );
   }
 
@@ -257,12 +237,16 @@ export function useWithProcessingRoomActions(
     isRoomAuthoritativeClient: boolean
   ) {
     const newDate = new Date();
+    if (!gameDataClass) {
+      throw new Error('Game data class not found for submitLeaveRoomAction');
+    }
     await submitRoomAction(
       room,
       isRoomAuthoritativeClient,
       roomActionApi.RoomActionType.LEAVE_ROOM,
       '',
-      newDate
+      newDate,
+      gameDataClass
     );
   }
 
@@ -272,12 +256,16 @@ export function useWithProcessingRoomActions(
     message: string
   ) {
     const newDate = new Date();
+    if (!gameDataClass) {
+      throw new Error('Game data class not found for submitSendMessageAction');
+    }
     await submitRoomAction(
       room,
       isRoomAuthoritativeClient,
       roomActionApi.RoomActionType.SEND_MESSAGE,
       message,
-      newDate
+      newDate,
+      gameDataClass
     );
   }
 
@@ -287,12 +275,39 @@ export function useWithProcessingRoomActions(
     newPlayerData: GameStateData[]
   ) {
     const newDate = new Date();
+    if (!gameDataClass) {
+      throw new Error(
+        'Game data class not found for submitUpdateMyPlayerDataAction'
+      );
+    }
     await submitRoomAction(
       room,
       isRoomAuthoritativeClient,
       roomActionApi.RoomActionType.UPDATE_ROOM,
       JSON.stringify(newPlayerData),
-      newDate
+      newDate,
+      gameDataClass
+    );
+  }
+
+  async function submitViewedSimulationAction(
+    room: Room,
+    isRoomAuthoritativeClient: boolean,
+    stageId: string
+  ) {
+    const newDate = new Date();
+    if (!gameDataClass) {
+      throw new Error(
+        'Game data class not found for submitViewedSimulationAction'
+      );
+    }
+    await submitRoomAction(
+      room,
+      isRoomAuthoritativeClient,
+      roomActionApi.RoomActionType.UPDATE_ROOM,
+      JSON.stringify([{ key: getSimulationViewedKey(stageId), value: true }]),
+      newDate,
+      gameDataClass
     );
   }
 
@@ -303,5 +318,6 @@ export function useWithProcessingRoomActions(
     submitLeaveRoomAction,
     submitSendMessageAction,
     submitUpdateMyPlayerDataAction,
+    submitViewedSimulationAction,
   };
 }

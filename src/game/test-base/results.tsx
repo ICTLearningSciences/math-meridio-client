@@ -6,7 +6,7 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React, { useState } from 'react';
 import { BarChart } from '@mui/x-charts/BarChart';
-import { GameStateHandler } from '../../classes/game-state-handler';
+import { GameStateHandler } from '../../classes/abstract-game-data';
 import { ConcertTicketSalesSimulationData } from './SimulationScene';
 import EventSystem from '../event-system';
 import {

@@ -38,9 +38,10 @@ import { useWithWindow } from '../../hooks/use-with-window';
 import EventSystem from '../../game/event-system';
 import { PlayerStateData } from '../../store/slices/game';
 import { Game } from '../../game/types';
-import { GameStateHandler } from '../../classes/game-state-handler';
+import { GameStateHandler } from '../../classes/abstract-game-data';
 
 import '../../layout.css';
+import { useWithHostGameManagement } from '../../classes/authority/use-with-host-game-manage';
 
 const COLS = 6;
 const ROWS = 4;
@@ -147,15 +148,10 @@ function GamePage(): JSX.Element {
   const { roomId } = useParams<{ roomId: string }>();
   const { educationalData } = useWithEducationalData();
   const room = educationalData.rooms.find((r) => r._id === roomId);
-  const {
-    game,
-    gameStateHandler,
-    responsePending,
-    ownerIsPresent,
-    launchGame,
-    waitingForPlayers,
-    sendMessage,
-  } = useWithGame();
+  const { launchGame, ownerIsPresent, waitingForPlayers } =
+    useWithHostGameManagement();
+  const { game, gameStateHandler, responsePending, sendMessage } =
+    useWithGame();
   const navigate = useNavigate();
   const { windowHeight, windowWidth } = useWithWindow();
 

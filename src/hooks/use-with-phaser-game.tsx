@@ -7,7 +7,7 @@ The full terms of this copyright and license should always be found in the root 
 /* eslint-disable */
 
 import React, { useEffect, useState } from 'react';
-import { GameStateHandler } from '../classes/game-state-handler';
+import { GameStateHandler } from '../classes/abstract-game-data';
 import EventSystem from '../game/event-system';
 import { useAppSelector } from '../store/hooks';
 

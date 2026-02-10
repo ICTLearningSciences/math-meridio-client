@@ -13,7 +13,9 @@ import {
   replaceStoredDataInString,
 } from '../../components/discussion-stage-builder/helpers';
 import {
+  DiscussionStage,
   DiscussionStageStep,
+  DiscussionStageStepType,
   PromptStageStep,
   RequestUserInputStageStep,
   SystemMessageStageStep,
@@ -24,6 +26,7 @@ import {
   CollectedDiscussionData,
   DiscussionCurrentStage,
   GenericLlmRequest,
+  getSimulationViewedKey,
   PromptOutputTypes,
   PromptRoles,
   TargetAiModelServiceType,
@@ -35,12 +38,19 @@ import {
 import {
   addPromptResponseToGameData,
   addSystemMessageToGameData,
+  everyPlayerHasRespondedToStep,
   getGameDataCopy,
+  getAllStepResponseTrackingFromGameState,
+  STEP_RESPONSE_TRACKING_KEY,
 } from './state-modifier-helpers';
 import {
   AiServicesResponseTypes,
   extractServiceStepResponse,
 } from '../../ai-services/ai-service-types';
+import { RoomActionQueueEntry } from '../../room-action-api';
+import { syncLlmRequest } from '../../hooks/use-with-synchronous-polling';
+import { getCurStageAndStep } from './user-action-pure-functions';
+import { AbstractGameData } from '../abstract-game-data';
 
 export function startRequestUserInputStep(
   _gameData: GameData,
@@ -172,4 +182,119 @@ export async function processPromptStep(
   await requestFunction();
 
   return gameData;
+}
+
+export async function processCurStep(
+  gameDataRef: React.MutableRefObject<GameData | undefined>,
+  discussionStages: DiscussionStage[],
+  setResponsePending: (pending: boolean) => void,
+  targetAiServiceModel: TargetAiModelServiceType,
+  playerIdToUpdate: string
+): Promise<GameData> {
+  if (!gameDataRef.current) {
+    throw new Error('No game data found for processing current step');
+  }
+  const { curStep } = getCurStageAndStep(gameDataRef.current, discussionStages);
+  switch (curStep.stepType) {
+    case DiscussionStageStepType.REQUEST_USER_INPUT:
+      gameDataRef.current = startRequestUserInputStep(
+        gameDataRef.current,
+        curStep
+      );
+      break;
+    case DiscussionStageStepType.SYSTEM_MESSAGE:
+      gameDataRef.current = processNewSystemMessageStep(
+        gameDataRef.current,
+        curStep
+      );
+      break;
+    case DiscussionStageStepType.CONDITIONAL:
+      gameDataRef.current = processConditionalStep(gameDataRef.current);
+      break;
+    case DiscussionStageStepType.PROMPT:
+      setResponsePending(true);
+      gameDataRef.current = await processPromptStep(
+        gameDataRef.current,
+        curStep,
+        targetAiServiceModel,
+        syncLlmRequest,
+        gameDataRef.current.persistTruthGlobalStateData,
+        playerIdToUpdate
+      );
+      setResponsePending(false);
+      break;
+    default:
+      throw new Error(`Unknown step type: ${curStep}`);
+  }
+  return gameDataRef.current;
+}
+
+function isRequestUserInputStepComplete(
+  gameData: GameData,
+  curStep: RequestUserInputStageStep
+): boolean {
+  const { allStepResponseTracking } =
+    getAllStepResponseTrackingFromGameState(gameData);
+  if (!curStep.requireAllUserInputs) {
+    return true; // do not require all user inputs, so we assume the step is complete
+  }
+  const targetStepResponseTracking = allStepResponseTracking.find(
+    (stepResponseTracking) => stepResponseTracking.stepId === curStep.stepId
+  );
+  if (!targetStepResponseTracking) {
+    return false; // step response tracking not found, so the step is not complete
+  }
+  return everyPlayerHasRespondedToStep(targetStepResponseTracking);
+}
+
+export async function isDiscussionStageStepComplete(
+  gameDataRef: React.MutableRefObject<GameData | undefined>,
+  discussionStages: DiscussionStage[]
+): Promise<boolean> {
+  if (!gameDataRef.current) {
+    throw new Error(
+      'No game data found for checking if current step is complete'
+    );
+  }
+  const { curStep } = getCurStageAndStep(gameDataRef.current, discussionStages);
+  switch (curStep.stepType) {
+    case DiscussionStageStepType.REQUEST_USER_INPUT:
+      return isRequestUserInputStepComplete(gameDataRef.current, curStep);
+    case DiscussionStageStepType.SYSTEM_MESSAGE:
+      return true;
+    case DiscussionStageStepType.CONDITIONAL:
+      return true;
+    case DiscussionStageStepType.PROMPT:
+      return true;
+    default:
+      throw new Error(`Unknown step type: ${curStep}`);
+  }
+}
+
+export async function isSimulationStageComplete(
+  gameDataRef: React.MutableRefObject<GameData | undefined>
+): Promise<boolean> {
+  if (!gameDataRef.current) {
+    throw new Error(
+      'No game data found for checking if simulation stage is complete'
+    );
+  }
+  // Check that atleast 1 player has viewed the simulation for this stage.
+  const simulationViewedKey = getSimulationViewedKey(
+    gameDataRef.current.globalStateData.curStageId
+  );
+  return gameDataRef.current.playerStateData.some((player) =>
+    player.gameStateData.some((data) => {
+      if (data.key !== simulationViewedKey) {
+        return false;
+      }
+      if (typeof data.value === 'boolean') {
+        return data.value;
+      } else if (typeof data.value === 'string') {
+        return data.value === 'true' || data.value === 'True';
+      } else {
+        return false;
+      }
+    })
+  );
 }

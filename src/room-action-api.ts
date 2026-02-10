@@ -42,6 +42,7 @@ export enum RoomActionType {
   LEAVE_ROOM = 'LEAVE_ROOM',
   JOIN_ROOM = 'JOIN_ROOM',
   UPDATE_ROOM = 'UPDATE_ROOM',
+  VIEW_SIMULATION = 'VIEW_SIMULATION',
 }
 
 export interface RoomActionQueueEntry {

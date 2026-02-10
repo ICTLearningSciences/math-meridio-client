@@ -17,12 +17,16 @@ import { GameData, Room } from '../../store/slices/game';
 import React from 'react';
 import { useWithProcessingRoomActions } from './use-with-processing-room-actions';
 import { useWithSubmitHeartBeat } from './use-with-submit-heart-beat';
+import { AbstractGameData } from '../abstract-game-data';
+import { EventSystem } from '../../game/event-system';
+import { getSimulationViewedKey } from '../../types';
 
 export function useWithHostGameManagement() {
   const useWithEducationalData = useWithEducationalDataHook();
   const { player } = useAppSelector((state) => state.playerData);
   const { discussionStages } = useWithStages();
   const [game, setGame] = useState<Game>();
+  const [gameDataClass, setGameDataClass] = useState<AbstractGameData>();
   const poll = React.useRef<NodeJS.Timeout | null>(null);
   const [uiTriggerLocalGameData, setUiTriggerLocalGameData] =
     useState<GameData>();
@@ -34,11 +38,24 @@ export function useWithHostGameManagement() {
   const isRoomOwner = React.useMemo(() => {
     return player?._id === room?.gameData.globalStateData.roomOwnerId;
   }, [player, room?.gameData.globalStateData.roomOwnerId]);
-  const { submitJoinRoomAction } = useWithProcessingRoomActions(
+
+  const ownerIsPresent = React.useMemo(() => {
+    return room?.gameData.players.some(
+      (p) => p._id === room?.gameData.globalStateData.roomOwnerId
+    );
+  }, [room?.gameData.players, room?.gameData.globalStateData.roomOwnerId]);
+
+  const [responsePending, setResponsePending] = useState<boolean>(false);
+  const {
+    submitJoinRoomAction,
+    submitUpdateMyPlayerDataAction,
+    submitViewedSimulationAction,
+  } = useWithProcessingRoomActions(
     setUiTriggerLocalGameData,
     localGameDataRef,
     discussionStages,
     isRoomOwner,
+    setResponsePending,
     roomId
   );
   useWithSubmitHeartBeat(roomId);
@@ -51,8 +68,12 @@ export function useWithHostGameManagement() {
       player._id === room.gameData.globalStateData.roomOwnerId;
     const gameId = room.gameData.gameId;
     const game = GAMES.find((g) => g.id === gameId);
-    if (!game) return undefined;
+    if (!game) {
+      throw new Error('Game not found');
+    }
     setGame(game);
+    const gameDataClass = game.createController(discussionStages);
+    setGameDataClass(gameDataClass);
     const latestRoomData = await useWithEducationalData.fetchRoom(room._id);
     setUiTriggerLocalGameData(latestRoomData.gameData);
     localGameDataRef.current = latestRoomData.gameData;
@@ -60,6 +81,23 @@ export function useWithHostGameManagement() {
       startPollRoomState(latestRoomData);
     }
   }
+
+  useEffect(() => {
+    if (!room) {
+      return;
+    }
+    EventSystem.on('simulationEnded', () => {
+      // Store that this user has viewed the simulation for this stage.
+      if (!localGameDataRef.current?.globalStateData.curStageId) {
+        throw new Error('No stage id found for simulation ended');
+      }
+      submitViewedSimulationAction(
+        room,
+        true,
+        localGameDataRef.current.globalStateData.curStageId
+      );
+    });
+  }, [Boolean(room)]);
 
   function startPollRoomState(room: Room) {
     if (!poll.current) {
@@ -96,7 +134,7 @@ export function useWithHostGameManagement() {
       await new Promise((resolve) => setTimeout(resolve, 1000));
     }
     throw new Error('Failed to join the room');
-    // TODO: if the room owner is not present (no heartbeats), then you become the owner.
+    // TODO: if the room owner is not present (no recent heartbeats), then you become the owner.
   }
 
   return {
@@ -104,5 +142,8 @@ export function useWithHostGameManagement() {
     launchGame,
     syncRoomData,
     createAndJoinRoom,
+    ownerIsPresent,
+    waitingForPlayers: [] as string[],
+    responsePending,
   };
 }

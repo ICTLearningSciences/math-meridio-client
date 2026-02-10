@@ -9,7 +9,7 @@ import GameScene, { RenderAvatars } from '../game-scene';
 import EventSystem from '../event-system';
 import { Anchor, addImage, addTween } from '../phaser-helpers';
 import { Avatars } from '../../store/slices/player/use-with-player-state';
-import { GameStateHandler } from '../../classes/game-state-handler';
+import { GameStateHandler } from '../../classes/abstract-game-data';
 
 export class AvatarCreator extends GameScene {
   avatars: RenderAvatars[];

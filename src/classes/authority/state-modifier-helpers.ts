@@ -29,24 +29,25 @@ export function getGameDataCopy(gameData: GameData): GameData {
 }
 
 export interface GetResponseTrackingFromGameState {
-  index: number;
-  value: StepResponseTracking[];
+  allResponseTrackingIndexInGameStateData: number;
+  allStepResponseTracking: StepResponseTracking[];
 }
 
-export function getResponseTrackingFromGameState(gameData: GameData) {
+export function getAllStepResponseTrackingFromGameState(gameData: GameData) {
   const responseTrackingIdx = gameData.globalStateData.gameStateData.findIndex(
     (gameData) => gameData.key === STEP_RESPONSE_TRACKING_KEY
   );
   if (responseTrackingIdx === -1) {
     return {
-      index: -1,
-      value: [],
+      allResponseTrackingIndexInGameStateData: -1,
+      allStepResponseTracking: [],
     };
   }
   return {
-    index: responseTrackingIdx,
-    value: gameData.globalStateData.gameStateData[responseTrackingIdx]
-      .value as StepResponseTracking[],
+    allResponseTrackingIndexInGameStateData: responseTrackingIdx,
+    allStepResponseTracking: gameData.globalStateData.gameStateData[
+      responseTrackingIdx
+    ].value as StepResponseTracking[],
   };
 }
 

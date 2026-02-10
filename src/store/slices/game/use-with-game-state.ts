@@ -14,7 +14,7 @@ import {
 } from '.';
 import { GenericLlmRequest, LoadStatus } from '../../../types';
 import { useAppSelector } from '../../hooks';
-import { GameStateHandler } from '../../../classes/game-state-handler';
+import { GameStateHandler } from '../../../classes/abstract-game-data';
 import { GAMES, Game } from '../../../game/types';
 import { CancelToken } from 'axios';
 import { syncLlmRequest } from '../../../hooks/use-with-synchronous-polling';
@@ -49,7 +49,6 @@ export function useWithGame() {
   const [responsePending, setResponsePending] = React.useState<boolean>(false);
   const { firstAvailableAzureServiceModel } = useWithConfig();
   const { loadDiscussionStages } = useWithStages();
-  const poll = React.useRef<NodeJS.Timeout | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const operationQueue = React.useRef<(() => Promise<any>)[]>([]);
   const ownerIsPresent = React.useMemo(() => {
@@ -60,7 +59,6 @@ export function useWithGame() {
   }, [room, player, loadStatus]);
 
   const [game, setGame] = React.useState<Game>();
-  const [subscribers, setSubscribers] = React.useState<Subscriber[]>([]);
   const [gameStateHandler, setGameStateHandler] =
     React.useState<GameStateHandler>();
   const [waitingForPlayers, setWaitingForPlayers] = React.useState<string[]>(

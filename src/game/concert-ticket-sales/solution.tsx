@@ -8,7 +8,7 @@ import React, { useEffect, useRef } from 'react';
 import { TransformComponent, useControls } from 'react-zoom-pan-pinch';
 import { Card, Typography } from '@mui/material';
 
-import { GameStateHandler } from '../../classes/game-state-handler';
+import { GameStateHandler } from '../../classes/abstract-game-data';
 import { PlayerStateData } from '../../store/slices/game';
 import { makeStyles } from 'tss-react/mui';
 import { Player } from '../../store/slices/player/types';

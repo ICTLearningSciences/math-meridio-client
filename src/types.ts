@@ -116,3 +116,9 @@ export type CollectedDiscussionData = Record<
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type SolutionGameStateData = Record<string, any>;
+
+export const SIMULTAION_VIEWED_KEY = 'viewed-simulation';
+
+export function getSimulationViewedKey(stageId: string): string {
+  return `${SIMULTAION_VIEWED_KEY}-${stageId}`;
+}

@@ -24,7 +24,7 @@ import {
   animateText,
 } from './phaser-helpers';
 import { Avatar } from '../store/slices/player/types';
-import { GameStateHandler } from '../classes/game-state-handler';
+import { GameStateHandler } from '../classes/abstract-game-data';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const gameObjects: any[] = [];

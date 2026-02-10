@@ -5,14 +5,12 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import React from 'react';
-import {
-  GameStateHandler,
-  GameStateHandlerArgs,
-} from '../../classes/game-state-handler';
+import { AbstractGameData } from '../../classes/abstract-game-data';
 import { Game } from '../types';
 import { SimulationScene } from './SimulationScene';
 
 import {
+  DiscussionStage,
   IStage,
   SimulationStage,
 } from '../../components/discussion-stage-builder/types';
@@ -57,46 +55,26 @@ export const GENERAL_ADMISSION_TICKET_CONVERSION_RATE = 0.6;
 
 export const TOTAL_NUMBER_OF_TICKETS = 100;
 
-export class BasketballStateHandler extends GameStateHandler {
-  currentStage: CurrentStage<IStage> | undefined;
-  discussionStageHandler: DiscussionStageHandler;
-
-  constructor(args: GameStateHandlerArgs) {
-    super({ ...args, defaultStageId: 'de0b94b9-1fc2-4ea1-995e-21a75670c16d' });
-    this.discussionStageHandler = new DiscussionStageHandler(
-      this.player._id,
-      this.globalStateData,
-      this.playerStateData,
-      args.sendMessage,
-      args.setResponsePending,
-      args.executePrompt,
-      this.updateRoomStageStepId.bind(this),
-      args.targetAiServiceModel,
-      undefined,
-      this.newPlayerStateData.bind(this),
-      undefined,
-      args.onWaitingForPlayers
-    );
-
-    this.initializeGame = this.initializeGame.bind(this);
-    this.simulationEnded = this.simulationEnded.bind(this);
-
-    const introDiscussionStage = this.dbDiscussionStages.find(
+export class TestBaseHandler extends AbstractGameData {
+  stageList: CurrentStage<IStage>[] = [];
+  constructor(discussionStages: DiscussionStage[]) {
+    super();
+    const introDiscussionStage = discussionStages.find(
       (s) => s.clientId === introductionDiscussionStage
     );
-    const collectStrategyStage = this.dbDiscussionStages.find(
+    const collectStrategyStage = discussionStages.find(
       (s) => s.clientId === collectStrategyDiscussionStage
     );
-    const understandingEquationStage = this.dbDiscussionStages.find(
+    const understandingEquationStage = discussionStages.find(
       (s) => s.clientId === understandingEquationDiscussionStage
     );
-    const selectStrategyStage = this.dbDiscussionStages.find(
+    const selectStrategyStage = discussionStages.find(
       (s) => s.clientId === selectStrategyDiscussionStage
     );
-    const determineBestStrategyStage = this.dbDiscussionStages.find(
+    const determineBestStrategyStage = discussionStages.find(
       (s) => s.clientId === determineBestStrategyDiscussionStage
     );
-    const finishedStage = this.dbDiscussionStages.find(
+    const finishedStage = discussionStages.find(
       (s) => s.clientId === finishedDiscussionStage
     );
 
@@ -168,35 +146,6 @@ export class BasketballStateHandler extends GameStateHandler {
     ];
     this.stageList = stageList;
   }
-
-  playerStateUpdated(newGameState: PlayerStateData[]): void {
-    super.playerStateUpdated(newGameState);
-    const curStage = this.getCurrentStage();
-    const anyPlayerViewedSimulation = newGameState.find((p) =>
-      p.gameStateData.find((g) => g.key === SIMULTAION_VIEWED_KEY)
-    );
-    if (
-      curStage?.stage.stageType === 'simulation' &&
-      anyPlayerViewedSimulation
-    ) {
-      this.simulationEnded();
-    }
-  }
-
-  simulationEnded(): void {
-    super.simulationEnded();
-    const curStage = this.getCurrentStage();
-    if (curStage?.stage.stageType === 'simulation') {
-      const stage = this.stageList.find(
-        (s) => s.stage?.clientId === curStage?.stage.clientId
-      );
-      if (!stage) {
-        throw new Error('missing stage');
-      }
-      // stage.getNextStage({});
-      // TODO: need to add a new way for the game processor to handle when a simulation ends
-    }
-  }
 }
 
 const BaseTestGame: Game = {
@@ -228,20 +177,21 @@ const BaseTestGame: Game = {
   showProblem: () => {
     return <ProblemComponent />;
   },
-  showSolution: (controller: GameStateHandler) => {
+  showSolution: (controller: AbstractGameData) => {
     return <SolutionComponent controller={controller} />;
   },
-  showPlayerStrategy: (data: PlayerStateData, controller: GameStateHandler) => {
+  showPlayerStrategy: (data: PlayerStateData, controller: AbstractGameData) => {
     return <PlayerStrategy data={data} controller={controller} />;
   },
-  showSimulation: (controller: GameStateHandler) => {
+  showSimulation: (controller: AbstractGameData) => {
     return <SimulationComponent controller={controller} />;
   },
-  showResult: (controller: GameStateHandler) => {
+  showResult: (controller: AbstractGameData) => {
     return <ResultComponent controller={controller} />;
   },
-  createController: (args: GameStateHandlerArgs) =>
-    new BasketballStateHandler(args),
+  createController: (discussionStages: DiscussionStage[]) => {
+    return new TestBaseHandler(discussionStages);
+  },
 };
 
 export default BaseTestGame;
