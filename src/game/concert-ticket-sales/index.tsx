@@ -19,8 +19,9 @@ import { ProblemComponent } from './problem';
 import { SolutionComponent } from './solution';
 import { PlayerStrategy, SimulationComponent } from './simulation';
 import { ResultComponent } from './results';
-import { PlayerStateData } from '../../store/slices/game';
+import { GameData, GameStateData, PlayerStateData } from '../../store/slices/game';
 import { CurrentStage } from '../../types';
+import { Player } from '../../store/slices/player/types';
 
 const introductionDiscussionStage = '64de5488-c851-41b3-8347-18ffa340c753';
 const collectStrategyDiscussionStage = 'e20e0247-03a2-485f-b0be-b12ceb2af8b9';
@@ -53,7 +54,7 @@ export const GENERAL_ADMISSION_TICKET_CONVERSION_RATE = 0.6;
 
 export const TOTAL_NUMBER_OF_TICKETS = 100;
 
-export class BasketballStateHandler extends AbstractGameData {
+export class ConcertTicketSalesStateHandler extends AbstractGameData {
   stageList: CurrentStage<IStage>[] = [];
   constructor(discussionStages: DiscussionStage[]) {
     super();
@@ -146,7 +147,7 @@ export class BasketballStateHandler extends AbstractGameData {
   }
 }
 
-const BasketballGame: Game = {
+const ConcertTicketSalesGame: Game = {
   id: 'concert-ticket-sales',
   name: 'Concert Ticket Management',
   problem: `Our concert venue isn't meeting its profit goals, and we need your help to fix it. You and the sales team must figure out what's wrong with our current ticket strategy and how to adjust it to maximize revenue. For each show, we can sell 100 tickets. VIP tickets earn the most but are hardest to sell, while Reserved and General Admission earn less but sell more easily.`,
@@ -175,21 +176,21 @@ const BasketballGame: Game = {
   showProblem: () => {
     return <ProblemComponent />;
   },
-  showSolution: (controller: AbstractGameData) => {
-    return <SolutionComponent controller={controller} />;
+  showSolution: (uiGameData: GameData, player: Player, updatePlayerStateData: (newPlayerStateData: GameStateData[], playerId: string) => void) => {
+    return <SolutionComponent uiGameData={uiGameData} player={player} updatePlayerStateData={updatePlayerStateData} />;
   },
-  showSimulation: (controller: AbstractGameData) => {
-    return <SimulationComponent controller={controller} />;
+  showSimulation: (game: Game) => {
+    return <SimulationComponent game={game} />;
   },
-  showPlayerStrategy: (data: PlayerStateData, controller: AbstractGameData) => {
-    return <PlayerStrategy data={data} controller={controller} />;
+  showPlayerStrategy: (player: Player, playerStateData: PlayerStateData) => {
+    return <PlayerStrategy player={player} playerStateData={playerStateData} />;
   },
-  showResult: (controller: AbstractGameData) => {
-    return <ResultComponent controller={controller} />;
+  showResult: (uiGameData: GameData) => {
+    return <ResultComponent uiGameData={uiGameData} />;
   },
   createController: (discussionStages: DiscussionStage[]) => {
-    return new BasketballStateHandler(discussionStages);
+    return new ConcertTicketSalesStateHandler(discussionStages);
   },
 };
 
-export default BasketballGame;
+export default ConcertTicketSalesGame;

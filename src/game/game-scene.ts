@@ -24,7 +24,6 @@ import {
   animateText,
 } from './phaser-helpers';
 import { Avatar } from '../store/slices/player/types';
-import { GameStateHandler } from '../classes/abstract-game-data';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const gameObjects: any[] = [];
@@ -38,7 +37,6 @@ export interface RenderAvatars extends Avatars {
  */
 export abstract class GameScene extends Scene {
   sceneName: string;
-  gameStateHandler?: GameStateHandler;
 
   bg: Phaser.GameObjects.Image | undefined;
   chatWindow: Phaser.GameObjects.Rectangle | undefined;
@@ -79,8 +77,7 @@ export abstract class GameScene extends Scene {
     }
   }
 
-  create(handler: GameStateHandler) {
-    this.gameStateHandler = handler;
+  create() {
     for (const a of [
       ...SPRITE_BODY,
       ...SPRITE_CLOTHES,

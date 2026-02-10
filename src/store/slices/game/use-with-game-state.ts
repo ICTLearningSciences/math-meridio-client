@@ -14,7 +14,6 @@ import {
 } from '.';
 import { GenericLlmRequest, LoadStatus } from '../../../types';
 import { useAppSelector } from '../../hooks';
-import { GameStateHandler } from '../../../classes/abstract-game-data';
 import { GAMES, Game } from '../../../game/types';
 import { CancelToken } from 'axios';
 import { syncLlmRequest } from '../../../hooks/use-with-synchronous-polling';
@@ -31,6 +30,7 @@ import {
 import { useWithConfig } from '../config/use-with-config';
 import { useWithEducationalData } from '../educational-data/use-with-educational-data';
 import { useParams } from 'react-router-dom';
+import { AbstractGameData } from '../../../classes/abstract-game-data';
 export abstract class Subscriber {
   abstract newChatLogReceived(chatLog: ChatMessage[]): void;
   abstract simulationEnded(): void;
@@ -47,7 +47,6 @@ export function useWithGame() {
     state.educationalData.rooms.find((r) => r._id === roomId)
   );
   const [responsePending, setResponsePending] = React.useState<boolean>(false);
-  const { firstAvailableAzureServiceModel } = useWithConfig();
   const { loadDiscussionStages } = useWithStages();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const operationQueue = React.useRef<(() => Promise<any>)[]>([]);
@@ -60,7 +59,7 @@ export function useWithGame() {
 
   const [game, setGame] = React.useState<Game>();
   const [gameStateHandler, setGameStateHandler] =
-    React.useState<GameStateHandler>();
+    React.useState<AbstractGameData>();
   const [waitingForPlayers, setWaitingForPlayers] = React.useState<string[]>(
     []
   );
@@ -82,27 +81,9 @@ export function useWithGame() {
     const sessionId = uuidv4();
     localStorageStore(SESSION_ID, sessionId);
     const stages = await loadDiscussionStages();
-    const controller = game.createController({
-      stages: stages,
-      game: game.config,
-      gameData: room.gameData,
-      player: player,
-      sendMessage: _sendMessage,
-      updateRoomGameData: _updateRoomGameData,
-      setResponsePending: _setResponsePending,
-      executePrompt: (
-        llmRequest: GenericLlmRequest,
-        cancelToken?: CancelToken
-      ) => {
-        return syncLlmRequest(llmRequest, cancelToken);
-      },
-      viewedSimulation: _viewedSimulation,
-      targetAiServiceModel: firstAvailableAzureServiceModel(),
-      onWaitingForPlayers: setWaitingForPlayers,
-    });
+    const controller = game.createController(stages);
     setGame(game);
     setGameStateHandler(controller);
-    controller.initializeGame();
   }
 
   function _leaveRoom() {

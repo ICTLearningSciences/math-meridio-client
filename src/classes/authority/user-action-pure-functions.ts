@@ -173,7 +173,7 @@ export function getCurStageAndStep(
   curStep: DiscussionStageStep;
 } {
   const curStage = discussionStages.find(
-    (stage) => stage._id === gameData.globalStateData.curStageId
+    (stage) => stage.clientId === gameData.globalStateData.curStageId
   );
   if (!curStage) {
     throw new Error('No stage found');

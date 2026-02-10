@@ -7,8 +7,9 @@ The full terms of this copyright and license should always be found in the root 
 import BasketballGame from './basketball';
 import NewGame from './concert-ticket-sales';
 import { AbstractGameData } from '../classes/abstract-game-data';
-import { PlayerStateData } from '../store/slices/game';
+import { GameData, GameStateData, PlayerStateData } from '../store/slices/game';
 import { DiscussionStage } from '../components/discussion-stage-builder/types';
+import { Player } from '../store/slices/player/types';
 
 export interface Game {
   id: 'basketball' | 'concert-ticket-sales' | 'test-base';
@@ -16,17 +17,16 @@ export interface Game {
   problem: string;
   config: Phaser.Types.Core.GameConfig;
   persistTruthGlobalStateData: string[];
-  showProblem: (controller: AbstractGameData) => JSX.Element;
-  showSolution: (controller: AbstractGameData) => JSX.Element;
+  showProblem: () => JSX.Element;
+  showSolution: (uiGameData: GameData, player: Player, updatePlayerStateData: (newPlayerStateData: GameStateData[], playerId: string) => void) => JSX.Element;
   showSimulation: (
-    controller: AbstractGameData,
-    simulation?: string
+    game: Game,
   ) => JSX.Element;
   showPlayerStrategy: (
-    data: PlayerStateData,
-    controller: AbstractGameData
+    player: Player,
+    playerStateData: PlayerStateData,
   ) => JSX.Element;
-  showResult: (controller: AbstractGameData) => JSX.Element;
+  showResult: (uiGameData: GameData) => JSX.Element;
   createController: (discussionStages: DiscussionStage[]) => AbstractGameData;
 }
 

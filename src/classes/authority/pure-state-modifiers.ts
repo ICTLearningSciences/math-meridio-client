@@ -343,7 +343,7 @@ export function updateGameDataWithNextStep(
 ): GameData {
   const gameData: GameData = getGameDataCopy(_gameData);
   const collectedDiscussionData: CollectedDiscussionData = JSON.parse(
-    gameData.globalStateData.discussionDataStringified
+    gameData.globalStateData.discussionDataStringified || "{}"
   );
   if (curStep.lastStep) {
     const nextStage = curStage.getNextStage(collectedDiscussionData);

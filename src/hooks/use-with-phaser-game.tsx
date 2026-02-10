@@ -7,7 +7,6 @@ The full terms of this copyright and license should always be found in the root 
 /* eslint-disable */
 
 import React, { useEffect, useState } from 'react';
-import { GameStateHandler } from '../classes/abstract-game-data';
 import EventSystem from '../game/event-system';
 import { useAppSelector } from '../store/hooks';
 
@@ -17,7 +16,6 @@ export function useWithPhaserGame(
   const { player } = useAppSelector((state) => state.playerData);
   const [game, setGame] = useState<Phaser.Types.Core.GameConfig>();
   const [scene, setScene] = useState<string>();
-  const [controller, setController] = useState<GameStateHandler>();
   const [phaserGame, setPhaserGame] = useState<Phaser.Game>();
 
   const hasGame = Boolean(gameContainerRef.current?.firstChild);
@@ -39,7 +37,7 @@ export function useWithPhaserGame(
       parent: gameContainerRef.current as HTMLElement,
     };
     const pg = new Phaser.Game(config);
-    pg.scene.start(scene || 'Boot', controller || { player });
+    pg.scene.start(scene || 'Boot', { player });
     setPhaserGame(pg);
     // listeners
     EventSystem.on('sceneCreated', onSceneStarted);
@@ -59,13 +57,11 @@ export function useWithPhaserGame(
 
   function startPhaserGame(
     game: Phaser.Types.Core.GameConfig,
-    controller?: GameStateHandler,
     scene?: string
   ): void {
     if (phaserGame) {
       destroyPhaserGame(phaserGame);
     }
-    setController(controller);
     setScene(scene);
     setGame(game);
   }
@@ -73,7 +69,7 @@ export function useWithPhaserGame(
   function startPhaserScene(scene: string): void {
     if (!phaserGame || !game) return;
     setScene(scene);
-    phaserGame.scene.start(scene, controller);
+    phaserGame.scene.start(scene, { player });
   }
   function destroyPhaserGame(phaserGame: Phaser.Game): void {
     if (phaserGame) {
@@ -81,7 +77,6 @@ export function useWithPhaserGame(
       setGame(undefined);
       setPhaserGame(undefined);
       setScene(undefined);
-      setController(undefined);
       EventSystem.removeAllListeners();
     }
     if (
@@ -103,7 +98,6 @@ export function useWithPhaserGame(
   return {
     game,
     scene,
-    controller,
     phaserGame,
     hasGame,
     startPhaserGame,

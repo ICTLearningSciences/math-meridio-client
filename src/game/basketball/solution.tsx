@@ -4,11 +4,10 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { TransformComponent, useControls } from 'react-zoom-pan-pinch';
 import { Card, Typography } from '@mui/material';
-import { GameStateHandler } from '../../classes/abstract-game-data';
-import { PlayerStateData } from '../../store/slices/game';
+import { GameData, GameStateData } from '../../store/slices/game';
 import { makeStyles } from 'tss-react/mui';
 import { Player } from '../../store/slices/player/types';
 import { checkGameAndPlayerStateForValue } from '../../components/discussion-stage-builder/helpers';
@@ -33,25 +32,28 @@ export const UNDERSTANDS_ADDITION = 'understands_addition';
 
 import courtBg from './court.png';
 import { EditableVariable } from '../../components/editable-variable';
-import { SolutionGameStateData } from '../../types';
-
 export function SolutionComponent(props: {
-  controller: GameStateHandler;
+  uiGameData: GameData;
+  player: Player;
+  updatePlayerStateData: (newPlayerStateData: GameStateData[], playerId: string) => void;
 }): JSX.Element {
-  const { controller } = props;
+  const { uiGameData, player, updatePlayerStateData } = props;
   const { classes } = useStyles();
   const { zoomIn, zoomOut } = useControls();
-  const [gameStateData, setGameStateData] =
-    React.useState<SolutionGameStateData>({});
-  const [players, setPlayers] = React.useState<Player[]>([]);
-  const [playerStateData, setPlayerStateData] = React.useState<
-    PlayerStateData[]
-  >([]);
-  const [myPlayerStateData, setMyPlayerStateData] =
-    React.useState<SolutionGameStateData>({});
-  const curPlayerStateData = playerStateData.find(
-    (p) => p.player === controller.player._id
-  );
+  const playerGameStateDataRecord: Record<string, string> | undefined = useMemo(() => {
+    return uiGameData.playerStateData
+      .find((p) => p.player === player._id)
+      ?.gameStateData.reduce((acc, cur) => {
+        acc[cur.key] = cur.value;
+        return acc;
+      }, {} as Record<string, string>);
+  }, [uiGameData.playerStateData, player._id]);
+  const globalGameStateDataRecord: Record<string, string> | undefined = useMemo(() => {
+    return uiGameData.globalStateData.gameStateData.reduce((acc, cur) => {
+      acc[cur.key] = cur.value;
+      return acc;
+    }, {} as Record<string, string>);
+  }, [uiGameData.globalStateData.gameStateData]);
 
   const [understandsPoints, setUnderstandsPoints] = React.useState(false);
   const [understandsSuccess, setUnderstandsSuccess] = React.useState(false);
@@ -82,10 +84,14 @@ export function SolutionComponent(props: {
   }, [width, height]);
 
   React.useEffect(() => {
+    const curPlayerStateData = uiGameData.playerStateData.find(
+      (p) => p.player === player._id
+    );
+    const globalGameStateData = uiGameData.globalStateData.gameStateData;
     !understandsPoints &&
       setUnderstandsPoints(
         checkGameAndPlayerStateForValue(
-          controller.globalStateData.gameStateData,
+          globalGameStateData,
           curPlayerStateData?.gameStateData || [],
           UNDERSTANDS_SHOT_POINTS,
           'true'
@@ -94,7 +100,7 @@ export function SolutionComponent(props: {
     !understandsSuccess &&
       setUnderstandsSuccess(
         checkGameAndPlayerStateForValue(
-          controller.globalStateData.gameStateData,
+          globalGameStateData,
           curPlayerStateData?.gameStateData || [],
           UNDERSTANDS_SUCCESS_SHOTS,
           'true'
@@ -103,7 +109,7 @@ export function SolutionComponent(props: {
     !understandsMultiplication &&
       setUnderstandsMultiplication(
         checkGameAndPlayerStateForValue(
-          controller.globalStateData.gameStateData,
+          globalGameStateData,
           curPlayerStateData?.gameStateData || [],
           UNDERSTANDS_MULTIPLICATION,
           'true'
@@ -112,43 +118,13 @@ export function SolutionComponent(props: {
     !understandsAddition &&
       setUnderstandsAddition(
         checkGameAndPlayerStateForValue(
-          controller.globalStateData.gameStateData,
+          globalGameStateData,
           curPlayerStateData?.gameStateData || [],
           UNDERSTANDS_ADDITION,
           'true'
         )
       );
-  }, [
-    controller.globalStateData.gameStateData,
-    curPlayerStateData?.gameStateData || [],
-  ]);
-
-  React.useEffect(() => {
-    setPlayers(controller.players);
-  }, [controller.players]);
-
-  React.useEffect(() => {
-    const data: SolutionGameStateData = {};
-    controller.globalStateData.gameStateData.forEach((d) => {
-      data[d.key] = d.value;
-    });
-    setGameStateData(data);
-  }, [controller.globalStateData.gameStateData]);
-
-  React.useEffect(() => {
-    setPlayerStateData(controller.playerStateData);
-  }, [controller.playerStateData]);
-
-  React.useEffect(() => {
-    const data: SolutionGameStateData = {};
-    const gameState =
-      playerStateData.find((p) => p.player === controller.player._id)
-        ?.gameStateData || [];
-    gameState.forEach((d) => {
-      data[d.key] = d.value;
-    });
-    setMyPlayerStateData(data);
-  }, [playerStateData, players]);
+  }, [uiGameData.globalStateData.gameStateData, uiGameData.playerStateData]);
 
   function Variable(props: {
     dataKey: string;
@@ -160,12 +136,12 @@ export function SolutionComponent(props: {
   }): JSX.Element {
     const { isEnabled } = props;
     const data =
-      gameStateData[props.dataKey] || myPlayerStateData[props.dataKey];
+      globalGameStateDataRecord?.[props.dataKey] || playerGameStateDataRecord?.[props.dataKey];
     const [revealed, setRevealed] = React.useState(data && isEnabled(data));
     const value =
       props.value ||
-      gameStateData[props.dataKey] ||
-      myPlayerStateData[props.dataKey];
+      globalGameStateDataRecord?.[props.dataKey] ||
+      playerGameStateDataRecord?.[props.dataKey];
 
     useEffect(() => {
       if (revealed) {
@@ -270,19 +246,19 @@ export function SolutionComponent(props: {
             />
             <EditableVariable
               updatePlayerStateData={(newValue: number) => {
-                controller.newPlayerStateData(
+                updatePlayerStateData(
                   [
                     {
                       key: INSIDE_SHOT_PERCENT,
                       value: newValue,
                     },
                   ],
-                  controller.player._id
+                  player._id
                 );
               }}
               dataKey={INSIDE_SHOT_PERCENT}
               title="# of inside shots"
-              myPlayerStateData={myPlayerStateData}
+              myPlayerStateData={playerGameStateDataRecord || {}}
               shouldDisable={
                 Boolean(editingVariable) &&
                 editingVariable !== INSIDE_SHOT_PERCENT
@@ -341,19 +317,19 @@ export function SolutionComponent(props: {
             />
             <EditableVariable
               updatePlayerStateData={(newValue: number) => {
-                controller.newPlayerStateData(
+                updatePlayerStateData(
                   [
                     {
                       key: MID_SHOT_PERCENT,
                       value: newValue,
                     },
                   ],
-                  controller.player._id
+                  player._id
                 );
               }}
               dataKey={MID_SHOT_PERCENT}
               title="# of mid shots"
-              myPlayerStateData={myPlayerStateData}
+              myPlayerStateData={playerGameStateDataRecord || {}}
               shouldDisable={
                 Boolean(editingVariable) && editingVariable !== MID_SHOT_PERCENT
               }
@@ -411,19 +387,19 @@ export function SolutionComponent(props: {
             />
             <EditableVariable
               updatePlayerStateData={(newValue: number) => {
-                controller.newPlayerStateData(
+                updatePlayerStateData(
                   [
                     {
                       key: OUTSIDE_SHOT_PERCENT,
                       value: newValue,
                     },
                   ],
-                  controller.player._id
+                  player._id
                 );
               }}
               dataKey={OUTSIDE_SHOT_PERCENT}
               title="# of 3 pointers"
-              myPlayerStateData={myPlayerStateData}
+              myPlayerStateData={playerGameStateDataRecord || {}}
               shouldDisable={
                 Boolean(editingVariable) &&
                 editingVariable !== OUTSIDE_SHOT_PERCENT

@@ -13,20 +13,35 @@ import { Game, GAMES } from '../../game/types';
 import { localStorageStore, SESSION_ID } from '../../store/local-storage';
 import { v4 as uuidv4 } from 'uuid';
 import * as roomApi from '../../room-action-api';
-import { GameData, Room } from '../../store/slices/game';
+import { GameData, GameStateData, Room } from '../../store/slices/game';
 import React from 'react';
-import { useWithProcessingRoomActions } from './use-with-processing-room-actions';
+import { useWithProcessingRoomActions } from './use-with-process-room-actions-and-steps';
 import { useWithSubmitHeartBeat } from './use-with-submit-heart-beat';
 import { AbstractGameData } from '../abstract-game-data';
 import { EventSystem } from '../../game/event-system';
-import { getSimulationViewedKey } from '../../types';
+import { getFirstStepId } from '../../helpers';
+import { getGameDataCopy } from './state-modifier-helpers';
+import { Player } from '../../store/slices/player/types';
 
-export function useWithHostGameManagement() {
+export interface UseWithHostGameManagement {
+  game?: Game;
+  launchGame: () => void;
+  syncRoomData: (roomId: string, newGameData: GameData) => Promise<void>;
+  createAndJoinRoom: (gameId: string, gameName: string, classId: string) => Promise<Room>;
+  ownerIsPresent?: boolean;
+  waitingForPlayers: string[];
+  responsePending: boolean;
+  uiTriggerLocalGameData?: GameData;
+  updatePlayerStateData: (newPlayerStateData: GameStateData[]) => void;
+  player?: Player;
+}
+
+export function useWithHostGameManagement(): UseWithHostGameManagement {
   const useWithEducationalData = useWithEducationalDataHook();
   const { player } = useAppSelector((state) => state.playerData);
   const { discussionStages } = useWithStages();
   const [game, setGame] = useState<Game>();
-  const [gameDataClass, setGameDataClass] = useState<AbstractGameData>();
+  const gameDataClassRef = useRef<AbstractGameData>();
   const poll = React.useRef<NodeJS.Timeout | null>(null);
   const [uiTriggerLocalGameData, setUiTriggerLocalGameData] =
     useState<GameData>();
@@ -36,14 +51,14 @@ export function useWithHostGameManagement() {
     state.educationalData.rooms.find((r) => r._id === roomId)
   );
   const isRoomOwner = React.useMemo(() => {
-    return player?._id === room?.gameData.globalStateData.roomOwnerId;
-  }, [player, room?.gameData.globalStateData.roomOwnerId]);
+    return player?._id === uiTriggerLocalGameData?.globalStateData.roomOwnerId;
+  }, [player, uiTriggerLocalGameData?.globalStateData.roomOwnerId]);
 
   const ownerIsPresent = React.useMemo(() => {
-    return room?.gameData.players.some(
-      (p) => p._id === room?.gameData.globalStateData.roomOwnerId
+    return uiTriggerLocalGameData?.players.some(
+      (p) => p._id === uiTriggerLocalGameData?.globalStateData.roomOwnerId
     );
-  }, [room?.gameData.players, room?.gameData.globalStateData.roomOwnerId]);
+  }, [uiTriggerLocalGameData?.players, uiTriggerLocalGameData?.globalStateData.roomOwnerId]);
 
   const [responsePending, setResponsePending] = useState<boolean>(false);
   const {
@@ -56,16 +71,18 @@ export function useWithHostGameManagement() {
     discussionStages,
     isRoomOwner,
     setResponsePending,
-    roomId
+    roomId,
+    gameDataClassRef
   );
   useWithSubmitHeartBeat(roomId);
 
   async function launchGame() {
-    if (!room || !player) return undefined;
+    if (!room || !player){
+      console.error('Failed to launch game because room or player is not set');
+      return;
+    }
     const sessionId = uuidv4();
     localStorageStore(SESSION_ID, sessionId);
-    const isRoomOwner =
-      player._id === room.gameData.globalStateData.roomOwnerId;
     const gameId = room.gameData.gameId;
     const game = GAMES.find((g) => g.id === gameId);
     if (!game) {
@@ -73,13 +90,13 @@ export function useWithHostGameManagement() {
     }
     setGame(game);
     const gameDataClass = game.createController(discussionStages);
-    setGameDataClass(gameDataClass);
-    const latestRoomData = await useWithEducationalData.fetchRoom(room._id);
-    setUiTriggerLocalGameData(latestRoomData.gameData);
-    localGameDataRef.current = latestRoomData.gameData;
-    if (!isRoomOwner) {
-      startPollRoomState(latestRoomData);
-    }
+    gameDataClassRef.current = gameDataClass;
+
+        // const isRoomOwner =
+    //   player._id === room.gameData.globalStateData.roomOwnerId;
+    // if (!isRoomOwner) {
+    //   startPollRoomState(latestRoomData);
+    // }
   }
 
   useEffect(() => {
@@ -121,8 +138,20 @@ export function useWithHostGameManagement() {
       gameName,
       classId
     );
-    localGameDataRef.current = room.gameData;
-    setUiTriggerLocalGameData(room.gameData);
+    const game = GAMES.find((g) => g.id === gameId);
+    if(!game) {
+      throw new Error("Game not found for createAndJoinRoom");
+    }
+    gameDataClassRef.current = game.createController(discussionStages);
+    localGameDataRef.current = {
+      ...room.gameData,
+      globalStateData: {
+        ...room.gameData.globalStateData,
+        curStageId: gameDataClassRef.current?.stageList[0].stage.clientId,
+        curStepId: getFirstStepId(gameDataClassRef.current?.stageList[0].stage),
+      },
+    }
+    setUiTriggerLocalGameData(getGameDataCopy(localGameDataRef.current));
     await submitJoinRoomAction(room, true);
     // Wait until you are in the room. (keep checking the local room state until you are in the room, for 10 seconds max)
     for (let i = 0; i < 10; i++) {
@@ -137,13 +166,25 @@ export function useWithHostGameManagement() {
     // TODO: if the room owner is not present (no recent heartbeats), then you become the owner.
   }
 
+  function updatePlayerStateData(newPlayerStateData: GameStateData[]) {
+    if (!room) {
+      throw new Error('Room not found');
+    }
+    submitUpdateMyPlayerDataAction(room, true, newPlayerStateData);
+  }
+
+  console.log("uiTriggerLocalGameData", uiTriggerLocalGameData);
+
   return {
-    game,
+    game: game,
     launchGame,
     syncRoomData,
     createAndJoinRoom,
     ownerIsPresent,
     waitingForPlayers: [] as string[],
     responsePending,
+    uiTriggerLocalGameData,
+    player,
+    updatePlayerStateData,
   };
 }

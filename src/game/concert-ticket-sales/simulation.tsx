@@ -6,7 +6,6 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React from 'react';
 
-import { GameStateHandler } from '../../classes/abstract-game-data';
 import { useWithPhaserGame } from '../../hooks/use-with-phaser-game';
 import { PlayerStateData } from '../../store/slices/game';
 import EventSystem from '../event-system';
@@ -24,14 +23,14 @@ import {
   VIP_TICKET_PRICE,
   RESERVED_TICKET_PRICE,
 } from '.';
+import { Player } from '../../store/slices/player/types';
+import { Game } from '../types';
 
 export function PlayerStrategy(props: {
-  data: PlayerStateData;
-  controller: GameStateHandler;
+  playerStateData: PlayerStateData;
+  player: Player;
 }): JSX.Element {
-  const psd = props.data;
-  const controller = props.controller;
-  const player = controller.players.find((p) => p._id === psd.player);
+  const psd = props.playerStateData;
   const vipTicketsUpForSale =
     psd.gameStateData.find((d) => d.key === VIP_TICKET_PERCENT_KEY)?.value || 0;
   const reservedTicketsUpForSale =
@@ -88,7 +87,7 @@ export function PlayerStrategy(props: {
       }}
     >
       <Typography style={{ fontWeight: 'bold' }}>
-        {player?.name}&apos;s strategy:
+        {props.player?.name}&apos;s strategy:
       </Typography>
       <Typography>
         {vipTicketsUpForSale} vip, {reservedTicketsUpForSale} reserved,{' '}
@@ -99,14 +98,15 @@ export function PlayerStrategy(props: {
 }
 
 export function SimulationComponent(props: {
-  controller: GameStateHandler;
+  game: Game;
 }): JSX.Element {
+  const { game } = props;
   const gameContainerRef = React.useRef<HTMLDivElement | null>(null);
   const { startPhaserGame } = useWithPhaserGame(gameContainerRef);
 
   React.useEffect(() => {
-    startPhaserGame(props.controller.game, props.controller, 'Simulation');
-  }, [props.controller]);
+    startPhaserGame(game.config, 'Simulation');
+  }, [game.config]);
 
   return (
     <>

@@ -5,7 +5,6 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import GameScene from '../game-scene';
-import { GameStateHandler } from '../../classes/abstract-game-data';
 import { addBackground, addImage, addTween } from '../phaser-helpers';
 import EventSystem from '../event-system';
 import {
@@ -59,8 +58,8 @@ export class SimulationScene extends GameScene {
     this.load.image('basketball', 'basketball.png');
   }
 
-  create(handler: GameStateHandler) {
-    super.create(handler);
+  create() {
+    super.create();
     EventSystem.on('simulate', this.simulate, this);
     this.createScene();
   }
@@ -82,15 +81,16 @@ export class SimulationScene extends GameScene {
   }
 
   simulate(simulation: BasketballSimulationData) {
-    if (!this.gameStateHandler || !this.bg) return;
+    if (!this.bg) return;
     this.chatMsgText?.setAlpha(0);
     this.chatWindow?.setAlpha(0);
     this.simulation = simulation;
     this.destroySprite(this.mySprite);
     this.mySprite = this.renderSpriteAvatar(
-      simulation.playerAvatar?.avatar ||
-        this.gameStateHandler.players.find((p) => p._id === simulation.player)!
-          .avatar,
+      // TODO: determine if this breaks by not looking in the game state handler
+      simulation.playerAvatar?.avatar || [],
+      // this.gameStateHandler.players.find((p) => p._id === simulation.player)!
+      //   .avatar,
       {
         x: this.bg.displayWidth / 2,
         y: 500,

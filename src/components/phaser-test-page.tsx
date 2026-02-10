@@ -28,9 +28,9 @@ function PhaserTestPage(): JSX.Element {
 
   React.useEffect(() => {
     if (game === 'basketball') {
-      startPhaserGame(BasketballGame.config, undefined, 'Simulation');
+      startPhaserGame(BasketballGame.config, 'Simulation');
     } else {
-      startPhaserGame(ConcertGame.config, undefined, 'Simulation');
+      startPhaserGame(ConcertGame.config, 'Simulation');
     }
     EventSystem.on('sceneCreated', sceneCreated);
   }, []);

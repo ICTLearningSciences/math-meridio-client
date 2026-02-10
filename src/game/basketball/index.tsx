@@ -12,7 +12,7 @@ import { ProblemComponent } from './problem';
 import { SolutionComponent } from './solution';
 import { PlayerStrategy, SimulationComponent } from './simulation';
 import { ResultComponent } from './results';
-import { PlayerStateData } from '../../store/slices/game';
+import { GameData, GameStateData, PlayerStateData } from '../../store/slices/game';
 import { SIMULTAION_VIEWED_KEY } from '../../helpers';
 import { CollectedDiscussionData, CurrentStage } from '../../types';
 import {
@@ -20,6 +20,7 @@ import {
   SimulationStage,
 } from '../../components/discussion-stage-builder/types';
 import { DiscussionStage } from '../../components/discussion-stage-builder/types';
+import { Player } from '../../store/slices/player/types';
 
 const introductionDiscussionStage = 'de0b94b9-1fc2-4ea1-995e-21a75670c16d';
 const collectVariablesDiscussionStage = '86587083-9279-4c27-8470-836f992670fc';
@@ -206,17 +207,17 @@ const BasketballGame: Game = {
   showProblem: () => {
     return <ProblemComponent />;
   },
-  showSolution: (controller: AbstractGameData) => {
-    return <SolutionComponent controller={controller} />;
+  showSolution: (uiGameData: GameData, player: Player, updatePlayerStateData: (newPlayerStateData: GameStateData[], playerId: string) => void) => {
+    return <SolutionComponent uiGameData={uiGameData} player={player} updatePlayerStateData={updatePlayerStateData} />;
   },
-  showSimulation: (controller: AbstractGameData) => {
-    return <SimulationComponent controller={controller} />;
+  showSimulation: (game: Game) => {
+    return <SimulationComponent game={game} />;
   },
-  showPlayerStrategy: (data: PlayerStateData, controller: AbstractGameData) => {
-    return <PlayerStrategy data={data} controller={controller} />;
+  showPlayerStrategy: (player: Player, playerStateData: PlayerStateData) => {
+    return <PlayerStrategy player={player} playerStateData={playerStateData} />;
   },
-  showResult: (controller: AbstractGameData) => {
-    return <ResultComponent controller={controller} />;
+  showResult: (uiGameData: GameData) => {
+    return <ResultComponent uiGameData={uiGameData} />;
   },
   createController: (discussionStages: DiscussionStage[]) => {
     return new BasketballStateHandler(discussionStages);

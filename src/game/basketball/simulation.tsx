@@ -6,9 +6,8 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React from 'react';
 
-import { GameStateHandler } from '../../classes/abstract-game-data';
 import { useWithPhaserGame } from '../../hooks/use-with-phaser-game';
-import { PlayerStateData } from '../../store/slices/game';
+import { GameStateData, PlayerStateData } from '../../store/slices/game';
 import EventSystem from '../event-system';
 import { Typography } from '@mui/material';
 import { BasketballSimulationData } from './SimulationScene';
@@ -24,14 +23,14 @@ import {
   INSIDE_SHOT_POINTS_VALUE,
   MID_SHOT_POINTS_VALUE,
 } from './solution';
+import { Game } from '../types';
+import { Player } from '../../store/slices/player/types';
 
 export function PlayerStrategy(props: {
-  data: PlayerStateData;
-  controller: GameStateHandler;
+  playerStateData: PlayerStateData;
+  player: Player;
 }): JSX.Element {
-  const psd = props.data;
-  const controller = props.controller;
-  const player = controller.players.find((p) => p._id === psd.player);
+  const psd = props.playerStateData;
   const insideShots =
     psd.gameStateData.find((d) => d.key === INSIDE_SHOT_PERCENT)?.value || 0;
   const midShots =
@@ -75,7 +74,7 @@ export function PlayerStrategy(props: {
       }}
     >
       <Typography style={{ fontWeight: 'bold' }}>
-        {player?.name}&apos;s strategy:
+        {props.player?.name}&apos;s strategy:
       </Typography>
       <Typography>
         {insideShots} inside, {midShots} mid, {outsideShots} 3-pointers
@@ -85,14 +84,15 @@ export function PlayerStrategy(props: {
 }
 
 export function SimulationComponent(props: {
-  controller: GameStateHandler;
+  game: Game;
 }): JSX.Element {
+  const { game } = props;
   const gameContainerRef = React.useRef<HTMLDivElement | null>(null);
   const { startPhaserGame } = useWithPhaserGame(gameContainerRef);
 
   React.useEffect(() => {
-    startPhaserGame(props.controller.game, props.controller, 'Simulation');
-  }, [props.controller]);
+    startPhaserGame(game.config, 'Simulation');
+  }, [game.config]);
 
   return (
     <>

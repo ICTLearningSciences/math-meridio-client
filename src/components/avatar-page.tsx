@@ -46,7 +46,7 @@ function AvatarPage(): JSX.Element {
       navigate('/google-login');
       return;
     }
-    startPhaserGame(AvatarCreator, undefined, 'AvatarCreator');
+    startPhaserGame(AvatarCreator, 'AvatarCreator');
     EventSystem.on('sceneCreated', () => setSceneCreated(true));
     EventSystem.on('avatarSelected', onAvatarSelected);
   }, [loginStatus]);

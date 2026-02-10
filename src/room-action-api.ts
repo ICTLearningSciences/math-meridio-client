@@ -73,7 +73,7 @@ export async function submitRoomAction(
 }
 
 export const roomActionQueueEntryQueryData = `
-  actionId
+  _id
   roomId
   playerId
   actionType
@@ -232,8 +232,8 @@ export async function fetchRoomHeartBeatsAndActions(
     JSON.stringify({ roomId: roomId, processedAt: null })
   );
   const data = await execGql<{
-    heartBeats: Connection<RoomHeartBeat>;
-    actions: Connection<RoomActionQueueEntry>;
+    fetchRoomHeartbeats: Connection<RoomHeartBeat>;
+    fetchRoomActions: Connection<RoomActionQueueEntry>;
   }>(
     {
       query: fetchRoomHeartBeatsAndActionsMutation,
@@ -241,11 +241,11 @@ export async function fetchRoomHeartBeatsAndActions(
     },
     {
       accessToken: accessToken || undefined,
-      dataPath: 'fetchRoomHeartBeatsAndActions',
     }
   );
+  console.log('fetchRoomHeartBeatsAndActions data', data);
   return {
-    heartBeats: data.heartBeats.edges.map((edge) => edge.node),
-    actions: data.actions.edges.map((edge) => edge.node),
-  };
+    heartBeats: data.fetchRoomHeartbeats.edges.map((edge) => edge.node),
+    actions: data.fetchRoomActions.edges.map((edge) => edge.node),
+  };  
 }

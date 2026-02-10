@@ -20,9 +20,10 @@ import { ProblemComponent } from './problem';
 import { SolutionComponent } from './solution';
 import { PlayerStrategy, SimulationComponent } from './simulation';
 import { ResultComponent } from './results';
-import { PlayerStateData } from '../../store/slices/game';
+import { GameData, GameStateData, PlayerStateData } from '../../store/slices/game';
 import { SIMULTAION_VIEWED_KEY } from '../../helpers';
 import { CurrentStage } from '../../types';
+import { Player } from '../../store/slices/player/types';
 
 const introductionDiscussionStage = '2f9c8097-74b1-40ff-9199-36431b6095b9';
 const collectStrategyDiscussionStage = 'b5bf0160-a586-49e5-86e4-eb00a375000b';
@@ -177,17 +178,17 @@ const BaseTestGame: Game = {
   showProblem: () => {
     return <ProblemComponent />;
   },
-  showSolution: (controller: AbstractGameData) => {
-    return <SolutionComponent controller={controller} />;
+  showSolution: (uiGameData: GameData, player: Player, updatePlayerStateData: (newPlayerStateData: GameStateData[], playerId: string) => void) => {
+    return <SolutionComponent uiGameData={uiGameData} player={player} updatePlayerStateData={updatePlayerStateData} />;
   },
-  showPlayerStrategy: (data: PlayerStateData, controller: AbstractGameData) => {
-    return <PlayerStrategy data={data} controller={controller} />;
+  showPlayerStrategy: (player: Player, playerStateData: PlayerStateData) => {
+    return <PlayerStrategy player={player} playerStateData={playerStateData} />;
   },
-  showSimulation: (controller: AbstractGameData) => {
-    return <SimulationComponent controller={controller} />;
+  showSimulation: (game: Game) => {
+    return <SimulationComponent game={game} />;
   },
-  showResult: (controller: AbstractGameData) => {
-    return <ResultComponent controller={controller} />;
+  showResult: (uiGameData: GameData) => {
+    return <ResultComponent uiGameData={uiGameData} />;
   },
   createController: (discussionStages: DiscussionStage[]) => {
     return new TestBaseHandler(discussionStages);

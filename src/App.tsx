@@ -25,6 +25,7 @@ import { store } from './store';
 import { useWithHydrateRedux } from './store/use-with-hydrate-redux';
 import { useWithLogin } from './store/slices/player/use-with-login';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import { useWithHostGameManagement } from './classes/authority/use-with-host-game-manage';
 
 // Layout component that provides useLogin to all routes
 function RootLayout() {
@@ -46,6 +47,12 @@ function GoogleLoginPageWrapper() {
   return <GoogleLoginPage useLogin={useLogin} />;
 }
 
+// Layout component for game routes that provides useWithHostGameManagement to child routes
+function GameLayout() {
+  const gameManagement = useWithHostGameManagement();
+  return <Outlet context={gameManagement} />;
+}
+
 // Create router OUTSIDE the component so it's only created once
 const router = createBrowserRouter([
   {
@@ -65,15 +72,21 @@ const router = createBrowserRouter([
       },
       {
         path: '/classes',
-        element: <ClassesPage />,
-      },
-      {
-        path: '/classes/:classId',
-        element: <SelectedClassPage />,
-      },
-      {
-        path: '/classes/:classId/room/:roomId',
-        element: <RoomViewPage />,
+        element: <GameLayout />,
+        children: [
+          {
+            index: true,
+            element: <ClassesPage />,
+          },
+          {
+            path: ':classId',
+            element: <SelectedClassPage />,
+          },
+          {
+            path: ':classId/room/:roomId',
+            element: <RoomViewPage />,
+          },
+        ],
       },
       {
         path: '/game',

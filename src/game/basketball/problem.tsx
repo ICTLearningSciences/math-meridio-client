@@ -6,7 +6,6 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React from 'react';
 import { Typography } from '@mui/material';
-import { GameStateHandler } from '../../classes/abstract-game-data';
 import BasketballGame from '.';
 import shotChart from './shot-chart.png';
 

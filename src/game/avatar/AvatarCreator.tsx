@@ -9,7 +9,6 @@ import GameScene, { RenderAvatars } from '../game-scene';
 import EventSystem from '../event-system';
 import { Anchor, addImage, addTween } from '../phaser-helpers';
 import { Avatars } from '../../store/slices/player/use-with-player-state';
-import { GameStateHandler } from '../../classes/abstract-game-data';
 
 export class AvatarCreator extends GameScene {
   avatars: RenderAvatars[];
@@ -28,8 +27,8 @@ export class AvatarCreator extends GameScene {
     this.load.image('search', 'wordui/icons/icons_256/looking_glass_2.png');
   }
 
-  create(handler: GameStateHandler) {
-    super.create(handler);
+  create() {
+    super.create();
     EventSystem.on('loadingAvatars', this.loadingAvatars, this);
     EventSystem.on('showAvatars', this.showAvatars, this);
     this.createScene();
