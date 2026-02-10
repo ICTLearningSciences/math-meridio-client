@@ -10,7 +10,7 @@ import {
   GameData,
   MessageDisplayType,
   SenderType,
-} from '../../../store/slices/game';
+} from '../../../store/slices/game/types';
 import { localStorageGet, SESSION_ID } from '../../../store/local-storage';
 import {
   addSystemMessageToGameData,

@@ -34,7 +34,7 @@ import { Chat } from '@mui/icons-material';
 import { useWithEducationalData } from '../../store/slices/educational-data/use-with-educational-data';
 import { LoadStatus } from '../../types';
 import { ClassMembershipStatus } from '../../store/slices/educational-data/types';
-import { Room } from '../../store/slices/game';
+import { Room } from '../../store/slices/game/types';
 
 export default function TeacherSelectedClassPage(): JSX.Element {
   const { classId } = useParams<{ classId: string }>();

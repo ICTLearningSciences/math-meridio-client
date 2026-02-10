@@ -7,7 +7,11 @@ The full terms of this copyright and license should always be found in the root 
 import BasketballGame from './basketball';
 import NewGame from './concert-ticket-sales';
 import { AbstractGameData } from '../classes/abstract-game-data';
-import { GameData, GameStateData, PlayerStateData } from '../store/slices/game';
+import {
+  GameData,
+  GameStateData,
+  PlayerStateData,
+} from '../store/slices/game/types';
 import { DiscussionStage } from '../components/discussion-stage-builder/types';
 import { Player } from '../store/slices/player/types';
 

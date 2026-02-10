@@ -6,7 +6,7 @@ The full terms of this copyright and license should always be found in the root 
 */
 import { Scene } from 'phaser';
 import EventSystem from './event-system';
-import { ChatMessage } from '../store/slices/game';
+import { ChatMessage } from '../store/slices/game/types';
 import {
   Avatars,
   SPRITE_ACCESSORY,

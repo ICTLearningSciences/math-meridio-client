@@ -7,7 +7,7 @@ The full terms of this copyright and license should always be found in the root 
 import React from 'react';
 
 import { useWithPhaserGame } from '../../hooks/use-with-phaser-game';
-import { PlayerStateData } from '../../store/slices/game';
+import { PlayerStateData } from '../../store/slices/game/types';
 import EventSystem from '../event-system';
 import { Typography } from '@mui/material';
 import { ConcertTicketSalesSimulationData } from './SimulationScene';

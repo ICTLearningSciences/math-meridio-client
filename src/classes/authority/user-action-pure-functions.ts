@@ -11,7 +11,7 @@ import {
   DiscussionStageStepType,
 } from '../../components/discussion-stage-builder/types';
 import { RoomActionQueueEntry, RoomActionType } from '../../room-action-api';
-import { GameData, GameStateData } from '../../store/slices/game';
+import { GameData, GameStateData } from '../../store/slices/game/types';
 import { Player } from '../../store/slices/player/types';
 import {
   recordPlayerResponseForStep,

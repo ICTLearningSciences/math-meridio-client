@@ -13,7 +13,7 @@ import ChatForm from './game/chat-form';
 import AvatarCreator from '../game/avatar';
 import { useWithPhaserGame } from '../hooks/use-with-phaser-game';
 import { useAppSelector } from '../store/hooks';
-import { ChatMessage } from '../store/slices/game';
+import { ChatMessage } from '../store/slices/game/types';
 import {
   Avatars,
   useWithPlayer,
@@ -43,7 +43,7 @@ function AvatarPage(): JSX.Element {
       !player.name
     ) {
       console.log('navigating to login');
-      navigate('/google-login');
+      navigate('/');
       return;
     }
     startPhaserGame(AvatarCreator, 'AvatarCreator');
@@ -92,22 +92,22 @@ function AvatarPage(): JSX.Element {
     }
   }, [saveStatus]);
 
-  async function onUserMessage(msg: ChatMessage): Promise<void> {
+  async function onUserMessage(msg: string): Promise<void> {
     EventSystem.emit('addChatMessage', msg);
     if (!selectedAvatar) {
-      setDescription(msg.message);
+      setDescription(msg);
       EventSystem.emit('loadingAvatars', true);
       EventSystem.emit('addSystemMessage', {
         message: 'Fetching your avatar results...',
       });
-      const response = await loadAvatarsFromDesc(msg.message);
+      const response = await loadAvatarsFromDesc(msg);
       EventSystem.emit('loadingAvatars', false);
       EventSystem.emit('addSystemMessage', {
         message: response.message,
       });
       EventSystem.emit('showAvatars', response.avatars);
     } else if (selectedAvatar && !isSaving) {
-      if (msg.message.toLowerCase().replace(' ', '') === 'yes') {
+      if (msg.toLowerCase().replace(' ', '') === 'yes') {
         EventSystem.emit('addSystemMessage', {
           message: 'Saving your avatar...',
         });

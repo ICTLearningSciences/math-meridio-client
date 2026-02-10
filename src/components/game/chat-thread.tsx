@@ -15,7 +15,7 @@ import {
   styled,
   Typography,
 } from '@mui/material';
-import { GameData, SenderType } from '../../store/slices/game';
+import { GameData, SenderType } from '../../store/slices/game/types';
 import { FadingText } from '../fading-text';
 import React from 'react';
 import AvatarSprite from '../avatar-sprite';

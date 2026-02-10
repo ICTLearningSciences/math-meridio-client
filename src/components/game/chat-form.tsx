@@ -21,14 +21,14 @@ import {
 import { Mic, MicOutlined, Send } from '@mui/icons-material';
 
 import { useAppSelector } from '../../store/hooks';
-import { ChatMessage, SenderType } from '../../store/slices/game';
+import { ChatMessage, SenderType } from '../../store/slices/game/types';
 import { SESSION_ID } from '../../store/local-storage';
 import { localStorageGet } from '../../store/local-storage';
 
 export const MAX_MESSAGE_LENGTH = 200;
 
 export default function ChatForm(props: {
-  sendMessage: (msg: ChatMessage) => void;
+  sendMessage: (msg: string) => void;
 }): JSX.Element {
   const [input, setInput] = React.useState<string>('');
   const {
@@ -51,18 +51,10 @@ export default function ChatForm(props: {
     if (input.trim() === '' || input.length > MAX_MESSAGE_LENGTH) {
       return;
     }
-    const msg: ChatMessage = {
-      id: uuid(),
-      sender: SenderType.PLAYER,
-      senderId: player?._id,
-      senderName: player?.name,
-      message: input,
-      sessionId: sessionId as string,
-    };
     if (props.sendMessage) {
-      props.sendMessage(msg);
+      props.sendMessage(input);
     } else {
-      sendMessage(msg);
+      sendMessage(input);
     }
     setInput('');
   }

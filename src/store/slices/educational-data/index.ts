@@ -10,7 +10,7 @@ import * as mainApi from '../../../api';
 import { LoadStatus, LoadingState } from '../../../types';
 import { ClassMembership, Classroom } from './types';
 import { Player } from '../player/types';
-import { ChatMessage, GameData, Room } from '../game';
+import { GameData, Room } from '../game/types';
 import {
   addOrUpdateClass,
   addOrUpdateClassMembership,
@@ -167,13 +167,6 @@ export const updateGameRoomGameData = createAsyncThunk(
   }
 );
 
-export const sendGameRoomMessage = createAsyncThunk(
-  'educationalData/sendGameRoomMessage',
-  async (args: { gameRoomId: string; message: ChatMessage }): Promise<Room> => {
-    return await mainApi.sendMessage(args.gameRoomId, args.message);
-  }
-);
-
 export const fetchRoom = createAsyncThunk(
   'educationalData/fetchRoom',
   async (args: { roomId: string }): Promise<Room> => {
@@ -181,31 +174,23 @@ export const fetchRoom = createAsyncThunk(
   }
 );
 
-export const createNewRoom = createAsyncThunk(
-  'educationalData/createNewRoom',
+export const fetchRooms = createAsyncThunk(
+  'educationalData/fetchRooms',
+  async (args: { game: string }): Promise<Room[]> => {
+    return await mainApi.fetchRooms(args.game);
+  }
+);
+
+export const createNewGameRoom = createAsyncThunk(
+  'educationalData/createNewGameRoom',
   async (args: {
     gameId: string;
     gameName: string;
     classId?: string;
   }): Promise<Room> => {
-    return await api.createNewRoom(args.gameId, args.gameName, args.classId);
-  }
-);
-
-export const createAndJoinGameRoom = createAsyncThunk(
-  'educationalData/createAndJoinGameRoom',
-  async (args: {
-    gameId: string;
-    gameName: string;
-    playerId: string;
-    persistTruthGlobalStateData: string[];
-    classId: string;
-  }): Promise<Room> => {
-    return await mainApi.createAndJoinRoom(
-      args.playerId,
+    return await api.createNewGameRoom(
       args.gameId,
       args.gameName,
-      args.persistTruthGlobalStateData,
       args.classId
     );
   }
@@ -218,17 +203,9 @@ export const educationalDataSlice = createSlice({
   extraReducers: (builder) => {
     builder
 
-      .addCase(createNewRoom.fulfilled, (state, action) => {
+      .addCase(createNewGameRoom.fulfilled, (state, action) => {
         addOrUpdateGameRoom(state, action.payload);
       })
-
-      .addCase(createAndJoinGameRoom.fulfilled, (state, action) => {
-        addOrUpdateGameRoom(state, action.payload);
-      })
-
-      // .addCase(sendGameRoomMessage.fulfilled, (state, action) => {
-      //   addOrUpdateGameRoom(state, action.payload);
-      // })
 
       // .addCase(updateGameRoomGameData.fulfilled, (state, action) => {
       //   addOrUpdateGameRoom(state, action.payload);

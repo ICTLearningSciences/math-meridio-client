@@ -5,7 +5,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import { EducationalDataStateData } from '.';
-import { Room } from '../game';
+import { Room } from '../game/types';
 import { ClassMembership, Classroom } from './types';
 
 export function addOrUpdateClassMembership(

@@ -12,14 +12,14 @@ import { LoadStatus } from './types';
 import { useAppDispatch, useAppSelector } from './store/hooks';
 import { clearPlayer } from './store/slices/player';
 import { fetchDiscussionStages } from './store/slices/stages';
-import { Room, fetchRooms, leaveRoom } from './store/slices/game';
+import { useWithEducationalData } from './store/slices/educational-data/use-with-educational-data';
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const withAuthorizationOnly = (Component: any) => (props: any) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { roomsLoadStatus } = useAppSelector((state) => state.gameData);
+  const { leaveGameRoom, fetchRooms } = useWithEducationalData();
   const { player, loginStatus } = useAppSelector((state) => state.playerData);
   const { loadStagesStatus } = useAppSelector((state) => state.stages);
 
@@ -30,8 +30,8 @@ const withAuthorizationOnly = (Component: any) => (props: any) => {
       loginStatus.status === LoadStatus.FAILED
     ) {
       dispatch(clearPlayer());
-      console.log('navigating to google-login');
-      navigate('/google-login');
+      console.log('navigating to login');
+      navigate('/');
       return;
     }
     if (loginStatus.status === LoadStatus.DONE && !player?.description) {
@@ -47,18 +47,16 @@ const withAuthorizationOnly = (Component: any) => (props: any) => {
   }, [loadStagesStatus]);
 
   React.useEffect(() => {
-    if (!player) return;
-    if (roomsLoadStatus.status === LoadStatus.NONE) {
-      dispatch(fetchRooms({})).then((res) => {
-        const rooms = res.payload as Room[];
-        for (const room of rooms) {
-          if (room.gameData?.players.find((p) => p._id === player._id)) {
-            dispatch(leaveRoom({ playerId: player._id, roomId: room._id }));
-          }
+    if (!player?._id) return;
+    fetchRooms('').then((res) => {
+      const rooms = res;
+      for (const room of rooms) {
+        if (room.gameData?.players.find((p) => p._id === player._id)) {
+          leaveGameRoom(room._id, player._id);
         }
-      });
-    }
-  }, [player, roomsLoadStatus.status]);
+      }
+    });
+  }, [player?._id]);
 
   if (
     loginStatus.status === LoadStatus.NONE ||

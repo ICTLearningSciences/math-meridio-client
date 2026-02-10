@@ -6,7 +6,6 @@ The full terms of this copyright and license should always be found in the root 
 */
 // import { logger } from 'redux-logger';
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
-import gameData from './slices/game';
 import playerData from './slices/player';
 import stages from './slices/stages';
 import config from './slices/config';
@@ -15,7 +14,6 @@ import educationalData from './slices/educational-data';
 export const store = configureStore({
   // middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(logger),
   reducer: combineReducers({
-    gameData,
     playerData,
     stages,
     config,

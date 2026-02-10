@@ -24,7 +24,7 @@ import {
   createSystemMessageStep,
 } from './helpers';
 import { fetchPlayer } from '../../../api';
-import { SenderType } from '../../../store/slices/game';
+import { SenderType } from '../../../store/slices/game/types';
 
 // Mock the API
 jest.mock('../../../api', () => ({
@@ -55,6 +55,7 @@ describe('user-action-pure-functions', () => {
         payload: 'Hello, this is my response',
         actionSentAt: new Date(),
         processedAt: null,
+        source: 'local',
       };
 
       const result = processPlayerSentMessageAction(gameData, step, action);
@@ -94,6 +95,7 @@ describe('user-action-pure-functions', () => {
         payload: 'My answer is 42',
         actionSentAt: new Date(),
         processedAt: null,
+        source: 'local',
       };
 
       const result = processPlayerSentMessageAction(gameData, step, action);
@@ -142,6 +144,7 @@ describe('user-action-pure-functions', () => {
         payload: 'Some response',
         actionSentAt: new Date(),
         processedAt: null,
+        source: 'local',
       };
 
       const result1 = processPlayerSentMessageAction(
@@ -213,6 +216,7 @@ describe('user-action-pure-functions', () => {
         payload: 'Message',
         actionSentAt: new Date(),
         processedAt: null,
+        source: 'local',
       };
 
       expect(() =>
@@ -235,6 +239,7 @@ describe('user-action-pure-functions', () => {
         payload: '',
         actionSentAt: new Date(),
         processedAt: null,
+        source: 'local',
       };
 
       const result = processPlayerLeavesRoomAction(gameData, action);
@@ -267,6 +272,7 @@ describe('user-action-pure-functions', () => {
         payload: '',
         actionSentAt: new Date(),
         processedAt: null,
+        source: 'local',
       };
 
       expect(() => processPlayerLeavesRoomAction(gameData, action)).toThrow(
@@ -289,17 +295,15 @@ describe('user-action-pure-functions', () => {
       const action: RoomActionQueueEntry = {
         _id: 'action-1',
         roomId: 'room-1',
-        playerId: 'player3',
+        playerId: newPlayer._id,
         actionType: RoomActionType.JOIN_ROOM,
         payload: '',
         actionSentAt: new Date(),
         processedAt: null,
+        source: 'local',
       };
 
-      const result = await processPlayerJoinsRoomAction(gameData, action);
-
-      // Should have called fetchPlayer with correct ID
-      expect(fetchPlayer).toHaveBeenCalledWith('player3');
+      const result = processPlayerJoinsRoomAction(gameData, action, newPlayer);
 
       // Player should be added to players array
       expect(result.players.length).toBe(3);
@@ -345,7 +349,7 @@ describe('user-action-pure-functions', () => {
 
     it('should throw error when action type is not JOIN_ROOM', async () => {
       const gameData = createBaseGameData();
-
+      const player = createMockPlayer('player3', 'Player 3');
       const action: RoomActionQueueEntry = {
         _id: 'action-1',
         roomId: 'room-1',
@@ -353,14 +357,13 @@ describe('user-action-pure-functions', () => {
         actionType: RoomActionType.SEND_MESSAGE, // Wrong type
         payload: '',
         actionSentAt: new Date(),
+        source: 'local',
         processedAt: null,
       };
 
-      await expect(
-        processPlayerJoinsRoomAction(gameData, action)
-      ).rejects.toThrow(
-        'Incorrect action type provided to processPlayerLeavesRoom'
-      );
+      expect(() =>
+        processPlayerJoinsRoomAction(gameData, action, player)
+      ).toThrow('Incorrect action type provided to processPlayerLeavesRoom');
     });
   });
 
@@ -389,6 +392,7 @@ describe('user-action-pure-functions', () => {
         payload: JSON.stringify(newStateData),
         actionSentAt: new Date(),
         processedAt: null,
+        source: 'local',
       };
 
       const result = processActionUpdatePlayerStateDataAction(gameData, action);

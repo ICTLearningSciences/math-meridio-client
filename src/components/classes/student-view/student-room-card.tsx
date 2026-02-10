@@ -6,7 +6,7 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React, { useState } from 'react';
 import { Button, Card, CardContent, Typography } from '@mui/material';
-import { Room } from '../../../store/slices/game';
+import { Room } from '../../../store/slices/game/types';
 import { Player } from '../../../store/slices/player/types';
 import { useNavigate } from 'react-router-dom';
 import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';

@@ -24,7 +24,7 @@ import {
   GameData,
   GameStateData,
   PlayerStateData,
-} from '../../store/slices/game';
+} from '../../store/slices/game/types';
 import { SIMULTAION_VIEWED_KEY } from '../../helpers';
 import { CurrentStage } from '../../types';
 import { Player } from '../../store/slices/player/types';

@@ -15,7 +15,7 @@ import {
   IStage,
 } from '../../components/discussion-stage-builder/types';
 import { getFirstStepId } from '../../helpers';
-import { GameData, GameStateData } from '../../store/slices/game';
+import { GameData, GameStateData } from '../../store/slices/game/types';
 import {
   CollectedDiscussionData,
   CurrentStage,

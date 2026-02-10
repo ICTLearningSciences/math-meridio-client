@@ -23,7 +23,7 @@ import {
   RESERVED_TICKET_PRICE,
   VIP_TICKET_PRICE,
 } from '.';
-import { SenderType } from '../../store/slices/game';
+import { SenderType } from '../../store/slices/game/types';
 import { localStorageGet, SESSION_ID } from '../../store/local-storage';
 import { Avatar, Player } from '../../store/slices/player/types';
 import {

@@ -5,7 +5,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import { CollectedDiscussionData } from '../../types';
-import { GameStateData } from '../../store/slices/game';
+import { GameStateData } from '../../store/slices/game/types';
 import {
   DiscussionStage,
   FlowItem,

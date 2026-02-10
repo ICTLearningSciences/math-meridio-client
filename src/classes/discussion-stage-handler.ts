@@ -43,7 +43,7 @@ import {
   GlobalStateData,
   PlayerStateData,
   GameStateData,
-} from '../store/slices/game';
+} from '../store/slices/game/types';
 import { Player } from '../store/slices/player/types';
 import { SESSION_ID } from '../store/local-storage';
 import { localStorageGet } from '../store/local-storage';

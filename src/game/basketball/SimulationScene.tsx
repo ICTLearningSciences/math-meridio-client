@@ -13,7 +13,7 @@ import {
   NUMBER_OF_SHOTS,
   OUTSIDE_SHOT_SUCCESS_VALUE,
 } from './solution';
-import { SenderType } from '../../store/slices/game';
+import { SenderType } from '../../store/slices/game/types';
 import { localStorageGet, SESSION_ID } from '../../store/local-storage';
 import { Player } from '../../store/slices/player/types';
 

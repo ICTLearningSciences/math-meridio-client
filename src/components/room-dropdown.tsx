@@ -14,7 +14,7 @@ import {
   Typography,
 } from '@mui/material';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
-import { Room } from '../store/slices/game';
+import { Room } from '../store/slices/game/types';
 import RoomCard from './game/room-card';
 interface RoomDropdownProps {
   title: string;

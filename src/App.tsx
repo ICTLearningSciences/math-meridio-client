@@ -11,7 +11,6 @@ import { RouterProvider, createBrowserRouter, Outlet } from 'react-router-dom';
 import { Header } from './components/header';
 import AvatarPage from './components/avatar-page';
 import GamePage from './components/game/game-page';
-import RoomPage from './components/game/room-page';
 import PhaserTestPage from './components/phaser-test-page';
 import { StageBuilderPage } from './components/discussion-stage-builder/stage-builder-page';
 import GoogleLoginPage from './components/google_login/login';
@@ -60,10 +59,6 @@ const router = createBrowserRouter([
     children: [
       {
         path: '/',
-        element: <RoomPage />,
-      },
-      {
-        path: '/google-login',
         element: <GoogleLoginPageWrapper />,
       },
       {
@@ -87,14 +82,6 @@ const router = createBrowserRouter([
             element: <RoomViewPage />,
           },
         ],
-      },
-      {
-        path: '/game',
-        element: <GamePage />,
-      },
-      {
-        path: '/game/:roomId',
-        element: <GamePage />,
       },
       {
         path: '/discussion-builder',
