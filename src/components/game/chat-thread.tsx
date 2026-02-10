@@ -15,7 +15,7 @@ import {
   styled,
   Typography,
 } from '@mui/material';
-import { SenderType } from '../../store/slices/game';
+import { GameData, SenderType } from '../../store/slices/game';
 import { FadingText } from '../fading-text';
 import React from 'react';
 import AvatarSprite from '../avatar-sprite';
@@ -80,17 +80,18 @@ const useStyles = makeStyles()(() => ({
 
 export default function ChatThread(props: {
   responsePending: boolean;
+  waitingForPlayers: string[];
+  uiGameData: GameData;
 }): JSX.Element {
-  const { responsePending } = props;
+  const { responsePending, waitingForPlayers, uiGameData } = props;
   const { classes } = useStyles();
   const { player } = useAppSelector((state) => state.playerData);
-  const messages = useAppSelector(
-    (state) => state.gameData.room?.gameData.chat || []
+  const messages = uiGameData.chat || [];
+  const players = uiGameData.players;
+  const playersBeingWaitedFor = players?.filter((p) =>
+    waitingForPlayers.includes(p._id)
   );
-
-  const players = useAppSelector(
-    (state) => state.gameData.room?.gameData.players
-  );
+  console.log('ChatThread: playersBeingWaitedFor', playersBeingWaitedFor);
 
   enum PlayerColors {
     Blue = 'info.main',
@@ -326,6 +327,21 @@ export default function ChatThread(props: {
                 />
               </Typography>
             </Paper>
+          </Stack>
+        )}
+        {playersBeingWaitedFor && playersBeingWaitedFor.length > 0 && (
+          <Stack
+            direction="column"
+            key={`waiting-for-players`}
+            sx={{ p: 1 }}
+            spacing={2}
+          >
+            <b>Waiting for responses from:</b>
+            {playersBeingWaitedFor.map((p) => (
+              <Typography key={`waiting-for-player-${p._id}`} color={'black'}>
+                {p.name}
+              </Typography>
+            ))}
           </Stack>
         )}
       </Stack>

@@ -8,20 +8,20 @@ import React, { useEffect, useCallback } from 'react';
 import { Card, TextField, Typography } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 import {
-  GameStateData,
   INSIDE_SHOT_PERCENT,
   MID_SHOT_PERCENT,
   OUTSIDE_SHOT_PERCENT,
 } from '../game/basketball/solution';
 import { useDebouncedCallback } from '../hooks/use-debounced-callback';
 import { didGameStateDataChange } from '../helpers';
+import { SolutionGameStateData } from '../types';
 
 export const EditableVariable = React.memo(
   function EditableVariable(props: {
     dataKey: string;
     title: string;
     updatePlayerStateData: (value: number) => void;
-    myPlayerStateData: GameStateData;
+    myPlayerStateData: SolutionGameStateData;
     shouldDisable: boolean;
     setEditingVariable: (variable: string) => void;
   }): JSX.Element {

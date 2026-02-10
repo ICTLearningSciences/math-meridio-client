@@ -22,14 +22,13 @@ import { Mic, MicOutlined, Send } from '@mui/icons-material';
 
 import { useAppSelector } from '../../store/hooks';
 import { ChatMessage, SenderType } from '../../store/slices/game';
-import { useWithGame } from '../../store/slices/game/use-with-game-state';
 import { SESSION_ID } from '../../store/local-storage';
 import { localStorageGet } from '../../store/local-storage';
 
 export const MAX_MESSAGE_LENGTH = 200;
 
 export default function ChatForm(props: {
-  sendMessage?: (msg: ChatMessage) => void;
+  sendMessage: (msg: ChatMessage) => void;
 }): JSX.Element {
   const [input, setInput] = React.useState<string>('');
   const {
@@ -38,7 +37,7 @@ export default function ChatForm(props: {
     browserSupportsSpeechRecognition,
     resetTranscript,
   } = useSpeechRecognition();
-  const { sendMessage } = useWithGame();
+  const { sendMessage } = props;
   const { player } = useAppSelector((state) => state.playerData);
 
   React.useEffect(() => {
@@ -92,6 +91,7 @@ export default function ChatForm(props: {
       <FormControl variant="outlined" style={{ flex: 1 }}>
         <InputLabel>Chat:</InputLabel>
         <OutlinedInput
+          data-cy="chat-input"
           label="Chat:"
           type="text"
           value={input}
@@ -118,6 +118,7 @@ export default function ChatForm(props: {
           endAdornment={
             <InputAdornment position="end">
               <IconButton
+                data-cy="send-message-button"
                 type="submit"
                 color="primary"
                 edge="end"

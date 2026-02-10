@@ -4,10 +4,10 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import * as api from '../../../api';
 import { LoadStatus, LoadingState } from '../../../types';
-import { UserRole } from './types';
+import { EducationalRole, UserRole } from './types';
 import { refreshAccessToken as _refreshAccessToken, loginGoogle } from './api';
 import { extractErrorMessageFromError } from '../../../helpers';
 import {
@@ -22,6 +22,7 @@ export interface PlayerStateData {
   saveStatus: LoadingState;
   accessToken?: string;
   userRole?: UserRole;
+  viewingAs: EducationalRole | undefined;
 }
 
 const initialState: PlayerStateData = {
@@ -30,6 +31,7 @@ const initialState: PlayerStateData = {
   saveStatus: { status: LoadStatus.NONE },
   accessToken: undefined,
   userRole: undefined,
+  viewingAs: undefined,
 };
 
 /** Actions */
@@ -59,9 +61,12 @@ export const refreshAccessToken = createAsyncThunk(
 
 export const login = createAsyncThunk(
   'login/login',
-  async (args: { accessToken: string }) => {
+  async (args: {
+    accessToken: string;
+    educationalLoginRole: EducationalRole;
+  }) => {
     try {
-      return await loginGoogle(args.accessToken);
+      return await loginGoogle(args.accessToken, args.educationalLoginRole);
     } catch (err: unknown) {
       console.error(err);
       throw new Error(extractErrorMessageFromError(err));
@@ -82,6 +87,9 @@ export const dataSlice = createSlice({
       state.loginStatus = { status: LoadStatus.NOT_LOGGED_IN };
       state.saveStatus = { status: LoadStatus.NONE };
     },
+    setViewingAs: (state, action: PayloadAction<EducationalRole>) => {
+      state.viewingAs = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -91,6 +99,7 @@ export const dataSlice = createSlice({
         state.saveStatus = { status: LoadStatus.NONE };
         state.accessToken = undefined;
         state.userRole = undefined;
+        state.viewingAs = undefined;
       })
 
       .addCase(login.pending, (state) => {
@@ -172,5 +181,5 @@ export const dataSlice = createSlice({
   },
 });
 
-export const { clearPlayer } = dataSlice.actions;
+export const { clearPlayer, setViewingAs } = dataSlice.actions;
 export default dataSlice.reducer;

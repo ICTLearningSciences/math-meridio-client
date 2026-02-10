@@ -35,6 +35,7 @@ export interface ChatMessage {
 export interface Room {
   _id: string;
   name: string;
+  classId?: string;
   gameData: GameData;
 }
 
@@ -43,7 +44,12 @@ export interface GameData {
   players: Player[];
   chat: ChatMessage[];
   globalStateData: GlobalStateData;
+  persistTruthGlobalStateData: string[];
   playerStateData: PlayerStateData[];
+}
+
+export interface GameDataGQL extends Omit<GameData, 'players'> {
+  players: string[];
 }
 
 export interface GameStateData {
@@ -62,6 +68,7 @@ export interface GlobalStateData {
   curStageId: string;
   curStepId: string;
   roomOwnerId: string;
+  discussionDataStringified: string;
   gameStateData: GameStateData[];
 }
 
@@ -101,12 +108,14 @@ export const createAndJoinRoom = createAsyncThunk(
     gameName: string;
     playerId: string;
     persistTruthGlobalStateData: string[];
+    classId: string;
   }): Promise<Room> => {
     return api.createAndJoinRoom(
       args.playerId,
       args.gameId,
       args.gameName,
-      args.persistTruthGlobalStateData
+      args.persistTruthGlobalStateData,
+      args.classId
     );
   }
 );

@@ -4,6 +4,15 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
+import { ACCESS_TOKEN_KEY } from "../../src/store/local-storage";
+import { fetchConfigResponse } from "../fixtures/fetch-config";
+import { fetchRoomsResponse } from "../fixtures/fetch-rooms";
+import { fetchDiscussionStagesResponse } from "../fixtures/fetch-discussion-stages";
+import { fetchInstructorDataHydrationResponse, fetchStudentDataHydrationResponse } from "../fixtures/fetch-educational-data-hydration";
+import { refreshAccessTokenResponse } from "../fixtures/refresh-access-token";
+import { EducationalRole, UserRole } from "../fixtures/types";
+import { asyncStartRequestRes } from "../fixtures/llm-requests/async-start-request";
+
 interface StaticResponse {
   /**
    * Serve a fixture as the response body.
@@ -113,16 +122,35 @@ export function cyInterceptGraphQL(cy: CypressGlobal, mocks: MockGraphQLQuery[])
   });
 }
 
+export function cyMockLogin(cy: CypressGlobal): void {
+  cy.setLocalStorage(ACCESS_TOKEN_KEY, 'fake-access-token');
+  cy.setCookie('refreshTokenDev', 'fake-refresh-token', { secure: true });
+}
+
 export function cyMockDefault(
   cy: CypressGlobal,
   args: {
+    userRole?: UserRole;  
+    userEducationalRole?: EducationalRole;
     gqlQueries?: MockGraphQLQuery[];
   } = {}
 ) {
   const gqlQueries = args?.gqlQueries || [];
-  cy.clearLocalStorage();
   cySetup(cy);
-  cyInterceptGraphQL(cy, [...gqlQueries]);
+  cyMockLogin(cy);
+  cyInterceptGraphQL(cy, [
+    ...gqlQueries,
+    // Defaults
+    mockGQL(
+      'RefreshAccessToken',
+      refreshAccessTokenResponse(args.userRole || UserRole.USER, args.userEducationalRole || EducationalRole.STUDENT)
+    ),
+    mockGQL('FetchDiscussionStages', fetchDiscussionStagesResponse),
+    mockGQL('FetchConfig', fetchConfigResponse),
+    mockGQL('FetchStudentDataHydration', fetchStudentDataHydrationResponse()),
+    mockGQL('FetchInstructorDataHydration', fetchInstructorDataHydrationResponse()),
+    mockGQL('FetchRooms', fetchRoomsResponse()),
+  ]);
 }
 
 interface MockedResData<T> {
@@ -162,5 +190,45 @@ export function cyMockMultipleResponses<T>(
       })
     );
     numCalls++;
+  });
+}
+
+export function cyMockOpenAiCall(
+  cy: CypressGlobal,
+  params: {
+    statusCode?: number;
+    response?: any;
+    delay?: number;
+  } = {}
+) {
+  cy.intercept('**/generic_llm_request/**', (req) => {
+    req.alias = 'genericLlmRequest';
+    req.reply(
+      staticResponse({
+        statusCode: 200,
+        body: {
+          data: asyncStartRequestRes,
+        },
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        delayMs: 0,
+      })
+    );
+  });
+  cy.intercept('**/generic_llm_request_status/**', (req) => {
+    req.alias = 'genericLlmRequestStatus';
+    req.reply(
+      staticResponse({
+        statusCode: 200,
+        body: {
+          data: params.response || "No Response Text Provided",
+        },
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        delayMs: params.delay || 0,
+      })
+    );
   });
 }

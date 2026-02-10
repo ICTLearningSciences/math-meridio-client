@@ -6,14 +6,10 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React from 'react';
 import { Typography } from '@mui/material';
-import { GameStateHandler } from '../../classes/game-state-handler';
 import BasketballGame from '.';
 import shotChart from './shot-chart.png';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function ProblemComponent(props: {
-  controller: GameStateHandler;
-}): JSX.Element {
+export function ProblemComponent(): JSX.Element {
   return (
     <div>
       <img

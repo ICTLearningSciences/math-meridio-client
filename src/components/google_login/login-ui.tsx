@@ -9,14 +9,22 @@ import { ColumnCenterDiv, ColumnDiv } from '../../styled-components';
 import { PlayerStateData } from '../../store/slices/player';
 import { Button, CircularProgress } from '@mui/material';
 import { LoadStatus } from '../../types';
+import { EducationalRole } from '../../store/slices/player/types';
 
 export function LoginUI(props: {
   loginState: PlayerStateData;
-  login: () => void;
-  loginText: string;
+  setViewingAs: (educationalRole: EducationalRole) => void;
+  instructorloginGoogle: () => void;
+  studentloginGoogle: () => void;
   titleText?: string;
 }) {
-  const { loginState, login, loginText, titleText } = props;
+  const {
+    loginState,
+    setViewingAs,
+    instructorloginGoogle,
+    studentloginGoogle,
+    titleText,
+  } = props;
 
   return (
     <ColumnCenterDiv
@@ -46,19 +54,50 @@ export function LoginUI(props: {
               alignItems: 'center',
             }}
           >
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => login()}
+            <ColumnDiv
               style={{
-                fontSize: '16px',
-                margin: '10px',
-                width: 300,
+                alignItems: 'center',
               }}
-              data-cy="login-btn"
             >
-              {loginText}
-            </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => {
+                  setViewingAs(EducationalRole.STUDENT);
+                  studentloginGoogle();
+                }}
+                style={{
+                  fontSize: '16px',
+                  margin: '10px',
+                  width: 300,
+                }}
+                data-cy="login-btn"
+              >
+                Student Login
+              </Button>
+            </ColumnDiv>
+            <ColumnDiv
+              style={{
+                alignItems: 'center',
+              }}
+            >
+              <Button
+                variant="outlined"
+                color="primary"
+                onClick={() => {
+                  setViewingAs(EducationalRole.INSTRUCTOR);
+                  instructorloginGoogle();
+                }}
+                style={{
+                  fontSize: '16px',
+                  margin: '10px',
+                  width: 300,
+                }}
+                data-cy="login-btn"
+              >
+                Instructor Login
+              </Button>
+            </ColumnDiv>
           </ColumnDiv>
         )}
       </div>

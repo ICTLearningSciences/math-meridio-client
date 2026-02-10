@@ -20,7 +20,8 @@ The full terms of this copyright and license should always be found in the root 
 // ***********************************************************
 
 // Import commands.js using ES2015 syntax:
-import "./commands";
+import "cypress-localstorage-commands";
+
 import { addMatchImageSnapshotCommand } from "@simonsmith/cypress-image-snapshot/command";
 
 addMatchImageSnapshotCommand();

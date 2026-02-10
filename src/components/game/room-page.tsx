@@ -147,7 +147,7 @@ function RoomPage(): JSX.Element {
                     )}
                     expanded={activeExpanded}
                     setExpanded={setActiveExpanded}
-                    joinRoom={joinRoom}
+                    joinRoom={(roomId) => joinRoom(roomId, player?._id || '')}
                     deleteRoom={onDeleteRoom}
                     ownerPresent={true}
                   />
@@ -160,7 +160,7 @@ function RoomPage(): JSX.Element {
                     )}
                     expanded={myRoomsExpanded}
                     setExpanded={setMyRoomsExpanded}
-                    joinRoom={joinRoom}
+                    joinRoom={(roomId) => joinRoom(roomId, player?._id || '')}
                     deleteRoom={onDeleteRoom}
                     ownerPresent={true}
                   />
@@ -173,8 +173,8 @@ function RoomPage(): JSX.Element {
                     )}
                     expanded={inactiveExpanded}
                     setExpanded={setInactiveExpanded}
-                    joinRoom={joinRoom}
-                    deleteRoom={onDeleteRoom}
+                    joinRoom={(roomId) => joinRoom(roomId, player?._id || '')}
+                    deleteRoom={(roomId) => onDeleteRoom(roomId)}
                     ownerPresent={false}
                   />
                 )}

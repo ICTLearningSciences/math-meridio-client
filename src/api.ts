@@ -9,15 +9,17 @@ import { AiServicesJobStatusResponseTypes } from './ai-services/ai-service-types
 import { execGql, execHttp } from './api-helpers';
 import {
   DiscussionStage,
+  DiscussionStageGQL,
   DiscussionStageStepType,
   PromptStageStepGql,
 } from './components/discussion-stage-builder/types';
-import { GenericLlmRequest } from './types';
+import { Connection, GenericLlmRequest } from './types';
 import { Player } from './store/slices/player/types';
 import { ChatMessage, GameData, Room } from './store/slices/game';
-import { extractErrorMessageFromError, requireEnv } from './helpers';
+import { extractErrorMessageFromError } from './helpers';
 import { Config } from './store/slices/config';
 import { userDataQuery } from './store/slices/player/api';
+import { ACCESS_TOKEN_KEY, localStorageGet } from './store/local-storage';
 
 type OpenAiJobId = string;
 export const LLM_API_ENDPOINT =
@@ -165,6 +167,7 @@ export const fullDiscussionStageQueryData = `
           message
           saveResponseVariableName
           disableFreeInput
+          requireAllUserInputs
           predefinedResponses{
               clientId
               message
@@ -207,6 +210,7 @@ export const fullDiscussionStageQueryData = `
 export const fullRoomQueryData = `
   _id
   name
+  classId
   gameData {
     gameId
     players {
@@ -227,6 +231,7 @@ export const fullRoomQueryData = `
       curStageId
       curStepId
       roomOwnerId
+      discussionDataStringified
       gameStateData {
         key
         value
@@ -245,12 +250,12 @@ export const fullRoomQueryData = `
 
 export function convertDiscussionStageToGQl(
   stage: DiscussionStage
-): DiscussionStage {
-  const copy: DiscussionStage = JSON.parse(JSON.stringify(stage));
+): DiscussionStageGQL {
+  const copy: DiscussionStageGQL = JSON.parse(JSON.stringify(stage));
   copy.flowsList.forEach((flow) => {
     flow.steps.forEach((step) => {
       if (step.stepType === DiscussionStageStepType.PROMPT) {
-        const _step: PromptStageStepGql = step as PromptStageStepGql;
+        const _step = step as PromptStageStepGql;
         if (_step.jsonResponseData) {
           _step.jsonResponseData = JSON.stringify(_step.jsonResponseData);
         }
@@ -261,13 +266,13 @@ export function convertDiscussionStageToGQl(
 }
 
 export function convertGqlToDiscussionStage(
-  stage: DiscussionStage
+  stage: DiscussionStageGQL
 ): DiscussionStage {
   const copy: DiscussionStage = JSON.parse(JSON.stringify(stage));
   copy.flowsList.forEach((flow) => {
     flow.steps.forEach((step) => {
       if (step.stepType === DiscussionStageStepType.PROMPT) {
-        const _step: PromptStageStepGql = step as PromptStageStepGql;
+        const _step = step as PromptStageStepGql;
         if (typeof _step.jsonResponseData === 'string') {
           _step.jsonResponseData = JSON.parse(_step.jsonResponseData as string);
         }
@@ -281,7 +286,7 @@ export async function addOrUpdateDiscussionStage(
   stage: DiscussionStage,
   password: string
 ): Promise<DiscussionStage> {
-  const res = await execGql<DiscussionStage>(
+  const res = await execGql<DiscussionStageGQL>(
     {
       query: `mutation AddOrUpdateDiscussionStage($stage: DiscussionStageInputType!) {
         addOrUpdateDiscussionStage(stage: $stage) {
@@ -301,10 +306,10 @@ export async function addOrUpdateDiscussionStage(
 }
 
 export async function fetchDiscussionStages(): Promise<DiscussionStage[]> {
-  const res = await execGql<DiscussionStage[]>(
+  const res = await execGql<DiscussionStageGQL[]>(
     {
       query: `query FetchDiscussionStages{
-        fetchDiscussionStages { 
+        fetchDiscussionStages {
           ${fullDiscussionStageQueryData}
         }
       }`,
@@ -334,6 +339,26 @@ export async function fetchPlayer(id: string): Promise<Player> {
     }
   );
   return data;
+}
+
+export const fetchPlayersMutation = `
+    query FetchPlayers($filter: String!, $limit: Int) {
+      fetchPlayers(filter: $filter, limit: $limit) {
+        edges {
+          node {
+            ${userDataQuery}
+          }
+        }
+      }
+    }
+  `;
+
+export async function fetchPlayers(ids: string[]): Promise<Player[]> {
+  const data = await execGql<Connection<Player>>({
+    query: fetchPlayersMutation,
+    variables: { filter: JSON.stringify({ _id: { in: ids } }), limit: 9999 },
+  });
+  return data.edges.map((edge) => edge.node);
 }
 
 export async function addOrUpdatePlayer(
@@ -381,6 +406,7 @@ export async function fetchRooms(game: string): Promise<Room[]> {
 }
 
 export async function fetchRoom(roomId: string): Promise<Room> {
+  const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
   const data = await execGql<Room>(
     {
       query: `
@@ -395,6 +421,7 @@ export async function fetchRoom(roomId: string): Promise<Room> {
     },
     {
       dataPath: 'fetchRoom',
+      accessToken: accessToken || undefined,
     }
   );
   return data;
@@ -404,13 +431,14 @@ export async function createAndJoinRoom(
   playerId: string,
   gameId: string,
   gameName: string,
-  persistTruthGlobalStateData: string[]
+  persistTruthGlobalStateData: string[],
+  classId: string
 ): Promise<Room> {
   const data = await execGql<Room>(
     {
       query: `
-        mutation CreateAndJoinRoom($playerId: String!, $gameId: String!, $gameName: String!, $persistTruthGlobalStateData: [String]) {
-          createAndJoinRoom(playerId: $playerId, gameId: $gameId, gameName: $gameName, persistTruthGlobalStateData: $persistTruthGlobalStateData) {
+        mutation CreateAndJoinRoom($playerId: String!, $gameId: String!, $gameName: String!, $persistTruthGlobalStateData: [String], $classId: String) {
+          createAndJoinRoom(playerId: $playerId, gameId: $gameId, gameName: $gameName, persistTruthGlobalStateData: $persistTruthGlobalStateData, classId: $classId) {
             ${fullRoomQueryData}
           }
         }`,
@@ -419,6 +447,7 @@ export async function createAndJoinRoom(
         gameId,
         gameName,
         persistTruthGlobalStateData,
+        classId,
       },
     },
     {
@@ -567,7 +596,8 @@ export async function sendMessage(
 }
 
 export async function fetchAbeConfig(): Promise<Config> {
-  const abeEndpoint = requireEnv('REACT_APP_ABE_GQL_ENDPOINT');
+  const abeEndpoint =
+    process.env.REACT_APP_ABE_GQL_ENDPOINT || '/graphql/graphql';
   const data = await execGql<Config>(
     {
       query: `

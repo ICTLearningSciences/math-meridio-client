@@ -10,15 +10,31 @@ import { LoginUI } from './login-ui';
 import { useNavigateWithParams } from '../../hooks/use-navigate-with-params';
 import { UseWithLogin } from '../../store/slices/player/use-with-login';
 import { LoadStatus } from '../../types';
+import { EducationalRole } from '../../store/slices/player/types';
 export default function Login(props: { useLogin: UseWithLogin }): JSX.Element {
   const navigate = useNavigateWithParams();
   const { useLogin } = props;
-  const { loginWithGoogle, state: loginState } = useLogin;
-  const loginGoogle = useGoogleLogin({
+  const { loginWithGoogle, state: loginState, setViewingAs } = useLogin;
+  const instructorloginGoogle = useGoogleLogin({
     onSuccess: (tokenResponse) => {
-      loginWithGoogle(tokenResponse.access_token).then(() => {
+      loginWithGoogle(
+        tokenResponse.access_token,
+        EducationalRole.INSTRUCTOR
+      ).then((user) => {
+        console.log('user logged in', user);
         handleLoginNavigate();
       });
+    },
+  });
+
+  const studentloginGoogle = useGoogleLogin({
+    onSuccess: (tokenResponse) => {
+      loginWithGoogle(tokenResponse.access_token, EducationalRole.STUDENT).then(
+        (user) => {
+          console.log('user logged in', user);
+          handleLoginNavigate();
+        }
+      );
     },
   });
 
@@ -28,7 +44,7 @@ export default function Login(props: { useLogin: UseWithLogin }): JSX.Element {
     }
     // TODO: navigate to the home page
     console.log('navigating to home');
-    navigate('/');
+    navigate('/classes');
   }
 
   useEffect(() => {
@@ -41,6 +57,7 @@ export default function Login(props: { useLogin: UseWithLogin }): JSX.Element {
     <div
       style={{
         display: 'flex',
+        height: '100vh',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
@@ -48,8 +65,9 @@ export default function Login(props: { useLogin: UseWithLogin }): JSX.Element {
     >
       <LoginUI
         loginState={loginState}
-        login={loginGoogle}
-        loginText="Sign in with Google"
+        setViewingAs={setViewingAs}
+        instructorloginGoogle={instructorloginGoogle}
+        studentloginGoogle={studentloginGoogle}
       />
       <div
         style={{

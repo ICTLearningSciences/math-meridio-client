@@ -5,7 +5,6 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import GameScene, { gameObjects } from '../game-scene';
-import { GameStateHandler } from '../../classes/game-state-handler';
 import {
   addBackground,
   addSprite,
@@ -123,8 +122,8 @@ export class SimulationScene extends GameScene {
     this.load.audio('music5', ['music_6.wav']);
   }
 
-  create(handler: GameStateHandler) {
-    super.create(handler);
+  create() {
+    super.create();
     EventSystem.on('simulate', this.simulate, this);
     EventSystem.on(
       'setMuted',
@@ -207,7 +206,7 @@ export class SimulationScene extends GameScene {
   }
 
   simulate(simulation: ConcertTicketSalesSimulationData) {
-    if (!this.gameStateHandler || !this.bg) return;
+    if (!this.bg) return;
     for (const obj of gameObjects) {
       obj.destroy();
     }
@@ -599,11 +598,10 @@ export class SimulationScene extends GameScene {
     );
     this.profitText.setDepth(1000);
 
-    const avatar =
-      this.simulation!.playerAvatar?.avatar ||
-      this.gameStateHandler!.players.find(
-        (p) => p._id === this.simulation!.player
-      )!.avatar;
+    const avatar = this.simulation!.playerAvatar?.avatar || [];
+    // uiGameData.players.find(
+    //   (p) => p._id === this.simulation!.player
+    // )!.avatar;
     this.mySprite = this.renderSpriteAvatar(avatar, {
       x: this.bg.displayWidth * 0.51,
       y: this.bg.displayHeight * 0.5,

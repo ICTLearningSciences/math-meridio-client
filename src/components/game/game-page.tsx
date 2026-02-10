@@ -5,7 +5,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams, useOutletContext } from 'react-router-dom';
 import GridLayout from 'react-grid-layout';
 import { TransformWrapper } from 'react-zoom-pan-pinch';
 import {
@@ -30,19 +30,28 @@ import ChatThread from './chat-thread';
 import ChatForm from './chat-form';
 import { useAppSelector } from '../../store/hooks';
 import { useWithGame } from '../../store/slices/game/use-with-game-state';
+import { useWithEducationalData } from '../../store/slices/educational-data/use-with-educational-data';
 import withAuthorizationOnly from '../../wrap-with-authorization-only';
 import Popup from '../popup';
 import { useWithConfig } from '../../store/slices/config/use-with-config';
 import { useWithWindow } from '../../hooks/use-with-window';
 import EventSystem from '../../game/event-system';
-import { PlayerStateData } from '../../store/slices/game';
+import { GameData, PlayerStateData } from '../../store/slices/game';
 import { Game } from '../../game/types';
-import { GameStateHandler } from '../../classes/game-state-handler';
 
 import '../../layout.css';
+import { Player } from '../../store/slices/player/types';
+import { UseWithHostGameManagement } from '../../classes/authority/use-with-host-game-manage';
 
 const COLS = 6;
 const ROWS = 4;
+
+// Type for the outlet context provided by GameLayout
+type GameManagementContext = UseWithHostGameManagement;
+
+interface GamePageProps {
+  gameManagementContext?: GameManagementContext;
+}
 
 function Space(props: {
   title: string;
@@ -80,12 +89,13 @@ function Space(props: {
 
 function SimulationSpace(props: {
   game: Game;
-  controller: GameStateHandler;
+  player: Player;
+  uiTriggerLocalGameData: GameData;
   simulation?: string;
   expanded?: boolean;
   onExpand: () => void;
 }): JSX.Element {
-  const { game, controller, simulation } = props;
+  const { game, player, uiTriggerLocalGameData, simulation } = props;
   const { isMuted, toggleMuted } = useWithConfig();
   const [curSimulation, setSimulation] = React.useState<PlayerStateData>();
 
@@ -110,14 +120,14 @@ function SimulationSpace(props: {
           value={curSimulation?.player}
           label="Strategy"
         >
-          {controller.playerStateData.map((psd) => {
+          {uiTriggerLocalGameData.playerStateData.map((psd) => {
             return (
               <MenuItem
                 key={psd.player}
                 value={psd.player}
                 style={{ width: '100%', padding: 0, margin: 0 }}
               >
-                {game.showPlayerStrategy(psd, controller)}
+                {game.showPlayerStrategy(player, psd)}
               </MenuItem>
             );
           })}
@@ -135,23 +145,41 @@ function SimulationSpace(props: {
         </IconButton>
       </div>
       <div style={{ height: 'calc(100% - 50px)', overflowY: 'auto' }}>
-        {game.showSimulation(controller, simulation)}
+        {game.showSimulation(game)}
       </div>
     </div>
   );
 }
 
 function GamePage(): JSX.Element {
-  const { room, simulation } = useAppSelector((state) => state.gameData);
+  const { simulation } = useAppSelector((state) => state.gameData);
+  const { roomId } = useParams<{ roomId: string }>();
+  const { educationalData } = useWithEducationalData();
+  const room = educationalData.rooms.find((r) => r._id === roomId);
+
+  // Use prop if provided, otherwise try to get from outlet context
+  const outletContext = useOutletContext<GameManagementContext>();
   const {
-    game,
-    gameStateHandler,
-    responsePending,
-    ownerIsPresent,
     launchGame,
-  } = useWithGame();
+    ownerIsPresent,
+    waitingForPlayers,
+    uiTriggerLocalGameData,
+    player,
+    updatePlayerStateData,
+    game,
+  } = outletContext;
+  const { gameStateHandler, responsePending, sendMessage } = useWithGame();
   const navigate = useNavigate();
   const { windowHeight, windowWidth } = useWithWindow();
+
+  // Handle case where context is not yet available
+  if (!outletContext) {
+    return (
+      <div className="root center-div">
+        <CircularProgress />
+      </div>
+    );
+  }
 
   const [popupOpen, setPopupOpen] = React.useState(false);
   const [alreadyShownPopup, setAlreadyShownPopup] = React.useState(false);
@@ -175,7 +203,7 @@ function GamePage(): JSX.Element {
   React.useEffect(() => {
     if (!room) {
       console.log('navigating to home');
-      navigate('/');
+      navigate('/classes');
     }
     if (!alreadyShownPopup && !ownerIsPresent) {
       setPopupOpen(true);
@@ -350,10 +378,16 @@ function GamePage(): JSX.Element {
     );
   }
 
-  if (!gameStateHandler || !game) {
+  if (!game || !uiTriggerLocalGameData || !player) {
+    console.log('launching game', game, uiTriggerLocalGameData, player);
+
     return (
       <div className="root center-div">
-        <Button onClick={launchGame} disabled={Boolean(gameStateHandler)}>
+        <Button
+          onClick={launchGame}
+          disabled={Boolean(gameStateHandler)}
+          data-cy="begin-game-button"
+        >
           Begin
         </Button>
       </div>
@@ -386,7 +420,7 @@ function GamePage(): JSX.Element {
             expanded={expanded === 0}
             onExpand={() => onExpand(0)}
           >
-            {game.showProblem(gameStateHandler)}
+            {game.showProblem()}
           </Space>
         </Card>
 
@@ -407,7 +441,11 @@ function GamePage(): JSX.Element {
               maxScale={1}
               panning={{ excluded: ['panningDisabled'] }}
             >
-              {game.showSolution(gameStateHandler)}
+              {game.showSolution(
+                uiTriggerLocalGameData,
+                player,
+                updatePlayerStateData
+              )}
             </TransformWrapper>
           </Space>
         </Card>
@@ -421,7 +459,8 @@ function GamePage(): JSX.Element {
         >
           <SimulationSpace
             game={game}
-            controller={gameStateHandler}
+            player={player}
+            uiTriggerLocalGameData={uiTriggerLocalGameData}
             simulation={simulation}
             expanded={expanded === 2}
             onExpand={() => onExpand(2)}
@@ -440,7 +479,7 @@ function GamePage(): JSX.Element {
             expanded={expanded === 3}
             onExpand={() => onExpand(3)}
           >
-            {game.showResult(gameStateHandler)}
+            {game.showResult(uiTriggerLocalGameData)}
           </Space>
         </Card>
 
@@ -453,8 +492,12 @@ function GamePage(): JSX.Element {
             padding: 10,
           }}
         >
-          <ChatThread responsePending={responsePending} />
-          <ChatForm />
+          <ChatThread
+            responsePending={responsePending}
+            waitingForPlayers={waitingForPlayers}
+            uiGameData={uiTriggerLocalGameData}
+          />
+          <ChatForm sendMessage={sendMessage} />
         </Stack>
       </GridLayout>
     </div>

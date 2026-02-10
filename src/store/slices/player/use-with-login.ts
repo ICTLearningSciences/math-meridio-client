@@ -8,7 +8,7 @@ import { useAppSelector, useAppDispatch } from '../../hooks';
 import * as loginActions from './index';
 import { useEffect } from 'react';
 import { ACCESS_TOKEN_KEY, localStorageGet } from '../../local-storage';
-import { UserAccessToken } from './types';
+import { EducationalRole, UserAccessToken } from './types';
 import { PlayerStateData } from './index';
 import { LoadStatus } from '../../../types';
 
@@ -16,9 +16,11 @@ export interface UseWithLogin {
   state: PlayerStateData;
   logout: () => Promise<void>;
   loginWithGoogle: (
-    googleAccessToken: string
+    googleAccessToken: string,
+    educationalLoginRole: EducationalRole
   ) => Promise<UserAccessToken | undefined>;
   refreshAccessToken: () => void;
+  setViewingAs: (educationalRole: EducationalRole) => void;
 }
 
 // Gives you a way to interface with the redux store (which has the user information)
@@ -42,7 +44,14 @@ export function useWithLogin(): UseWithLogin {
     }
   }, [state.loginStatus.status]);
 
-  async function loginWithGoogle(googleAccessToken: string) {
+  function setViewingAs(educationalRole: EducationalRole) {
+    dispatch(loginActions.setViewingAs(educationalRole));
+  }
+
+  async function loginWithGoogle(
+    googleAccessToken: string,
+    educationalLoginRole: EducationalRole
+  ) {
     if (
       state.loginStatus.status === LoadStatus.NONE ||
       state.loginStatus.status === LoadStatus.NOT_LOGGED_IN ||
@@ -51,6 +60,7 @@ export function useWithLogin(): UseWithLogin {
       return await dispatch(
         loginActions.login({
           accessToken: googleAccessToken,
+          educationalLoginRole: educationalLoginRole,
         })
       ).unwrap();
     }
@@ -75,5 +85,6 @@ export function useWithLogin(): UseWithLogin {
     logout,
     loginWithGoogle,
     refreshAccessToken,
+    setViewingAs,
   };
 }

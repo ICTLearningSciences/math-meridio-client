@@ -12,7 +12,7 @@ interface FetchPlayerResponse {
     fetchPlayer: Player;
 }
 
-export const fetchPlayer: FetchPlayerResponse = {
+export const defaultFetchPlayerData: FetchPlayerResponse = {
     "fetchPlayer": {
         _id: "my-player-id",
         googleId: "my-google-id",

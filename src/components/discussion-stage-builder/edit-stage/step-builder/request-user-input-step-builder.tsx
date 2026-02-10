@@ -38,6 +38,7 @@ export function getDefaultRequestUserInputBuilder(): RequestUserInputStageStep {
     saveResponseVariableName: '',
     disableFreeInput: false,
     predefinedResponses: [],
+    requireAllUserInputs: false,
   };
 }
 
@@ -318,6 +319,13 @@ export function RequestUserInputStepBuilder(props: {
           value={step.saveResponseVariableName}
           onChange={(e) => {
             updateField('saveResponseVariableName', e);
+          }}
+        />
+        <CheckBoxInput
+          label="Require All Student Responses? (Will wait for all students to respond before progressing to the next step)"
+          value={step.requireAllUserInputs}
+          onChange={(e) => {
+            updateField('requireAllUserInputs', e);
           }}
         />
         <CheckBoxInput

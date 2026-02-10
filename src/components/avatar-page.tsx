@@ -46,7 +46,7 @@ function AvatarPage(): JSX.Element {
       navigate('/google-login');
       return;
     }
-    startPhaserGame(AvatarCreator, undefined, 'AvatarCreator');
+    startPhaserGame(AvatarCreator, 'AvatarCreator');
     EventSystem.on('sceneCreated', () => setSceneCreated(true));
     EventSystem.on('avatarSelected', onAvatarSelected);
   }, [loginStatus]);
@@ -82,7 +82,7 @@ function AvatarPage(): JSX.Element {
     if (!isSaving) return;
     if (saveStatus.status === LoadStatus.DONE) {
       console.log('navigating to home');
-      navigate('/');
+      navigate('/classes');
       setIsSaving(false);
     } else if (saveStatus.status === LoadStatus.FAILED) {
       setIsSaving(false);
