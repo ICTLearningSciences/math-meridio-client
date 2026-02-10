@@ -13,7 +13,7 @@ import {
   DiscussionStageStepType,
   PromptStageStepGql,
 } from './components/discussion-stage-builder/types';
-import { GenericLlmRequest } from './types';
+import { Connection, GenericLlmRequest } from './types';
 import { Player } from './store/slices/player/types';
 import { ChatMessage, GameData, Room } from './store/slices/game';
 import { extractErrorMessageFromError } from './helpers';
@@ -339,6 +339,26 @@ export async function fetchPlayer(id: string): Promise<Player> {
     }
   );
   return data;
+}
+
+export const fetchPlayersMutation = `
+    query FetchPlayers($filter: String!, $limit: Int) {
+      fetchPlayers(filter: $filter, limit: $limit) {
+        edges {
+          node {
+            ${userDataQuery}
+          }
+        }
+      }
+    }
+  `;
+
+export async function fetchPlayers(ids: string[]): Promise<Player[]> {
+  const data = await execGql<Connection<Player>>({
+    query: fetchPlayersMutation,
+    variables: { filter: JSON.stringify({ _id: { in: ids } }), limit: 9999 },
+  });
+  return data.edges.map((edge) => edge.node);
 }
 
 export async function addOrUpdatePlayer(

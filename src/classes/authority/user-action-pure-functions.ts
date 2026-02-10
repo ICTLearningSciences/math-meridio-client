@@ -11,6 +11,7 @@ import {
 } from '../../components/discussion-stage-builder/types';
 import { RoomActionQueueEntry, RoomActionType } from '../../room-action-api';
 import { GameData, GameStateData } from '../../store/slices/game';
+import { Player } from '../../store/slices/player/types';
 import {
   recordPlayerResponseForStep,
   syncGlobalGameStateKeysToPlayers,
@@ -102,7 +103,7 @@ export function processPlayerLeavesRoomAction(
       'Incorrect action type provided to processPlayerLeavesRoom'
     );
   }
-  let gameData = getGameDataCopy(_gameData);
+  const gameData = getGameDataCopy(_gameData);
   gameData.players = gameData.players.filter(
     (player) => player._id !== curAction.playerId
   );
@@ -113,16 +114,17 @@ export function processPlayerLeavesRoomAction(
   return gameData;
 }
 
-export async function processPlayerJoinsRoomAction(
+export function processPlayerJoinsRoomAction(
   _gameData: GameData,
-  curAction: RoomActionQueueEntry
+  curAction: RoomActionQueueEntry,
+  requestingPlayer: Player
 ) {
   if (curAction.actionType !== RoomActionType.JOIN_ROOM) {
     throw new Error(
       'Incorrect action type provided to processPlayerLeavesRoom'
     );
   }
-  let gameData = getGameDataCopy(_gameData);
+  const gameData = getGameDataCopy(_gameData);
   const alreadyInRoom = gameData.players.find(
     (p) => p._id === curAction.playerId
   );
@@ -131,11 +133,10 @@ export async function processPlayerJoinsRoomAction(
     return gameData;
   }
 
-  const player = await fetchPlayer(curAction.playerId);
-  gameData.players.push(player);
+  gameData.players.push(requestingPlayer);
 
   gameData.playerStateData.push({
-    player: player._id,
+    player: requestingPlayer._id,
     animation: '',
     gameStateData: gameData.globalStateData.gameStateData,
   });

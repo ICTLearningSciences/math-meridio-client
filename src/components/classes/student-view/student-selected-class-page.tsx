@@ -25,11 +25,13 @@ import { useAppSelector } from '../../../store/hooks';
 import { LoadStatus } from '../../../types';
 import { GAMES, Game } from '../../../game/types';
 import { StudentRoomCard } from './student-room-card';
+import { useWithHostGameManagement } from '../../../classes/authority/use-with-host-game-manage';
 
 export default function StudentSelectedClassPage(): JSX.Element {
   const navigate = useNavigate();
   const { classId } = useParams<{ classId: string }>();
-  const { createAndJoinGameRoom, educationalData } = useWithEducationalData();
+  const { educationalData } = useWithEducationalData();
+  const { createAndJoinRoom } = useWithHostGameManagement();
   const { player } = useAppSelector((state) => state.playerData);
   const [selectedGame, setSelectedGame] = React.useState<Game>();
   const [creating, setCreating] = React.useState(false);
@@ -48,11 +50,9 @@ export default function StudentSelectedClassPage(): JSX.Element {
     if (!selectedGame || !player || !classId) return;
     setCreating(true);
     try {
-      const room = await createAndJoinGameRoom(
+      const room = await createAndJoinRoom(
         selectedGame.id,
         selectedGame.name,
-        player._id,
-        selectedGame.persistTruthGlobalStateData,
         classId
       );
       navigate(`/classes/${classId}/room/${room._id}`);

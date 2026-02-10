@@ -6,6 +6,7 @@ The full terms of this copyright and license should always be found in the root 
 */
 import { execGql } from './api-helpers';
 import { ACCESS_TOKEN_KEY, localStorageGet } from './store/local-storage';
+import { RoomHeartBeat } from './store/slices/educational-data/types';
 import { GameData, GameDataGQL } from './store/slices/game';
 import { Connection } from './types';
 
@@ -15,7 +16,7 @@ const submitProcessedActionsMutation = `
   }
 `;
 
-export async function submitProcessedActions(
+export async function notifyOfProcessedActions(
   processedActionIds: string[]
 ): Promise<void> {
   const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
@@ -51,6 +52,7 @@ export interface RoomActionQueueEntry {
   payload: string;
   actionSentAt: Date;
   processedAt: Date | null;
+  source: 'local' | 'cloud';
 }
 
 export async function submitRoomAction(
@@ -69,18 +71,22 @@ export async function submitRoomAction(
   );
 }
 
-export const fetchRoomActionsMutation = `
-query FetchRoomActions($filter: String!, $limit: Int) {
+export const roomActionQueueEntryQueryData = `
+  actionId
+  roomId
+  playerId
+  actionType
+  payload
+  actionSentAt
+  processedAt
+`;
+
+const fetchRoomActionsMutation = `
+  query FetchRoomActions($filter: String!, $limit: Int) {
           fetchRoomActions(filter: $filter, limit: $limit) {
             edges {
               node {
-                actionId
-                roomId
-                playerId
-                actionType
-                payload
-                actionSentAt
-                processedAt
+                ${roomActionQueueEntryQueryData}
               }
             }
           }
@@ -146,4 +152,99 @@ export async function syncRoomData(
     },
     { accessToken: accessToken || undefined }
   );
+}
+
+export const heartbeatQueryData = `
+  roomId
+  userId
+  lastHeartBeatAt
+`;
+
+const roomHeartBeatMutation = `
+  mutation RoomHeartBeat($roomId: ID!) {
+    roomHeartBeat(roomId: $roomId) {
+      ${heartbeatQueryData}
+    }
+  }
+`;
+
+export async function roomHeartBeat(roomId: string): Promise<void> {
+  const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
+  return execGql<void>(
+    { query: roomHeartBeatMutation, variables: { roomId } },
+    { accessToken: accessToken || undefined }
+  );
+}
+
+const fetchRoomHeartBeatsMutation = `query FetchRoomHeartbeats($filter: String!, limit: Int) {
+          fetchRoomHeartbeats(filter: $filter, limit: $limit) {
+            edges {
+              node {
+                ${heartbeatQueryData}
+              }
+            }
+          }
+        }`;
+
+export async function fetchRoomHeartBeats(
+  roomId: string
+): Promise<RoomHeartBeat[]> {
+  const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
+  const filter = encodeURI(JSON.stringify({ roomId: roomId }));
+  const data = await execGql<Connection<RoomHeartBeat>>(
+    { query: fetchRoomHeartBeatsMutation, variables: { filter, limit: 9999 } },
+    { accessToken: accessToken || undefined, dataPath: 'fetchRoomHeartbeats' }
+  );
+  return data.edges.map((edge) => edge.node);
+}
+
+const fetchRoomHeartBeatsAndActionsMutation = `
+  query FetchRoomHeartBeatsAndActions($heartBeatFilter: String!, $actionFilter: String!, $limit: Int) {
+          fetchRoomHeartbeats(filter: $heartBeatFilter, limit: $limit) {
+            edges {
+              node {
+                ${heartbeatQueryData}
+              }
+            }
+          }
+          fetchRoomActions(filter: $actionFilter, limit: $limit) {
+            edges {
+              node {
+                ${roomActionQueueEntryQueryData}
+              }
+            }
+          }
+  }
+`;
+
+export interface RoomHeartBeatsAndActions {
+  heartBeats: RoomHeartBeat[];
+  actions: RoomActionQueueEntry[];
+}
+
+export async function fetchRoomHeartBeatsAndActions(
+  roomId: string
+): Promise<RoomHeartBeatsAndActions> {
+  const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
+  const heartBeatFilter = encodeURI(JSON.stringify({ roomId: roomId }));
+  const actionFilter = encodeURI(
+    JSON.stringify({ roomId: roomId, processedAt: null })
+  );
+  const data = await execGql<{
+    heartBeats: Connection<RoomHeartBeat>;
+    actions: Connection<RoomActionQueueEntry>;
+  }>(
+    {
+      query: fetchRoomHeartBeatsAndActionsMutation,
+      variables: { heartBeatFilter, actionFilter, limit: 9999 },
+    },
+    {
+      accessToken: accessToken || undefined,
+      dataPath: 'fetchRoomHeartBeatsAndActions',
+    }
+  );
+  return {
+    heartBeats: data.heartBeats.edges.map((edge) => edge.node),
+    actions: data.actions.edges.map((edge) => edge.node),
+  };
 }

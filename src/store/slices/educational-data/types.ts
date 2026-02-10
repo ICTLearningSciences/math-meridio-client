@@ -69,3 +69,9 @@ export interface FetchEducationalDataHydrationResponse {
   students: Player[];
   classMemberships: ClassMembership[];
 }
+
+export interface RoomHeartBeat {
+  roomId: string;
+  userId: string;
+  lastHeartBeatAt: Date;
+}

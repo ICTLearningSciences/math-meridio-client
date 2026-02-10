@@ -8,27 +8,40 @@ import { useAppSelector } from '../../store/hooks';
 import { useWithEducationalData as useWithEducationalDataHook } from '../../store/slices/educational-data/use-with-educational-data';
 import { useParams } from 'react-router-dom';
 import { useWithStages } from '../../store/slices/stages/use-with-stages';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Game, GAMES } from '../../game/types';
 import { localStorageStore, SESSION_ID } from '../../store/local-storage';
 import { v4 as uuidv4 } from 'uuid';
 import * as roomApi from '../../room-action-api';
-import { GameData, GlobalStateData, Room } from '../../store/slices/game';
+import { GameData, Room } from '../../store/slices/game';
 import React from 'react';
-import { useWithRoomActionQueue } from './use-with-action-queue';
+import { useWithProcessingRoomActions } from './use-with-processing-room-actions';
+import { useWithSubmitHeartBeat } from './use-with-submit-heart-beat';
+
 export function useWithHostGameManagement() {
   const useWithEducationalData = useWithEducationalDataHook();
   const { player } = useAppSelector((state) => state.playerData);
   const { discussionStages } = useWithStages();
   const [game, setGame] = useState<Game>();
   const poll = React.useRef<NodeJS.Timeout | null>(null);
-  const [localGameData, setLocalGameData] = useState<GameData>();
-  const { pollActionQueue, localActionQueue, leaveRoomAction, joinRoomAction } =
-    useWithRoomActionQueue();
+  const [uiTriggerLocalGameData, setUiTriggerLocalGameData] =
+    useState<GameData>();
+  const localGameDataRef = useRef<GameData>();
   const { roomId } = useParams();
   const room = useAppSelector((state) =>
     state.educationalData.rooms.find((r) => r._id === roomId)
   );
+  const isRoomOwner = React.useMemo(() => {
+    return player?._id === room?.gameData.globalStateData.roomOwnerId;
+  }, [player, room?.gameData.globalStateData.roomOwnerId]);
+  const { submitJoinRoomAction } = useWithProcessingRoomActions(
+    setUiTriggerLocalGameData,
+    localGameDataRef,
+    discussionStages,
+    isRoomOwner,
+    roomId
+  );
+  useWithSubmitHeartBeat(roomId);
 
   async function launchGame() {
     if (!room || !player) return undefined;
@@ -41,19 +54,14 @@ export function useWithHostGameManagement() {
     if (!game) return undefined;
     setGame(game);
     const latestRoomData = await useWithEducationalData.fetchRoom(room._id);
-    setLocalGameData(latestRoomData.gameData);
+    setUiTriggerLocalGameData(latestRoomData.gameData);
+    localGameDataRef.current = latestRoomData.gameData;
     if (!isRoomOwner) {
-      console.log('player is not the room owner, skipping game launch');
-      return;
-    }
-    if (isRoomOwner) {
-      pollActionQueue(latestRoomData);
-    } else {
-      pollRoomState(latestRoomData);
+      startPollRoomState(latestRoomData);
     }
   }
 
-  function pollRoomState(room: Room) {
+  function startPollRoomState(room: Room) {
     if (!poll.current) {
       poll.current = setInterval(() => {
         useWithEducationalData.fetchRoom(room._id);
@@ -65,11 +73,36 @@ export function useWithHostGameManagement() {
     return await roomApi.syncRoomData(roomId, newGameData);
   }
 
-  useEffect(() => {}, []);
+  async function createAndJoinRoom(
+    gameId: string,
+    gameName: string,
+    classId: string
+  ): Promise<Room> {
+    const room = await useWithEducationalData.createNewRoom(
+      gameId,
+      gameName,
+      classId
+    );
+    localGameDataRef.current = room.gameData;
+    setUiTriggerLocalGameData(room.gameData);
+    await submitJoinRoomAction(room, true);
+    // Wait until you are in the room. (keep checking the local room state until you are in the room, for 10 seconds max)
+    for (let i = 0; i < 10; i++) {
+      if (
+        localGameDataRef.current?.players.some((p) => p._id === player?._id)
+      ) {
+        return room;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+    throw new Error('Failed to join the room');
+    // TODO: if the room owner is not present (no heartbeats), then you become the owner.
+  }
 
   return {
     game,
     launchGame,
     syncRoomData,
+    createAndJoinRoom,
   };
 }
