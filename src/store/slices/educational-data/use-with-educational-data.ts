@@ -199,6 +199,16 @@ export function useWithEducationalData() {
     ).unwrap();
   }
 
+  async function createNewRoom(
+    gameId: string,
+    gameName: string,
+    classId?: string
+  ): Promise<Room> {
+    return await dispatch(
+      educationalDataActions.createNewRoom({ gameId, gameName, classId })
+    ).unwrap();
+  }
+
   return {
     fetchInstructorDataHydration,
     fetchStudentDataHydration,
@@ -220,6 +230,7 @@ export function useWithEducationalData() {
     sendGameRoomMessage,
     createAndJoinGameRoom,
     fetchRoom,
+    createNewRoom,
     educationalData: state,
   };
 }

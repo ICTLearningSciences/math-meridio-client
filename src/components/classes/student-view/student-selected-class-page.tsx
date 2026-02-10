@@ -11,7 +11,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import React from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import {
   Button,
   Card,
@@ -25,19 +25,21 @@ import { useAppSelector } from '../../../store/hooks';
 import { LoadStatus } from '../../../types';
 import { GAMES, Game } from '../../../game/types';
 import { StudentRoomCard } from './student-room-card';
+import { UseWithHostGameManagement } from '../../../classes/authority/use-with-host-game-manage';
 
 export default function StudentSelectedClassPage(): JSX.Element {
   const navigate = useNavigate();
   const { classId } = useParams<{ classId: string }>();
-  const { createAndJoinGameRoom, educationalData } = useWithEducationalData();
+  const { educationalData } = useWithEducationalData();
+  const { createAndJoinRoom } = useOutletContext<UseWithHostGameManagement>();
   const { player } = useAppSelector((state) => state.playerData);
   const [selectedGame, setSelectedGame] = React.useState<Game>();
   const [creating, setCreating] = React.useState(false);
 
   const classroom = educationalData.classes.find((c) => c._id === classId);
-  const classRooms = educationalData.rooms.filter((r) => r.classId === classId);
+  const _gameRooms = educationalData.rooms.filter((r) => r.classId === classId);
   const gameRooms = selectedGame
-    ? classRooms.filter((r) => r.gameData.gameId === selectedGame.id)
+    ? _gameRooms.filter((r) => r.gameData.gameId === selectedGame.id)
     : [];
 
   const handleSelectGame = (game: Game) => {
@@ -48,11 +50,9 @@ export default function StudentSelectedClassPage(): JSX.Element {
     if (!selectedGame || !player || !classId) return;
     setCreating(true);
     try {
-      const room = await createAndJoinGameRoom(
+      const room = await createAndJoinRoom(
         selectedGame.id,
         selectedGame.name,
-        player._id,
-        selectedGame.persistTruthGlobalStateData,
         classId
       );
       navigate(`/classes/${classId}/room/${room._id}`);

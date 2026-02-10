@@ -14,14 +14,14 @@ import {
 } from '.';
 import { useDebouncedCallback } from '../../hooks/use-debounced-callback';
 import { didGameStateDataChange } from '../../helpers';
-import { GameStateData } from './solution';
+import { SolutionGameStateData } from '../../types';
 
 export const EditableVariable = React.memo(
   function EditableVariable(props: {
     dataKey: string;
     title: string;
     updatePlayerStateData: (value: number) => void;
-    myPlayerStateData: GameStateData;
+    myPlayerStateData: SolutionGameStateData;
     shouldDisable: boolean;
     setEditingVariable: (variable: string) => void;
   }): JSX.Element {

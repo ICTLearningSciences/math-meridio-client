@@ -6,7 +6,7 @@ The full terms of this copyright and license should always be found in the root 
 */
 import { ClassMembership, ClassMembershipStatus, Classroom } from "../../src/store/slices/educational-data/types";
 import { defaultClassroomData } from "./fetch-educational-data-hydration";
-import { Player } from "./types";
+import { Player } from "../../src/store/slices/player/types";
 
 export interface JoinClassroomResponse {
     joinClassroom: {    

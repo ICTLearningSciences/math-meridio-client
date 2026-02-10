@@ -5,11 +5,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import React from 'react';
-import {
-  CollectedDiscussionData,
-  GameStateHandler,
-  GameStateHandlerArgs,
-} from '../../classes/game-state-handler';
+import { AbstractGameData } from '../../classes/abstract-game-data';
 import { Game } from '../types';
 import { SimulationScene } from './SimulationScene';
 
@@ -18,14 +14,18 @@ import {
   IStage,
   SimulationStage,
 } from '../../components/discussion-stage-builder/types';
-import { DiscussionStageHandler } from '../../classes/discussion-stage-handler';
 
 import { ProblemComponent } from './problem';
 import { SolutionComponent } from './solution';
 import { PlayerStrategy, SimulationComponent } from './simulation';
 import { ResultComponent } from './results';
-import { PlayerStateData } from '../../store/slices/game';
-import { SIMULTAION_VIEWED_KEY } from '../../helpers';
+import {
+  GameData,
+  GameStateData,
+  PlayerStateData,
+} from '../../store/slices/game';
+import { CurrentStage } from '../../types';
+import { Player } from '../../store/slices/player/types';
 
 const introductionDiscussionStage = '64de5488-c851-41b3-8347-18ffa340c753';
 const collectStrategyDiscussionStage = 'e20e0247-03a2-485f-b0be-b12ceb2af8b9';
@@ -58,57 +58,26 @@ export const GENERAL_ADMISSION_TICKET_CONVERSION_RATE = 0.6;
 
 export const TOTAL_NUMBER_OF_TICKETS = 100;
 
-export interface CurrentStage<T extends IStage> {
-  id: string;
-  stage: T;
-  action?: () => void;
-  beforeStart?: () => void;
-  onStageFinished: (collectedData: CollectedDiscussionData) => void;
-}
-
-export type DiscussionCurrentStage = CurrentStage<DiscussionStage>;
-
-export class BasketballStateHandler extends GameStateHandler {
-  currentStage: CurrentStage<IStage> | undefined;
-  discussionStageHandler: DiscussionStageHandler;
-
-  constructor(args: GameStateHandlerArgs) {
-    super({ ...args, defaultStageId: 'de0b94b9-1fc2-4ea1-995e-21a75670c16d' });
-    this.discussionStageHandler = new DiscussionStageHandler(
-      this.player._id,
-      this.globalStateData,
-      this.playerStateData,
-      args.sendMessage,
-      args.setResponsePending,
-      args.executePrompt,
-      this.updateRoomStageStepId.bind(this),
-      args.targetAiServiceModel,
-      undefined,
-      this.newPlayerStateData.bind(this),
-      undefined,
-      args.onWaitingForPlayers,
-      args.updateRoomGameData
-    );
-
-    this.initializeGame = this.initializeGame.bind(this);
-    this.simulationEnded = this.simulationEnded.bind(this);
-
-    const introDiscussionStage = this.dbDiscussionStages.find(
+export class ConcertTicketSalesStateHandler extends AbstractGameData {
+  stageList: CurrentStage<IStage>[] = [];
+  constructor(discussionStages: DiscussionStage[]) {
+    super();
+    const introDiscussionStage = discussionStages.find(
       (s) => s.clientId === introductionDiscussionStage
     );
-    const collectStrategyStage = this.dbDiscussionStages.find(
+    const collectStrategyStage = discussionStages.find(
       (s) => s.clientId === collectStrategyDiscussionStage
     );
-    const understandingEquationStage = this.dbDiscussionStages.find(
+    const understandingEquationStage = discussionStages.find(
       (s) => s.clientId === understandingEquationDiscussionStage
     );
-    const selectStrategyStage = this.dbDiscussionStages.find(
+    const selectStrategyStage = discussionStages.find(
       (s) => s.clientId === selectStrategyDiscussionStage
     );
-    const determineBestStrategyStage = this.dbDiscussionStages.find(
+    const determineBestStrategyStage = discussionStages.find(
       (s) => s.clientId === determineBestStrategyDiscussionStage
     );
-    const finishedStage = this.dbDiscussionStages.find(
+    const finishedStage = discussionStages.find(
       (s) => s.clientId === finishedDiscussionStage
     );
 
@@ -122,95 +91,67 @@ export class BasketballStateHandler extends GameStateHandler {
     ) {
       throw new Error('missing stage');
     }
-
+    const simulationStage = {
+      _id: 'wait-for-simulation',
+      clientId: 'wait-for-simulation',
+      stageType: 'simulation',
+    } as SimulationStage;
     const stageList: CurrentStage<IStage>[] = [
       {
         id: 'intro-discussion',
         stage: introDiscussionStage,
-        onStageFinished: () => {
-          this.updateStageByStageListId('collect-strategy');
+        getNextStage: () => {
+          return collectStrategyStage;
         },
       },
       {
         id: 'collect-strategy',
         stage: collectStrategyStage,
-        onStageFinished: () => {
-          this.updateStageByStageListId('understanding-equation');
+        getNextStage: () => {
+          return understandingEquationStage;
         },
       },
       {
         id: 'understanding-equation',
         stage: understandingEquationStage,
-        onStageFinished: () => {
-          this.updateStageByStageListId('select-strategy');
+        getNextStage: () => {
+          return selectStrategyStage;
         },
       },
       {
         id: 'select-strategy',
         stage: selectStrategyStage,
-        onStageFinished: () => {
-          this.updateStageByStageListId('wait-for-simulation');
+        getNextStage: () => {
+          return simulationStage;
         },
       },
       {
         id: 'wait-for-simulation',
-        stage: {
-          _id: 'wait-for-simulation',
-          clientId: 'wait-for-simulation',
-          stageType: 'simulation',
-        } as SimulationStage,
-        onStageFinished: () => {
-          this.updateStageByStageListId('determine-best-strategy');
+        stage: simulationStage,
+        getNextStage: () => {
+          return determineBestStrategyStage;
         },
       },
       {
         id: 'determine-best-strategy',
         stage: determineBestStrategyStage,
-        onStageFinished: () => {
-          this.updateStageByStageListId('finished');
+        getNextStage: () => {
+          return finishedStage;
         },
       },
       {
         id: 'finished',
         stage: finishedStage,
-        onStageFinished: () => {
-          // nothing
+        getNextStage: () => {
+          return finishedStage;
         },
       },
     ];
     this.stageList = stageList;
   }
-
-  playerStateUpdated(newGameState: PlayerStateData[]): void {
-    super.playerStateUpdated(newGameState);
-    const curStage = this.getCurrentStage();
-    const anyPlayerViewedSimulation = newGameState.find((p) =>
-      p.gameStateData.find((g) => g.key === SIMULTAION_VIEWED_KEY)
-    );
-    if (
-      curStage?.stage.stageType === 'simulation' &&
-      anyPlayerViewedSimulation
-    ) {
-      this.simulationEnded();
-    }
-  }
-
-  simulationEnded(): void {
-    super.simulationEnded();
-    const curStage = this.getCurrentStage();
-    if (curStage?.stage.stageType === 'simulation') {
-      const stage = this.stageList.find(
-        (s) => s.stage?.clientId === curStage?.stage.clientId
-      );
-      if (!stage) {
-        throw new Error('missing stage');
-      }
-      stage.onStageFinished({});
-    }
-  }
 }
 
-const BasketballGame: Game = {
+const ConcertTicketSalesGame: Game = {
   id: 'concert-ticket-sales',
   name: 'Concert Ticket Management',
   problem: `Our concert venue isn't meeting its profit goals, and we need your help to fix it. You and the sales team must figure out what's wrong with our current ticket strategy and how to adjust it to maximize revenue. For each show, we can sell 100 tickets. VIP tickets earn the most but are hardest to sell, while Reserved and General Admission earn less but sell more easily.`,
@@ -236,23 +177,37 @@ const BasketballGame: Game = {
 
     scene: [SimulationScene],
   },
-  showProblem: (controller: GameStateHandler) => {
-    return <ProblemComponent controller={controller} />;
+  showProblem: () => {
+    return <ProblemComponent />;
   },
-  showSolution: (controller: GameStateHandler) => {
-    return <SolutionComponent controller={controller} />;
+  showSolution: (
+    uiGameData: GameData,
+    player: Player,
+    updatePlayerStateData: (
+      newPlayerStateData: GameStateData[],
+      playerId: string
+    ) => void
+  ) => {
+    return (
+      <SolutionComponent
+        uiGameData={uiGameData}
+        player={player}
+        updatePlayerStateData={updatePlayerStateData}
+      />
+    );
   },
-  showSimulation: (controller: GameStateHandler) => {
-    return <SimulationComponent controller={controller} />;
+  showSimulation: (game: Game) => {
+    return <SimulationComponent game={game} />;
   },
-  showPlayerStrategy: (data: PlayerStateData, controller: GameStateHandler) => {
-    return <PlayerStrategy data={data} controller={controller} />;
+  showPlayerStrategy: (player: Player, playerStateData: PlayerStateData) => {
+    return <PlayerStrategy player={player} playerStateData={playerStateData} />;
   },
-  showResult: (controller: GameStateHandler) => {
-    return <ResultComponent controller={controller} />;
+  showResult: (uiGameData: GameData) => {
+    return <ResultComponent uiGameData={uiGameData} />;
   },
-  createController: (args: GameStateHandlerArgs) =>
-    new BasketballStateHandler(args),
+  createController: (discussionStages: DiscussionStage[]) => {
+    return new ConcertTicketSalesStateHandler(discussionStages);
+  },
 };
 
-export default BasketballGame;
+export default ConcertTicketSalesGame;

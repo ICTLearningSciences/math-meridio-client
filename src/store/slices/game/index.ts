@@ -39,18 +39,17 @@ export interface Room {
   gameData: GameData;
 }
 
-export interface HeartBeat {
-  player: string;
-  timestamp: Date;
-}
-
 export interface GameData {
   gameId: string;
-  heartBeats: HeartBeat[];
   players: Player[];
   chat: ChatMessage[];
   globalStateData: GlobalStateData;
+  persistTruthGlobalStateData: string[];
   playerStateData: PlayerStateData[];
+}
+
+export interface GameDataGQL extends Omit<GameData, 'players'> {
+  players: string[];
 }
 
 export interface GameStateData {
@@ -69,6 +68,7 @@ export interface GlobalStateData {
   curStageId: string;
   curStepId: string;
   roomOwnerId: string;
+  discussionDataStringified: string;
   gameStateData: GameStateData[];
 }
 

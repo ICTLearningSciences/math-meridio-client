@@ -5,27 +5,26 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import React from 'react';
-import {
-  CollectedDiscussionData,
-  GameStateHandler,
-  GameStateHandlerArgs,
-} from '../../classes/game-state-handler';
+import { AbstractGameData } from '../../classes/abstract-game-data';
 import { Game } from '../types';
 import { SimulationScene } from './SimulationScene';
-
-import {
-  DiscussionStage,
-  IStage,
-  SimulationStage,
-} from '../../components/discussion-stage-builder/types';
-import { DiscussionStageHandler } from '../../classes/discussion-stage-handler';
-
 import { ProblemComponent } from './problem';
 import { SolutionComponent } from './solution';
 import { PlayerStrategy, SimulationComponent } from './simulation';
 import { ResultComponent } from './results';
-import { PlayerStateData } from '../../store/slices/game';
+import {
+  GameData,
+  GameStateData,
+  PlayerStateData,
+} from '../../store/slices/game';
 import { SIMULTAION_VIEWED_KEY } from '../../helpers';
+import { CollectedDiscussionData, CurrentStage } from '../../types';
+import {
+  IStage,
+  SimulationStage,
+} from '../../components/discussion-stage-builder/types';
+import { DiscussionStage } from '../../components/discussion-stage-builder/types';
+import { Player } from '../../store/slices/player/types';
 
 const introductionDiscussionStage = 'de0b94b9-1fc2-4ea1-995e-21a75670c16d';
 const collectVariablesDiscussionStage = '86587083-9279-4c27-8470-836f992670fc';
@@ -38,63 +37,32 @@ const discussBestStrategyDiscussionStage =
   'e11d3273-e0e8-4b15-a5f0-3b80e5665e01';
 const finishedDiscussionStage = 'bdf123b5-1fd1-4de9-bc4e-74a53623475a';
 
-export interface CurrentStage<T extends IStage> {
-  id: string;
-  stage: T;
-  action?: () => void;
-  beforeStart?: () => void;
-  onStageFinished: (collectedData: CollectedDiscussionData) => void;
-}
-
-export type DiscussionCurrentStage = CurrentStage<DiscussionStage>;
-
-export class BasketballStateHandler extends GameStateHandler {
-  currentStage: CurrentStage<IStage> | undefined;
-  discussionStageHandler: DiscussionStageHandler;
-
-  constructor(args: GameStateHandlerArgs) {
-    super({ ...args, defaultStageId: 'de0b94b9-1fc2-4ea1-995e-21a75670c16d' });
-    this.discussionStageHandler = new DiscussionStageHandler(
-      this.player._id,
-      this.globalStateData,
-      this.playerStateData,
-      args.sendMessage,
-      args.setResponsePending,
-      args.executePrompt,
-      this.updateRoomStageStepId.bind(this),
-      args.targetAiServiceModel,
-      undefined,
-      this.newPlayerStateData.bind(this),
-      undefined,
-      args.onWaitingForPlayers,
-      args.updateRoomGameData
-    );
-
-    this.initializeGame = this.initializeGame.bind(this);
-    this.simulationEnded = this.simulationEnded.bind(this);
-
-    const introDiscussionStage = this.dbDiscussionStages.find(
+export class BasketballStateHandler extends AbstractGameData {
+  stageList: CurrentStage<IStage>[] = [];
+  constructor(discussionStages: DiscussionStage[]) {
+    super();
+    const introDiscussionStage = discussionStages.find(
       (s) => s.clientId === introductionDiscussionStage
     );
-    const collectVariablesStage = this.dbDiscussionStages.find(
+    const collectVariablesStage = discussionStages.find(
       (s) => s.clientId === collectVariablesDiscussionStage
     );
-    const explainConceptsStage = this.dbDiscussionStages.find(
+    const explainConceptsStage = discussionStages.find(
       (s) => s.clientId === explainConceptsDiscussionStage
     );
-    const keyConceptsConvoStage = this.dbDiscussionStages.find(
+    const keyConceptsConvoStage = discussionStages.find(
       (s) => s.clientId === keyConceptsConvoDiscussionStage
     );
-    const selectStrategyStage = this.dbDiscussionStages.find(
+    const selectStrategyStage = discussionStages.find(
       (s) => s.clientId === selectStrategyDiscussionStage
     );
-    const discussNewStrategyStage = this.dbDiscussionStages.find(
+    const discussNewStrategyStage = discussionStages.find(
       (s) => s.clientId === discussNewStrategyDiscussionStage
     );
-    const discussBestStrategyStage = this.dbDiscussionStages.find(
+    const discussBestStrategyStage = discussionStages.find(
       (s) => s.clientId === discussBestStrategyDiscussionStage
     );
-    const finishedStage = this.dbDiscussionStages.find(
+    const finishedStage = discussionStages.find(
       (s) => s.clientId === finishedDiscussionStage
     );
 
@@ -111,29 +79,35 @@ export class BasketballStateHandler extends GameStateHandler {
       throw new Error('missing stage');
     }
 
+    const simulationStage = {
+      _id: 'wait-for-simulation',
+      clientId: 'wait-for-simulation',
+      stageType: 'simulation',
+    } as SimulationStage;
+
     const stageList: CurrentStage<IStage>[] = [
       {
         id: 'intro-discussion',
         stage: introDiscussionStage,
-        onStageFinished: () => {
-          this.updateStageByStageListId('collect-variables');
+        getNextStage: () => {
+          return collectVariablesStage;
         },
       },
       {
         id: 'collect-variables',
         stage: collectVariablesStage,
-        onStageFinished: () => {
-          this.updateStageByStageListId('explain-concepts');
+        getNextStage: () => {
+          return explainConceptsStage;
         },
       },
       {
         id: 'explain-concepts',
         stage: explainConceptsStage,
-        onStageFinished: (data) => {
+        getNextStage: (data) => {
           if (data['understands_algorithm'] !== 'true') {
-            this.updateStageByStageListId('key-concepts-convo');
+            return keyConceptsConvoStage;
           } else {
-            this.updateStageByStageListId('select-strategy');
+            return selectStrategyStage;
           }
         },
       },
@@ -141,152 +115,69 @@ export class BasketballStateHandler extends GameStateHandler {
         id: 'key-concepts-convo',
         stage: keyConceptsConvoStage,
         beforeStart: () => {
-          this.discussionStageHandler.exitEarlyCondition = (
-            data: CollectedDiscussionData
-          ) => {
-            return data['understands_algorithm'] === 'true';
-          };
+          // this.discussionStageHandler.exitEarlyCondition = (
+          //   data: CollectedDiscussionData
+          // ) => {
+          //   return data['understands_algorithm'] === 'true';
+          // };
+          console.log(
+            "WARNING: beforeStart called, doing nothing, used to exit early if player didn't understand algorithm"
+          );
         },
-        onStageFinished: (data) => {
-          this.discussionStageHandler.exitEarlyCondition = undefined;
+        getNextStage: (data) => {
+          // this.discussionStageHandler.exitEarlyCondition = undefined;
           if (data['understands_algorithm'] !== 'true') {
-            this.updateStageByStageListId('key-concepts-convo');
+            return keyConceptsConvoStage;
           } else {
-            this.updateStageByStageListId('select-strategy');
+            return selectStrategyStage;
           }
         },
       },
       {
         id: 'select-strategy',
         stage: selectStrategyStage,
-        onStageFinished: () => {
-          this.updateStageByStageListId('wait-for-simulation');
+        getNextStage: () => {
+          return simulationStage;
         },
       },
       {
         id: 'wait-for-simulation',
-        stage: {
-          _id: 'wait-for-simulation',
-          clientId: 'wait-for-simulation',
-          stageType: 'simulation',
-        } as SimulationStage,
-        onStageFinished: () => {
-          this.updateStageByStageListId('discuss-new-strategy');
+        stage: simulationStage,
+        getNextStage: () => {
+          return discussNewStrategyStage;
         },
       },
       {
         id: 'discuss-new-strategy',
         stage: discussNewStrategyStage,
-        onStageFinished: (data) => {
+        getNextStage: (data) => {
           if (data['best_strategy_found'] === 'false') {
-            this.updateStageByStageListId('discuss-best-strategy');
+            return discussBestStrategyStage;
           } else {
-            this.updateStageByStageListId('finished');
+            return finishedStage;
           }
         },
       },
       {
         id: 'discuss-best-strategy',
         stage: discussBestStrategyStage,
-        onStageFinished: (data) => {
+        getNextStage: (data) => {
           if (data['best_strategy_found'] === 'false') {
-            this.updateStageByStageListId('discuss-best-strategy');
+            return discussBestStrategyStage;
           } else {
-            this.updateStageByStageListId('finished');
+            return finishedStage;
           }
         },
       },
       {
         id: 'finished',
         stage: finishedStage,
-        onStageFinished: () => {
-          // nothing
+        getNextStage: () => {
+          return finishedStage;
         },
       },
     ];
     this.stageList = stageList;
-  }
-
-  playerStateUpdated(newGameState: PlayerStateData[]): void {
-    super.playerStateUpdated(newGameState);
-    const curStage = this.getCurrentStage();
-    const anyPlayerViewedSimulation = newGameState.find((p) =>
-      p.gameStateData.find((g) => g.key === SIMULTAION_VIEWED_KEY)
-    );
-    if (
-      curStage?.stage.stageType === 'simulation' &&
-      anyPlayerViewedSimulation
-    ) {
-      this.simulationEnded();
-    }
-  }
-
-  simulationEnded(): void {
-    super.simulationEnded();
-    const curStage = this.getCurrentStage();
-    if (curStage?.stage.stageType === 'simulation') {
-      const stage = this.stageList.find(
-        (s) => s.stage?.clientId === curStage?.stage.clientId
-      );
-      if (!stage) {
-        throw new Error('missing stage');
-      }
-      stage.onStageFinished({});
-    }
-  }
-
-  async handleNewUserMessage(message: string) {
-    // super.handleNewUserMessage(message);
-    // todo (not hard-coded)
-    const msg = message.toLowerCase();
-    if (msg.includes('outside shot')) {
-      const value = msg.includes('3') || msg.includes('three') ? 3 : undefined;
-      this.updateRoomGameData({
-        globalStateData: {
-          gameStateData: [{ key: 'Points per outside shot', value: value }],
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any,
-        playerStateData: [
-          {
-            player: this.player._id,
-            animation: '',
-            gameStateData: [{ key: 'Points per outside shot', value: value }],
-          },
-        ],
-      });
-    }
-    if (msg.includes('inside shot')) {
-      const value = msg.includes('2') || msg.includes('two') ? 2 : undefined;
-      this.updateRoomGameData({
-        globalStateData: {
-          gameStateData: [{ key: 'Points per inside shot', value: value }],
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any,
-        playerStateData: [
-          {
-            player: this.player._id,
-            animation: '',
-            gameStateData: [{ key: 'Points per inside shot', value: value }],
-          },
-        ],
-      });
-    }
-    if (msg.includes('mid shot')) {
-      const value = msg.includes('2') || msg.includes('two') ? 2 : undefined;
-      this.updateRoomGameData({
-        globalStateData: {
-          gameStateData: [{ key: 'Points per mid shot', value: value }],
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any,
-        playerStateData: [
-          {
-            player: this.player._id,
-            animation: '',
-            gameStateData: [{ key: 'Points per mid shot', value: value }],
-          },
-        ],
-      });
-    }
   }
 }
 
@@ -319,23 +210,37 @@ const BasketballGame: Game = {
 
     scene: [SimulationScene],
   },
-  showProblem: (controller: GameStateHandler) => {
-    return <ProblemComponent controller={controller} />;
+  showProblem: () => {
+    return <ProblemComponent />;
   },
-  showSolution: (controller: GameStateHandler) => {
-    return <SolutionComponent controller={controller} />;
+  showSolution: (
+    uiGameData: GameData,
+    player: Player,
+    updatePlayerStateData: (
+      newPlayerStateData: GameStateData[],
+      playerId: string
+    ) => void
+  ) => {
+    return (
+      <SolutionComponent
+        uiGameData={uiGameData}
+        player={player}
+        updatePlayerStateData={updatePlayerStateData}
+      />
+    );
   },
-  showSimulation: (controller: GameStateHandler) => {
-    return <SimulationComponent controller={controller} />;
+  showSimulation: (game: Game) => {
+    return <SimulationComponent game={game} />;
   },
-  showPlayerStrategy: (data: PlayerStateData, controller: GameStateHandler) => {
-    return <PlayerStrategy data={data} controller={controller} />;
+  showPlayerStrategy: (player: Player, playerStateData: PlayerStateData) => {
+    return <PlayerStrategy player={player} playerStateData={playerStateData} />;
   },
-  showResult: (controller: GameStateHandler) => {
-    return <ResultComponent controller={controller} />;
+  showResult: (uiGameData: GameData) => {
+    return <ResultComponent uiGameData={uiGameData} />;
   },
-  createController: (args: GameStateHandlerArgs) =>
-    new BasketballStateHandler(args),
+  createController: (discussionStages: DiscussionStage[]) => {
+    return new BasketballStateHandler(discussionStages);
+  },
 };
 
 export default BasketballGame;

@@ -6,7 +6,6 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React, { useState } from 'react';
 import { BarChart } from '@mui/x-charts/BarChart';
-import { GameStateHandler } from '../../classes/game-state-handler';
 import { ConcertTicketSalesSimulationData } from './SimulationScene';
 import EventSystem from '../event-system';
 import {
@@ -15,11 +14,10 @@ import {
   GENERAL_ADMISSION_TICKET_PRICE,
 } from '.';
 import { Stack, Typography, Tabs, Tab, Box } from '@mui/material';
+import { GameData } from '../../store/slices/game';
 
-export function ResultComponent(props: {
-  controller: GameStateHandler;
-}): JSX.Element {
-  const { controller } = props;
+export function ResultComponent(props: { uiGameData: GameData }): JSX.Element {
+  const { uiGameData } = props;
   const [simulationData, setSimulationData] = React.useState<
     Record<string, ConcertTicketSalesSimulationData>
   >({});
@@ -32,7 +30,7 @@ export function ResultComponent(props: {
   const chartHeight = 300;
   const resultsWidth = window.innerWidth / 2 - 300;
   const scoreChartWidth = resultsWidth;
-  const ticketsChartWidth = resultsWidth / controller.players.length;
+  const ticketsChartWidth = resultsWidth / uiGameData.players.length;
 
   interface ChartData {
     profitFromVipTickets: number[];
@@ -110,8 +108,8 @@ export function ResultComponent(props: {
 
     let playerLabels: string[] = [];
 
-    for (let index = 0; index < controller.players.length; index++) {
-      const player = controller.players[index];
+    for (let index = 0; index < uiGameData.players.length; index++) {
+      const player = uiGameData.players[index];
       const playerMade = [
         simulationData[player._id]?.vipTicketsSold,
         simulationData[player._id]?.reservedTicketsSold,
@@ -145,23 +143,23 @@ export function ResultComponent(props: {
           break;
       }
     }
-    profitFromVipTickets = controller.players.map(
+    profitFromVipTickets = uiGameData.players.map(
       (player) =>
         (simulationData[player._id]?.vipTicketsSold || 0) * VIP_TICKET_PRICE
     );
 
-    profitFromReservedTickets = controller.players.map(
+    profitFromReservedTickets = uiGameData.players.map(
       (player) =>
         (simulationData[player._id]?.reservedTicketsSold || 0) *
         RESERVED_TICKET_PRICE
     );
 
-    profitFromGeneralAdmissionTickets = controller.players.map(
+    profitFromGeneralAdmissionTickets = uiGameData.players.map(
       (player) =>
         (simulationData[player._id]?.generalAdmissionTicketsSold || 0) *
         GENERAL_ADMISSION_TICKET_PRICE
     );
-    playerLabels = controller.players.map((player) => player.name);
+    playerLabels = uiGameData.players.map((player) => player.name);
     setMyChartData({
       profitFromVipTickets: profitFromVipTickets,
       profitFromReservedTickets: profitFromReservedTickets,
@@ -251,7 +249,7 @@ export function ResultComponent(props: {
         )}
         {tabValue === 1 && (
           <Stack direction="row" alignItems="center">
-            {controller.players.map((player, index) => (
+            {uiGameData.players.map((player, index) => (
               <>
                 {index === 0 &&
                   GetChartFor(
