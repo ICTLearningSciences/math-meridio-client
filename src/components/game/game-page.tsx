@@ -28,15 +28,13 @@ import {
 
 import ChatThread from './chat-thread';
 import ChatForm from './chat-form';
-import { useAppSelector } from '../../store/hooks';
-import { useWithGame } from '../../store/slices/game/use-with-game-state';
 import { useWithEducationalData } from '../../store/slices/educational-data/use-with-educational-data';
 import withAuthorizationOnly from '../../wrap-with-authorization-only';
 import Popup from '../popup';
 import { useWithConfig } from '../../store/slices/config/use-with-config';
 import { useWithWindow } from '../../hooks/use-with-window';
 import EventSystem from '../../game/event-system';
-import { GameData, PlayerStateData } from '../../store/slices/game';
+import { GameData, PlayerStateData } from '../../store/slices/game/types';
 import { Game } from '../../game/types';
 
 import '../../layout.css';
@@ -91,11 +89,10 @@ function SimulationSpace(props: {
   game: Game;
   player: Player;
   uiTriggerLocalGameData: GameData;
-  simulation?: string;
   expanded?: boolean;
   onExpand: () => void;
 }): JSX.Element {
-  const { game, player, uiTriggerLocalGameData, simulation } = props;
+  const { game, player, uiTriggerLocalGameData } = props;
   const { isMuted, toggleMuted } = useWithConfig();
   const [curSimulation, setSimulation] = React.useState<PlayerStateData>();
 
@@ -152,7 +149,6 @@ function SimulationSpace(props: {
 }
 
 function GamePage(): JSX.Element {
-  const { simulation } = useAppSelector((state) => state.gameData);
   const { roomId } = useParams<{ roomId: string }>();
   const { educationalData } = useWithEducationalData();
   const room = educationalData.rooms.find((r) => r._id === roomId);
@@ -167,8 +163,9 @@ function GamePage(): JSX.Element {
     player,
     updatePlayerStateData,
     game,
+    sendMessage,
+    responsePending,
   } = outletContext;
-  const { gameStateHandler, responsePending, sendMessage } = useWithGame();
   const navigate = useNavigate();
   const { windowHeight, windowWidth } = useWithWindow();
 
@@ -379,15 +376,9 @@ function GamePage(): JSX.Element {
   }
 
   if (!game || !uiTriggerLocalGameData || !player) {
-    console.log('launching game', game, uiTriggerLocalGameData, player);
-
     return (
       <div className="root center-div">
-        <Button
-          onClick={launchGame}
-          disabled={Boolean(gameStateHandler)}
-          data-cy="begin-game-button"
-        >
+        <Button onClick={launchGame} data-cy="begin-game-button">
           Begin
         </Button>
       </div>
@@ -461,7 +452,6 @@ function GamePage(): JSX.Element {
             game={game}
             player={player}
             uiTriggerLocalGameData={uiTriggerLocalGameData}
-            simulation={simulation}
             expanded={expanded === 2}
             onExpand={() => onExpand(2)}
           />

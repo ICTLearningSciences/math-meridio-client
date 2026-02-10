@@ -6,7 +6,7 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React, { useEffect, useRef } from 'react';
 import { RoomActionQueueEntry } from '../../room-action-api';
-import { GameData, GameStateData, Room } from '../../store/slices/game';
+import { GameData, GameStateData, Room } from '../../store/slices/game/types';
 import * as roomActionApi from '../../room-action-api';
 import { v4 as uuidv4 } from 'uuid';
 import * as roomApi from '../../room-action-api';

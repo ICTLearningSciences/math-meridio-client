@@ -10,7 +10,7 @@ import {
   LoginService,
   EducationalRole,
 } from '../../../store/slices/player/types';
-import { GameData } from '../../../store/slices/game';
+import { GameData } from '../../../store/slices/game/types';
 import {
   Checking,
   ConditionalActivityStep,
@@ -25,6 +25,7 @@ import {
   LogicStepConditional,
 } from '../../../components/discussion-stage-builder/types';
 import { DiscussionCurrentStage } from '../../../types';
+import { v4 as uuidv4 } from 'uuid';
 
 export function createMockPlayer(id: string, name: string): Player {
   return {
@@ -161,11 +162,11 @@ export function createMockDiscussionStage(
   flows: { name: string; steps: DiscussionStageStep[] }[]
 ): DiscussionStage {
   return {
-    _id: 'stage-id',
+    _id: uuidv4(),
     title: 'Test Stage',
     description: 'Test Description',
     stageType: 'discussion',
-    clientId: 'stage-id',
+    clientId: uuidv4(),
     flowsList: flows.map((flow) => ({
       clientId: flow.name,
       name: flow.name,
@@ -177,11 +178,16 @@ export function createMockDiscussionStage(
 // Helper to create a mock DiscussionCurrentStage
 export function createMockCurrentStage(
   stage: DiscussionStage,
-  nextStageId = 'next-stage-id'
+  nextStage?: DiscussionStage
 ): DiscussionCurrentStage {
+  const tempNextStage =
+    nextStage ||
+    createMockDiscussionStage([
+      { name: 'Next Flow', steps: [createSystemMessageStep('step-1')] },
+    ]);
   return {
     id: 'stage-id',
     stage,
-    getNextStage: jest.fn(() => nextStageId),
+    getNextStage: jest.fn(() => tempNextStage),
   };
 }

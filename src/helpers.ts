@@ -5,7 +5,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 
-import { ChatMessage, GameStateData } from './store/slices/game';
+import { ChatMessage } from './store/slices/game/types';
 import axios from 'axios';
 import { IStage } from './components/discussion-stage-builder/types';
 import { DiscussionStage } from './components/discussion-stage-builder/types';

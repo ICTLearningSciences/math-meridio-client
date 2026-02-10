@@ -4,11 +4,11 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { GameData, MessageDisplayType } from '../../store/slices/game';
+import { GameData, MessageDisplayType } from '../../store/slices/game/types';
 import { localStorageGet } from '../../store/local-storage';
 import { SESSION_ID } from '../../store/local-storage';
 import { v4 as uuidv4 } from 'uuid';
-import { SenderType } from '../../store/slices/game';
+import { SenderType } from '../../store/slices/game/types';
 export const STEP_RESPONSE_TRACKING_KEY = 'stepResponseTracking';
 export interface StepResponseTracking {
   stepId: string;

@@ -21,7 +21,7 @@ import {
   SystemMessageStageStep,
 } from '../../components/discussion-stage-builder/types';
 import { chatLogToString, isJsonString } from '../../helpers';
-import { GameData } from '../../store/slices/game';
+import { GameData } from '../../store/slices/game/types';
 import {
   CollectedDiscussionData,
   DiscussionCurrentStage,

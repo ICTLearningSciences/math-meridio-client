@@ -14,7 +14,7 @@ import {
   OUTSIDE_SHOT_POINTS_VALUE,
 } from './solution';
 import { Stack, Typography, Tabs, Tab, Box } from '@mui/material';
-import { GameData } from '../../store/slices/game';
+import { GameData } from '../../store/slices/game/types';
 
 export function ResultComponent(props: { uiGameData: GameData }): JSX.Element {
   const { uiGameData } = props;

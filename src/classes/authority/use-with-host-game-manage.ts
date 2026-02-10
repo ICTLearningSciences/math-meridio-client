@@ -13,7 +13,7 @@ import { Game, GAMES } from '../../game/types';
 import { localStorageStore, SESSION_ID } from '../../store/local-storage';
 import { v4 as uuidv4 } from 'uuid';
 import * as roomApi from '../../room-action-api';
-import { GameData, GameStateData, Room } from '../../store/slices/game';
+import { GameData, GameStateData, Room } from '../../store/slices/game/types';
 import React from 'react';
 import { useWithProcessingRoomActions } from './use-with-process-room-actions-and-steps';
 import { useWithSubmitHeartBeat } from './use-with-submit-heart-beat';
@@ -38,6 +38,7 @@ export interface UseWithHostGameManagement {
   uiTriggerLocalGameData?: GameData;
   updatePlayerStateData: (newPlayerStateData: GameStateData[]) => void;
   player?: Player;
+  sendMessage: (message: string) => void;
 }
 
 export function useWithHostGameManagement(): UseWithHostGameManagement {
@@ -72,6 +73,7 @@ export function useWithHostGameManagement(): UseWithHostGameManagement {
     submitJoinRoomAction,
     submitUpdateMyPlayerDataAction,
     submitViewedSimulationAction,
+    submitSendMessageAction,
   } = useWithProcessingRoomActions(
     setUiTriggerLocalGameData,
     localGameDataRef,
@@ -140,7 +142,7 @@ export function useWithHostGameManagement(): UseWithHostGameManagement {
     gameName: string,
     classId: string
   ): Promise<Room> {
-    const room = await useWithEducationalData.createNewRoom(
+    const room = await useWithEducationalData.createNewGameRoom(
       gameId,
       gameName,
       classId
@@ -177,10 +179,15 @@ export function useWithHostGameManagement(): UseWithHostGameManagement {
     if (!room) {
       throw new Error('Room not found');
     }
-    submitUpdateMyPlayerDataAction(room, true, newPlayerStateData);
+    submitUpdateMyPlayerDataAction(room, isRoomOwner, newPlayerStateData);
   }
 
-  console.log('uiTriggerLocalGameData', uiTriggerLocalGameData);
+  async function sendMessage(message: string): Promise<void> {
+    if (!room) {
+      throw new Error('Room not found');
+    }
+    return await submitSendMessageAction(room, isRoomOwner, message);
+  }
 
   return {
     game: game,
@@ -193,5 +200,6 @@ export function useWithHostGameManagement(): UseWithHostGameManagement {
     uiTriggerLocalGameData,
     player,
     updatePlayerStateData,
+    sendMessage,
   };
 }

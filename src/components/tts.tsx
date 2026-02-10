@@ -7,7 +7,7 @@ The full terms of this copyright and license should always be found in the root 
 import React from 'react';
 import { useTts, TTSHookProps } from 'tts-react';
 import EventSystem from '../game/event-system';
-import { ChatMessage } from '../store/slices/game';
+import { ChatMessage } from '../store/slices/game/types';
 
 interface SpeakProps extends TTSHookProps {
   message: ChatMessage | undefined;

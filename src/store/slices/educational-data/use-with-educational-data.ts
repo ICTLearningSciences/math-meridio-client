@@ -5,7 +5,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import { useAppDispatch, useAppSelector } from '../../hooks';
-import { ChatMessage, GameData, Room } from '../game';
+import { ChatMessage, GameData, Room } from '../game/types';
 import * as educationalDataActions from './index';
 import {
   ClassMembership,
@@ -166,46 +166,23 @@ export function useWithEducationalData() {
     ).unwrap();
   }
 
-  async function sendGameRoomMessage(
-    gameRoomId: string,
-    message: ChatMessage
-  ): Promise<Room> {
-    return await dispatch(
-      educationalDataActions.sendGameRoomMessage({ gameRoomId, message })
-    ).unwrap();
-  }
-
-  async function createAndJoinGameRoom(
-    gameId: string,
-    gameName: string,
-    playerId: string,
-    persistTruthGlobalStateData: string[],
-    classId: string
-  ): Promise<Room> {
-    return await dispatch(
-      educationalDataActions.createAndJoinGameRoom({
-        gameId,
-        gameName,
-        playerId,
-        persistTruthGlobalStateData,
-        classId,
-      })
-    ).unwrap();
-  }
-
   async function fetchRoom(roomId: string): Promise<Room> {
     return await dispatch(
       educationalDataActions.fetchRoom({ roomId })
     ).unwrap();
   }
 
-  async function createNewRoom(
+  async function fetchRooms(game: string): Promise<Room[]> {
+    return await dispatch(educationalDataActions.fetchRooms({ game })).unwrap();
+  }
+
+  async function createNewGameRoom(
     gameId: string,
     gameName: string,
     classId?: string
   ): Promise<Room> {
     return await dispatch(
-      educationalDataActions.createNewRoom({ gameId, gameName, classId })
+      educationalDataActions.createNewGameRoom({ gameId, gameName, classId })
     ).unwrap();
   }
 
@@ -227,10 +204,9 @@ export function useWithEducationalData() {
     deleteGameRoom,
     renameGameRoom,
     updateGameRoomGameData,
-    sendGameRoomMessage,
-    createAndJoinGameRoom,
     fetchRoom,
-    createNewRoom,
+    fetchRooms,
+    createNewGameRoom,
     educationalData: state,
   };
 }

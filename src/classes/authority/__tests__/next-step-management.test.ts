@@ -46,17 +46,29 @@ describe('next-step-management', () => {
         },
       ]);
 
-      const curStage = createMockCurrentStage(stage, 'next-stage-id');
+      const nextStage = createMockDiscussionStage([
+        {
+          name: 'Next Flow',
+          steps: [
+            createSystemMessageStep('step-1'),
+            createSystemMessageStep('step-2', { lastStep: true }),
+          ],
+        },
+      ]);
+
+      const curStage = createMockCurrentStage(stage, nextStage);
       const curStep = createSystemMessageStep('last-step', { lastStep: true });
 
       const result = updateGameDataWithNextStep(gameData, curStage, curStep);
 
       // Should move to next stage
-      expect(result.globalStateData.curStageId).toBe('next-stage-id');
+      expect(result.globalStateData.curStageId).toBe(nextStage.clientId);
       // Should reset to first step of the stage (based on getFirstStepId which returns flowsList[0].steps[0].stepId)
-      expect(result.globalStateData.curStepId).toBe('step-1');
+      expect(result.globalStateData.curStepId).toBe(
+        nextStage.flowsList[0].steps[0].stepId
+      );
       // Should have called getNextStage
-      expect(curStage.getNextStage).toHaveBeenCalled();
+      expect(curStage.getNextStage({})).toBe(nextStage);
     });
 
     it('should use jumpToStepId when present (non-conditional, non-lastStep)', () => {

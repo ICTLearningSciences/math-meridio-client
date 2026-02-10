@@ -7,7 +7,7 @@ The full terms of this copyright and license should always be found in the root 
 import { execGql } from './api-helpers';
 import { ACCESS_TOKEN_KEY, localStorageGet } from './store/local-storage';
 import { RoomHeartBeat } from './store/slices/educational-data/types';
-import { GameData, GameDataGQL } from './store/slices/game';
+import { GameData, GameDataGQL } from './store/slices/game/types';
 import { Connection } from './types';
 
 const submitProcessedActionsMutation = `

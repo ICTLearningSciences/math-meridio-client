@@ -15,7 +15,7 @@ import {
 } from './components/discussion-stage-builder/types';
 import { Connection, GenericLlmRequest } from './types';
 import { Player } from './store/slices/player/types';
-import { ChatMessage, GameData, Room } from './store/slices/game';
+import { ChatMessage, GameData, Room } from './store/slices/game/types';
 import { extractErrorMessageFromError } from './helpers';
 import { Config } from './store/slices/config';
 import { userDataQuery } from './store/slices/player/api';
@@ -422,36 +422,6 @@ export async function fetchRoom(roomId: string): Promise<Room> {
     {
       dataPath: 'fetchRoom',
       accessToken: accessToken || undefined,
-    }
-  );
-  return data;
-}
-
-export async function createAndJoinRoom(
-  playerId: string,
-  gameId: string,
-  gameName: string,
-  persistTruthGlobalStateData: string[],
-  classId: string
-): Promise<Room> {
-  const data = await execGql<Room>(
-    {
-      query: `
-        mutation CreateAndJoinRoom($playerId: String!, $gameId: String!, $gameName: String!, $persistTruthGlobalStateData: [String], $classId: String) {
-          createAndJoinRoom(playerId: $playerId, gameId: $gameId, gameName: $gameName, persistTruthGlobalStateData: $persistTruthGlobalStateData, classId: $classId) {
-            ${fullRoomQueryData}
-          }
-        }`,
-      variables: {
-        playerId,
-        gameId,
-        gameName,
-        persistTruthGlobalStateData,
-        classId,
-      },
-    },
-    {
-      dataPath: 'createAndJoinRoom',
     }
   );
   return data;

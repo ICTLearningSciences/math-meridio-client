@@ -28,7 +28,9 @@ export function Header(props: { useLogin: UseWithLogin }) {
   const navigate = useNavigate();
 
   function homeButtonClick() {
-    leaveGameRoom(room?._id || '', player?._id || '');
+    if (roomId) {
+      leaveGameRoom(roomId, player?._id || '');
+    }
     navigate('/classes');
   }
 
