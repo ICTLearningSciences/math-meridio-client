@@ -47,7 +47,6 @@ export function useWithHostGameManagement(): UseWithHostGameManagement {
   const { discussionStages } = useWithStages();
   const [game, setGame] = useState<Game>();
   const gameDataClassRef = useRef<AbstractGameData>();
-  const poll = React.useRef<NodeJS.Timeout | null>(null);
   const [uiTriggerLocalGameData, setUiTriggerLocalGameData] =
     useState<GameData>();
   const localGameDataRef = useRef<GameData>();
@@ -124,14 +123,6 @@ export function useWithHostGameManagement(): UseWithHostGameManagement {
       );
     });
   }, [Boolean(room)]);
-
-  function startPollRoomState(room: Room) {
-    if (!poll.current) {
-      poll.current = setInterval(() => {
-        useWithEducationalData.fetchRoom(room._id);
-      }, 1000);
-    }
-  }
 
   async function syncRoomData(roomId: string, newGameData: GameData) {
     return await roomApi.syncRoomData(roomId, newGameData);

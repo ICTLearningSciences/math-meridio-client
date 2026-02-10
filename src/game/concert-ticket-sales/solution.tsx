@@ -8,11 +8,7 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import { TransformComponent, useControls } from 'react-zoom-pan-pinch';
 import { Card, Typography } from '@mui/material';
 
-import {
-  GameStateData,
-  GameData,
-  PlayerStateData,
-} from '../../store/slices/game/types';
+import { GameStateData, GameData } from '../../store/slices/game/types';
 import { makeStyles } from 'tss-react/mui';
 import { Player } from '../../store/slices/player/types';
 import { checkGameAndPlayerStateForValue } from '../../components/discussion-stage-builder/helpers';

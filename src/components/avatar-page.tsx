@@ -13,7 +13,6 @@ import ChatForm from './game/chat-form';
 import AvatarCreator from '../game/avatar';
 import { useWithPhaserGame } from '../hooks/use-with-phaser-game';
 import { useAppSelector } from '../store/hooks';
-import { ChatMessage } from '../store/slices/game/types';
 import {
   Avatars,
   useWithPlayer,

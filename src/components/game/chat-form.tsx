@@ -8,7 +8,6 @@ import React from 'react';
 import SpeechRecognition, {
   useSpeechRecognition,
 } from 'react-speech-recognition';
-import { v4 as uuid } from 'uuid';
 import {
   Fab,
   FormControl,
@@ -19,11 +18,6 @@ import {
   Typography,
 } from '@mui/material';
 import { Mic, MicOutlined, Send } from '@mui/icons-material';
-
-import { useAppSelector } from '../../store/hooks';
-import { ChatMessage, SenderType } from '../../store/slices/game/types';
-import { SESSION_ID } from '../../store/local-storage';
-import { localStorageGet } from '../../store/local-storage';
 
 export const MAX_MESSAGE_LENGTH = 200;
 
@@ -38,7 +32,6 @@ export default function ChatForm(props: {
     resetTranscript,
   } = useSpeechRecognition();
   const { sendMessage } = props;
-  const { player } = useAppSelector((state) => state.playerData);
 
   React.useEffect(() => {
     if (listening) {
@@ -47,7 +40,6 @@ export default function ChatForm(props: {
   }, [transcript]);
 
   function onSend(): void {
-    const sessionId = localStorageGet(SESSION_ID);
     if (input.trim() === '' || input.length > MAX_MESSAGE_LENGTH) {
       return;
     }

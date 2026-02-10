@@ -42,6 +42,7 @@ export function addOrUpdateGameRoom(
   state: EducationalDataStateData,
   updatedRoom: Room
 ) {
+  console.log('state.rooms', state);
   const existingRoomIdx = state.rooms.findIndex(
     (r) => r._id === updatedRoom._id
   );

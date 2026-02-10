@@ -13,7 +13,6 @@ import {
 } from '../user-action-pure-functions';
 import { RoomActionQueueEntry, RoomActionType } from '../../../room-action-api';
 import {
-  DiscussionStageStepType,
   RequestUserInputStageStep,
   SystemMessageStageStep,
 } from '../../../components/discussion-stage-builder/types';
@@ -201,6 +200,7 @@ describe('user-action-pure-functions', () => {
         payload: 'Message',
         actionSentAt: new Date(),
         processedAt: null,
+        source: 'local',
       };
 
       expect(() =>
@@ -324,6 +324,7 @@ describe('user-action-pure-functions', () => {
 
     it('should return unchanged gameData if player already in room', async () => {
       const gameData = createBaseGameData();
+      const player = createMockPlayer('player1', 'Player 1');
 
       const action: RoomActionQueueEntry = {
         _id: 'action-1',
@@ -333,9 +334,14 @@ describe('user-action-pure-functions', () => {
         payload: '',
         actionSentAt: new Date(),
         processedAt: null,
+        source: 'local',
       };
 
-      const result = await processPlayerJoinsRoomAction(gameData, action);
+      const result = await processPlayerJoinsRoomAction(
+        gameData,
+        action,
+        player
+      );
 
       // Should not call fetchPlayer
       expect(fetchPlayer).not.toHaveBeenCalled();

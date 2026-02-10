@@ -12,7 +12,7 @@ import { updateRoomResponse } from "../fixtures/update-room";
 import { fetchRoomResponse } from "../fixtures/fetch-room";
 import { defaultUser } from "../fixtures/refresh-access-token";
 import { addMessageToRoom, sendMessageInGameRoomResponse } from "../fixtures/send-message-in-game-room";
-import { Room, SenderType } from "../../src/store/slices/game";
+import { Room, SenderType } from "../../src/store/slices/game/types";
 import { v4 as uuidv4 } from 'uuid';
 import { asyncResponseRes } from "../fixtures/llm-requests/async-response";
 

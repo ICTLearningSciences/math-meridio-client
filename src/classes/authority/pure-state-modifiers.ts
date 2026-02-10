@@ -16,11 +16,7 @@ import {
 } from '../../components/discussion-stage-builder/types';
 import { getFirstStepId } from '../../helpers';
 import { GameData, GameStateData } from '../../store/slices/game/types';
-import {
-  CollectedDiscussionData,
-  CurrentStage,
-  DiscussionCurrentStage,
-} from '../../types';
+import { CollectedDiscussionData, CurrentStage } from '../../types';
 import {
   evaluateCondition,
   everyPlayerHasRespondedToStep,

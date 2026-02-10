@@ -10,7 +10,6 @@ import { RouterProvider, createBrowserRouter, Outlet } from 'react-router-dom';
 
 import { Header } from './components/header';
 import AvatarPage from './components/avatar-page';
-import GamePage from './components/game/game-page';
 import PhaserTestPage from './components/phaser-test-page';
 import { StageBuilderPage } from './components/discussion-stage-builder/stage-builder-page';
 import GoogleLoginPage from './components/google_login/login';

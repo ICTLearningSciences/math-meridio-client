@@ -70,6 +70,7 @@ describe('pure-state-modifiers', () => {
         players: [],
         gameId: 'basketball',
         playerStateData: [],
+        persistTruthGlobalStateData: [],
         globalStateData: {
           curStageId: 'stage1',
           roomOwnerId: 'test-room-owner-id',
@@ -101,6 +102,7 @@ describe('pure-state-modifiers', () => {
         players: [],
         gameId: 'basketball',
         playerStateData: [],
+        persistTruthGlobalStateData: [],
         globalStateData: {
           curStageId: 'stage1',
           roomOwnerId: 'test-room-owner-id',
@@ -127,6 +129,7 @@ describe('pure-state-modifiers', () => {
         players: [],
         gameId: 'basketball',
         playerStateData: [],
+        persistTruthGlobalStateData: [],
         globalStateData: {
           curStageId: 'stage1',
           roomOwnerId: 'test-room-owner-id',
@@ -153,6 +156,7 @@ describe('pure-state-modifiers', () => {
         players: [],
         gameId: 'basketball',
         playerStateData: [],
+        persistTruthGlobalStateData: [],
         globalStateData: {
           curStageId: 'stage1',
           roomOwnerId: 'test-room-owner-id',
@@ -177,6 +181,7 @@ describe('pure-state-modifiers', () => {
         players: [],
         gameId: 'basketball',
         playerStateData: [],
+        persistTruthGlobalStateData: [],
         globalStateData: {
           curStageId: 'stage1',
           roomOwnerId: 'test-room-owner-id',
@@ -204,6 +209,7 @@ describe('pure-state-modifiers', () => {
         ] as Player[],
         gameId: 'basketball',
         playerStateData: [],
+        persistTruthGlobalStateData: [],
         globalStateData: {
           curStageId: 'stage1',
           roomOwnerId: 'test-room-owner-id',
@@ -238,6 +244,7 @@ describe('pure-state-modifiers', () => {
         players: [createMockPlayer('player1', 'Player 1')],
         gameId: 'basketball',
         playerStateData: [],
+        persistTruthGlobalStateData: [],
         globalStateData: {
           curStageId: 'stage1',
           roomOwnerId: 'test-room-owner-id',
@@ -273,6 +280,7 @@ describe('pure-state-modifiers', () => {
         ],
         gameId: 'basketball',
         playerStateData: [],
+        persistTruthGlobalStateData: [],
         globalStateData: {
           curStageId: 'stage1',
           roomOwnerId: 'test-room-owner-id',
@@ -304,6 +312,7 @@ describe('pure-state-modifiers', () => {
         players: [createMockPlayer('player1', 'Player 1')],
         gameId: 'basketball',
         playerStateData: [],
+        persistTruthGlobalStateData: [],
         globalStateData: {
           curStageId: 'stage1',
           roomOwnerId: 'test-room-owner-id',
@@ -352,6 +361,7 @@ describe('pure-state-modifiers', () => {
         ],
         gameId: 'basketball',
         playerStateData: [],
+        persistTruthGlobalStateData: [],
         globalStateData: {
           curStageId: 'stage1',
           roomOwnerId: 'test-room-owner-id',
@@ -400,6 +410,7 @@ describe('pure-state-modifiers', () => {
         ],
         gameId: 'basketball',
         playerStateData: [],
+        persistTruthGlobalStateData: [],
         globalStateData: {
           curStageId: 'stage1',
           roomOwnerId: 'test-room-owner-id',
@@ -441,6 +452,7 @@ describe('pure-state-modifiers', () => {
         ] as Player[],
         gameId: 'basketball',
         playerStateData: [],
+        persistTruthGlobalStateData: [],
         globalStateData: {
           curStageId: 'stage1',
           roomOwnerId: 'test-room-owner-id',
@@ -490,6 +502,7 @@ describe('pure-state-modifiers', () => {
         ],
         gameId: 'basketball',
         playerStateData: [],
+        persistTruthGlobalStateData: [],
         globalStateData: {
           curStageId: 'stage1',
           roomOwnerId: 'test-room-owner-id',
@@ -540,6 +553,7 @@ describe('pure-state-modifiers', () => {
         players: [createMockPlayer('player1', 'Player 1')],
         gameId: 'basketball',
         playerStateData: [],
+        persistTruthGlobalStateData: [],
         globalStateData: {
           curStageId: 'stage1',
           roomOwnerId: 'test-room-owner-id',

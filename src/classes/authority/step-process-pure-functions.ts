@@ -14,7 +14,6 @@ import {
 } from '../../components/discussion-stage-builder/helpers';
 import {
   DiscussionStage,
-  DiscussionStageStep,
   DiscussionStageStepType,
   PromptStageStep,
   RequestUserInputStageStep,
@@ -24,7 +23,6 @@ import { chatLogToString, isJsonString } from '../../helpers';
 import { GameData } from '../../store/slices/game/types';
 import {
   CollectedDiscussionData,
-  DiscussionCurrentStage,
   GenericLlmRequest,
   getSimulationViewedKey,
   PromptOutputTypes,
@@ -41,16 +39,13 @@ import {
   everyPlayerHasRespondedToStep,
   getGameDataCopy,
   getAllStepResponseTrackingFromGameState,
-  STEP_RESPONSE_TRACKING_KEY,
 } from './state-modifier-helpers';
 import {
   AiServicesResponseTypes,
   extractServiceStepResponse,
 } from '../../ai-services/ai-service-types';
-import { RoomActionQueueEntry } from '../../room-action-api';
 import { syncLlmRequest } from '../../hooks/use-with-synchronous-polling';
 import { getCurStageAndStep } from './user-action-pure-functions';
-import { AbstractGameData } from '../abstract-game-data';
 
 export function startRequestUserInputStep(
   _gameData: GameData,

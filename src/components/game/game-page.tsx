@@ -47,10 +47,6 @@ const ROWS = 4;
 // Type for the outlet context provided by GameLayout
 type GameManagementContext = UseWithHostGameManagement;
 
-interface GamePageProps {
-  gameManagementContext?: GameManagementContext;
-}
-
 function Space(props: {
   title: string;
   children: JSX.Element;

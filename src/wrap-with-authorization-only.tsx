@@ -12,14 +12,12 @@ import { LoadStatus } from './types';
 import { useAppDispatch, useAppSelector } from './store/hooks';
 import { clearPlayer } from './store/slices/player';
 import { fetchDiscussionStages } from './store/slices/stages';
-import { useWithEducationalData } from './store/slices/educational-data/use-with-educational-data';
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const withAuthorizationOnly = (Component: any) => (props: any) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { leaveGameRoom, fetchRooms } = useWithEducationalData();
   const { player, loginStatus } = useAppSelector((state) => state.playerData);
   const { loadStagesStatus } = useAppSelector((state) => state.stages);
 
@@ -46,17 +44,17 @@ const withAuthorizationOnly = (Component: any) => (props: any) => {
     }
   }, [loadStagesStatus]);
 
-  React.useEffect(() => {
-    if (!player?._id) return;
-    fetchRooms('').then((res) => {
-      const rooms = res;
-      for (const room of rooms) {
-        if (room.gameData?.players.find((p) => p._id === player._id)) {
-          leaveGameRoom(room._id, player._id);
-        }
-      }
-    });
-  }, [player?._id]);
+  // React.useEffect(() => {
+  //   if (!player?._id) return;
+  //   fetchRooms('').then((res) => {
+  //     const rooms = res;
+  //     for (const room of rooms) {
+  //       if (room.gameData?.players.find((p) => p._id === player._id)) {
+  //         leaveGameRoom(room._id, player._id);
+  //       }
+  //     }
+  //   });
+  // }, [player?._id]);
 
   if (
     loginStatus.status === LoadStatus.NONE ||

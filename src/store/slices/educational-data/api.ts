@@ -327,7 +327,7 @@ export async function fetchStudentDataHydration(): Promise<FetchEducationalDataH
 
 const createNewRoomMutation = `
   mutation CreateNewRoom($gameId: String!, $gameName: String!, $classId: String) {
-    createNewGameRoom(gameId: $gameId, gameName: $gameName, classId: $classId) {
+    createNewRoom(gameId: $gameId, gameName: $gameName, classId: $classId) {
       ${fullRoomQueryData}
     }
   }
@@ -349,7 +349,7 @@ export async function createNewGameRoom(
       },
     },
     {
-      dataPath: 'createNewGameRoom',
+      dataPath: 'createNewRoom',
       accessToken: accessToken || undefined,
     }
   );

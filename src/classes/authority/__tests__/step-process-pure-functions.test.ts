@@ -13,11 +13,10 @@ The full terms of this copyright and license should always be found in the root 
 
 /// <reference types="jest" />
 import {
-  GameData,
   MessageDisplayType,
   SenderType,
 } from '../../../store/slices/game/types';
-import { localStorageGet, SESSION_ID } from '../../../store/local-storage';
+import { localStorageGet } from '../../../store/local-storage';
 import {
   startRequestUserInputStep,
   processNewSystemMessageStep,
@@ -25,7 +24,6 @@ import {
   processPromptStep,
 } from '../step-process-pure-functions';
 import {
-  DiscussionStageStepType,
   PromptOutputTypes,
   RequestUserInputStageStep,
   SystemMessageStageStep,
@@ -35,13 +33,17 @@ import {
 import { STEP_RESPONSE_TRACKING_KEY } from '../state-modifier-helpers';
 import {
   createBaseGameData,
-  createMockPlayer,
   createPromptStep,
   createRequestUserInputStep,
   createSystemMessageStep,
 } from './helpers';
 import { AiServicesResponseTypes } from '../../../ai-services/ai-service-types';
-import { PromptRoles, TargetAiModelServiceType } from '../../../types';
+import {
+  CollectedDiscussionData,
+  PromptRoles,
+  TargetAiModelServiceType,
+} from '../../../types';
+import * as helpers from '../../../components/discussion-stage-builder/helpers';
 
 // Mock the localStorage module
 jest.mock('../../../store/local-storage', () => ({
@@ -57,7 +59,7 @@ jest.mock('uuid', () => ({
 // Mock helper functions from discussion-stage-builder
 jest.mock('../../../components/discussion-stage-builder/helpers', () => ({
   replaceStoredDataInString: jest.fn((str: string) => str), // Default: no replacement
-  convertCollectedDataToGSData: jest.fn((data: any) => [
+  convertCollectedDataToGSData: jest.fn((data: CollectedDiscussionData) => [
     { key: 'test-key', value: JSON.stringify(data) },
   ]),
   receivedExpectedData: jest.fn(() => true),
@@ -351,11 +353,9 @@ describe('step-process-pure-functions', () => {
     });
 
     it('should replace stored data in promptText, responseFormat, and customSystemRole', async () => {
-      const {
-        replaceStoredDataInString,
-      } = require('../../../components/discussion-stage-builder/helpers');
-      (replaceStoredDataInString as jest.Mock).mockImplementation(
-        (str: string, data: any) => {
+      (helpers.replaceStoredDataInString as jest.Mock).mockImplementation(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (str: string, data: Record<string, any>) => {
           if (str.includes('{{userName}}')) {
             return str.replace('{{userName}}', data.userName);
           }
@@ -387,25 +387,22 @@ describe('step-process-pure-functions', () => {
         'player1'
       );
 
-      expect(replaceStoredDataInString).toHaveBeenCalledWith(
+      expect(helpers.replaceStoredDataInString).toHaveBeenCalledWith(
         'Hello {{userName}}',
         { userName: 'John' }
       );
-      expect(replaceStoredDataInString).toHaveBeenCalledWith(
+      expect(helpers.replaceStoredDataInString).toHaveBeenCalledWith(
         'Format for {{userName}}',
         { userName: 'John' }
       );
-      expect(replaceStoredDataInString).toHaveBeenCalledWith(
+      expect(helpers.replaceStoredDataInString).toHaveBeenCalledWith(
         'You are helping {{userName}}',
         { userName: 'John' }
       );
     });
 
     it('should update player state data with JSON response data', async () => {
-      const {
-        convertCollectedDataToGSData,
-      } = require('../../../components/discussion-stage-builder/helpers');
-      (convertCollectedDataToGSData as jest.Mock).mockReturnValue([
+      (helpers.convertCollectedDataToGSData as jest.Mock).mockReturnValue([
         { key: 'playerScore', value: '100' },
       ]);
 
@@ -432,7 +429,9 @@ describe('step-process-pure-functions', () => {
         'player1'
       );
 
-      expect(convertCollectedDataToGSData).toHaveBeenCalledWith({ score: 100 });
+      expect(helpers.convertCollectedDataToGSData).toHaveBeenCalledWith({
+        score: 100,
+      });
       const player1Data = result.playerStateData.find(
         (p) => p.player === 'player1'
       );
@@ -443,11 +442,8 @@ describe('step-process-pure-functions', () => {
     });
 
     it('should include jsonResponseData in response format when provided', async () => {
-      const {
-        recursivelyConvertExpectedDataToAiPromptString,
-      } = require('../../../components/discussion-stage-builder/helpers');
       (
-        recursivelyConvertExpectedDataToAiPromptString as jest.Mock
+        helpers.recursivelyConvertExpectedDataToAiPromptString as jest.Mock
       ).mockReturnValue('\nExpected: { "name": "string", "age": "number" }');
 
       const gameData = createBaseGameData();
@@ -487,7 +483,9 @@ describe('step-process-pure-functions', () => {
         'player1'
       );
 
-      expect(recursivelyConvertExpectedDataToAiPromptString).toHaveBeenCalled();
+      expect(
+        helpers.recursivelyConvertExpectedDataToAiPromptString
+      ).toHaveBeenCalled();
       const callArgs = mockExecutePrompt.mock.calls[0][0];
       expect(callArgs.responseFormat).toContain('Return user data as JSON:');
       expect(callArgs.responseFormat).toContain(
@@ -521,10 +519,7 @@ describe('step-process-pure-functions', () => {
     });
 
     it('should throw error when JSON response does not match expected data structure', async () => {
-      const {
-        receivedExpectedData,
-      } = require('../../../components/discussion-stage-builder/helpers');
-      (receivedExpectedData as jest.Mock).mockReturnValue(false);
+      (helpers.receivedExpectedData as jest.Mock).mockReturnValue(false);
 
       const gameData = createBaseGameData();
       gameData.globalStateData.discussionDataStringified = JSON.stringify({});

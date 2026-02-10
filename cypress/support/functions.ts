@@ -10,8 +10,8 @@ import { fetchRoomsResponse } from "../fixtures/fetch-rooms";
 import { fetchDiscussionStagesResponse } from "../fixtures/fetch-discussion-stages";
 import { fetchInstructorDataHydrationResponse, fetchStudentDataHydrationResponse } from "../fixtures/fetch-educational-data-hydration";
 import { refreshAccessTokenResponse } from "../fixtures/refresh-access-token";
-import { EducationalRole, UserRole } from "../fixtures/types";
 import { asyncStartRequestRes } from "../fixtures/llm-requests/async-start-request";
+import { EducationalRole, UserRole } from "../../src/store/slices/player/types";
 
 interface StaticResponse {
   /**
