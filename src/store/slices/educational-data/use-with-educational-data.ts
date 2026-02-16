@@ -66,7 +66,7 @@ export interface UseWithEducationalData {
     gameName: string,
     classId?: string
   ) => Promise<Room>;
-  pingGameRoomProcess: (gameRoomId: string, sessionId: string) => Promise<Room>;
+  pingGameRoomProcess: (gameRoomId: string) => Promise<Room>;
   ownerIsPresent: boolean;
   room: Room | undefined;
   updateMyRoomGameStateData: (gameStateData: GameStateData) => Promise<Room>;

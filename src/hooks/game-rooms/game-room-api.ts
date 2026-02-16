@@ -37,7 +37,7 @@ export async function createNewGameRoom(
       },
     },
     {
-      dataPath: 'createNewRoom',
+      dataPath: 'createNewGameRoom',
       accessToken: accessToken || undefined,
     }
   );

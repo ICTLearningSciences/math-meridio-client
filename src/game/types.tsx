@@ -26,7 +26,7 @@ export interface Game {
   showSimulation: (game: Game) => JSX.Element;
   showPlayerStrategy: (
     player: Player,
-    playerStateData: GameStateData
+    playersGameStateData: GameStateData
   ) => JSX.Element;
   showResult: (uiGameData: GameData) => JSX.Element;
 }
