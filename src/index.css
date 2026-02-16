@@ -1,11 +1,13 @@
 @font-face {
-  font-family: "Caprasimo";   /*Can be any text*/
+  font-family: "Caprasimo";
+  /*Can be any text*/
   src: local("Caprasimo-Regular"),
     url("./fonts/Caprasimo-Regular.ttf") format("truetype");
 }
 
 @font-face {
-  font-family: "SigmarOne";   /*Can be any text*/
+  font-family: "SigmarOne";
+  /*Can be any text*/
   src: local("SigmarOne-Regular"),
     url("./fonts/SigmarOne-Regular.ttf") format("truetype");
 }
@@ -47,10 +49,20 @@ body {
   display: flex;
   flex-direction: row;
 }
+.row.spacing {
+  &>*:not(:last-child) {
+    margin-right: 10px;
+  }
+}
 
 .column {
   display: flex;
   flex-direction: column;
+}
+.column.spacing {
+  & > *:not(:last-child) {
+    margin-bottom: 10px;
+  }
 }
 
 .center-div {
@@ -75,4 +87,25 @@ body {
   border-width: 1px;
   padding: 20px;
   box-shadow: -5px 5px 10px 0px rgba(0, 0, 0, 0.75);
+}
+
+.button.outlined {
+  display: flex;
+  text-transform: none;
+  font-weight: 700px;
+  font-size: 12px;
+  border-radius: 32px;
+  /* border-color: #1096ce; */
+  /* color: #1096ce; */
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.button.contained {
+  display: flex;
+  text-transform: none;
+  font-weight: 700px;
+  font-size: 12px;
+  border-radius: 32px;
+  /* background-color: #65AFE9; */
+  color: white;
 }

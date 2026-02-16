@@ -21,6 +21,7 @@ export interface Classroom {
   teacherId: string;
   inviteCodes: InviteCode[];
   createdAt: Date;
+  startedAt?: Date;
   archivedAt?: Date;
 }
 
@@ -49,6 +50,7 @@ export enum ClassMembershipStatus {
 export interface ClassMembership {
   classId: string;
   userId: string;
+  groupId: number;
   status: ClassMembershipStatus;
 }
 

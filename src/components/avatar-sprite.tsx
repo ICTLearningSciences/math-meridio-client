@@ -23,7 +23,8 @@ function AvatarSprite(props: {
         minHeight: 40,
         minWidth: 40,
         borderRadius: 40,
-        border: '3px solid lightseagreen',
+        padding: 3,
+        border: '1px solid rgb(114, 20, 201)',
         backgroundColor: props.bgColor || 'white',
       }}
     >
@@ -38,8 +39,8 @@ function AvatarSprite(props: {
               }/${a.id}.png)`,
               position: 'absolute',
               transform: 'scale(1.5)',
-              left: 4,
-              top: 0,
+              left: 7,
+              top: 1,
               width: 32,
               height: 40,
               backgroundPosition: `top left -${

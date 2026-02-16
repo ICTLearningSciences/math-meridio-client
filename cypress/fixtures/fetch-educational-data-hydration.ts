@@ -20,16 +20,18 @@ export function defaultClassroomData(classroomOwnerId: string, classroomId: stri
         name: "My Classroom",
         description: "My Classroom Description",
         createdAt: new Date(),
+        startedAt: undefined,
         archivedAt: undefined,
         teacherId: classroomOwnerId,
         inviteCodes: [],
     }
 }
 
-export function defaultClassroomMembershipData(classroomId: string, userId: string): ClassMembership {
+export function defaultClassroomMembershipData(classroomId: string, userId: string, groupId: number): ClassMembership {
     return {
         classId: classroomId,
         userId: userId,
+        groupId: groupId,
         status: ClassMembershipStatus.MEMBER,
     }
 }

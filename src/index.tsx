@@ -6,6 +6,7 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 import App from './App';
 import reportWebVitals from './reportWebVitals';
@@ -14,13 +15,26 @@ import './fonts/Caprasimo-Regular.ttf';
 import './fonts/SigmarOne-Regular.ttf';
 import './index.css';
 
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: 'rgb(114, 20, 201)',
+    },
+    secondary: {
+      main: 'rgb(118, 118, 118)',
+    },
+  },
+});
+
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
+  <ThemeProvider theme={theme}>
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  </ThemeProvider>
 );
 
 // If you want to start measuring performance in your app, pass a function
