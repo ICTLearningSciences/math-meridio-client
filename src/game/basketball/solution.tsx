@@ -45,7 +45,7 @@ export function SolutionComponent(props: {
   const { zoomIn, zoomOut } = useControls();
 
   const playerGameStateDataRecord: GameStateData =
-    uiGameData.playerStateData[player._id];
+    uiGameData.playersGameStateData[player._id];
   const globalGameStateDataRecord: GameStateData =
     uiGameData.globalStateData.gameStateData;
   const [understandsPoints, setUnderstandsPoints] = React.useState(false);
@@ -77,7 +77,7 @@ export function SolutionComponent(props: {
   }, [width, height]);
 
   React.useEffect(() => {
-    const curPlayerStateData = uiGameData.playerStateData[player._id];
+    const curPlayerStateData = uiGameData.playersGameStateData[player._id];
     const globalGameStateData = uiGameData.globalStateData.gameStateData;
     !understandsPoints &&
       setUnderstandsPoints(
@@ -115,7 +115,7 @@ export function SolutionComponent(props: {
           'true'
         )
       );
-  }, [uiGameData.globalStateData.gameStateData, uiGameData.playerStateData]);
+  }, [uiGameData.globalStateData.gameStateData, uiGameData.playersGameStateData]);
 
   function Variable(props: {
     dataKey: string;

@@ -168,10 +168,9 @@ export const fullRoomQueryData = `
       curStageId
       curStepId
       roomOwnerId
-      discussionDataStringified
       gameStateData
     }
-    playerStateData
+    playersGameStateData
   }
 `;
 

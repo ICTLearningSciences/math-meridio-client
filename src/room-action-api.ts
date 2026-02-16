@@ -109,52 +109,6 @@ export async function fetchRoomActions(
   return data.edges.map((edge) => edge.node);
 }
 
-const syncRoomDataMutation = `
-  mutation SyncRoomData($roomId: ID!, $gameData: GameDataInputType!) {
-    syncRoomData(roomId: $roomId, gameData: $gameData) {
-      _id
-      name
-      gameData {
-        gameId
-        players {
-          _id
-        }
-        chat {
-          message
-        }
-        globalStateData {
-          curStageId
-          curStepId
-          roomOwnerId
-        }
-        playerStateData {
-          player
-          animation
-        }
-      }
-    }
-  }
-`;
-
-export async function syncRoomData(
-  roomId: string,
-  gameData: GameData
-): Promise<void> {
-  const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
-
-  const gqlPreparedGameData: GameDataGQL = {
-    ...gameData,
-    players: gameData.players.map((p) => p._id),
-  };
-  return execGql<void>(
-    {
-      query: syncRoomDataMutation,
-      variables: { roomId, gameData: gqlPreparedGameData },
-    },
-    { accessToken: accessToken || undefined }
-  );
-}
-
 export const heartbeatQueryData = `
   roomId
   userId

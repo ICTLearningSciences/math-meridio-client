@@ -32,11 +32,10 @@ import Popup from '../popup';
 import { useWithConfig } from '../../store/slices/config/use-with-config';
 import { useWithWindow } from '../../hooks/use-with-window';
 import EventSystem from '../../game/event-system';
-import { GameData, PlayerStateData } from '../../store/slices/game/types';
+import { GameData } from '../../store/slices/game/types';
 import { Game } from '../../game/types';
 
 import '../../layout.css';
-import { Player } from '../../store/slices/player/types';
 import { UseWithEducationalData } from '../../store/slices/educational-data/use-with-educational-data';
 import { useAppSelector } from '../../store/hooks';
 
@@ -82,17 +81,16 @@ function Space(props: {
 
 function SimulationSpace(props: {
   game: Game;
-  player: Player;
-  uiTriggerLocalGameData: GameData;
+  gameStateData: GameData;
   expanded?: boolean;
   onExpand: () => void;
 }): JSX.Element {
-  const { game, uiTriggerLocalGameData } = props;
+  const { game, gameStateData } = props;
   const { isMuted, toggleMuted } = useWithConfig();
-  const [curSimulation, setSimulation] = React.useState<PlayerStateData>();
+  const [curSimulation, setSimulation] = React.useState<{player: string}>();
 
   React.useEffect(() => {
-    EventSystem.on('simulate', (sim: PlayerStateData) => setSimulation(sim));
+    EventSystem.on('simulate', (sim: {player: string}) => setSimulation(sim));
   }, []);
 
   return (
@@ -112,9 +110,9 @@ function SimulationSpace(props: {
           value={curSimulation?.player}
           label="Strategy"
         >
-          {Object.entries(uiTriggerLocalGameData.playerStateData).map(
+          {Object.entries(gameStateData.playersGameStateData).map(
             ([playerId, psd]) => {
-              const player = uiTriggerLocalGameData.players.find(
+              const player = gameStateData.players.find(
                 (p) => p._id === playerId
               );
               if (!player) return null;
@@ -438,8 +436,7 @@ function GamePage(): JSX.Element {
         >
           <SimulationSpace
             game={curGame}
-            player={player}
-            uiTriggerLocalGameData={room.gameData}
+            gameStateData={room.gameData}
             expanded={expanded === 2}
             onExpand={() => onExpand(2)}
           />

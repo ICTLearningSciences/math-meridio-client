@@ -36,10 +36,9 @@ export function defaultNbaStarterRoomData(classId: string, user: Player): Room {
                 "curStageId": "collect-variables",
                 "curStepId": "d8741382-e1a9-457f-898e-e3062c23832a",
                 "roomOwnerId": user._id,
-                "discussionDataStringified": "",
                 "gameStateData": {}
             },
-            "playerStateData": {
+            "playersGameStateData": {
                 [user._id]: {}
             }
         }

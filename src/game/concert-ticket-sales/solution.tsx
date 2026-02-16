@@ -45,7 +45,7 @@ export function SolutionComponent(props: {
   const { zoomIn, zoomOut } = useControls();
 
   const playerGameStateDataRecord: GameStateData =
-    uiGameData.playerStateData[player._id];
+    uiGameData.playersGameStateData[player._id];
   const globalGameStateDataRecord: GameStateData =
     uiGameData.globalStateData.gameStateData;
 
@@ -72,7 +72,7 @@ export function SolutionComponent(props: {
   }, []);
 
   React.useEffect(() => {
-    const curPlayerStateData = uiGameData.playerStateData[player._id];
+    const curPlayerStateData = uiGameData.playersGameStateData[player._id];
     const globalGameStateData = uiGameData.globalStateData.gameStateData;
     !understandsTicketPrices &&
       setUnderstandsTicketPrices(

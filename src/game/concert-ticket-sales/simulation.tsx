@@ -27,10 +27,10 @@ import { Player } from '../../store/slices/player/types';
 import { Game } from '../types';
 
 export function PlayerStrategy(props: {
-  playerStateData: PlayerStateData;
+  playersGameStateData: PlayerStateData;
   player: Player;
 }): JSX.Element {
-  const psd = props.playerStateData[props.player._id];
+  const psd = props.playersGameStateData[props.player._id];
   const vipTicketsUpForSale = psd[VIP_TICKET_PERCENT_KEY] || 0;
   const reservedTicketsUpForSale = psd[RESERVED_TICKET_PERCENT_KEY] || 0;
   const generalAdmissionTicketsUpForSale =

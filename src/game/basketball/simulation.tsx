@@ -27,10 +27,10 @@ import { Game } from '../types';
 import { Player } from '../../store/slices/player/types';
 
 export function PlayerStrategy(props: {
-  playerStateData: PlayerStateData;
+  playersGameStateData: PlayerStateData;
   player: Player;
 }): JSX.Element {
-  const psd = props.playerStateData[props.player._id];
+  const psd = props.playersGameStateData[props.player._id];
   const insideShots = psd[INSIDE_SHOT_PERCENT] || 0;
   const midShots = psd[MID_SHOT_PERCENT] || 0;
   const outsideShots = psd[OUTSIDE_SHOT_PERCENT] || 0;

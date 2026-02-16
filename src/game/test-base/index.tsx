@@ -94,8 +94,8 @@ const BaseTestGame: Game = {
       />
     );
   },
-  showPlayerStrategy: (player: Player, playerStateData: PlayerStateData) => {
-    return <PlayerStrategy player={player} playerStateData={playerStateData} />;
+  showPlayerStrategy: (player: Player, playersGameStateData: PlayerStateData) => {
+    return <PlayerStrategy player={player} playersGameStateData={playersGameStateData} />;
   },
   showSimulation: (game: Game) => {
     return <SimulationComponent game={game} />;

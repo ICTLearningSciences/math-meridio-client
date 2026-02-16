@@ -19,13 +19,14 @@ import {
 } from '../../store/slices/educational-data/use-with-educational-data';
 import GamePage from '../game/game-page';
 import withAuthorizationOnly from '../../wrap-with-authorization-only';
-
+import { useWithPollActiveRoom } from '../../store/slices/educational-data/use-with-poll-active-room';
 function RoomViewPage(): JSX.Element {
   const { roomId } = useParams<{ roomId: string }>();
-  const { educationalData } = useWithEducationalData();
-  const gameManagement = useOutletContext<UseWithEducationalData>();
+  useWithPollActiveRoom();
 
-  const room = educationalData.rooms.find((r) => r._id === roomId);
+  const educationalDataContext = useOutletContext<UseWithEducationalData>();
+
+  const room = educationalDataContext.educationalData.rooms.find((r) => r._id === roomId);
 
   if (!room) {
     return (
@@ -38,7 +39,7 @@ function RoomViewPage(): JSX.Element {
     );
   }
 
-  return <GamePage gameManagementContext={gameManagement} />;
+  return <GamePage />;
 }
 
 export default withAuthorizationOnly(RoomViewPage);

@@ -46,7 +46,7 @@ export interface GameData {
   players: Player[];
   chat: ChatMessage[];
   globalStateData: GlobalStateData;
-  playerStateData: PlayerStateData;
+  playersGameStateData: PlayerStateData;
 }
 
 export interface GameDataGQL extends Omit<GameData, 'players'> {
@@ -62,6 +62,5 @@ export interface GlobalStateData {
   curStageId: string;
   curStepId: string;
   roomOwnerId: string;
-  discussionDataStringified: string;
   gameStateData: GameStateData;
 }
