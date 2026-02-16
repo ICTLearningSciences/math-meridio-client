@@ -29,7 +29,7 @@ export function Header(props: { useLogin: UseWithLogin }) {
 
   function homeButtonClick() {
     if (roomId) {
-      leaveGameRoom(roomId, player?._id || '');
+      leaveGameRoom(roomId);
     }
     navigate('/classes');
   }
@@ -85,7 +85,7 @@ export function Header(props: { useLogin: UseWithLogin }) {
               marginRight: 5,
               padding: 0,
             }}
-            onClick={() => leaveGameRoom(room?._id || '', player?._id || '')}
+            onClick={() => leaveGameRoom(room?._id || '')}
           >
             Leave Room
           </Button>

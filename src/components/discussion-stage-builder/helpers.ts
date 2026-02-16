@@ -213,17 +213,13 @@ export function convertCollectedDataToGSData(
 }
 
 export function checkGameAndPlayerStateForValue(
-  globalGameStateData: GameStateData[],
-  playerGameStateData: GameStateData[],
+  globalGameStateData: GameStateData,
+  playerGameStateData: GameStateData,
   key: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   value: any
 ) {
-  const gameDataValue = globalGameStateData.find(
-    (data) => data.key === key
-  )?.value;
-  const playerDataValue = playerGameStateData.find(
-    (data) => data.key === key
-  )?.value;
+  const gameDataValue = globalGameStateData[key];
+  const playerDataValue = playerGameStateData[key];
   return playerDataValue === value || gameDataValue === value;
 }

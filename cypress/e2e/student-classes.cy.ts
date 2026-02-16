@@ -9,7 +9,6 @@ import { EducationalRole } from "../../src/store/slices/player/types";
 import { joinClassroomResponse } from "../fixtures/join-class";
 import { defaultUser } from "../fixtures/refresh-access-token";
 import { createAndJoinRoomResponse, defaultNbaStarterRoomData } from "../fixtures/create-and-join-room";
-import { updateRoomResponse } from "../fixtures/update-room";
 import { fetchRoomResponse } from "../fixtures/fetch-room";
 
 describe("Student classes screen", () => {
@@ -49,7 +48,6 @@ describe("Student classes screen", () => {
         gqlQueries: [
           mockGQL('JoinClassroom', joinClassroomResponse(user, "test-class-id")),
           mockGQL('CreateAndJoinRoom', createAndJoinRoomResponse(defaultRoom)),
-          mockGQL('UpdateRoom', updateRoomResponse(defaultRoom)),
           mockGQL('FetchRoom', fetchRoomResponse(defaultRoom)),
         ]
       });

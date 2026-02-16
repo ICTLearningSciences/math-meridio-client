@@ -4,7 +4,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { TransformComponent, useControls } from 'react-zoom-pan-pinch';
 import { Card, Typography } from '@mui/material';
 
@@ -44,22 +44,10 @@ export function SolutionComponent(props: {
   const { classes } = useStyles();
   const { zoomIn, zoomOut } = useControls();
 
-  const playerGameStateDataRecord: Record<string, string> | undefined =
-    useMemo(() => {
-      return uiGameData.playerStateData
-        .find((p) => p.player === player._id)
-        ?.gameStateData.reduce((acc, cur) => {
-          acc[cur.key] = cur.value;
-          return acc;
-        }, {} as Record<string, string>);
-    }, [uiGameData.playerStateData, player._id]);
-  const globalGameStateDataRecord: Record<string, string> | undefined =
-    useMemo(() => {
-      return uiGameData.globalStateData.gameStateData.reduce((acc, cur) => {
-        acc[cur.key] = cur.value;
-        return acc;
-      }, {} as Record<string, string>);
-    }, [uiGameData.globalStateData.gameStateData]);
+  const playerGameStateDataRecord: GameStateData =
+    uiGameData.playerStateData[player._id];
+  const globalGameStateDataRecord: GameStateData =
+    uiGameData.globalStateData.gameStateData;
 
   const [understandsTicketPrices, setUnderstandsTicketPrices] =
     React.useState(false);
@@ -84,15 +72,13 @@ export function SolutionComponent(props: {
   }, []);
 
   React.useEffect(() => {
-    const curPlayerStateData = uiGameData.playerStateData.find(
-      (p) => p.player === player._id
-    );
+    const curPlayerStateData = uiGameData.playerStateData[player._id];
     const globalGameStateData = uiGameData.globalStateData.gameStateData;
     !understandsTicketPrices &&
       setUnderstandsTicketPrices(
         checkGameAndPlayerStateForValue(
           globalGameStateData,
-          curPlayerStateData?.gameStateData || [],
+          curPlayerStateData || {},
           UNDERSTANDS_TICKET_PRICES_KEY,
           'true'
         )
@@ -101,7 +87,7 @@ export function SolutionComponent(props: {
       setUnderstandsSellThroughRates(
         checkGameAndPlayerStateForValue(
           globalGameStateData,
-          curPlayerStateData?.gameStateData || [],
+          curPlayerStateData || {},
           UNDERSTANDS_CONVERSION_RATE_KEY,
           'true'
         )
@@ -110,7 +96,7 @@ export function SolutionComponent(props: {
       setUnderstandsMultiplication(
         checkGameAndPlayerStateForValue(
           globalGameStateData,
-          curPlayerStateData?.gameStateData || [],
+          curPlayerStateData || {},
           UNDERSTANDS_MULTIPLICATION_KEY,
           'true'
         )
@@ -119,14 +105,14 @@ export function SolutionComponent(props: {
       setUnderstandsAddition(
         checkGameAndPlayerStateForValue(
           globalGameStateData,
-          curPlayerStateData?.gameStateData || [],
+          curPlayerStateData || {},
           UNDERSTANDS_ADDITION_KEY,
           'true'
         )
       );
   }, [
     uiGameData.globalStateData.gameStateData,
-    playerGameStateDataRecord?.gameStateData || [],
+    playerGameStateDataRecord || {},
   ]);
 
   React.useEffect(() => {

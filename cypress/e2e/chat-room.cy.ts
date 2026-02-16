@@ -8,7 +8,6 @@ import { cyMockDefault, cyMockOpenAiCall, mockGQL } from "../support/functions";
 import { EducationalRole } from "../../src/store/slices/player/types";
 import { defaultNbaStarterRoomData, createAndJoinRoomResponse } from "../fixtures/create-and-join-room";
 import { joinClassroomResponse } from "../fixtures/join-class";
-import { updateRoomResponse } from "../fixtures/update-room";
 import { fetchRoomResponse } from "../fixtures/fetch-room";
 import { defaultUser } from "../fixtures/refresh-access-token";
 import { addMessageToRoom, sendMessageInGameRoomResponse } from "../fixtures/send-message-in-game-room";
@@ -23,7 +22,7 @@ describe("Chat room screen", () => {
     it("Student can send a message in a room and get a response from the system", ()=>{
         const starterNbaRoom = defaultNbaStarterRoomData("test-class-id", user);
         const nbaRoomWithUserResponse = addMessageToRoom(starterNbaRoom, {
-          id: uuidv4(),
+          messageId: uuidv4(),
           sender: SenderType.PLAYER,
           message: "Test Message",
           senderId: user._id,
@@ -51,7 +50,7 @@ describe("Chat room screen", () => {
                 }
             }
         }, {
-            id: uuidv4(),
+            messageId: uuidv4(),
             sender: SenderType.SYSTEM,
             message: "It looks like you did not provide a proper response to my question",
             sessionId: "test-session-id",
@@ -63,9 +62,6 @@ describe("Chat room screen", () => {
             gqlQueries: [
               mockGQL('JoinClassroom', joinClassroomResponse(user, "test-class-id")),
               mockGQL('CreateAndJoinRoom', createAndJoinRoomResponse(starterNbaRoom)),
-              mockGQL('UpdateRoom', [
-                updateRoomResponse(starterNbaRoom),
-            ]),
               mockGQL('FetchRoom', [
                 fetchRoomResponse(starterNbaRoom),
                 fetchRoomResponse(nbaRoomWithUserResponse),
@@ -104,7 +100,7 @@ describe("Chat room screen", () => {
     it("Other student can send a message in a room and get responses from the system", ()=>{
         const starterNbaRoom = defaultNbaStarterRoomData("test-class-id", user);
         const nbaRoomWithUserResponse = addMessageToRoom(starterNbaRoom, {
-          id: uuidv4(),
+          messageId: uuidv4(),
           sender: SenderType.PLAYER,
           message: "Other User Message",
           senderId: "other-student-id",
@@ -132,7 +128,7 @@ describe("Chat room screen", () => {
                 }
             }
         }, {
-            id: uuidv4(),
+            messageId: uuidv4(),
             sender: SenderType.SYSTEM,
             message: "It looks like you did not provide a proper response to my question",
             sessionId: "test-session-id",
@@ -144,9 +140,6 @@ describe("Chat room screen", () => {
             gqlQueries: [
               mockGQL('JoinClassroom', joinClassroomResponse(user, "test-class-id")),
               mockGQL('CreateAndJoinRoom', createAndJoinRoomResponse(starterNbaRoom)),
-              mockGQL('UpdateRoom', [
-                updateRoomResponse(starterNbaRoom),
-            ]),
               mockGQL('FetchRoom', [
                 fetchRoomResponse(starterNbaRoom),
                 fetchRoomResponse(nbaRoomWithUserResponse),

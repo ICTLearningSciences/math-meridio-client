@@ -17,7 +17,6 @@ import { userDataQuery } from '../player/api';
 import { fullRoomQueryData } from '../../../api';
 import { requireLocalStorageGet as localStorageGet } from '../../local-storage';
 import { ACCESS_TOKEN_KEY } from '../../local-storage';
-import { Room } from '../game/types';
 
 export async function createClassroom(): Promise<Classroom> {
   const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
@@ -287,6 +286,10 @@ export async function fetchInstructorDataHydration(): Promise<FetchEducationalDa
         classMemberships {
             ${classMembershipDataQuery}
         }
+        gamesList {
+            id
+            name
+        }
     }
   }`,
     },
@@ -323,35 +326,4 @@ export async function fetchStudentDataHydration(): Promise<FetchEducationalDataH
       accessToken: accessToken,
     }
   );
-}
-
-const createNewRoomMutation = `
-  mutation CreateNewRoom($gameId: String!, $gameName: String!, $classId: String) {
-    createNewRoom(gameId: $gameId, gameName: $gameName, classId: $classId) {
-      ${fullRoomQueryData}
-    }
-  }
-`;
-
-export async function createNewGameRoom(
-  gameId: string,
-  gameName: string,
-  classId?: string
-): Promise<Room> {
-  const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
-  const data = await execGql<Room>(
-    {
-      query: createNewRoomMutation,
-      variables: {
-        gameId,
-        gameName,
-        classId,
-      },
-    },
-    {
-      dataPath: 'createNewRoom',
-      accessToken: accessToken || undefined,
-    }
-  );
-  return data;
 }

@@ -5,7 +5,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import { useAppDispatch, useAppSelector } from '../../hooks';
-import { GameData, Room } from '../game/types';
+import { GameStateData, Room } from '../game/types';
 import * as educationalDataActions from './index';
 import {
   ClassMembership,
@@ -13,10 +13,79 @@ import {
   FetchEducationalDataHydrationResponse,
   JoinClassroomResponse,
 } from './types';
+import * as gameRoomApi from '../../../hooks/game-rooms/game-room-api';
+import { useParams } from 'react-router-dom';
+import { useMemo } from 'react';
+import { Game, GAMES } from '../../../game/types';
 
-export function useWithEducationalData() {
+export interface UseWithEducationalData {
+  educationalData: educationalDataActions.EducationalDataStateData;
+  fetchInstructorDataHydration: () => Promise<FetchEducationalDataHydrationResponse>;
+  fetchStudentDataHydration: () => Promise<FetchEducationalDataHydrationResponse>;
+  createClassroom: () => Promise<Classroom>;
+  createNewClassInviteCode: (
+    classId: string,
+    validUntil: Date,
+    numUses: number
+  ) => Promise<Classroom>;
+  revokeClassInviteCode: (
+    classId: string,
+    classroomCode: string
+  ) => Promise<Classroom>;
+  joinClassroom: (inviteCode: string) => Promise<JoinClassroomResponse>;
+  leaveClassroom: (classId: string) => Promise<ClassMembership>;
+  removeStudentFromClass: (
+    studentId: string,
+    classId: string
+  ) => Promise<ClassMembership>;
+  blockStudentFromClass: (
+    studentId: string,
+    classId: string
+  ) => Promise<ClassMembership>;
+  unblockStudentFromClass: (
+    studentId: string,
+    classId: string
+  ) => Promise<ClassMembership>;
+  adjustClassroomArchiveStatus: (
+    classId: string,
+    setArchived: boolean
+  ) => Promise<Classroom>;
+  updateClassNameDescription: (
+    classId: string,
+    name: string,
+    description: string
+  ) => Promise<Classroom>;
+  joinGameRoom: (gameRoomId: string) => Promise<Room>;
+  leaveGameRoom: (gameRoomId: string) => Promise<Room>;
+  deleteGameRoom: (gameRoomId: string) => Promise<Room>;
+  renameGameRoom: (gameRoomId: string, name: string) => Promise<Room>;
+  fetchRoom: (roomId: string) => Promise<Room>;
+  fetchRooms: (game: string) => Promise<Room[]>;
+  createNewGameRoom: (
+    gameId: string,
+    gameName: string,
+    classId?: string
+  ) => Promise<Room>;
+  pingGameRoomProcess: (gameRoomId: string, sessionId: string) => Promise<Room>;
+  ownerIsPresent: boolean;
+  room: Room | undefined;
+  updateMyRoomGameStateData: (gameStateData: GameStateData) => Promise<Room>;
+  sendMessageToGameRoom: (message: string) => Promise<Room>;
+  curGame: Game | undefined;
+}
+
+export function useWithEducationalData(): UseWithEducationalData {
   const dispatch = useAppDispatch();
   const state = useAppSelector((state) => state.educationalData);
+  const { roomId } = useParams<{ roomId: string }>();
+  const { player } = useAppSelector((state) => state.playerData);
+  const room = state.rooms.find((r) => r._id === roomId);
+  const ownerIsPresent = room?.gameData.players.some(
+    (p) => p._id === player?._id
+  );
+  const curGame = useMemo(() => {
+    return GAMES.find((g) => g.id === room?.gameData.gameId);
+  }, [room, state.gamesList]);
 
   async function fetchInstructorDataHydration(): Promise<FetchEducationalDataHydrationResponse> {
     return await dispatch(
@@ -124,21 +193,15 @@ export function useWithEducationalData() {
     ).unwrap();
   }
 
-  async function joinGameRoom(
-    gameRoomId: string,
-    playerId: string
-  ): Promise<Room> {
+  async function joinGameRoom(gameRoomId: string): Promise<Room> {
     return await dispatch(
-      educationalDataActions.joinGameRoom({ gameRoomId, playerId })
+      educationalDataActions.joinGameRoom({ gameRoomId })
     ).unwrap();
   }
 
-  async function leaveGameRoom(
-    gameRoomId: string,
-    playerId: string
-  ): Promise<Room> {
+  async function leaveGameRoom(gameRoomId: string): Promise<Room> {
     return await dispatch(
-      educationalDataActions.leaveGameRoom({ gameRoomId, playerId })
+      educationalDataActions.leaveGameRoom({ gameRoomId })
     ).unwrap();
   }
 
@@ -154,15 +217,6 @@ export function useWithEducationalData() {
   ): Promise<Room> {
     return await dispatch(
       educationalDataActions.renameGameRoom({ gameRoomId, name })
-    ).unwrap();
-  }
-
-  async function updateGameRoomGameData(
-    gameRoomId: string,
-    gameData: Partial<GameData>
-  ): Promise<Room> {
-    return await dispatch(
-      educationalDataActions.updateGameRoomGameData({ gameRoomId, gameData })
     ).unwrap();
   }
 
@@ -186,6 +240,37 @@ export function useWithEducationalData() {
     ).unwrap();
   }
 
+  async function pingGameRoomProcess(gameRoomId: string): Promise<Room> {
+    return await gameRoomApi.pingGameRoomProcess(gameRoomId);
+  }
+
+  async function sendMessageToGameRoom(message: string): Promise<Room> {
+    if (!roomId) {
+      throw new Error('No game room found for message');
+    }
+    return await dispatch(
+      educationalDataActions.sendMessageToGameRoom({ roomId, message })
+    ).unwrap();
+  }
+
+  async function updateMyRoomGameStateData(
+    gameStateData: GameStateData
+  ): Promise<Room> {
+    if (!roomId) {
+      throw new Error('Room ID is required to update player game state data');
+    }
+    if (!player?._id) {
+      throw new Error('Player ID is required to update player game state data');
+    }
+    return await dispatch(
+      educationalDataActions.updatePlayerGameStateData({
+        roomId,
+        playerId: player?._id,
+        gameStateData,
+      })
+    ).unwrap();
+  }
+
   return {
     fetchInstructorDataHydration,
     fetchStudentDataHydration,
@@ -203,10 +288,15 @@ export function useWithEducationalData() {
     leaveGameRoom,
     deleteGameRoom,
     renameGameRoom,
-    updateGameRoomGameData,
     fetchRoom,
     fetchRooms,
     createNewGameRoom,
+    pingGameRoomProcess,
+    sendMessageToGameRoom,
+    updateMyRoomGameStateData,
     educationalData: state,
+    ownerIsPresent: ownerIsPresent || false,
+    room,
+    curGame,
   };
 }

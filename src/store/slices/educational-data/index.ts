@@ -10,19 +10,27 @@ import * as mainApi from '../../../api';
 import { LoadStatus, LoadingState } from '../../../types';
 import { ClassMembership, Classroom } from './types';
 import { Player } from '../player/types';
-import { GameData, Room } from '../game/types';
+import { GameStateData, Room } from '../game/types';
 import {
   addOrUpdateClass,
   addOrUpdateClassMembership,
   addOrUpdateGameRoom,
   removeGameRoom,
 } from './helpers';
+import * as gameRoomApi from '../../../hooks/game-rooms/game-room-api';
+
+export interface StaticGame {
+  id: string;
+  name: string;
+}
+
 export interface EducationalDataStateData {
   classes: Classroom[];
   rooms: Room[];
   students: Player[];
   classMemberships: ClassMembership[];
   hydrationLoadStatus: LoadingState;
+  gamesList: StaticGame[];
 }
 
 const initialState: EducationalDataStateData = {
@@ -31,6 +39,7 @@ const initialState: EducationalDataStateData = {
   students: [],
   classMemberships: [],
   hydrationLoadStatus: { status: LoadStatus.NONE },
+  gamesList: [],
 };
 
 /** Actions */
@@ -131,15 +140,15 @@ export const updateClassNameDescription = createAsyncThunk(
 
 export const joinGameRoom = createAsyncThunk(
   'educationalData/joinGameRoom',
-  async (args: { gameRoomId: string; playerId: string }): Promise<Room> => {
-    return await mainApi.joinRoom(args.playerId, args.gameRoomId);
+  async (args: { gameRoomId: string }): Promise<Room> => {
+    return await gameRoomApi.joinGameRoom(args.gameRoomId);
   }
 );
 
 export const leaveGameRoom = createAsyncThunk(
   'educationalData/leaveGameRoom',
-  async (args: { gameRoomId: string; playerId: string }): Promise<Room> => {
-    return await mainApi.leaveRoom(args.playerId, args.gameRoomId);
+  async (args: { gameRoomId: string }): Promise<Room> => {
+    return await gameRoomApi.leaveGameRoom(args.gameRoomId);
   }
 );
 
@@ -153,17 +162,7 @@ export const deleteGameRoom = createAsyncThunk(
 export const renameGameRoom = createAsyncThunk(
   'educationalData/renameGameRoom',
   async (args: { gameRoomId: string; name: string }): Promise<Room> => {
-    return await mainApi.renameRoom(args.name, args.gameRoomId);
-  }
-);
-
-export const updateGameRoomGameData = createAsyncThunk(
-  'educationalData/updateGameRoomGameData',
-  async (args: {
-    gameRoomId: string;
-    gameData: Partial<GameData>;
-  }): Promise<Room> => {
-    return await mainApi.updateRoom(args.gameRoomId, args.gameData);
+    return await mainApi.renameGameRoom(args.name, args.gameRoomId);
   }
 );
 
@@ -188,11 +187,33 @@ export const createNewGameRoom = createAsyncThunk(
     gameName: string;
     classId?: string;
   }): Promise<Room> => {
-    return await api.createNewGameRoom(
+    return await gameRoomApi.createNewGameRoom(
       args.gameId,
       args.gameName,
       args.classId
     );
+  }
+);
+
+export const updatePlayerGameStateData = createAsyncThunk(
+  'educationalData/updatePlayerGameStateData',
+  async (args: {
+    roomId: string;
+    playerId: string;
+    gameStateData: GameStateData;
+  }) => {
+    return await gameRoomApi.updatePlayerGameStateData(
+      args.roomId,
+      args.playerId,
+      args.gameStateData
+    );
+  }
+);
+
+export const sendMessageToGameRoom = createAsyncThunk(
+  'educationalData/sendMessageToGameRoom',
+  async (args: { roomId: string; message: string }) => {
+    return await gameRoomApi.sendMessageToGameRoom(args.roomId, args.message);
   }
 );
 
@@ -203,13 +224,13 @@ export const educationalDataSlice = createSlice({
   extraReducers: (builder) => {
     builder
 
-      .addCase(createNewGameRoom.fulfilled, (state, action) => {
+      .addCase(updatePlayerGameStateData.fulfilled, (state, action) => {
         addOrUpdateGameRoom(state, action.payload);
       })
 
-      // .addCase(updateGameRoomGameData.fulfilled, (state, action) => {
-      //   addOrUpdateGameRoom(state, action.payload);
-      // })
+      .addCase(createNewGameRoom.fulfilled, (state, action) => {
+        addOrUpdateGameRoom(state, action.payload);
+      })
 
       .addCase(fetchRoom.fulfilled, (state, action) => {
         addOrUpdateGameRoom(state, action.payload);
@@ -231,6 +252,10 @@ export const educationalDataSlice = createSlice({
         removeGameRoom(state, action.payload);
       })
 
+      .addCase(sendMessageToGameRoom.fulfilled, (state, action) => {
+        addOrUpdateGameRoom(state, action.payload);
+      })
+
       .addCase(fetchInstructorDataHydration.pending, (state) => {
         state.hydrationLoadStatus = {
           status: LoadStatus.IN_PROGRESS,
@@ -248,12 +273,14 @@ export const educationalDataSlice = createSlice({
         state.rooms = [];
         state.students = [];
         state.classMemberships = [];
+        state.gamesList = [];
       })
       .addCase(fetchInstructorDataHydration.fulfilled, (state, action) => {
         state.classes = action.payload.classes;
         state.rooms = action.payload.rooms;
         state.students = action.payload.students;
         state.classMemberships = action.payload.classMemberships;
+        state.gamesList = action.payload.gamesList;
         state.hydrationLoadStatus = {
           status: LoadStatus.DONE,
           endedAt: Date.now.toString(),
@@ -273,6 +300,7 @@ export const educationalDataSlice = createSlice({
         state.rooms = [];
         state.students = [];
         state.classMemberships = [];
+        state.gamesList = [];
         state.hydrationLoadStatus = {
           status: LoadStatus.FAILED,
           failedAt: Date.now.toString(),
@@ -284,6 +312,7 @@ export const educationalDataSlice = createSlice({
         state.rooms = action.payload.rooms;
         state.students = action.payload.students;
         state.classMemberships = action.payload.classMemberships;
+        state.gamesList = action.payload.gamesList;
         state.hydrationLoadStatus = {
           status: LoadStatus.DONE,
           endedAt: Date.now.toString(),

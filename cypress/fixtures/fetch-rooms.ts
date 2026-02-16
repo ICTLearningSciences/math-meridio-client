@@ -4,7 +4,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { Room } from "../../src/store/slices/game/types";
+import { Room, RoomPhase } from "../../src/store/slices/game/types";
 import { Player } from "../../src/store/slices/player/types";
 
 
@@ -23,8 +23,8 @@ export function freshRoomData(attendingRoomOwner: Player): Room {
         "_id": "698168d0d10bf6f91861e94d",
         "name": "Concert Ticket Management Solution Space 4",
         "classId": "697d7ba20e83375926c1241b",
+        "phase": RoomPhase.NO_ACTIVE_PROCESSING,
         "gameData": {
-            "persistTruthGlobalStateData": [],
             "gameId": "concert-ticket-sales",
             "players": [
                 attendingRoomOwner
@@ -35,15 +35,11 @@ export function freshRoomData(attendingRoomOwner: Player): Room {
                 "curStepId": "",
                 "roomOwnerId": attendingRoomOwner._id,
                 "discussionDataStringified": "",
-                "gameStateData": []
+                "gameStateData": {}
             },
-            "playerStateData": [
-                {
-                    "player": attendingRoomOwner._id,
-                    "animation": "",
-                    "gameStateData": []
-                }
-            ]
+            "playerStateData": {
+                [attendingRoomOwner._id]: {}
+            }
         }
     }
 }

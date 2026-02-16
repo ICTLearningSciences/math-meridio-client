@@ -470,7 +470,7 @@ export default function TeacherSelectedClassPage(): JSX.Element {
 
                 return (
                   <Paper
-                    key={msg.id || index}
+                    key={msg.messageId || index}
                     elevation={1}
                     style={{
                       padding: 10,

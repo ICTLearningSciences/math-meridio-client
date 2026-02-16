@@ -20,18 +20,21 @@ import {
   CircularProgress,
   Typography,
 } from '@mui/material';
-import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
+import {
+  UseWithEducationalData,
+  useWithEducationalData,
+} from '../../../store/slices/educational-data/use-with-educational-data';
 import { useAppSelector } from '../../../store/hooks';
 import { LoadStatus } from '../../../types';
 import { GAMES, Game } from '../../../game/types';
 import { StudentRoomCard } from './student-room-card';
-import { UseWithHostGameManagement } from '../../../classes/authority/use-with-host-game-manage';
+// import { UseWithHostGameManagement } from '../../../classes/authority/use-with-host-game-manage';
 
 export default function StudentSelectedClassPage(): JSX.Element {
   const navigate = useNavigate();
   const { classId } = useParams<{ classId: string }>();
   const { educationalData } = useWithEducationalData();
-  const { createAndJoinRoom } = useOutletContext<UseWithHostGameManagement>();
+  const { createNewGameRoom } = useOutletContext<UseWithEducationalData>();
   const { player } = useAppSelector((state) => state.playerData);
   const [selectedGame, setSelectedGame] = React.useState<Game>();
   const [creating, setCreating] = React.useState(false);
@@ -50,7 +53,7 @@ export default function StudentSelectedClassPage(): JSX.Element {
     if (!selectedGame || !player || !classId) return;
     setCreating(true);
     try {
-      const room = await createAndJoinRoom(
+      const room = await createNewGameRoom(
         selectedGame.id,
         selectedGame.name,
         classId
