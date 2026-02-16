@@ -30,13 +30,10 @@ export function PlayerStrategy(props: {
   playerStateData: PlayerStateData;
   player: Player;
 }): JSX.Element {
-  const psd = props.playerStateData;
-  const insideShots =
-    psd.gameStateData.find((d) => d.key === INSIDE_SHOT_PERCENT)?.value || 0;
-  const midShots =
-    psd.gameStateData.find((d) => d.key === MID_SHOT_PERCENT)?.value || 0;
-  const outsideShots =
-    psd.gameStateData.find((d) => d.key === OUTSIDE_SHOT_PERCENT)?.value || 0;
+  const psd = props.playerStateData[props.player._id];
+  const insideShots = psd[INSIDE_SHOT_PERCENT] || 0;
+  const midShots = psd[MID_SHOT_PERCENT] || 0;
+  const outsideShots = psd[OUTSIDE_SHOT_PERCENT] || 0;
 
   const canSimulate = Boolean(
     parseInt(insideShots) + parseInt(midShots) + parseInt(outsideShots) ===
@@ -46,7 +43,7 @@ export function PlayerStrategy(props: {
   function simulate(): void {
     if (!canSimulate) return;
     const simData: BasketballSimulationData = {
-      player: psd.player,
+      player: props.player._id,
       outsideShots: outsideShots,
       midShots: midShots,
       insideShots: insideShots,

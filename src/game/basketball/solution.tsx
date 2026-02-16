@@ -4,7 +4,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { TransformComponent, useControls } from 'react-zoom-pan-pinch';
 import { Card, Typography } from '@mui/material';
 import { GameData, GameStateData } from '../../store/slices/game/types';
@@ -43,23 +43,11 @@ export function SolutionComponent(props: {
   const { uiGameData, player, updatePlayerStateData } = props;
   const { classes } = useStyles();
   const { zoomIn, zoomOut } = useControls();
-  const playerGameStateDataRecord: Record<string, string> | undefined =
-    useMemo(() => {
-      return uiGameData.playerStateData
-        .find((p) => p.player === player._id)
-        ?.gameStateData.reduce((acc, cur) => {
-          acc[cur.key] = cur.value;
-          return acc;
-        }, {} as Record<string, string>);
-    }, [uiGameData.playerStateData, player._id]);
-  const globalGameStateDataRecord: Record<string, string> | undefined =
-    useMemo(() => {
-      return uiGameData.globalStateData.gameStateData.reduce((acc, cur) => {
-        acc[cur.key] = cur.value;
-        return acc;
-      }, {} as Record<string, string>);
-    }, [uiGameData.globalStateData.gameStateData]);
 
+  const playerGameStateDataRecord: GameStateData =
+    uiGameData.playerStateData[player._id];
+  const globalGameStateDataRecord: GameStateData =
+    uiGameData.globalStateData.gameStateData;
   const [understandsPoints, setUnderstandsPoints] = React.useState(false);
   const [understandsSuccess, setUnderstandsSuccess] = React.useState(false);
   const [understandsMultiplication, setUnderstandsMultiplication] =
@@ -89,9 +77,7 @@ export function SolutionComponent(props: {
   }, [width, height]);
 
   React.useEffect(() => {
-    const curPlayerStateData = uiGameData.playerStateData.find(
-      (p) => p.player === player._id
-    );
+    const curPlayerStateData = uiGameData.playerStateData[player._id];
     const globalGameStateData = uiGameData.globalStateData.gameStateData;
     !understandsPoints &&
       setUnderstandsPoints(

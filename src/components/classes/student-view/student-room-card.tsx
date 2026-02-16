@@ -26,10 +26,9 @@ export function StudentRoomCard(props: {
   );
 
   const handleJoinRoom = async (roomId: string) => {
-    if (!player) return;
     setJoining(roomId);
     try {
-      await joinGameRoom(roomId, player._id);
+      await joinGameRoom(roomId);
       navigate(`/classes/${classId}/room/${roomId}`);
     } catch (err) {
       console.error('Failed to join room', err);

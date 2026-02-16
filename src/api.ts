@@ -15,7 +15,7 @@ import {
 } from './components/discussion-stage-builder/types';
 import { Connection, GenericLlmRequest } from './types';
 import { Player } from './store/slices/player/types';
-import { ChatMessage, GameData, Room } from './store/slices/game/types';
+import { ChatMessage, Room } from './store/slices/game/types';
 import { extractErrorMessageFromError } from './helpers';
 import { Config } from './store/slices/config';
 import { userDataQuery } from './store/slices/player/api';
@@ -43,69 +43,6 @@ export async function asyncLlmRequest(
   );
   return res;
 }
-
-// MODIFIED
-
-// export async function asyncLlmRequestStatus(
-//   jobId: string,
-//   cancelToken?: CancelToken
-// ): Promise<AiServicesJobStatusResponseTypes> {
-//   const res = await execHttp<AiServicesJobStatusResponseTypes>(
-//     'POST',
-//     `${LLM_API_ENDPOINT}/generic_llm_request_status/?jobId=${jobId}`,
-//     {
-//       dataPath: ['response'],
-//       axiosConfig: {
-//         cancelToken: cancelToken,
-//       },
-//     }
-//   );
-//   return res;
-// }
-
-// export async function asyncLlmRequestStatus(
-//   jobId: string,
-//   cancelToken?: CancelToken
-// ): Promise<AiServicesJobStatusResponseTypes> {
-//   let res: AiServicesJobStatusResponseTypes;
-//   do {
-//     try {
-//       res = await execHttp<AiServicesJobStatusResponseTypes>(
-//         'POST',
-//         `${LLM_API_ENDPOINT}/generic_llm_request_status/?jobId=${jobId}&api-version=2025-03-01-preview`,
-//         {
-//           dataPath: ['response'],
-//           axiosConfig: { cancelToken: cancelToken },
-//         }
-//       );
-//     } catch (e: any) {
-//       // Instead of logging to console, update an element or alert the user.
-//       const resultElement = document.getElementById('result');
-//       if (resultElement) {
-//         resultElement.textContent =
-//           "Error during job status polling: " + e.message;
-//       } else {
-//         alert("Error during job status polling: " + e.message);
-//       }
-//       throw e; // or return an error object if you want to handle it gracefully
-//     }
-
-//     // Update the webpage with the current result.
-//     const resultElement = document.getElementById('result');
-//     if (resultElement) {
-//       resultElement.textContent = JSON.stringify(res, null, 2);
-//     } else {
-//       alert("Result: " + JSON.stringify(res, null, 2));
-//     }
-
-//     // Wait 2 seconds before polling again if the job is still in progress.
-//     if (res.jobStatus === "IN_PROGRESS") {
-//       await new Promise(resolve => setTimeout(resolve, 2000));
-//     }
-//   } while (res.jobStatus === "IN_PROGRESS");
-
-//   return res;
-// }
 
 export async function asyncLlmRequestStatus(
   jobId: string,
@@ -217,7 +154,7 @@ export const fullRoomQueryData = `
       ${userDataQuery}
     }
     chat {
-      id
+      messageId
       message
       sender
       senderId
@@ -232,19 +169,9 @@ export const fullRoomQueryData = `
       curStepId
       roomOwnerId
       discussionDataStringified
-      gameStateData {
-        key
-        value
-      }
+      gameStateData
     }
-    playerStateData {
-      player
-      animation
-      gameStateData {
-        key
-        value
-      }
-    }
+    playerStateData
   }
 `;
 
@@ -427,35 +354,14 @@ export async function fetchRoom(roomId: string): Promise<Room> {
   return data;
 }
 
-export async function joinRoom(
-  playerId: string,
+export async function renameGameRoom(
+  name: string,
   roomId: string
 ): Promise<Room> {
   const data = await execGql<Room>(
     {
       query: `
-        mutation JoinRoom($playerId: String!, $roomId: ID!) {
-          joinRoom(playerId: $playerId, roomId: $roomId) {
-            ${fullRoomQueryData}
-          }
-        }`,
-      variables: {
-        playerId,
-        roomId,
-      },
-    },
-    {
-      dataPath: 'joinRoom',
-    }
-  );
-  return data;
-}
-
-export async function renameRoom(name: string, roomId: string): Promise<Room> {
-  const data = await execGql<Room>(
-    {
-      query: `
-        mutation RenameRoom($name: String!, $roomId: ID!) {
+        mutation RenameGameRoom($name: String!, $roomId: ID!) {
           renameRoom(name: $name, roomId: $roomId) {
             ${fullRoomQueryData}
           }
@@ -467,30 +373,6 @@ export async function renameRoom(name: string, roomId: string): Promise<Room> {
     },
     {
       dataPath: 'renameRoom',
-    }
-  );
-  return data;
-}
-
-export async function leaveRoom(
-  playerId: string,
-  roomId: string
-): Promise<Room> {
-  const data = await execGql<Room>(
-    {
-      query: `
-        mutation LeaveRoom($playerId: String!, $roomId: ID!) {
-          leaveRoom(playerId: $playerId, roomId: $roomId) {
-            ${fullRoomQueryData}
-          }
-        }`,
-      variables: {
-        playerId,
-        roomId,
-      },
-    },
-    {
-      dataPath: 'leaveRoom',
     }
   );
   return data;
@@ -512,30 +394,6 @@ export async function deleteRoom(roomId: string): Promise<Room> {
     },
     {
       dataPath: 'deleteRoom',
-    }
-  );
-  return data;
-}
-
-export async function updateRoom(
-  roomId: string,
-  gameData: Partial<GameData>
-): Promise<Room> {
-  const data = await execGql<Room>(
-    {
-      query: `
-        mutation UpdateRoom($roomId: ID!, $gameData: GameDataInput!) {
-          updateRoom(roomId: $roomId, gameData: $gameData) {
-            ${fullRoomQueryData}
-          }
-        }`,
-      variables: {
-        roomId,
-        gameData,
-      },
-    },
-    {
-      dataPath: 'updateRoom',
     }
   );
   return data;
@@ -587,6 +445,24 @@ export async function fetchAbeConfig(): Promise<Config> {
     {
       dataPath: 'fetchConfig',
       gqlEndpoint: abeEndpoint,
+    }
+  );
+  return data;
+}
+
+export async function testLlmRequest(): Promise<string> {
+  const gqlEndpoint =
+    process.env.REACT_APP_GRAPHQL_ENDPOINT || '/graphql/graphql';
+  const data = await execGql<string>(
+    {
+      query: `
+        mutation {
+          testLlmCall
+        }`,
+    },
+    {
+      dataPath: 'fetchConfig',
+      gqlEndpoint: gqlEndpoint,
     }
   );
   return data;

@@ -5,15 +5,8 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import React from 'react';
-import { AbstractGameData } from '../../classes/abstract-game-data';
 import { Game } from '../types';
 import { SimulationScene } from './SimulationScene';
-
-import {
-  DiscussionStage,
-  IStage,
-  SimulationStage,
-} from '../../components/discussion-stage-builder/types';
 
 import { ProblemComponent } from './problem';
 import { SolutionComponent } from './solution';
@@ -24,17 +17,7 @@ import {
   GameStateData,
   PlayerStateData,
 } from '../../store/slices/game/types';
-import { CurrentStage } from '../../types';
 import { Player } from '../../store/slices/player/types';
-
-const introductionDiscussionStage = '64de5488-c851-41b3-8347-18ffa340c753';
-const collectStrategyDiscussionStage = 'e20e0247-03a2-485f-b0be-b12ceb2af8b9';
-const understandingEquationDiscussionStage =
-  '0d8f3055-373f-4726-9392-b3fd1dac8385';
-const selectStrategyDiscussionStage = 'f289f022-3fa7-42a1-9d3d-0642c3015867';
-const determineBestStrategyDiscussionStage =
-  '80419d6d-1eca-491e-a648-8db3db951c02';
-const finishedDiscussionStage = 'd1323982-4f52-491e-b5e0-dbc70250e52b';
 
 export const UNDERSTANDS_ALGORITHM_KEY = 'understands_algorithm';
 export const UNDERSTANDS_MULTIPLICATION_KEY = 'understands_multiplication';
@@ -58,111 +41,10 @@ export const GENERAL_ADMISSION_TICKET_CONVERSION_RATE = 0.6;
 
 export const TOTAL_NUMBER_OF_TICKETS = 100;
 
-export class ConcertTicketSalesStateHandler extends AbstractGameData {
-  stageList: CurrentStage<IStage>[] = [];
-  constructor(discussionStages: DiscussionStage[]) {
-    super();
-    const introDiscussionStage = discussionStages.find(
-      (s) => s.clientId === introductionDiscussionStage
-    );
-    const collectStrategyStage = discussionStages.find(
-      (s) => s.clientId === collectStrategyDiscussionStage
-    );
-    const understandingEquationStage = discussionStages.find(
-      (s) => s.clientId === understandingEquationDiscussionStage
-    );
-    const selectStrategyStage = discussionStages.find(
-      (s) => s.clientId === selectStrategyDiscussionStage
-    );
-    const determineBestStrategyStage = discussionStages.find(
-      (s) => s.clientId === determineBestStrategyDiscussionStage
-    );
-    const finishedStage = discussionStages.find(
-      (s) => s.clientId === finishedDiscussionStage
-    );
-
-    if (
-      !introDiscussionStage ||
-      !collectStrategyStage ||
-      !understandingEquationStage ||
-      !selectStrategyStage ||
-      !determineBestStrategyStage ||
-      !finishedStage
-    ) {
-      throw new Error('missing stage');
-    }
-    const simulationStage = {
-      _id: 'wait-for-simulation',
-      clientId: 'wait-for-simulation',
-      stageType: 'simulation',
-    } as SimulationStage;
-    const stageList: CurrentStage<IStage>[] = [
-      {
-        id: 'intro-discussion',
-        stage: introDiscussionStage,
-        getNextStage: () => {
-          return collectStrategyStage;
-        },
-      },
-      {
-        id: 'collect-strategy',
-        stage: collectStrategyStage,
-        getNextStage: () => {
-          return understandingEquationStage;
-        },
-      },
-      {
-        id: 'understanding-equation',
-        stage: understandingEquationStage,
-        getNextStage: () => {
-          return selectStrategyStage;
-        },
-      },
-      {
-        id: 'select-strategy',
-        stage: selectStrategyStage,
-        getNextStage: () => {
-          return simulationStage;
-        },
-      },
-      {
-        id: 'wait-for-simulation',
-        stage: simulationStage,
-        getNextStage: () => {
-          return determineBestStrategyStage;
-        },
-      },
-      {
-        id: 'determine-best-strategy',
-        stage: determineBestStrategyStage,
-        getNextStage: () => {
-          return finishedStage;
-        },
-      },
-      {
-        id: 'finished',
-        stage: finishedStage,
-        getNextStage: () => {
-          return finishedStage;
-        },
-      },
-    ];
-    this.stageList = stageList;
-  }
-}
-
 const ConcertTicketSalesGame: Game = {
   id: 'concert-ticket-sales',
   name: 'Concert Ticket Management',
   problem: `Our concert venue isn't meeting its profit goals, and we need your help to fix it. You and the sales team must figure out what's wrong with our current ticket strategy and how to adjust it to maximize revenue. For each show, we can sell 100 tickets. VIP tickets earn the most but are hardest to sell, while Reserved and General Admission earn less but sell more easily.`,
-  persistTruthGlobalStateData: [
-    UNDERSTANDS_ALGORITHM_KEY,
-    UNDERSTANDS_MULTIPLICATION_KEY,
-    UNDERSTANDS_ADDITION_KEY,
-    UNDERSTANDS_CONVERSION_RATE_KEY,
-    UNDERSTANDS_TICKET_PRICES_KEY,
-    BEST_STRATEGY_FOUND_KEY,
-  ],
   config: {
     type: Phaser.CANVAS,
     backgroundColor: '#282c34',
@@ -204,9 +86,6 @@ const ConcertTicketSalesGame: Game = {
   },
   showResult: (uiGameData: GameData) => {
     return <ResultComponent uiGameData={uiGameData} />;
-  },
-  createController: (discussionStages: DiscussionStage[]) => {
-    return new ConcertTicketSalesStateHandler(discussionStages);
   },
 };
 

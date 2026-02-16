@@ -72,7 +72,7 @@ export class SimulationScene extends GameScene {
     this.bg = addBackground(this, 'court');
     this.chatWindow?.setY(this.bg.displayHeight / 2);
     this.addChatMessage({
-      id: '',
+      messageId: '',
       sender: SenderType.SYSTEM,
       message: 'Select a strategy first to see simulation',
       sessionId: localStorageGet(SESSION_ID) as string,

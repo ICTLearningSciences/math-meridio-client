@@ -17,11 +17,10 @@ export enum MessageDisplayType {
 }
 
 export interface ChatMessage {
-  id: string;
+  messageId: string;
   sender: SenderType;
   message: string;
   senderId?: string;
-  isPromptResponse?: boolean;
   sessionId: string;
   senderName?: string;
   displayType?: MessageDisplayType;
@@ -29,9 +28,15 @@ export interface ChatMessage {
   mcqChoices?: string[];
 }
 
+export enum RoomPhase {
+  PROCESSING = 'PROCESSING',
+  NO_ACTIVE_PROCESSING = 'NO_ACTIVE_PROCESSING',
+}
+
 export interface Room {
   _id: string;
   name: string;
+  phase: RoomPhase;
   classId?: string;
   gameData: GameData;
 }
@@ -41,30 +46,22 @@ export interface GameData {
   players: Player[];
   chat: ChatMessage[];
   globalStateData: GlobalStateData;
-  persistTruthGlobalStateData: string[];
-  playerStateData: PlayerStateData[];
+  playerStateData: PlayerStateData;
 }
 
 export interface GameDataGQL extends Omit<GameData, 'players'> {
   players: string[];
 }
 
-export interface GameStateData {
-  key: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  value: any;
-}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type GameStateData = Record<string, any>;
 
-export interface PlayerStateData {
-  player: string;
-  animation: string;
-  gameStateData: GameStateData[];
-}
+export type PlayerStateData = Record<string, GameStateData>;
 
 export interface GlobalStateData {
   curStageId: string;
   curStepId: string;
   roomOwnerId: string;
   discussionDataStringified: string;
-  gameStateData: GameStateData[];
+  gameStateData: GameStateData;
 }

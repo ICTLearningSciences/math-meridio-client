@@ -23,7 +23,7 @@ import { store } from './store';
 import { useWithHydrateRedux } from './store/use-with-hydrate-redux';
 import { useWithLogin } from './store/slices/player/use-with-login';
 import { GoogleOAuthProvider } from '@react-oauth/google';
-import { useWithHostGameManagement } from './classes/authority/use-with-host-game-manage';
+import { useWithEducationalData } from './store/slices/educational-data/use-with-educational-data';
 
 // Layout component that provides useLogin to all routes
 function RootLayout() {
@@ -45,10 +45,10 @@ function GoogleLoginPageWrapper() {
   return <GoogleLoginPage useLogin={useLogin} />;
 }
 
-// Layout component for game routes that provides useWithHostGameManagement to child routes
+// Layout component for game routes that provides useWithEducationalData to child routes
 function GameLayout() {
-  const gameManagement = useWithHostGameManagement();
-  return <Outlet context={gameManagement} />;
+  const educationalData = useWithEducationalData();
+  return <Outlet context={educationalData} />;
 }
 
 // Create router OUTSIDE the component so it's only created once

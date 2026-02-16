@@ -30,16 +30,11 @@ export function PlayerStrategy(props: {
   playerStateData: PlayerStateData;
   player: Player;
 }): JSX.Element {
-  const psd = props.playerStateData;
-  const vipTicketsUpForSale =
-    psd.gameStateData.find((d) => d.key === VIP_TICKET_PERCENT_KEY)?.value || 0;
-  const reservedTicketsUpForSale =
-    psd.gameStateData.find((d) => d.key === RESERVED_TICKET_PERCENT_KEY)
-      ?.value || 0;
+  const psd = props.playerStateData[props.player._id];
+  const vipTicketsUpForSale = psd[VIP_TICKET_PERCENT_KEY] || 0;
+  const reservedTicketsUpForSale = psd[RESERVED_TICKET_PERCENT_KEY] || 0;
   const generalAdmissionTicketsUpForSale =
-    psd.gameStateData.find(
-      (d) => d.key === GENERAL_ADMISSION_TICKET_PERCENT_KEY
-    )?.value || 0;
+    psd[GENERAL_ADMISSION_TICKET_PERCENT_KEY] || 0;
 
   const canSimulate = Boolean(
     parseInt(vipTicketsUpForSale) +
@@ -51,7 +46,7 @@ export function PlayerStrategy(props: {
   function simulate(): void {
     if (!canSimulate) return;
     const simData: ConcertTicketSalesSimulationData = {
-      player: psd.player,
+      player: props.player._id,
       generalAdmissionTicketsUpForSale: generalAdmissionTicketsUpForSale,
       generalAdmissionTicketsSold: Math.round(
         generalAdmissionTicketsUpForSale *

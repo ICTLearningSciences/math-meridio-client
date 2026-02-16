@@ -5,14 +5,8 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import BasketballGame from './basketball';
-import NewGame from './concert-ticket-sales';
-import { AbstractGameData } from '../classes/abstract-game-data';
-import {
-  GameData,
-  GameStateData,
-  PlayerStateData,
-} from '../store/slices/game/types';
-import { DiscussionStage } from '../components/discussion-stage-builder/types';
+import ConcertTicketSalesGame from './concert-ticket-sales';
+import { GameData, GameStateData } from '../store/slices/game/types';
 import { Player } from '../store/slices/player/types';
 
 export interface Game {
@@ -20,7 +14,6 @@ export interface Game {
   name: string;
   problem: string;
   config: Phaser.Types.Core.GameConfig;
-  persistTruthGlobalStateData: string[];
   showProblem: () => JSX.Element;
   showSolution: (
     uiGameData: GameData,
@@ -33,10 +26,9 @@ export interface Game {
   showSimulation: (game: Game) => JSX.Element;
   showPlayerStrategy: (
     player: Player,
-    playerStateData: PlayerStateData
+    playerStateData: GameStateData
   ) => JSX.Element;
   showResult: (uiGameData: GameData) => JSX.Element;
-  createController: (discussionStages: DiscussionStage[]) => AbstractGameData;
 }
 
-export const GAMES: Game[] = [BasketballGame, NewGame];
+export const GAMES: Game[] = [BasketballGame, ConcertTicketSalesGame];

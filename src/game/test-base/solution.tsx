@@ -44,22 +44,10 @@ export function SolutionComponent(props: {
   const { classes } = useStyles();
   const { zoomIn, zoomOut } = useControls();
 
-  const playerGameStateDataRecord: Record<string, string> | undefined =
-    useMemo(() => {
-      return uiGameData.playerStateData
-        .find((p) => p.player === player._id)
-        ?.gameStateData.reduce((acc, cur) => {
-          acc[cur.key] = cur.value;
-          return acc;
-        }, {} as Record<string, string>);
-    }, [uiGameData.playerStateData, player._id]);
-  const globalGameStateDataRecord: Record<string, string> | undefined =
-    useMemo(() => {
-      return uiGameData.globalStateData.gameStateData.reduce((acc, cur) => {
-        acc[cur.key] = cur.value;
-        return acc;
-      }, {} as Record<string, string>);
-    }, [uiGameData.globalStateData.gameStateData]);
+  const playerGameStateDataRecord: GameStateData =
+    uiGameData.playerStateData[player._id];
+  const globalGameStateDataRecord: GameStateData =
+    uiGameData.globalStateData.gameStateData;
   const [understandsTicketPrices, setUnderstandsTicketPrices] =
     React.useState(false);
   const [understandsSellThroughRates, setUnderstandsSellThroughRates] =
@@ -83,9 +71,7 @@ export function SolutionComponent(props: {
   }, []);
 
   React.useEffect(() => {
-    const curPlayerStateData = uiGameData.playerStateData.find(
-      (p) => p.player === player._id
-    );
+    const curPlayerStateData = uiGameData.playerStateData[player._id];
     const globalGameStateData = uiGameData.globalStateData.gameStateData;
     !understandsTicketPrices &&
       setUnderstandsTicketPrices(
