@@ -10,13 +10,12 @@ env:
     S3_DEPLOY_BUCKET_PROD: "/mathm/prod/s3-websites/NAME"
     CDN_ID_PROD: "/mathm/prod/CLOUDFRONT_DISTRIBUTION_ID"
     REACT_APP_GQL_SECRET: "/mathmeridio/prod/gql_secret"
+    REACT_APP_GOOGLE_CLIENT_ID: "/mathmeridio/shared/google_client_id"
 
 phases:
   install:
     runtime-versions:
-      nodejs: 14
-    commands:
-      - n 18
+      nodejs: 18
 
   build:
     commands:

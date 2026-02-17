@@ -13,7 +13,6 @@ import ChatForm from './game/chat-form';
 import AvatarCreator from '../game/avatar';
 import { useWithPhaserGame } from '../hooks/use-with-phaser-game';
 import { useAppSelector } from '../store/hooks';
-import { ChatMessage } from '../store/slices/game';
 import {
   Avatars,
   useWithPlayer,
@@ -21,7 +20,7 @@ import {
 import { LoadStatus } from '../types';
 
 function AvatarPage(): JSX.Element {
-  const { player, loadStatus, saveStatus } = useAppSelector(
+  const { player, loginStatus, saveStatus } = useAppSelector(
     (state) => state.playerData
   );
   const gameContainerRef = React.useRef<HTMLDivElement | null>(null);
@@ -31,24 +30,25 @@ function AvatarPage(): JSX.Element {
 
   React.useEffect(() => {
     if (
-      loadStatus.status === LoadStatus.NONE ||
-      loadStatus.status === LoadStatus.IN_PROGRESS
+      loginStatus.status === LoadStatus.NONE ||
+      loginStatus.status === LoadStatus.IN_PROGRESS
     ) {
       return;
     }
     if (
-      loadStatus.status === LoadStatus.NOT_LOGGED_IN ||
-      loadStatus.status === LoadStatus.FAILED ||
+      loginStatus.status === LoadStatus.NOT_LOGGED_IN ||
+      loginStatus.status === LoadStatus.FAILED ||
       !player ||
       !player.name
     ) {
-      navigate('/login');
+      console.log('navigating to login');
+      navigate('/');
       return;
     }
-    startPhaserGame(AvatarCreator, undefined, 'AvatarCreator');
+    startPhaserGame(AvatarCreator, 'AvatarCreator');
     EventSystem.on('sceneCreated', () => setSceneCreated(true));
     EventSystem.on('avatarSelected', onAvatarSelected);
-  }, [loadStatus]);
+  }, [loginStatus]);
 
   /**
    * Let's hard-code everything for now since player creation
@@ -80,7 +80,8 @@ function AvatarPage(): JSX.Element {
   React.useEffect(() => {
     if (!isSaving) return;
     if (saveStatus.status === LoadStatus.DONE) {
-      navigate('/');
+      console.log('navigating to home');
+      navigate('/classes');
       setIsSaving(false);
     } else if (saveStatus.status === LoadStatus.FAILED) {
       setIsSaving(false);
@@ -90,22 +91,22 @@ function AvatarPage(): JSX.Element {
     }
   }, [saveStatus]);
 
-  async function onUserMessage(msg: ChatMessage): Promise<void> {
+  async function onUserMessage(msg: string): Promise<void> {
     EventSystem.emit('addChatMessage', msg);
     if (!selectedAvatar) {
-      setDescription(msg.message);
+      setDescription(msg);
       EventSystem.emit('loadingAvatars', true);
       EventSystem.emit('addSystemMessage', {
         message: 'Fetching your avatar results...',
       });
-      const response = await loadAvatarsFromDesc(msg.message);
+      const response = await loadAvatarsFromDesc(msg);
       EventSystem.emit('loadingAvatars', false);
       EventSystem.emit('addSystemMessage', {
         message: response.message,
       });
       EventSystem.emit('showAvatars', response.avatars);
     } else if (selectedAvatar && !isSaving) {
-      if (msg.message.toLowerCase().replace(' ', '') === 'yes') {
+      if (msg.toLowerCase().replace(' ', '') === 'yes') {
         EventSystem.emit('addSystemMessage', {
           message: 'Saving your avatar...',
         });
@@ -133,8 +134,8 @@ function AvatarPage(): JSX.Element {
   /** end hard-coding */
 
   if (
-    loadStatus.status === LoadStatus.NONE ||
-    loadStatus.status === LoadStatus.IN_PROGRESS
+    loginStatus.status === LoadStatus.NONE ||
+    loginStatus.status === LoadStatus.IN_PROGRESS
   ) {
     return (
       <div>

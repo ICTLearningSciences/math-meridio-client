@@ -5,18 +5,18 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 
-import { ChatMessage } from './store/slices/game';
-import { GameStateData } from './game/basketball/solution';
+import { ChatMessage } from './store/slices/game/types';
 import axios from 'axios';
 import { IStage } from './components/discussion-stage-builder/types';
 import { DiscussionStage } from './components/discussion-stage-builder/types';
 import { isDiscussionStage } from './components/discussion-stage-builder/types';
-import { Avatar } from './store/slices/player';
+import { Avatar } from './store/slices/player/types';
 import {
   SPRITE_BODY,
   SPRITE_CLOTHES,
   SPRITE_HAIR,
 } from './store/slices/player/use-with-player-state';
+import { SolutionGameStateData } from './types';
 
 export const SIMULTAION_VIEWED_KEY = 'viewed-simulation';
 
@@ -102,8 +102,8 @@ export function extractErrorMessageFromError(err: any | unknown): string {
 }
 
 export function didGameStateDataChange(
-  prevGameStateData: GameStateData,
-  newGameStateData: GameStateData
+  prevGameStateData: SolutionGameStateData,
+  newGameStateData: SolutionGameStateData
 ): boolean {
   return JSON.stringify(prevGameStateData) !== JSON.stringify(newGameStateData);
 }

@@ -5,11 +5,10 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import GridLayout from 'react-grid-layout';
 import { TransformWrapper } from 'react-zoom-pan-pinch';
 import {
-  Button,
   Card,
   CircularProgress,
   IconButton,
@@ -28,21 +27,23 @@ import {
 
 import ChatThread from './chat-thread';
 import ChatForm from './chat-form';
-import { useAppSelector } from '../../store/hooks';
-import { useWithGame } from '../../store/slices/game/use-with-game-state';
 import withAuthorizationOnly from '../../wrap-with-authorization-only';
 import Popup from '../popup';
 import { useWithConfig } from '../../store/slices/config/use-with-config';
 import { useWithWindow } from '../../hooks/use-with-window';
 import EventSystem from '../../game/event-system';
-import { PlayerStateData } from '../../store/slices/game';
+import { GameData } from '../../store/slices/game/types';
 import { Game } from '../../game/types';
-import { GameStateHandler } from '../../classes/game-state-handler';
 
 import '../../layout.css';
+import { UseWithEducationalData } from '../../store/slices/educational-data/use-with-educational-data';
+import { useAppSelector } from '../../store/hooks';
 
 const COLS = 6;
 const ROWS = 4;
+
+// Type for the outlet context provided by GameLayout
+type EducationalDataContext = UseWithEducationalData;
 
 function Space(props: {
   title: string;
@@ -80,17 +81,16 @@ function Space(props: {
 
 function SimulationSpace(props: {
   game: Game;
-  controller: GameStateHandler;
-  simulation?: string;
+  gameStateData: GameData;
   expanded?: boolean;
   onExpand: () => void;
 }): JSX.Element {
-  const { game, controller, simulation } = props;
+  const { game, gameStateData } = props;
   const { isMuted, toggleMuted } = useWithConfig();
-  const [curSimulation, setSimulation] = React.useState<PlayerStateData>();
+  const [curSimulation, setSimulation] = React.useState<{ player: string }>();
 
   React.useEffect(() => {
-    EventSystem.on('simulate', (sim: PlayerStateData) => setSimulation(sim));
+    EventSystem.on('simulate', (sim: { player: string }) => setSimulation(sim));
   }, []);
 
   return (
@@ -110,17 +110,23 @@ function SimulationSpace(props: {
           value={curSimulation?.player}
           label="Strategy"
         >
-          {controller.playerStateData.map((psd) => {
-            return (
-              <MenuItem
-                key={psd.player}
-                value={psd.player}
-                style={{ width: '100%', padding: 0, margin: 0 }}
-              >
-                {game.showPlayerStrategy(psd, controller)}
-              </MenuItem>
-            );
-          })}
+          {Object.entries(gameStateData.playersGameStateData).map(
+            ([playerId, psd]) => {
+              const player = gameStateData.players.find(
+                (p) => p._id === playerId
+              );
+              if (!player) return null;
+              return (
+                <MenuItem
+                  key={playerId}
+                  value={playerId}
+                  style={{ width: '100%', padding: 0, margin: 0 }}
+                >
+                  {game.showPlayerStrategy(player, psd)}
+                </MenuItem>
+              );
+            }
+          )}
         </TextField>
         <Tooltip title="Mute game audio">
           <IconButton onClick={toggleMuted}>
@@ -135,23 +141,34 @@ function SimulationSpace(props: {
         </IconButton>
       </div>
       <div style={{ height: 'calc(100% - 50px)', overflowY: 'auto' }}>
-        {game.showSimulation(controller, simulation)}
+        {game.showSimulation(game)}
       </div>
     </div>
   );
 }
 
 function GamePage(): JSX.Element {
-  const { room, simulation } = useAppSelector((state) => state.gameData);
+  // Use prop if provided, otherwise try to get from outlet context
+  const outletContext = useOutletContext<EducationalDataContext>();
+  const { player } = useAppSelector((state) => state.playerData);
   const {
-    game,
-    gameStateHandler,
-    responsePending,
+    curGame,
     ownerIsPresent,
-    launchGame,
-  } = useWithGame();
+    room,
+    updateMyRoomGameStateData,
+    sendMessageToGameRoom,
+  } = outletContext;
   const navigate = useNavigate();
   const { windowHeight, windowWidth } = useWithWindow();
+
+  // Handle case where context is not yet available
+  if (!outletContext) {
+    return (
+      <div className="root center-div">
+        <CircularProgress />
+      </div>
+    );
+  }
 
   const [popupOpen, setPopupOpen] = React.useState(false);
   const [alreadyShownPopup, setAlreadyShownPopup] = React.useState(false);
@@ -174,7 +191,8 @@ function GamePage(): JSX.Element {
 
   React.useEffect(() => {
     if (!room) {
-      navigate('/');
+      console.log('navigating to home');
+      navigate('/classes');
     }
     if (!alreadyShownPopup && !ownerIsPresent) {
       setPopupOpen(true);
@@ -349,14 +367,8 @@ function GamePage(): JSX.Element {
     );
   }
 
-  if (!gameStateHandler || !game) {
-    return (
-      <div className="root center-div">
-        <Button onClick={launchGame} disabled={Boolean(gameStateHandler)}>
-          Begin
-        </Button>
-      </div>
-    );
+  if (!curGame || !room || !player) {
+    return <div className="root center-div">Missing game or room data</div>;
   }
 
   return (
@@ -385,7 +397,7 @@ function GamePage(): JSX.Element {
             expanded={expanded === 0}
             onExpand={() => onExpand(0)}
           >
-            {game.showProblem(gameStateHandler)}
+            {curGame.showProblem()}
           </Space>
         </Card>
 
@@ -406,7 +418,11 @@ function GamePage(): JSX.Element {
               maxScale={1}
               panning={{ excluded: ['panningDisabled'] }}
             >
-              {game.showSolution(gameStateHandler)}
+              {curGame.showSolution(
+                room.gameData,
+                player,
+                updateMyRoomGameStateData
+              )}
             </TransformWrapper>
           </Space>
         </Card>
@@ -419,9 +435,8 @@ function GamePage(): JSX.Element {
           }}
         >
           <SimulationSpace
-            game={game}
-            controller={gameStateHandler}
-            simulation={simulation}
+            game={curGame}
+            gameStateData={room.gameData}
             expanded={expanded === 2}
             onExpand={() => onExpand(2)}
           />
@@ -439,7 +454,7 @@ function GamePage(): JSX.Element {
             expanded={expanded === 3}
             onExpand={() => onExpand(3)}
           >
-            {game.showResult(gameStateHandler)}
+            {curGame.showResult(room.gameData)}
           </Space>
         </Card>
 
@@ -452,8 +467,12 @@ function GamePage(): JSX.Element {
             padding: 10,
           }}
         >
-          <ChatThread responsePending={responsePending} />
-          <ChatForm />
+          <ChatThread
+            responsePending={false}
+            waitingForPlayers={[]}
+            uiGameData={room.gameData}
+          />
+          <ChatForm sendMessage={sendMessageToGameRoom} />
         </Stack>
       </GridLayout>
     </div>

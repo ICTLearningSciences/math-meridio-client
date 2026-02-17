@@ -5,31 +5,30 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import BasketballGame from './basketball';
-import NewGame from './concert-ticket-sales';
-import {
-  GameStateHandler,
-  GameStateHandlerArgs,
-} from '../classes/game-state-handler';
-import { PlayerStateData } from '../store/slices/game';
+import ConcertTicketSalesGame from './concert-ticket-sales';
+import { GameData, GameStateData } from '../store/slices/game/types';
+import { Player } from '../store/slices/player/types';
 
 export interface Game {
   id: 'basketball' | 'concert-ticket-sales' | 'test-base';
   name: string;
   problem: string;
   config: Phaser.Types.Core.GameConfig;
-  persistTruthGlobalStateData: string[];
-  showProblem: (controller: GameStateHandler) => JSX.Element;
-  showSolution: (controller: GameStateHandler) => JSX.Element;
-  showSimulation: (
-    controller: GameStateHandler,
-    simulation?: string
+  showProblem: () => JSX.Element;
+  showSolution: (
+    uiGameData: GameData,
+    player: Player,
+    updatePlayerStateData: (
+      newPlayerStateData: GameStateData[],
+      playerId: string
+    ) => void
   ) => JSX.Element;
+  showSimulation: (game: Game) => JSX.Element;
   showPlayerStrategy: (
-    data: PlayerStateData,
-    controller: GameStateHandler
+    player: Player,
+    playersGameStateData: GameStateData
   ) => JSX.Element;
-  showResult: (controller: GameStateHandler) => JSX.Element;
-  createController: (args: GameStateHandlerArgs) => GameStateHandler;
+  showResult: (uiGameData: GameData) => JSX.Element;
 }
 
-export const GAMES: Game[] = [BasketballGame, NewGame];
+export const GAMES: Game[] = [BasketballGame, ConcertTicketSalesGame];

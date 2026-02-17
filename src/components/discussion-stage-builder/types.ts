@@ -22,10 +22,22 @@ export type DiscussionStageStep =
   | PromptStageStep
   | ConditionalActivityStep;
 
+export type DiscussionStageStepGQL =
+  | SystemMessageStageStep
+  | RequestUserInputStageStep
+  | PromptStageStepGql
+  | ConditionalActivityStep;
+
 export interface FlowItem {
   clientId: string;
   name: string;
   steps: DiscussionStageStep[];
+}
+
+export interface FlowItemGQL {
+  clientId: string;
+  name: string;
+  steps: DiscussionStageStepGQL[];
 }
 export function defaultDicussionStage(): DiscussionStage {
   return {
@@ -59,6 +71,14 @@ export interface DiscussionStage extends IStage {
   title: string;
   description: string;
   flowsList: FlowItem[];
+}
+
+export interface DiscussionStageGQL extends IStage {
+  _id: string;
+  stageType: 'discussion';
+  title: string;
+  description: string;
+  flowsList: FlowItemGQL[];
 }
 
 export enum DiscussionStageStepType {
@@ -96,6 +116,7 @@ export interface RequestUserInputStageStep extends StageBuilderStep {
   saveResponseVariableName: string;
   disableFreeInput: boolean;
   predefinedResponses: PredefinedResponse[];
+  requireAllUserInputs: boolean;
 }
 
 //Prompt

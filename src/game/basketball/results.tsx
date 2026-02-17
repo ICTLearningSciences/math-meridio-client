@@ -6,7 +6,6 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React, { useState } from 'react';
 import { BarChart } from '@mui/x-charts/BarChart';
-import { GameStateHandler } from '../../classes/game-state-handler';
 import { BasketballSimulationData } from './SimulationScene';
 import EventSystem from '../event-system';
 import {
@@ -15,11 +14,10 @@ import {
   OUTSIDE_SHOT_POINTS_VALUE,
 } from './solution';
 import { Stack, Typography, Tabs, Tab, Box } from '@mui/material';
+import { GameData } from '../../store/slices/game/types';
 
-export function ResultComponent(props: {
-  controller: GameStateHandler;
-}): JSX.Element {
-  const { controller } = props;
+export function ResultComponent(props: { uiGameData: GameData }): JSX.Element {
+  const { uiGameData } = props;
   const [simulationData, setSimulationData] = React.useState<
     Record<string, BasketballSimulationData>
   >({});
@@ -29,7 +27,7 @@ export function ResultComponent(props: {
   const chartHeight = 300;
   const resultsWidth = window.innerWidth / 2 - 300;
   const scoreChartWidth = resultsWidth / 2;
-  const shotsChartWidth = resultsWidth / controller.players.length;
+  const shotsChartWidth = resultsWidth / uiGameData.players.length;
 
   interface ChartData {
     insideScores: number[];
@@ -95,20 +93,20 @@ export function ResultComponent(props: {
 
     let playerLabels: string[] = [];
 
-    for (let index = 0; index < controller.players.length; index++) {
-      const player = controller.players[index];
+    for (let index = 0; index < uiGameData.players.length; index++) {
+      const player = uiGameData.players[index];
       const playerMade = [
-        simulationData[player.clientId]?.insideShotsMade,
-        simulationData[player.clientId]?.midShotsMade,
-        simulationData[player.clientId]?.outsideShotsMade,
+        simulationData[player._id]?.insideShotsMade,
+        simulationData[player._id]?.midShotsMade,
+        simulationData[player._id]?.outsideShotsMade,
       ];
       const playerMissed = [
-        simulationData[player.clientId]?.insideShots -
-          simulationData[player.clientId]?.insideShotsMade,
-        simulationData[player.clientId]?.midShots -
-          simulationData[player.clientId]?.midShotsMade,
-        simulationData[player.clientId]?.outsideShots -
-          simulationData[player.clientId]?.outsideShotsMade,
+        simulationData[player._id]?.insideShots -
+          simulationData[player._id]?.insideShotsMade,
+        simulationData[player._id]?.midShots -
+          simulationData[player._id]?.midShotsMade,
+        simulationData[player._id]?.outsideShots -
+          simulationData[player._id]?.outsideShotsMade,
       ];
 
       switch (index) {
@@ -130,24 +128,23 @@ export function ResultComponent(props: {
           break;
       }
     }
-    insideScores = controller.players.map(
+    insideScores = uiGameData.players.map(
       (player) =>
-        (simulationData[player.clientId]?.insideShotsMade || 0) *
+        (simulationData[player._id]?.insideShotsMade || 0) *
         INSIDE_SHOT_POINTS_VALUE
     );
 
-    midScores = controller.players.map(
+    midScores = uiGameData.players.map(
       (player) =>
-        (simulationData[player.clientId]?.midShotsMade || 0) *
-        MID_SHOT_POINTS_VALUE
+        (simulationData[player._id]?.midShotsMade || 0) * MID_SHOT_POINTS_VALUE
     );
 
-    outsideScores = controller.players.map(
+    outsideScores = uiGameData.players.map(
       (player) =>
-        (simulationData[player.clientId]?.outsideShotsMade || 0) *
+        (simulationData[player._id]?.outsideShotsMade || 0) *
         OUTSIDE_SHOT_POINTS_VALUE
     );
-    playerLabels = controller.players.map((player) => player.name);
+    playerLabels = uiGameData.players.map((player) => player.name);
     setMyChartData({
       insideScores: insideScores,
       midScores: midScores,
@@ -235,7 +232,7 @@ export function ResultComponent(props: {
         )}
         {tabValue === 1 && (
           <Stack direction="row" alignItems="center">
-            {controller.players.map((player, index) => (
+            {uiGameData.players.map((player, index) => (
               <>
                 {index === 0 &&
                   GetShotChartFor(

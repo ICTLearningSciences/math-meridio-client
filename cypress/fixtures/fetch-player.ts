@@ -5,14 +5,22 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 
-import { Player } from "../../src/store/slices/player";
+import { Player } from "../../src/store/slices/player/types";
+import { EducationalRole, LoginService, UserRole } from "../../src/store/slices/player/types";
 
 interface FetchPlayerResponse {
     fetchPlayer: Player;
 }
 
-export const fetchPlayer: FetchPlayerResponse = {
+export const defaultFetchPlayerData: FetchPlayerResponse = {
     "fetchPlayer": {
+        _id: "my-player-id",
+        googleId: "my-google-id",
+        email: "my-email",
+        userRole: UserRole.USER,
+        loginService: LoginService.GOOGLE,
+        lastLoginAt: new Date(),
+        educationalRole: EducationalRole.STUDENT,
         clientId: "my-player-id",
         name: "My Player",
         description: "",

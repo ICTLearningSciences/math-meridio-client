@@ -6,9 +6,8 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React from 'react';
 
-import { GameStateHandler } from '../../classes/game-state-handler';
 import { useWithPhaserGame } from '../../hooks/use-with-phaser-game';
-import { PlayerStateData } from '../../store/slices/game';
+import { GameStateData } from '../../store/slices/game/types';
 import EventSystem from '../event-system';
 import { Typography } from '@mui/material';
 import { BasketballSimulationData } from './SimulationScene';
@@ -24,20 +23,18 @@ import {
   INSIDE_SHOT_POINTS_VALUE,
   MID_SHOT_POINTS_VALUE,
 } from './solution';
+import { Game } from '../types';
+import { Player } from '../../store/slices/player/types';
 
 export function PlayerStrategy(props: {
-  data: PlayerStateData;
-  controller: GameStateHandler;
+  playersGameStateData: GameStateData;
+  player: Player;
 }): JSX.Element {
-  const psd = props.data;
-  const controller = props.controller;
-  const player = controller.players.find((p) => p.clientId === psd.player);
-  const insideShots =
-    psd.gameStateData.find((d) => d.key === INSIDE_SHOT_PERCENT)?.value || 0;
-  const midShots =
-    psd.gameStateData.find((d) => d.key === MID_SHOT_PERCENT)?.value || 0;
-  const outsideShots =
-    psd.gameStateData.find((d) => d.key === OUTSIDE_SHOT_PERCENT)?.value || 0;
+  console.log('playersGameStateData', props.playersGameStateData);
+  const psd = props.playersGameStateData;
+  const insideShots = psd[INSIDE_SHOT_PERCENT] || 0;
+  const midShots = psd[MID_SHOT_PERCENT] || 0;
+  const outsideShots = psd[OUTSIDE_SHOT_PERCENT] || 0;
 
   const canSimulate = Boolean(
     parseInt(insideShots) + parseInt(midShots) + parseInt(outsideShots) ===
@@ -47,7 +44,8 @@ export function PlayerStrategy(props: {
   function simulate(): void {
     if (!canSimulate) return;
     const simData: BasketballSimulationData = {
-      player: psd.player,
+      player: props.player._id,
+      playerAvatar: props.player,
       outsideShots: outsideShots,
       midShots: midShots,
       insideShots: insideShots,
@@ -75,7 +73,7 @@ export function PlayerStrategy(props: {
       }}
     >
       <Typography style={{ fontWeight: 'bold' }}>
-        {player?.name}&apos;s strategy:
+        {props.player?.name}&apos;s strategy:
       </Typography>
       <Typography>
         {insideShots} inside, {midShots} mid, {outsideShots} 3-pointers
@@ -84,15 +82,14 @@ export function PlayerStrategy(props: {
   );
 }
 
-export function SimulationComponent(props: {
-  controller: GameStateHandler;
-}): JSX.Element {
+export function SimulationComponent(props: { game: Game }): JSX.Element {
+  const { game } = props;
   const gameContainerRef = React.useRef<HTMLDivElement | null>(null);
   const { startPhaserGame } = useWithPhaserGame(gameContainerRef);
 
   React.useEffect(() => {
-    startPhaserGame(props.controller.game, props.controller, 'Simulation');
-  }, [props.controller]);
+    startPhaserGame(game.config, 'Simulation');
+  }, [game.config]);
 
   return (
     <>

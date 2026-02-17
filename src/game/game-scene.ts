@@ -6,7 +6,7 @@ The full terms of this copyright and license should always be found in the root 
 */
 import { Scene } from 'phaser';
 import EventSystem from './event-system';
-import { ChatMessage } from '../store/slices/game';
+import { ChatMessage } from '../store/slices/game/types';
 import {
   Avatars,
   SPRITE_ACCESSORY,
@@ -23,8 +23,7 @@ import {
   addTween,
   animateText,
 } from './phaser-helpers';
-import { Avatar } from '../store/slices/player';
-import { GameStateHandler } from '../classes/game-state-handler';
+import { Avatar } from '../store/slices/player/types';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const gameObjects: any[] = [];
@@ -38,7 +37,6 @@ export interface RenderAvatars extends Avatars {
  */
 export abstract class GameScene extends Scene {
   sceneName: string;
-  gameStateHandler?: GameStateHandler;
 
   bg: Phaser.GameObjects.Image | undefined;
   chatWindow: Phaser.GameObjects.Rectangle | undefined;
@@ -79,8 +77,7 @@ export abstract class GameScene extends Scene {
     }
   }
 
-  create(handler: GameStateHandler) {
-    this.gameStateHandler = handler;
+  create() {
     for (const a of [
       ...SPRITE_BODY,
       ...SPRITE_CLOTHES,

@@ -5,28 +5,33 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import React from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Button, IconButton, TextField, Typography } from '@mui/material';
 import { Create, Home, Save } from '@mui/icons-material';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { clearPlayer } from '../store/slices/player';
-import { useWithGame } from '../store/slices/game/use-with-game-state';
 import AvatarSprite from './avatar-sprite';
+import { UseWithLogin } from '../store/slices/player/use-with-login';
+import { useWithEducationalData } from '../store/slices/educational-data/use-with-educational-data';
 
-export function Header() {
+export function Header(props: { useLogin: UseWithLogin }) {
   const dispatch = useAppDispatch();
   const { player } = useAppSelector((state) => state.playerData);
-  const { room } = useAppSelector((state) => state.gameData);
+  const { roomId } = useParams<{ roomId: string }>();
+  const { educationalData } = useWithEducationalData();
+  const room = educationalData.rooms.find((r) => r._id === roomId);
   const [name, setName] = React.useState<string>(room?.name || '');
   const [isEditing, setIsEditing] = React.useState<boolean>(false);
-
+  const { logout } = props.useLogin;
   const { pathname } = useLocation();
-  const { leaveRoom, renameRoom } = useWithGame();
+  const { leaveGameRoom, renameGameRoom } = useWithEducationalData();
   const navigate = useNavigate();
 
   function homeButtonClick() {
-    leaveRoom();
-    navigate('/');
+    if (roomId) {
+      leaveGameRoom(roomId);
+    }
+    navigate('/classes');
   }
 
   return (
@@ -58,7 +63,7 @@ export function Header() {
             style={{ color: 'white' }}
             onClick={() => {
               if (isEditing) {
-                renameRoom(name);
+                renameGameRoom(room?._id || '', name);
                 setIsEditing(false);
               } else {
                 setIsEditing(true);
@@ -80,7 +85,7 @@ export function Header() {
               marginRight: 5,
               padding: 0,
             }}
-            onClick={leaveRoom}
+            onClick={() => leaveGameRoom(room?._id || '')}
           >
             Leave Room
           </Button>
@@ -89,7 +94,10 @@ export function Header() {
             variant="outlined"
             disabled={!player}
             style={{ height: 'fit-content', color: 'white', marginRight: 5 }}
-            onClick={() => dispatch(clearPlayer())}
+            onClick={() => {
+              dispatch(clearPlayer());
+              logout();
+            }}
           >
             Logout
           </Button>

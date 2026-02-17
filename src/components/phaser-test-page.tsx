@@ -28,9 +28,9 @@ function PhaserTestPage(): JSX.Element {
 
   React.useEffect(() => {
     if (game === 'basketball') {
-      startPhaserGame(BasketballGame.config, undefined, 'Simulation');
+      startPhaserGame(BasketballGame.config, 'Simulation');
     } else {
-      startPhaserGame(ConcertGame.config, undefined, 'Simulation');
+      startPhaserGame(ConcertGame.config, 'Simulation');
     }
     EventSystem.on('sceneCreated', sceneCreated);
   }, []);
@@ -41,7 +41,7 @@ function PhaserTestPage(): JSX.Element {
       const mid = getRandomNumber(10, 50);
       const inside = 100 - outside - mid;
       EventSystem.emit('simulate', {
-        player: player?.clientId,
+        player: player?._id,
         playerAvatar: player,
         insideShots: inside,
         midShots: mid,
@@ -66,7 +66,7 @@ function PhaserTestPage(): JSX.Element {
       );
 
       EventSystem.emit('simulate', {
-        player: player?.clientId,
+        player: player?._id,
         playerAvatar: player,
         generalAdmissionTicketsUpForSale: general,
         reservedTicketsUpForSale: reserved,

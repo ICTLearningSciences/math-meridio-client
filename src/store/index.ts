@@ -4,18 +4,20 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
+import { logger } from 'redux-logger';
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
-import gameData from './slices/game';
 import playerData from './slices/player';
 import stages from './slices/stages';
 import config from './slices/config';
+import educationalData from './slices/educational-data';
 
 export const store = configureStore({
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(logger),
   reducer: combineReducers({
-    gameData,
     playerData,
     stages,
     config,
+    educationalData,
   }),
 });
 

@@ -15,7 +15,7 @@ import {
   styled,
   Typography,
 } from '@mui/material';
-import { SenderType } from '../../store/slices/game';
+import { GameData, SenderType } from '../../store/slices/game/types';
 import { FadingText } from '../fading-text';
 import React from 'react';
 import AvatarSprite from '../avatar-sprite';
@@ -80,17 +80,18 @@ const useStyles = makeStyles()(() => ({
 
 export default function ChatThread(props: {
   responsePending: boolean;
+  waitingForPlayers: string[];
+  uiGameData: GameData;
 }): JSX.Element {
-  const { responsePending } = props;
+  const { responsePending, waitingForPlayers, uiGameData } = props;
   const { classes } = useStyles();
   const { player } = useAppSelector((state) => state.playerData);
-  const messages = useAppSelector(
-    (state) => state.gameData.room?.gameData.chat || []
+  const messages = uiGameData.chat || [];
+  const players = uiGameData.players;
+  const playersBeingWaitedFor = players?.filter((p) =>
+    waitingForPlayers.includes(p._id)
   );
-
-  const players = useAppSelector(
-    (state) => state.gameData.room?.gameData.players
-  );
+  console.log('ChatThread: playersBeingWaitedFor', playersBeingWaitedFor);
 
   enum PlayerColors {
     Blue = 'info.main',
@@ -171,8 +172,8 @@ export default function ChatThread(props: {
     }
   };
 
-  players?.forEach((iterPlayer: { clientId: string }) => {
-    GetMyColor(iterPlayer.clientId, iterPlayer.clientId == player?.clientId);
+  players?.forEach((iterPlayer: { _id: string }) => {
+    GetMyColor(iterPlayer._id, iterPlayer._id == player?._id);
   });
   React.useEffect(() => {
     const objDiv = document.getElementById('chat-thread');
@@ -199,8 +200,7 @@ export default function ChatThread(props: {
       <Stack direction="column">
         {messages.map((msg, idx) => {
           const myMessage =
-            msg.sender === SenderType.PLAYER &&
-            msg.senderId === player?.clientId;
+            msg.sender === SenderType.PLAYER && msg.senderId === player?._id;
 
           if (msg.sender == SenderType.SYSTEM) {
             currMessageOwner = 'System';
@@ -226,7 +226,7 @@ export default function ChatThread(props: {
                   textAlign={myMessage ? 'left' : 'right'}
                 >
                   {msg.sender === SenderType.PLAYER
-                    ? msg.senderId === player?.clientId
+                    ? msg.senderId === player?._id
                       ? 'You'
                       : msg.senderName
                     : 'System'}
@@ -241,7 +241,7 @@ export default function ChatThread(props: {
                 {!skipAvatar &&
                   (msg.sender === SenderType.PLAYER ? (
                     <AvatarSprite
-                      player={players?.find((p) => p.clientId === msg.senderId)}
+                      player={players?.find((p) => p._id === msg.senderId)}
                       bgColor={bubbleColor}
                     />
                   ) : (
@@ -327,6 +327,21 @@ export default function ChatThread(props: {
                 />
               </Typography>
             </Paper>
+          </Stack>
+        )}
+        {playersBeingWaitedFor && playersBeingWaitedFor.length > 0 && (
+          <Stack
+            direction="column"
+            key={`waiting-for-players`}
+            sx={{ p: 1 }}
+            spacing={2}
+          >
+            <b>Waiting for responses from:</b>
+            {playersBeingWaitedFor.map((p) => (
+              <Typography key={`waiting-for-player-${p._id}`} color={'black'}>
+                {p.name}
+              </Typography>
+            ))}
           </Stack>
         )}
       </Stack>

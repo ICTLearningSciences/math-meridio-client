@@ -17,6 +17,7 @@ export function useWithConfig() {
   );
 
   function loadAbeConfig() {
+    console.log('loading abe config');
     dispatch(fetchAbeConfig());
   }
 

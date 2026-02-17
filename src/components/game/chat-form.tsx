@@ -8,7 +8,6 @@ import React from 'react';
 import SpeechRecognition, {
   useSpeechRecognition,
 } from 'react-speech-recognition';
-import { v4 as uuid } from 'uuid';
 import {
   Fab,
   FormControl,
@@ -20,16 +19,10 @@ import {
 } from '@mui/material';
 import { Mic, MicOutlined, Send } from '@mui/icons-material';
 
-import { useAppSelector } from '../../store/hooks';
-import { ChatMessage, SenderType } from '../../store/slices/game';
-import { useWithGame } from '../../store/slices/game/use-with-game-state';
-import { SESSION_ID } from '../../store/local-storage';
-import { localStorageGet } from '../../store/local-storage';
-
 export const MAX_MESSAGE_LENGTH = 200;
 
 export default function ChatForm(props: {
-  sendMessage?: (msg: ChatMessage) => void;
+  sendMessage: (msg: string) => void;
 }): JSX.Element {
   const [input, setInput] = React.useState<string>('');
   const {
@@ -38,8 +31,7 @@ export default function ChatForm(props: {
     browserSupportsSpeechRecognition,
     resetTranscript,
   } = useSpeechRecognition();
-  const { sendMessage } = useWithGame();
-  const { player } = useAppSelector((state) => state.playerData);
+  const { sendMessage } = props;
 
   React.useEffect(() => {
     if (listening) {
@@ -48,22 +40,13 @@ export default function ChatForm(props: {
   }, [transcript]);
 
   function onSend(): void {
-    const sessionId = localStorageGet(SESSION_ID);
     if (input.trim() === '' || input.length > MAX_MESSAGE_LENGTH) {
       return;
     }
-    const msg: ChatMessage = {
-      id: uuid(),
-      sender: SenderType.PLAYER,
-      senderId: player?.clientId,
-      senderName: player?.name,
-      message: input,
-      sessionId: sessionId as string,
-    };
     if (props.sendMessage) {
-      props.sendMessage(msg);
+      props.sendMessage(input);
     } else {
-      sendMessage(msg);
+      sendMessage(input);
     }
     setInput('');
   }
@@ -92,6 +75,7 @@ export default function ChatForm(props: {
       <FormControl variant="outlined" style={{ flex: 1 }}>
         <InputLabel>Chat:</InputLabel>
         <OutlinedInput
+          data-cy="chat-input"
           label="Chat:"
           type="text"
           value={input}
@@ -118,6 +102,7 @@ export default function ChatForm(props: {
           endAdornment={
             <InputAdornment position="end">
               <IconButton
+                data-cy="send-message-button"
                 type="submit"
                 color="primary"
                 edge="end"

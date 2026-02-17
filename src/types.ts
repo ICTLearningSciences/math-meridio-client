@@ -4,6 +4,11 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
+import {
+  DiscussionStage,
+  IStage,
+} from './components/discussion-stage-builder/types';
+
 export enum PromptOutputTypes {
   TEXT = 'TEXT',
   JSON = 'JSON',
@@ -59,7 +64,10 @@ export interface LoadingState {
 export enum AiServiceNames {
   AZURE = 'AZURE_OPEN_AI',
   OPEN_AI = 'OPEN_AI',
+  CAMO_GPT = 'CAMO_GPT',
+  ASK_SAGE = 'ASK_SAGE',
   GEMINI = 'GEMINI',
+  ANTHROPIC = 'ANTHROPIC',
 }
 
 export interface ServiceModelInfo {
@@ -74,3 +82,43 @@ export type AiServiceModelConfigs = {
   serviceName: AiServiceNames;
   modelList: ServiceModelInfo[];
 };
+
+export interface Connection<T> {
+  edges: Edge<T>[];
+  pageInfo: PageInfo;
+}
+
+export interface Edge<T> {
+  cursor: string;
+  node: T;
+}
+
+export interface PageInfo {
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
+  startCursor: string;
+  endCursor: string;
+}
+
+export type DiscussionCurrentStage = CurrentStage<DiscussionStage>;
+
+export interface CurrentStage<T extends IStage> {
+  id: string;
+  stage: T;
+  action?: () => void;
+  beforeStart?: () => void;
+  getNextStage: (collectedData: CollectedDiscussionData) => IStage;
+}
+export type CollectedDiscussionData = Record<
+  string,
+  string | number | boolean | string[]
+>;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type SolutionGameStateData = Record<string, any>;
+
+export const SIMULTAION_VIEWED_KEY = 'viewed-simulation';
+
+export function getSimulationViewedKey(stageId: string): string {
+  return `${SIMULTAION_VIEWED_KEY}-${stageId}`;
+}

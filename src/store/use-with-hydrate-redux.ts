@@ -7,13 +7,36 @@ The full terms of this copyright and license should always be found in the root 
 import { useEffect } from 'react';
 import { useWithStages } from './slices/stages/use-with-stages';
 import { useWithConfig } from './slices/config/use-with-config';
+import { useWithEducationalData } from './slices/educational-data/use-with-educational-data';
+import { EducationalRole } from './slices/player/types';
+import { LoadStatus } from '../types';
+import { useAppSelector } from './hooks';
 
 export function useWithHydrateRedux() {
   const { loadDiscussionStages } = useWithStages();
   const { loadAbeConfig } = useWithConfig();
-
+  const { fetchInstructorDataHydration, fetchStudentDataHydration } =
+    useWithEducationalData();
+  const playerState = useAppSelector((state) => state.playerData);
   useEffect(() => {
     loadDiscussionStages();
     loadAbeConfig();
   }, []);
+
+  useEffect(() => {
+    if (
+      playerState.loginStatus.status !== LoadStatus.DONE ||
+      !playerState.player
+    ) {
+      return;
+    }
+    if (
+      playerState.viewingAs === EducationalRole.INSTRUCTOR &&
+      playerState.player.educationalRole === EducationalRole.INSTRUCTOR
+    ) {
+      fetchInstructorDataHydration();
+    } else {
+      fetchStudentDataHydration();
+    }
+  }, [playerState.loginStatus.status]);
 }
