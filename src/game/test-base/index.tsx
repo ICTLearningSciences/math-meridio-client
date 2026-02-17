@@ -8,12 +8,6 @@ import React from 'react';
 import { Game } from '../types';
 import { SimulationScene } from './SimulationScene';
 
-import {
-  DiscussionStage,
-  IStage,
-  SimulationStage,
-} from '../../components/discussion-stage-builder/types';
-
 import { ProblemComponent } from './problem';
 import { SolutionComponent } from './solution';
 import { PlayerStrategy, SimulationComponent } from './simulation';
@@ -23,17 +17,7 @@ import {
   GameStateData,
   PlayerStateData,
 } from '../../store/slices/game/types';
-import { CurrentStage } from '../../types';
 import { Player } from '../../store/slices/player/types';
-
-const introductionDiscussionStage = '2f9c8097-74b1-40ff-9199-36431b6095b9';
-const collectStrategyDiscussionStage = 'b5bf0160-a586-49e5-86e4-eb00a375000b';
-const understandingEquationDiscussionStage =
-  'b32ba455-11c3-4ec8-8821-61f435abd923';
-const selectStrategyDiscussionStage = '7bf234eb-d864-40ed-8d24-3b5ff84a3991';
-const determineBestStrategyDiscussionStage =
-  '2db20f92-8e48-4f2a-a23c-af94c9e7ee22';
-const finishedDiscussionStage = '4269f917-e942-4138-8245-3f13f243c07f';
 
 export const UNDERSTANDS_ALGORITHM_KEY = 'understands_algorithm';
 export const UNDERSTANDS_MULTIPLICATION_KEY = 'understands_multiplication';
@@ -94,8 +78,16 @@ const BaseTestGame: Game = {
       />
     );
   },
-  showPlayerStrategy: (player: Player, playersGameStateData: PlayerStateData) => {
-    return <PlayerStrategy player={player} playersGameStateData={playersGameStateData} />;
+  showPlayerStrategy: (
+    player: Player,
+    playersGameStateData: PlayerStateData
+  ) => {
+    return (
+      <PlayerStrategy
+        player={player}
+        playersGameStateData={playersGameStateData}
+      />
+    );
   },
   showSimulation: (game: Game) => {
     return <SimulationComponent game={game} />;

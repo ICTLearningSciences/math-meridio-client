@@ -41,6 +41,7 @@ export function fetchStudentDataHydrationResponse(): FetchStudentEducationalData
             classes: [],
             rooms: [],
             students: [],
+            gamesList: [],
             classMemberships: [],
         }
     }
@@ -52,6 +53,7 @@ export function fetchInstructorDataHydrationResponse(): FetchInstructorEducation
             classes: [],
             rooms: [],
             students: [],
+            gamesList: [],
             classMemberships: [],
         }
     }

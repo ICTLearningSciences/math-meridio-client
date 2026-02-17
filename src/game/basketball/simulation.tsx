@@ -7,7 +7,7 @@ The full terms of this copyright and license should always be found in the root 
 import React from 'react';
 
 import { useWithPhaserGame } from '../../hooks/use-with-phaser-game';
-import { PlayerStateData } from '../../store/slices/game/types';
+import { GameStateData } from '../../store/slices/game/types';
 import EventSystem from '../event-system';
 import { Typography } from '@mui/material';
 import { BasketballSimulationData } from './SimulationScene';
@@ -27,10 +27,11 @@ import { Game } from '../types';
 import { Player } from '../../store/slices/player/types';
 
 export function PlayerStrategy(props: {
-  playersGameStateData: PlayerStateData;
+  playersGameStateData: GameStateData;
   player: Player;
 }): JSX.Element {
-  const psd = props.playersGameStateData[props.player._id];
+  console.log('playersGameStateData', props.playersGameStateData);
+  const psd = props.playersGameStateData;
   const insideShots = psd[INSIDE_SHOT_PERCENT] || 0;
   const midShots = psd[MID_SHOT_PERCENT] || 0;
   const outsideShots = psd[OUTSIDE_SHOT_PERCENT] || 0;
@@ -44,6 +45,7 @@ export function PlayerStrategy(props: {
     if (!canSimulate) return;
     const simData: BasketballSimulationData = {
       player: props.player._id,
+      playerAvatar: props.player,
       outsideShots: outsideShots,
       midShots: midShots,
       insideShots: insideShots,
