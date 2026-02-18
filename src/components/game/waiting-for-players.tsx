@@ -66,7 +66,9 @@ export default function WaitingForPlayers(
   return (
     <Stack
       direction="column"
-      key={`waiting-for-players`}
+      key={`waiting-for-players-${playersBeingWaitedFor
+        .map((p) => p._id)
+        .join(',')}`}
       sx={{ p: 1 }}
       spacing={2}
       style={{

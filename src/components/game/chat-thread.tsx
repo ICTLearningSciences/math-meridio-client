@@ -21,6 +21,7 @@ import React from 'react';
 import AvatarSprite from '../avatar-sprite';
 import { CurGameState } from '../discussion-stage-builder/types';
 import WaitingForPlayers from './waiting-for-players';
+import { Player } from '../../store/slices/player/types';
 
 const useStyles = makeStyles()(() => ({
   chatThread: {
@@ -90,9 +91,14 @@ export default function ChatThread(props: {
   const { player } = useAppSelector((state) => state.playerData);
   const messages = uiGameData.chat || [];
   const players = uiGameData.players;
-  const playersBeingWaitedFor = players?.filter((p) =>
-    requestUserInputPhaseData.playersLeftToRespond.includes(p._id)
-  );
+  const playersBeingWaitedFor =
+    requestUserInputPhaseData.playersLeftToRespond.reduce((acc, id) => {
+      const player = players?.find((p) => p._id === id);
+      if (player) {
+        acc.push(player);
+      }
+      return acc;
+    }, [] as Player[]);
 
   enum PlayerColors {
     Blue = 'info.main',
