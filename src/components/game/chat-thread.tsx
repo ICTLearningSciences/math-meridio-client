@@ -16,12 +16,13 @@ import {
   Typography,
 } from '@mui/material';
 import { GameData, SenderType } from '../../store/slices/game/types';
-import { FadingText } from '../fading-text';
 import React from 'react';
 import AvatarSprite from '../avatar-sprite';
 import { CurGameState } from '../discussion-stage-builder/types';
 import WaitingForPlayers from './waiting-for-players';
 import { Player } from '../../store/slices/player/types';
+import { ProcessingIndicator } from './processing-indicator';
+import { useAnimatedMessages } from './use-animated-messages';
 
 const useStyles = makeStyles()(() => ({
   chatThread: {
@@ -89,7 +90,9 @@ export default function ChatThread(props: {
   const { roomIsProcessing, requestUserInputPhaseData, uiGameData } = props;
   const { classes } = useStyles();
   const { player } = useAppSelector((state) => state.playerData);
-  const messages = uiGameData.chat || [];
+  const allMessages = uiGameData.chat || [];
+  const { displayedMessages, isAnimating } = useAnimatedMessages(allMessages);
+  const messages = displayedMessages;
   const players = uiGameData.players;
   const playersBeingWaitedFor =
     requestUserInputPhaseData.playersLeftToRespond.reduce((acc, id) => {
@@ -303,39 +306,7 @@ export default function ChatThread(props: {
             </Stack>
           );
         })}
-        {roomIsProcessing && (
-          <Stack
-            direction="row-reverse"
-            key={`fading-text`}
-            sx={{ p: 1 }}
-            spacing={2}
-            justifyContent="right"
-          >
-            <Paper
-              square
-              elevation={0}
-              sx={{
-                p: 3,
-                whiteSpace: 'normal',
-                wordWrap: 'break-word',
-                backgroundColor: PlayerColors.Grey,
-                paddingLeft: '5%',
-                paddingRight: '10%',
-                clipPath:
-                  'polygon(0% 0%, 100% 0%, calc(100% - 1em) calc(0% + 1em), calc(100% - 1em) 100%, 0% 100%, 0% 0%)',
-                borderBottomLeftRadius: '1em',
-                borderTopLeftRadius: '1em',
-              }}
-            >
-              {' '}
-              <Typography color={'white'}>
-                <FadingText
-                  strings={['Thinking...', 'Strategizing...', 'Analyzing...']}
-                />
-              </Typography>
-            </Paper>
-          </Stack>
-        )}
+        {(roomIsProcessing || isAnimating) && <ProcessingIndicator />}
         <WaitingForPlayers
           numPlayersInRoom={players?.length || 0}
           playersBeingWaitedFor={playersBeingWaitedFor || []}
