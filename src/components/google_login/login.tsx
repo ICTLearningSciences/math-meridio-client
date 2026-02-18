@@ -65,15 +65,6 @@ export default function Login(props: { useLogin: UseWithLogin }): JSX.Element {
         justifyContent: 'center',
       }}
     >
-      <Button
-        onClick={() => {
-          testLlmRequest().then((data) => {
-            console.log('data', data);
-          });
-        }}
-      >
-        Test LLM Request
-      </Button>
       <LoginUI
         loginState={loginState}
         setViewingAs={setViewingAs}
