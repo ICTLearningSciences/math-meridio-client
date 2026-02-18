@@ -117,6 +117,24 @@ export const unblockStudentFromClass = createAsyncThunk(
   }
 );
 
+export const assignStudentToGroup = createAsyncThunk(
+  'educationalData/assignStudentToGroup',
+  async (args: { studentId: string; classId: string; groupId: number }) => {
+    return await api.assignStudentToGroup(
+      args.studentId,
+      args.classId,
+      args.groupId
+    );
+  }
+);
+
+export const assignClassGroupsAndStart = createAsyncThunk(
+  'educationalData/assignClassGroupsAndStart',
+  async (args: { classId: string; groups: ClassMembership[] }) => {
+    return await api.assignClassGroupsAndStart(args.classId, args.groups);
+  }
+);
+
 export const adjustClassroomArchiveStatus = createAsyncThunk(
   'educationalData/adjustClassroomArchiveStatus',
   async (args: { classId: string; setArchived: boolean }) => {
@@ -355,6 +373,14 @@ export const educationalDataSlice = createSlice({
 
       .addCase(unblockStudentFromClass.fulfilled, (state, action) => {
         addOrUpdateClassMembership(state, action.payload);
+      })
+
+      .addCase(assignStudentToGroup.fulfilled, (state, action) => {
+        addOrUpdateClassMembership(state, action.payload);
+      })
+
+      .addCase(assignClassGroupsAndStart.fulfilled, (state, action) => {
+        addOrUpdateClass(state, action.payload);
       })
 
       .addCase(adjustClassroomArchiveStatus.fulfilled, (state, action) => {

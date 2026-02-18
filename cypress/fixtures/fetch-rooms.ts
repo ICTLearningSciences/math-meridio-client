@@ -23,6 +23,7 @@ export function freshRoomData(attendingRoomOwner: Player): Room {
         "_id": "698168d0d10bf6f91861e94d",
         "name": "Concert Ticket Management Solution Space 4",
         "classId": "697d7ba20e83375926c1241b",
+        "groupId": undefined,
         "phase": RoomPhase.NO_ACTIVE_PROCESSING,
         "gameData": {
             "gameId": "concert-ticket-sales",

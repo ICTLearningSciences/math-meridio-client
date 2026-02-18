@@ -87,10 +87,10 @@ function SimulationSpace(props: {
 }): JSX.Element {
   const { game, gameStateData } = props;
   const { isMuted, toggleMuted } = useWithConfig();
-  const [curSimulation, setSimulation] = React.useState<{player: string}>();
+  const [curSimulation, setSimulation] = React.useState<{ player: string }>();
 
   React.useEffect(() => {
-    EventSystem.on('simulate', (sim: {player: string}) => setSimulation(sim));
+    EventSystem.on('simulate', (sim: { player: string }) => setSimulation(sim));
   }, []);
 
   return (

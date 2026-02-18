@@ -18,6 +18,7 @@ export function defaultNbaStarterRoomData(classId: string, user: Player): Room {
         "_id": "test-room-id",
         "name": "NBA Starter Room",
         "classId": classId,
+        "groupId": undefined,
         "phase": RoomPhase.PROCESSING,
         "gameData": {
             "gameId": "basketball",

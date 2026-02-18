@@ -28,6 +28,8 @@ import { useAppSelector } from '../../../store/hooks';
 import { LoadStatus } from '../../../types';
 import { GAMES, Game } from '../../../game/types';
 import { StudentRoomCard } from './student-room-card';
+import { ClassMembershipStatus } from '../../../store/slices/educational-data/types';
+import AvatarSprite from '../../avatar-sprite';
 // import { UseWithHostGameManagement } from '../../../classes/authority/use-with-host-game-manage';
 
 export default function StudentSelectedClassPage(): JSX.Element {
@@ -40,7 +42,14 @@ export default function StudentSelectedClassPage(): JSX.Element {
   const [creating, setCreating] = React.useState(false);
 
   const classroom = educationalData.classes.find((c) => c._id === classId);
-  const _gameRooms = educationalData.rooms.filter((r) => r.classId === classId);
+  const studentMemberships = educationalData.classMemberships.filter(
+    (c) => c.classId === classId && c.status === ClassMembershipStatus.MEMBER
+  );
+  const myGroup = studentMemberships.find((c) => c.userId === player?._id);
+
+  const _gameRooms = educationalData.rooms.filter(
+    (r) => r.classId === classId && r.groupId === myGroup?.groupId
+  );
   const gameRooms = selectedGame
     ? _gameRooms.filter((r) => r.gameData.gameId === selectedGame.id)
     : [];
@@ -123,6 +132,40 @@ export default function StudentSelectedClassPage(): JSX.Element {
         >
           {classroom.description}
         </Typography>
+      )}
+
+      {myGroup && (
+        <div
+          className="column"
+          style={{ width: '90%', maxWidth: 800, marginBottom: 40 }}
+        >
+          <Typography variant="h5" style={{ marginBottom: 15 }}>
+            My Group
+          </Typography>
+          <div
+            className="row list center-div"
+            style={{ justifyContent: 'space-evenly' }}
+          >
+            {studentMemberships
+              .filter((m) => m.groupId === myGroup.groupId)
+              .map((m) => {
+                const p = educationalData.students.find(
+                  (s) => s._id === m.userId
+                );
+                return (
+                  <div key={m.userId} className="column center-div">
+                    <AvatarSprite
+                      player={p || player}
+                      bgColor={p ? '' : 'rgb(218, 183, 250)'}
+                    />
+                    <Typography variant="body2" fontSize={12} align="center">
+                      {p?.name || `ME: ${player.name}`}
+                    </Typography>
+                  </div>
+                );
+              })}
+          </div>
+        </div>
       )}
 
       <div

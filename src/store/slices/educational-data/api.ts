@@ -244,6 +244,56 @@ export async function unblockStudentFromClass(
   );
 }
 
+export async function assignStudentToGroup(
+  studentId: string,
+  classId: string,
+  groupId: number
+): Promise<ClassMembership> {
+  const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
+  return await execGql<ClassMembership>(
+    {
+      query: `mutation AssignStudentToGroup($studentId: String!, $classId: String!, $groupId: Int!) {
+    assignStudentToGroup(studentId: $studentId, classId: $classId, groupId: $groupId) {
+        ${classMembershipDataQuery}
+    }
+  }`,
+      variables: {
+        studentId,
+        classId,
+        groupId,
+      },
+    },
+    {
+      dataPath: 'assignStudentToGroup',
+      accessToken: accessToken,
+    }
+  );
+}
+
+export async function assignClassGroupsAndStart(
+  classId: string,
+  groups: ClassMembership[]
+): Promise<Classroom> {
+  const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
+  return await execGql<Classroom>(
+    {
+      query: `mutation AssignClassGroupsAndStart($classId: String!, $groups: [ClassMembershipInputType]!) {
+    assignClassGroupsAndStart(classId: $classId, groups: $groups) {
+        ${classroomDataQuery}
+    }
+  }`,
+      variables: {
+        classId,
+        groups,
+      },
+    },
+    {
+      dataPath: 'assignClassGroupsAndStart',
+      accessToken: accessToken,
+    }
+  );
+}
+
 export async function adjustClassroomArchiveStatus(
   classId: string,
   setArchived: boolean
@@ -285,10 +335,6 @@ export async function fetchInstructorDataHydration(): Promise<FetchEducationalDa
         }
         classMemberships {
             ${classMembershipDataQuery}
-        }
-        gamesList {
-            id
-            name
         }
     }
   }`,

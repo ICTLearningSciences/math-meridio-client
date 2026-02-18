@@ -104,7 +104,6 @@ export const fullDiscussionStageQueryData = `
           message
           saveResponseVariableName
           disableFreeInput
-          requireAllUserInputs
           predefinedResponses{
               clientId
               message

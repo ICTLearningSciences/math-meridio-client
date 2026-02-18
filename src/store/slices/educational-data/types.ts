@@ -38,6 +38,7 @@ export const classroomDataQuery = `
         uses
     }
     createdAt
+    startedAt
     archivedAt
   `;
 
@@ -58,6 +59,7 @@ export interface ClassMembership {
 export const classMembershipDataQuery = `
     classId
     userId
+    groupId
     status
   `;
 

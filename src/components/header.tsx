@@ -102,7 +102,9 @@ export function Header(props: { useLogin: UseWithLogin }) {
             Logout
           </Button>
         )}
-        {player && <AvatarSprite bgColor='rgb(217, 217, 217)' player={player} />}
+        {player && (
+          <AvatarSprite bgColor="rgb(217, 217, 217)" player={player} />
+        )}
       </div>
     </header>
   );

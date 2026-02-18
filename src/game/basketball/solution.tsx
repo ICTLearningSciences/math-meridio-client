@@ -115,7 +115,10 @@ export function SolutionComponent(props: {
           'true'
         )
       );
-  }, [uiGameData.globalStateData.gameStateData, uiGameData.playersGameStateData]);
+  }, [
+    uiGameData.globalStateData.gameStateData,
+    uiGameData.playersGameStateData,
+  ]);
 
   function Variable(props: {
     dataKey: string;

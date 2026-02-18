@@ -46,6 +46,15 @@ export interface UseWithEducationalData {
     studentId: string,
     classId: string
   ) => Promise<ClassMembership>;
+  assignStudentToGroup: (
+    studentId: string,
+    classId: string,
+    groupId: number
+  ) => Promise<ClassMembership>;
+  assignClassGroupsAndStart: (
+    classId: string,
+    groups: ClassMembership[]
+  ) => Promise<Classroom>;
   adjustClassroomArchiveStatus: (
     classId: string,
     setArchived: boolean
@@ -167,6 +176,32 @@ export function useWithEducationalData(): UseWithEducationalData {
     ).unwrap();
   }
 
+  async function assignStudentToGroup(
+    studentId: string,
+    classId: string,
+    groupId: number
+  ): Promise<ClassMembership> {
+    return await dispatch(
+      educationalDataActions.assignStudentToGroup({
+        studentId,
+        classId,
+        groupId,
+      })
+    ).unwrap();
+  }
+
+  async function assignClassGroupsAndStart(
+    classId: string,
+    groups: ClassMembership[]
+  ): Promise<Classroom> {
+    return await dispatch(
+      educationalDataActions.assignClassGroupsAndStart({
+        classId,
+        groups,
+      })
+    ).unwrap();
+  }
+
   async function adjustClassroomArchiveStatus(
     classId: string,
     setArchived: boolean
@@ -282,6 +317,8 @@ export function useWithEducationalData(): UseWithEducationalData {
     removeStudentFromClass,
     blockStudentFromClass,
     unblockStudentFromClass,
+    assignStudentToGroup,
+    assignClassGroupsAndStart,
     adjustClassroomArchiveStatus,
     updateClassNameDescription,
     joinGameRoom,

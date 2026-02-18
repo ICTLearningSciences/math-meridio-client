@@ -38,6 +38,7 @@ export interface Room {
   name: string;
   phase: RoomPhase;
   classId?: string;
+  groupId?: number;
   gameData: GameData;
 }
 

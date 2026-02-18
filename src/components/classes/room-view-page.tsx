@@ -13,10 +13,7 @@ The full terms of this copyright and license should always be found in the root 
 import React from 'react';
 import { useParams, useOutletContext } from 'react-router-dom';
 import { CircularProgress, Typography } from '@mui/material';
-import {
-  UseWithEducationalData,
-  useWithEducationalData,
-} from '../../store/slices/educational-data/use-with-educational-data';
+import { UseWithEducationalData } from '../../store/slices/educational-data/use-with-educational-data';
 import GamePage from '../game/game-page';
 import withAuthorizationOnly from '../../wrap-with-authorization-only';
 import { useWithPollActiveRoom } from '../../store/slices/educational-data/use-with-poll-active-room';
@@ -26,7 +23,9 @@ function RoomViewPage(): JSX.Element {
 
   const educationalDataContext = useOutletContext<UseWithEducationalData>();
 
-  const room = educationalDataContext.educationalData.rooms.find((r) => r._id === roomId);
+  const room = educationalDataContext.educationalData.rooms.find(
+    (r) => r._id === roomId
+  );
 
   if (!room) {
     return (
