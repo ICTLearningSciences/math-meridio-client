@@ -36,7 +36,7 @@ export function SolutionComponent(props: {
   uiGameData: GameData;
   player: Player;
   updatePlayerStateData: (
-    newPlayerStateData: GameStateData[],
+    newPlayerStateData: GameStateData,
     playerId: string
   ) => void;
 }): JSX.Element {
@@ -250,18 +250,16 @@ export function SolutionComponent(props: {
             <EditableVariable
               updatePlayerStateData={(newValue: number) => {
                 updatePlayerStateData(
-                  [
-                    {
-                      key: VIP_TICKET_PERCENT_KEY,
-                      value: newValue,
-                    },
-                  ],
+                  { [VIP_TICKET_PERCENT_KEY]: newValue },
                   player._id
                 );
               }}
               dataKey={VIP_TICKET_PERCENT_KEY}
               title="# of VIP tickets"
-              myPlayerStateData={playerGameStateDataRecord || {}}
+              myPlayerStateData={{
+                ...globalGameStateDataRecord,
+                ...playerGameStateDataRecord,
+              }}
               shouldDisable={
                 Boolean(editingVariable) &&
                 editingVariable !== VIP_TICKET_PERCENT_KEY
@@ -319,18 +317,16 @@ export function SolutionComponent(props: {
             <EditableVariable
               updatePlayerStateData={(newValue: number) => {
                 updatePlayerStateData(
-                  [
-                    {
-                      key: RESERVED_TICKET_PERCENT_KEY,
-                      value: newValue,
-                    },
-                  ],
+                  { [RESERVED_TICKET_PERCENT_KEY]: newValue },
                   player._id
                 );
               }}
               dataKey={RESERVED_TICKET_PERCENT_KEY}
               title="# of Reserved tickets"
-              myPlayerStateData={playerGameStateDataRecord || {}}
+              myPlayerStateData={{
+                ...globalGameStateDataRecord,
+                ...playerGameStateDataRecord,
+              }}
               shouldDisable={
                 Boolean(editingVariable) &&
                 editingVariable !== RESERVED_TICKET_PERCENT_KEY
@@ -388,18 +384,16 @@ export function SolutionComponent(props: {
             <EditableVariable
               updatePlayerStateData={(newValue: number) => {
                 updatePlayerStateData(
-                  [
-                    {
-                      key: GENERAL_ADMISSION_TICKET_PERCENT_KEY,
-                      value: newValue,
-                    },
-                  ],
+                  { [GENERAL_ADMISSION_TICKET_PERCENT_KEY]: newValue },
                   player._id
                 );
               }}
               dataKey={GENERAL_ADMISSION_TICKET_PERCENT_KEY}
               title="# of GA tickets"
-              myPlayerStateData={playerGameStateDataRecord || {}}
+              myPlayerStateData={{
+                ...globalGameStateDataRecord,
+                ...playerGameStateDataRecord,
+              }}
               shouldDisable={
                 Boolean(editingVariable) &&
                 editingVariable !== GENERAL_ADMISSION_TICKET_PERCENT_KEY

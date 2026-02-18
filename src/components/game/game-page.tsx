@@ -32,7 +32,7 @@ import Popup from '../popup';
 import { useWithConfig } from '../../store/slices/config/use-with-config';
 import { useWithWindow } from '../../hooks/use-with-window';
 import EventSystem from '../../game/event-system';
-import { GameData } from '../../store/slices/game/types';
+import { GameData, RoomPhase } from '../../store/slices/game/types';
 import { Game } from '../../game/types';
 
 import '../../layout.css';
@@ -468,8 +468,12 @@ function GamePage(): JSX.Element {
           }}
         >
           <ChatThread
-            responsePending={false}
-            waitingForPlayers={[]}
+            roomIsProcessing={room.phase === RoomPhase.PROCESSING}
+            requestUserInputPhaseData={{
+              curState: room.gameData.curGameState.curState,
+              playersLeftToRespond:
+                room.gameData.curGameState.playersLeftToRespond,
+            }}
             uiGameData={room.gameData}
           />
           <ChatForm sendMessage={sendMessageToGameRoom} />

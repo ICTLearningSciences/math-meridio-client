@@ -43,7 +43,7 @@ const BasketballGame: Game = {
     uiGameData: GameData,
     player: Player,
     updatePlayerStateData: (
-      newPlayerStateData: GameStateData[],
+      newPlayerStateData: GameStateData,
       playerId: string
     ) => void
   ) => {

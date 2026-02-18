@@ -4,6 +4,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
+import { RequireInputType } from "../../src/components/discussion-stage-builder/types";
 import { Room, RoomPhase } from "../../src/store/slices/game/types";
 import { Player } from "../../src/store/slices/player/types";
 
@@ -26,6 +27,10 @@ export function freshRoomData(attendingRoomOwner: Player): Room {
         "phase": RoomPhase.NO_ACTIVE_PROCESSING,
         "gameData": {
             "gameId": "concert-ticket-sales",
+            "curGameState": {
+                "curState": RequireInputType.SINGLE_RESPONSE_REQUIRED,
+                "playersLeftToRespond": []
+            },
             "players": [
                 attendingRoomOwner
             ],

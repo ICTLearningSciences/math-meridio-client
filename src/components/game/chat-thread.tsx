@@ -19,6 +19,8 @@ import { GameData, SenderType } from '../../store/slices/game/types';
 import { FadingText } from '../fading-text';
 import React from 'react';
 import AvatarSprite from '../avatar-sprite';
+import { CurGameState } from '../discussion-stage-builder/types';
+import WaitingForPlayers from './waiting-for-players';
 
 const useStyles = makeStyles()(() => ({
   chatThread: {
@@ -79,19 +81,18 @@ const useStyles = makeStyles()(() => ({
 }));
 
 export default function ChatThread(props: {
-  responsePending: boolean;
-  waitingForPlayers: string[];
+  roomIsProcessing: boolean;
+  requestUserInputPhaseData: CurGameState;
   uiGameData: GameData;
 }): JSX.Element {
-  const { responsePending, waitingForPlayers, uiGameData } = props;
+  const { roomIsProcessing, requestUserInputPhaseData, uiGameData } = props;
   const { classes } = useStyles();
   const { player } = useAppSelector((state) => state.playerData);
   const messages = uiGameData.chat || [];
   const players = uiGameData.players;
   const playersBeingWaitedFor = players?.filter((p) =>
-    waitingForPlayers.includes(p._id)
+    requestUserInputPhaseData.playersLeftToRespond.includes(p._id)
   );
-  console.log('ChatThread: playersBeingWaitedFor', playersBeingWaitedFor);
 
   enum PlayerColors {
     Blue = 'info.main',
@@ -296,7 +297,7 @@ export default function ChatThread(props: {
             </Stack>
           );
         })}
-        {responsePending && (
+        {roomIsProcessing && (
           <Stack
             direction="row-reverse"
             key={`fading-text`}
@@ -329,21 +330,13 @@ export default function ChatThread(props: {
             </Paper>
           </Stack>
         )}
-        {playersBeingWaitedFor && playersBeingWaitedFor.length > 0 && (
-          <Stack
-            direction="column"
-            key={`waiting-for-players`}
-            sx={{ p: 1 }}
-            spacing={2}
-          >
-            <b>Waiting for responses from:</b>
-            {playersBeingWaitedFor.map((p) => (
-              <Typography key={`waiting-for-player-${p._id}`} color={'black'}>
-                {p.name}
-              </Typography>
-            ))}
-          </Stack>
-        )}
+        <WaitingForPlayers
+          numPlayersInRoom={players?.length || 0}
+          playersBeingWaitedFor={playersBeingWaitedFor || []}
+          currentPlayerId={player?._id}
+          requestUserInputPhaseData={requestUserInputPhaseData}
+          roomIsProcessing={roomIsProcessing}
+        />
       </Stack>
     </div>
   );

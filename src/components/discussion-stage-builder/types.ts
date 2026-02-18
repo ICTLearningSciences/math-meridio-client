@@ -116,7 +116,18 @@ export interface RequestUserInputStageStep extends StageBuilderStep {
   saveResponseVariableName: string;
   disableFreeInput: boolean;
   predefinedResponses: PredefinedResponse[];
-  requireAllUserInputs: boolean;
+  requireInputType: RequireInputType;
+}
+
+export enum RequireInputType {
+  SINGLE_RESPONSE_REQUIRED = 'SINGLE_RESPONSE_REQUIRED',
+  ALL_USER_RESPONSES_REQUIRED_FREE_FOR_ALL = 'ALL_USER_RESPONSES_REQUIRED_FREE_FOR_ALL',
+  ALL_USER_RESPONSES_REQUIRED_IN_ORDER = 'ALL_REQUIRED_IN_ORDER',
+}
+
+export interface CurGameState {
+  curState: RequireInputType | 'WAITING_FOR_SIMULATION';
+  playersLeftToRespond: string[];
 }
 
 //Prompt

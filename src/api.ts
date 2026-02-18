@@ -104,7 +104,7 @@ export const fullDiscussionStageQueryData = `
           message
           saveResponseVariableName
           disableFreeInput
-          requireAllUserInputs
+          requireInputType
           predefinedResponses{
               clientId
               message
@@ -148,7 +148,12 @@ export const fullRoomQueryData = `
   _id
   name
   classId
+  phase
   gameData {
+    curGameState {
+      curState
+      playersLeftToRespond
+    }
     gameId
     players {
       ${userDataQuery}
