@@ -20,7 +20,8 @@ export type DiscussionStageStep =
   | SystemMessageStageStep
   | RequestUserInputStageStep
   | PromptStageStep
-  | ConditionalActivityStep;
+  | ConditionalActivityStep
+  | EndOfPhaseReflectionStep;
 
 export type DiscussionStageStepGQL =
   | SystemMessageStageStep
@@ -84,6 +85,7 @@ export interface DiscussionStageGQL extends IStage {
 export enum DiscussionStageStepType {
   SYSTEM_MESSAGE = 'SYSTEM_MESSAGE',
   REQUEST_USER_INPUT = 'REQUEST_USER_INPUT',
+  END_OF_PHASE_REFLECTION = 'END_OF_PHASE_REFLECTION',
   PROMPT = 'PROMPT',
   CONDITIONAL = 'CONDITIONAL',
 }
@@ -99,6 +101,13 @@ export interface StageBuilderStep {
 export interface SystemMessageStageStep extends StageBuilderStep {
   stepType: DiscussionStageStepType.SYSTEM_MESSAGE;
   message: string;
+}
+
+export interface EndOfPhaseReflectionStep extends StageBuilderStep {
+  stepType: DiscussionStageStepType.END_OF_PHASE_REFLECTION;
+  phaseTitle: string;
+  message: string;
+  question: string;
 }
 
 // RequestUserInput

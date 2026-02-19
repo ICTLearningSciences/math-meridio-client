@@ -11,8 +11,6 @@ import { useNavigateWithParams } from '../../hooks/use-navigate-with-params';
 import { UseWithLogin } from '../../store/slices/player/use-with-login';
 import { LoadStatus } from '../../types';
 import { EducationalRole } from '../../store/slices/player/types';
-import { Button } from '@mui/material';
-import { testLlmRequest } from '../../api';
 export default function Login(props: { useLogin: UseWithLogin }): JSX.Element {
   const navigate = useNavigateWithParams();
   const { useLogin } = props;

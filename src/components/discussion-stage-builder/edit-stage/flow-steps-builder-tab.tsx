@@ -24,6 +24,7 @@ import {
   DiscussionStage,
   DiscussionStageStep,
   DiscussionStageStepType,
+  EndOfPhaseReflectionStep,
   FlowItem,
   SystemMessageStageStep,
 } from '../types';
@@ -32,6 +33,10 @@ import {
   ConditionalStepBuilder,
   getDefaultConditionalStep,
 } from './step-builder/conditional-step-builder';
+import {
+  EndOfPhaseReflectionStepBuilder,
+  getDefaultEndOfPhaseReflection,
+} from './step-builder/end-of-phase-step-builder';
 export function FlowStepsBuilderTab(props: {
   flow: FlowItem;
   flowsList: FlowItem[];
@@ -50,6 +55,18 @@ export function FlowStepsBuilderTab(props: {
             key={i}
             stepIndex={i}
             step={step as SystemMessageStageStep}
+            updateLocalStage={updateLocalStage}
+            updateStep={(step) => props.updateStep(step, flow.clientId)}
+            deleteStep={() => props.deleteStep(step.stepId, flow.clientId)}
+            flowsList={flowsList}
+          />
+        );
+      case DiscussionStageStepType.END_OF_PHASE_REFLECTION:
+        return (
+          <EndOfPhaseReflectionStepBuilder
+            key={i}
+            stepIndex={i}
+            step={step as EndOfPhaseReflectionStep}
             updateLocalStage={updateLocalStage}
             updateStep={(step) => props.updateStep(step, flow.clientId)}
             deleteStep={() => props.deleteStep(step.stepId, flow.clientId)}
@@ -116,6 +133,8 @@ export function FlowStepsBuilderTab(props: {
         ? getDefaultRequestUserInputBuilder()
         : stepType === DiscussionStageStepType.CONDITIONAL
         ? getDefaultConditionalStep()
+        : stepType === DiscussionStageStepType.END_OF_PHASE_REFLECTION
+        ? getDefaultEndOfPhaseReflection()
         : defaultPromptBuilder();
     updateLocalStage((prevValue) => {
       return {
