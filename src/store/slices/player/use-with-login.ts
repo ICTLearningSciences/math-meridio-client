@@ -7,7 +7,11 @@ The full terms of this copyright and license should always be found in the root 
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import * as loginActions from './index';
 import { useEffect } from 'react';
-import { ACCESS_TOKEN_KEY, localStorageClear, localStorageGet } from '../../local-storage';
+import {
+  ACCESS_TOKEN_KEY,
+  localStorageClear,
+  localStorageGet,
+} from '../../local-storage';
 import { EducationalRole, UserAccessToken } from './types';
 import { PlayerStateData } from './index';
 import { LoadStatus } from '../../../types';
