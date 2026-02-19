@@ -219,7 +219,7 @@ export function checkGameAndPlayerStateForValue(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   value: any
 ) {
-  const gameDataValue = globalGameStateData[key];
-  const playerDataValue = playerGameStateData[key];
+  const gameDataValue = globalGameStateData?.[key];
+  const playerDataValue = playerGameStateData?.[key];
   return playerDataValue === value || gameDataValue === value;
 }

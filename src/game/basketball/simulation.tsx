@@ -30,7 +30,6 @@ export function PlayerStrategy(props: {
   playersGameStateData: GameStateData;
   player: Player;
 }): JSX.Element {
-  console.log('playersGameStateData', props.playersGameStateData);
   const psd = props.playersGameStateData;
   const insideShots = psd[INSIDE_SHOT_PERCENT] || 0;
   const midShots = psd[MID_SHOT_PERCENT] || 0;

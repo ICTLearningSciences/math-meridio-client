@@ -12,7 +12,11 @@ import {
   RowDiv,
   TopLeftText,
 } from '../../../../styled-components';
-import { CheckBoxInput, InputField } from '../../shared/input-components';
+import {
+  CheckBoxInput,
+  InputField,
+  SelectInputField,
+} from '../../shared/input-components';
 import { FlowStepSelector } from '../../shared/flow-step-selector';
 import { Button, IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -28,6 +32,7 @@ import {
   FlowItem,
   PredefinedResponse,
   RequestUserInputStageStep,
+  RequireInputType,
 } from '../../types';
 export function getDefaultRequestUserInputBuilder(): RequestUserInputStageStep {
   return {
@@ -38,7 +43,7 @@ export function getDefaultRequestUserInputBuilder(): RequestUserInputStageStep {
     saveResponseVariableName: '',
     disableFreeInput: false,
     predefinedResponses: [],
-    requireAllUserInputs: false,
+    requireInputType: RequireInputType.SINGLE_RESPONSE_REQUIRED,
   };
 }
 
@@ -321,11 +326,12 @@ export function RequestUserInputStepBuilder(props: {
             updateField('saveResponseVariableName', e);
           }}
         />
-        <CheckBoxInput
-          label="Require All Student Responses? (Will wait for all students to respond before progressing to the next step)"
-          value={step.requireAllUserInputs}
+        <SelectInputField
+          label="Student Input Requirements"
+          value={step.requireInputType}
+          options={[...Object.values(RequireInputType)]}
           onChange={(e) => {
-            updateField('requireAllUserInputs', e);
+            updateField('requireInputType', e);
           }}
         />
         <CheckBoxInput

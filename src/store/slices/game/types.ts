@@ -4,6 +4,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
+import { CurGameState } from '../../../components/discussion-stage-builder/types';
 import { Player } from '../player/types';
 
 export enum SenderType {
@@ -42,6 +43,7 @@ export interface Room {
 }
 
 export interface GameData {
+  curGameState: CurGameState;
   gameId: string;
   players: Player[];
   chat: ChatMessage[];

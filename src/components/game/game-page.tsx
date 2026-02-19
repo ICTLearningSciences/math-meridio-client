@@ -32,12 +32,13 @@ import Popup from '../popup';
 import { useWithConfig } from '../../store/slices/config/use-with-config';
 import { useWithWindow } from '../../hooks/use-with-window';
 import EventSystem from '../../game/event-system';
-import { GameData } from '../../store/slices/game/types';
+import { GameData, RoomPhase } from '../../store/slices/game/types';
 import { Game } from '../../game/types';
 
 import '../../layout.css';
 import { UseWithEducationalData } from '../../store/slices/educational-data/use-with-educational-data';
 import { useAppSelector } from '../../store/hooks';
+import { RequireInputType } from '../discussion-stage-builder/types';
 
 const COLS = 6;
 const ROWS = 4;
@@ -160,6 +161,27 @@ function GamePage(): JSX.Element {
   } = outletContext;
   const navigate = useNavigate();
   const { windowHeight, windowWidth } = useWithWindow();
+
+  const isSingleResponseRequired =
+    room?.gameData.curGameState.curState ===
+    RequireInputType.SINGLE_RESPONSE_REQUIRED;
+  const isFreeForAll =
+    room?.gameData.curGameState.curState ===
+    RequireInputType.ALL_USER_RESPONSES_REQUIRED_FREE_FOR_ALL;
+  const isInOrder =
+    room?.gameData.curGameState.curState ===
+    RequireInputType.ALL_USER_RESPONSES_REQUIRED_IN_ORDER;
+  const moreThanOnePlayerInRoom =
+    room?.gameData && room.gameData.players?.length > 1;
+  const isAtFrontOfList = Boolean(
+    room?.gameData &&
+      room.gameData.curGameState.playersLeftToRespond[0] === player?._id
+  );
+  const isMyTurn =
+    isSingleResponseRequired ||
+    isFreeForAll ||
+    !moreThanOnePlayerInRoom ||
+    (isInOrder && isAtFrontOfList);
 
   // Handle case where context is not yet available
   if (!outletContext) {
@@ -468,11 +490,15 @@ function GamePage(): JSX.Element {
           }}
         >
           <ChatThread
-            responsePending={false}
-            waitingForPlayers={[]}
+            roomIsProcessing={room.phase === RoomPhase.PROCESSING}
+            requestUserInputPhaseData={{
+              curState: room.gameData.curGameState.curState,
+              playersLeftToRespond:
+                room.gameData.curGameState.playersLeftToRespond,
+            }}
             uiGameData={room.gameData}
           />
-          <ChatForm sendMessage={sendMessageToGameRoom} />
+          <ChatForm sendMessage={sendMessageToGameRoom} isMyTurn={isMyTurn} />
         </Stack>
       </GridLayout>
     </div>
