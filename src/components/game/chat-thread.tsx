@@ -18,7 +18,10 @@ import {
 import { GameData, SenderType } from '../../store/slices/game/types';
 import React from 'react';
 import AvatarSprite from '../avatar-sprite';
-import { CurGameState } from '../discussion-stage-builder/types';
+import {
+  CurGameState,
+  RequireInputType,
+} from '../discussion-stage-builder/types';
 import WaitingForPlayers from './waiting-for-players';
 import { Player } from '../../store/slices/player/types';
 import { ProcessingIndicator } from './processing-indicator';
@@ -102,6 +105,13 @@ export default function ChatThread(props: {
       }
       return acc;
     }, [] as Player[]);
+  const isInRequestUserInputState =
+    requestUserInputPhaseData.curState ===
+      RequireInputType.ALL_USER_RESPONSES_REQUIRED_IN_ORDER ||
+    requestUserInputPhaseData.curState ===
+      RequireInputType.SINGLE_RESPONSE_REQUIRED ||
+    requestUserInputPhaseData.curState ===
+      RequireInputType.ALL_USER_RESPONSES_REQUIRED_FREE_FOR_ALL;
 
   enum PlayerColors {
     Blue = 'info.main',
@@ -311,6 +321,7 @@ export default function ChatThread(props: {
           numPlayersInRoom={players?.length || 0}
           playersBeingWaitedFor={playersBeingWaitedFor || []}
           currentPlayerId={player?._id}
+          isInRequestUserInputState={isInRequestUserInputState}
           requestUserInputPhaseData={requestUserInputPhaseData}
           roomIsProcessing={roomIsProcessing}
         />

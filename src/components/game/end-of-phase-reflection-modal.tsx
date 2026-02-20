@@ -92,14 +92,15 @@ export default function EndOfPhaseReflectionModal({
   const players = room.gameData.players;
   const isMultiplayer = players.length > 1;
 
+  const isInWaitingState = curState === 'WAITING_FOR_STUDENT_READY_TO_CONTINUE';
   const isEndOfPhaseReflection = curState === 'END_OF_PHASE_REFLECTION';
-  const isWaitingForReady =
-    curState === 'WAITING_FOR_STUDENT_READY_TO_CONTINUE';
-  const isOpen = isEndOfPhaseReflection || isWaitingForReady;
+  const isOpen = isEndOfPhaseReflection || isInWaitingState;
 
   const currentPlayerReflection = studentReflections[player._id];
   const hasSubmittedReflection =
     Boolean(currentPlayerReflection) || hasLocallySubmitted;
+
+  const isWaitingForReady = isInWaitingState || hasSubmittedReflection;
 
   const handleReflectionChange = (text: string) => {
     setReflectionText(text);
@@ -167,7 +168,10 @@ export default function EndOfPhaseReflectionModal({
     // Ready to Continue button - only shown in WAITING_FOR_STUDENT_READY_TO_CONTINUE state
     if (isWaitingForReady) {
       const isReadyDisabled =
-        !hasSubmittedReflection || isSubmittingReady || hasSubmittedReady;
+        !hasSubmittedReflection ||
+        isSubmittingReady ||
+        hasSubmittedReady ||
+        !isInWaitingState;
       const readyButton = (
         <Button
           variant="contained"
@@ -181,7 +185,9 @@ export default function EndOfPhaseReflectionModal({
             },
           }}
         >
-          {isSubmittingReady ? (
+          {!isInWaitingState ? (
+            'Waiting for other players...'
+          ) : isSubmittingReady ? (
             <CircularProgress size={24} color="inherit" />
           ) : hasSubmittedReady ? (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

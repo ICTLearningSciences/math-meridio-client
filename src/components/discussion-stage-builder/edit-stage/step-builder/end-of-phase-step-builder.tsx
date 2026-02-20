@@ -6,9 +6,14 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React from 'react';
 import { v4 as uuid } from 'uuid';
-import { IconButton } from '@mui/material';
+import { Button, IconButton } from '@mui/material';
 import { Delete } from '@mui/icons-material';
-import { RoundedBorderDiv, TopLeftText } from '../../../../styled-components';
+import {
+  ColumnDiv,
+  RoundedBorderDiv,
+  RowDiv,
+  TopLeftText,
+} from '../../../../styled-components';
 import { CheckBoxInput, InputField } from '../../shared/input-components';
 import { JumpToAlternateStep } from '../../shared/jump-to-alternate-step';
 import Collapse from '@mui/material/Collapse';
@@ -115,19 +120,47 @@ export function EndOfPhaseReflectionStepBuilder(props: {
             updateField('message', e);
           }}
         />
-        {step.questions.map((question, index) => (
-          <InputField
-            key={index}
-            label={`Question ${index + 1}`}
-            value={question}
-            onChange={(e) => {
-              updateField(
-                'questions',
-                step.questions.map((q, i) => (i === index ? e : q))
-              );
+        <ColumnDiv>
+          {step.questions.map((question, index) => (
+            <RowDiv key={index}>
+              <InputField
+                key={index}
+                label={`Question ${index + 1}`}
+                value={question}
+                onChange={(e) => {
+                  updateField(
+                    'questions',
+                    step.questions.map((q, i) => (i === index ? e : q))
+                  );
+                }}
+              />
+              {index > 0 && (
+                <IconButton
+                  onClick={() => {
+                    updateField(
+                      'questions',
+                      step.questions.filter((_, i) => i !== index)
+                    );
+                  }}
+                >
+                  <Delete />
+                </IconButton>
+              )}
+            </RowDiv>
+          ))}
+          {/* Add new question */}
+
+          <Button
+            variant="contained"
+            color="primary"
+            style={{ width: 'fit-content', marginLeft: 10 }}
+            onClick={() => {
+              updateField('questions', [...step.questions, '']);
             }}
-          />
-        ))}
+          >
+            + Add Question
+          </Button>
+        </ColumnDiv>
         <CheckBoxInput
           label="Is final step (discussion finished)?"
           value={step.lastStep}
