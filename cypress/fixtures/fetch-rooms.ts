@@ -29,7 +29,8 @@ export function freshRoomData(attendingRoomOwner: Player): Room {
             "gameId": "concert-ticket-sales",
             "curGameState": {
                 "curState": RequireInputType.SINGLE_RESPONSE_REQUIRED,
-                "playersLeftToRespond": []
+                "playersLeftToRespond": [],
+                "studentReadyToContinue": false
             },
             "players": [
                 attendingRoomOwner

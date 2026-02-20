@@ -35,6 +35,7 @@ interface WaitingForPlayersProps {
   currentPlayerId?: string;
   requestUserInputPhaseData: CurGameState;
   roomIsProcessing: boolean;
+  isInRequestUserInputState: boolean;
 }
 
 export default function WaitingForPlayers(
@@ -46,13 +47,15 @@ export default function WaitingForPlayers(
     currentPlayerId,
     requestUserInputPhaseData,
     roomIsProcessing,
+    isInRequestUserInputState,
   } = props;
 
   if (
     !playersBeingWaitedFor ||
     playersBeingWaitedFor.length === 0 ||
     roomIsProcessing ||
-    numPlayersInRoom === 1
+    numPlayersInRoom === 1 ||
+    !isInRequestUserInputState
   ) {
     return <></>;
   }

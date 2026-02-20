@@ -24,7 +24,8 @@ export function defaultNbaStarterRoomData(classId: string, user: Player): Room {
             "gameId": "basketball",
             "curGameState": {
                 "curState": RequireInputType.SINGLE_RESPONSE_REQUIRED,
-                "playersLeftToRespond": []
+                "playersLeftToRespond": [],
+                "studentReadyToContinue": false
             },
             "players": [
                 user
