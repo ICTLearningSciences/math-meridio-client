@@ -19,7 +19,6 @@ import {
   DiscussionStageStepType,
   EndOfPhaseReflectionStep,
   FlowItem,
-  SystemMessageStageStep,
 } from '../../types';
 export function getDefaultEndOfPhaseReflection(): EndOfPhaseReflectionStep {
   return {
@@ -28,7 +27,7 @@ export function getDefaultEndOfPhaseReflection(): EndOfPhaseReflectionStep {
     stepType: DiscussionStageStepType.END_OF_PHASE_REFLECTION,
     phaseTitle: '',
     message: '',
-    question: '',
+    questions: [''],
     jumpToStepId: '',
   };
 }
@@ -45,7 +44,7 @@ export function EndOfPhaseReflectionStepBuilder(props: {
   const { step, stepIndex, updateLocalStage } = props;
   const [collapsed, setCollapsed] = React.useState<boolean>(false);
 
-  function updateField(field: string, value: string | boolean) {
+  function updateField(field: string, value: string | boolean | string[]) {
     updateLocalStage((prevValue) => {
       return {
         ...prevValue,
@@ -66,7 +65,7 @@ export function EndOfPhaseReflectionStepBuilder(props: {
       };
     });
   }
-
+  console.log('step', step);
   return (
     <RoundedBorderDiv
       style={{
@@ -116,13 +115,19 @@ export function EndOfPhaseReflectionStepBuilder(props: {
             updateField('message', e);
           }}
         />
-        <InputField
-          label="Question"
-          value={step.question}
-          onChange={(e) => {
-            updateField('question', e);
-          }}
-        />
+        {step.questions.map((question, index) => (
+          <InputField
+            key={index}
+            label={`Question ${index + 1}`}
+            value={question}
+            onChange={(e) => {
+              updateField(
+                'questions',
+                step.questions.map((q, i) => (i === index ? e : q))
+              );
+            }}
+          />
+        ))}
         <CheckBoxInput
           label="Is final step (discussion finished)?"
           value={step.lastStep}

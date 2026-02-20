@@ -102,7 +102,7 @@ export const fullDiscussionStageQueryData = `
           stepType
           phaseTitle
           message
-          question
+          questions
       }
 
       ... on RequestUserInputStageStepType {
@@ -159,9 +159,14 @@ export const fullRoomQueryData = `
   classId
   phase
   gameData {
+    persistTruthGlobalStateData
+
     curGameState {
-      curState
-      playersLeftToRespond
+          curState
+          playersLeftToRespond
+          curRoundNumber
+          selectedQuestion
+          studentReflections
     }
     gameId
     players {
