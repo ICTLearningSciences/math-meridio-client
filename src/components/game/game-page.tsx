@@ -29,15 +29,18 @@ import ChatThread from './chat-thread';
 import ChatForm from './chat-form';
 import withAuthorizationOnly from '../../wrap-with-authorization-only';
 import Popup from '../popup';
+import EndOfPhaseReflectionModal from './end-of-phase-reflection-modal';
 import { useWithConfig } from '../../store/slices/config/use-with-config';
 import { useWithWindow } from '../../hooks/use-with-window';
 import EventSystem from '../../game/event-system';
-import { GameData } from '../../store/slices/game/types';
+import { GameData, Room, RoomPhase } from '../../store/slices/game/types';
 import { Game } from '../../game/types';
 
 import '../../layout.css';
 import { UseWithEducationalData } from '../../store/slices/educational-data/use-with-educational-data';
 import { useAppSelector } from '../../store/hooks';
+import { RequireInputType } from '../discussion-stage-builder/types';
+import { viewGameRoomSimulation } from '../../hooks/game-rooms/game-room-api';
 
 const COLS = 6;
 const ROWS = 4;
@@ -84,13 +87,23 @@ function SimulationSpace(props: {
   gameStateData: GameData;
   expanded?: boolean;
   onExpand: () => void;
+  viewGameRoomSimulation: () => Promise<Room>;
 }): JSX.Element {
-  const { game, gameStateData } = props;
+  const { game, gameStateData, viewGameRoomSimulation } = props;
   const { isMuted, toggleMuted } = useWithConfig();
   const [curSimulation, setSimulation] = React.useState<{ player: string }>();
 
   React.useEffect(() => {
-    EventSystem.on('simulate', (sim: { player: string }) => setSimulation(sim));
+    EventSystem.on('simulate', (sim: { player: string }) => {
+      setSimulation(sim);
+      viewGameRoomSimulation()
+        .then((room) => {
+          console.log('room', room);
+        })
+        .catch((error) => {
+          console.error('error', error);
+        });
+    });
   }, []);
 
   return (
@@ -157,9 +170,31 @@ function GamePage(): JSX.Element {
     room,
     updateMyRoomGameStateData,
     sendMessageToGameRoom,
+    fetchRoom,
   } = outletContext;
   const navigate = useNavigate();
   const { windowHeight, windowWidth } = useWithWindow();
+
+  const isSingleResponseRequired =
+    room?.gameData.curGameState.curState ===
+    RequireInputType.SINGLE_RESPONSE_REQUIRED;
+  const isFreeForAll =
+    room?.gameData.curGameState.curState ===
+    RequireInputType.ALL_USER_RESPONSES_REQUIRED_FREE_FOR_ALL;
+  const isInOrder =
+    room?.gameData.curGameState.curState ===
+    RequireInputType.ALL_USER_RESPONSES_REQUIRED_IN_ORDER;
+  const moreThanOnePlayerInRoom =
+    room?.gameData && room.gameData.players?.length > 1;
+  const isAtFrontOfList = Boolean(
+    room?.gameData &&
+      room.gameData.curGameState.playersLeftToRespond[0] === player?._id
+  );
+  const isMyTurn =
+    isSingleResponseRequired ||
+    isFreeForAll ||
+    !moreThanOnePlayerInRoom ||
+    (isInOrder && isAtFrontOfList);
 
   // Handle case where context is not yet available
   if (!outletContext) {
@@ -374,6 +409,11 @@ function GamePage(): JSX.Element {
   return (
     <div className="root" style={{ backgroundColor: '#cfdaf8' }}>
       <Popup open={popupOpen} onClose={handleClosePopup} />
+      <EndOfPhaseReflectionModal
+        room={room}
+        player={player}
+        fetchRoom={fetchRoom}
+      />
       <GridLayout
         className="layout"
         style={{ height: '100%', width: '100%' }}
@@ -435,6 +475,7 @@ function GamePage(): JSX.Element {
           }}
         >
           <SimulationSpace
+            viewGameRoomSimulation={() => viewGameRoomSimulation(room._id)}
             game={curGame}
             gameStateData={room.gameData}
             expanded={expanded === 2}
@@ -468,11 +509,11 @@ function GamePage(): JSX.Element {
           }}
         >
           <ChatThread
-            responsePending={false}
-            waitingForPlayers={[]}
+            roomIsProcessing={room.phase === RoomPhase.PROCESSING}
+            requestUserInputPhaseData={room.gameData.curGameState}
             uiGameData={room.gameData}
           />
-          <ChatForm sendMessage={sendMessageToGameRoom} />
+          <ChatForm sendMessage={sendMessageToGameRoom} isMyTurn={isMyTurn} />
         </Stack>
       </GridLayout>
     </div>

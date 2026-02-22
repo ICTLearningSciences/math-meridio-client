@@ -20,7 +20,8 @@ export type DiscussionStageStep =
   | SystemMessageStageStep
   | RequestUserInputStageStep
   | PromptStageStep
-  | ConditionalActivityStep;
+  | ConditionalActivityStep
+  | EndOfPhaseReflectionStep;
 
 export type DiscussionStageStepGQL =
   | SystemMessageStageStep
@@ -84,6 +85,7 @@ export interface DiscussionStageGQL extends IStage {
 export enum DiscussionStageStepType {
   SYSTEM_MESSAGE = 'SYSTEM_MESSAGE',
   REQUEST_USER_INPUT = 'REQUEST_USER_INPUT',
+  END_OF_PHASE_REFLECTION = 'END_OF_PHASE_REFLECTION',
   PROMPT = 'PROMPT',
   CONDITIONAL = 'CONDITIONAL',
 }
@@ -101,6 +103,13 @@ export interface SystemMessageStageStep extends StageBuilderStep {
   message: string;
 }
 
+export interface EndOfPhaseReflectionStep extends StageBuilderStep {
+  stepType: DiscussionStageStepType.END_OF_PHASE_REFLECTION;
+  phaseTitle: string;
+  message: string;
+  questions: string[];
+}
+
 // RequestUserInput
 export interface PredefinedResponse {
   clientId: string;
@@ -116,7 +125,27 @@ export interface RequestUserInputStageStep extends StageBuilderStep {
   saveResponseVariableName: string;
   disableFreeInput: boolean;
   predefinedResponses: PredefinedResponse[];
-  requireAllUserInputs: boolean;
+  requireInputType: RequireInputType;
+}
+
+export enum RequireInputType {
+  SINGLE_RESPONSE_REQUIRED = 'SINGLE_RESPONSE_REQUIRED',
+  ALL_USER_RESPONSES_REQUIRED_FREE_FOR_ALL = 'ALL_USER_RESPONSES_REQUIRED_FREE_FOR_ALL',
+  ALL_USER_RESPONSES_REQUIRED_IN_ORDER = 'ALL_REQUIRED_IN_ORDER',
+}
+
+export interface CurGameState {
+  curState:
+    | RequireInputType
+    | 'WAITING_FOR_SIMULATION'
+    | 'END_OF_PHASE_REFLECTION'
+    | 'WAITING_FOR_STUDENT_READY_TO_CONTINUE';
+  playersLeftToRespond: string[];
+  studentReadyToContinue: boolean;
+  curRoundNumber?: number;
+  endOfPhaseStep?: EndOfPhaseReflectionStep;
+  selectedQuestion?: string;
+  studentReflections?: Record<string, string>; // keyed by player ID
 }
 
 //Prompt

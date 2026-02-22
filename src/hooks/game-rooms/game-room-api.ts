@@ -12,6 +12,7 @@ import {
   SESSION_ID,
 } from '../../store/local-storage';
 import { GameStateData, Room } from '../../store/slices/game/types';
+import { GamePhaseReflections } from '../../types';
 
 export const createNewGameRoomMutation = `
   mutation CreateNewGameRoom($gameId: String!, $classId: String) {
@@ -185,6 +186,59 @@ export async function updatePlayerGameStateData(
     },
     {
       dataPath: 'updatePlayerGameStateData',
+      accessToken: accessToken || undefined,
+    }
+  );
+  return data;
+}
+
+export const gamePhaseReflectionDataQuery = `
+  roomId
+  stepId
+  roundNumber
+  question
+  reflections
+`;
+
+export const submitGamePhaseReflectionMutation = `
+  mutation SubmitGamePhaseReflection($roomId: ID!, $reflection: String!) {
+    submitGamePhaseReflection(roomId: $roomId, reflection: $reflection) {
+      ${gamePhaseReflectionDataQuery}
+    }
+  }
+`;
+export async function submitGamePhaseReflection(
+  roomId: string,
+  reflection: string
+): Promise<GamePhaseReflections> {
+  const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
+  const data = await execGql<GamePhaseReflections>(
+    {
+      query: submitGamePhaseReflectionMutation,
+      variables: { roomId, reflection },
+    },
+    {
+      dataPath: 'submitGamePhaseReflection',
+      accessToken: accessToken || undefined,
+    }
+  );
+  return data;
+}
+
+export const submitReadyToContinueMutation = `
+  mutation SubmitReadyToContinue($roomId: String!) {
+    submitReadyToContinue(roomId: $roomId)
+  }
+`;
+export async function submitReadyToContinue(roomId: string): Promise<boolean> {
+  const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
+  const data = await execGql<boolean>(
+    {
+      query: submitReadyToContinueMutation,
+      variables: { roomId },
+    },
+    {
+      dataPath: 'submitReadyToContinue',
       accessToken: accessToken || undefined,
     }
   );

@@ -36,7 +36,7 @@ export function SolutionComponent(props: {
   uiGameData: GameData;
   player: Player;
   updatePlayerStateData: (
-    newPlayerStateData: GameStateData[],
+    newPlayerStateData: GameStateData,
     playerId: string
   ) => void;
 }): JSX.Element {
@@ -83,7 +83,7 @@ export function SolutionComponent(props: {
       setUnderstandsPoints(
         checkGameAndPlayerStateForValue(
           globalGameStateData,
-          curPlayerStateData?.gameStateData || [],
+          curPlayerStateData,
           UNDERSTANDS_SHOT_POINTS,
           'true'
         )
@@ -92,7 +92,7 @@ export function SolutionComponent(props: {
       setUnderstandsSuccess(
         checkGameAndPlayerStateForValue(
           globalGameStateData,
-          curPlayerStateData?.gameStateData || [],
+          curPlayerStateData,
           UNDERSTANDS_SUCCESS_SHOTS,
           'true'
         )
@@ -101,7 +101,7 @@ export function SolutionComponent(props: {
       setUnderstandsMultiplication(
         checkGameAndPlayerStateForValue(
           globalGameStateData,
-          curPlayerStateData?.gameStateData || [],
+          curPlayerStateData,
           UNDERSTANDS_MULTIPLICATION,
           'true'
         )
@@ -110,7 +110,7 @@ export function SolutionComponent(props: {
       setUnderstandsAddition(
         checkGameAndPlayerStateForValue(
           globalGameStateData,
-          curPlayerStateData?.gameStateData || [],
+          curPlayerStateData,
           UNDERSTANDS_ADDITION,
           'true'
         )
@@ -242,18 +242,16 @@ export function SolutionComponent(props: {
             <EditableVariable
               updatePlayerStateData={(newValue: number) => {
                 updatePlayerStateData(
-                  [
-                    {
-                      key: INSIDE_SHOT_PERCENT,
-                      value: newValue,
-                    },
-                  ],
+                  { [INSIDE_SHOT_PERCENT]: newValue },
                   player._id
                 );
               }}
               dataKey={INSIDE_SHOT_PERCENT}
               title="# of inside shots"
-              myPlayerStateData={playerGameStateDataRecord || {}}
+              myPlayerStateData={{
+                ...globalGameStateDataRecord,
+                ...playerGameStateDataRecord,
+              }}
               shouldDisable={
                 Boolean(editingVariable) &&
                 editingVariable !== INSIDE_SHOT_PERCENT
@@ -313,18 +311,16 @@ export function SolutionComponent(props: {
             <EditableVariable
               updatePlayerStateData={(newValue: number) => {
                 updatePlayerStateData(
-                  [
-                    {
-                      key: MID_SHOT_PERCENT,
-                      value: newValue,
-                    },
-                  ],
+                  { [MID_SHOT_PERCENT]: newValue },
                   player._id
                 );
               }}
               dataKey={MID_SHOT_PERCENT}
               title="# of mid shots"
-              myPlayerStateData={playerGameStateDataRecord || {}}
+              myPlayerStateData={{
+                ...globalGameStateDataRecord,
+                ...playerGameStateDataRecord,
+              }}
               shouldDisable={
                 Boolean(editingVariable) && editingVariable !== MID_SHOT_PERCENT
               }
@@ -383,18 +379,16 @@ export function SolutionComponent(props: {
             <EditableVariable
               updatePlayerStateData={(newValue: number) => {
                 updatePlayerStateData(
-                  [
-                    {
-                      key: OUTSIDE_SHOT_PERCENT,
-                      value: newValue,
-                    },
-                  ],
+                  { [OUTSIDE_SHOT_PERCENT]: newValue },
                   player._id
                 );
               }}
               dataKey={OUTSIDE_SHOT_PERCENT}
               title="# of 3 pointers"
-              myPlayerStateData={playerGameStateDataRecord || {}}
+              myPlayerStateData={{
+                ...globalGameStateDataRecord,
+                ...playerGameStateDataRecord,
+              }}
               shouldDisable={
                 Boolean(editingVariable) &&
                 editingVariable !== OUTSIDE_SHOT_PERCENT
