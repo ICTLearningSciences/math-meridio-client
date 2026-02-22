@@ -122,3 +122,11 @@ export const SIMULTAION_VIEWED_KEY = 'viewed-simulation';
 export function getSimulationViewedKey(stageId: string): string {
   return `${SIMULTAION_VIEWED_KEY}-${stageId}`;
 }
+
+export interface GamePhaseReflections {
+  roomId: string;
+  stepId: string;
+  question: string;
+  roundNumber: number;
+  reflections: Record<string, string>; // keyed by player ID
+}
