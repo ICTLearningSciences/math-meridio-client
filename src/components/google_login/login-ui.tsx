@@ -41,6 +41,7 @@ export function LoginUI(props: {
           marginBottom: '20px',
         }}
       >
+        <img height={100} src="/logo.png" alt="image" />
         <span data-cy="login-title" style={{ fontSize: '22px' }}>
           {titleText || 'Meridio Math'}
         </span>

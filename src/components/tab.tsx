@@ -7,24 +7,32 @@ The full terms of this copyright and license should always be found in the root 
 import React from 'react';
 import { AnimatePresence } from 'motion/react';
 import * as motion from 'motion/react-client';
+import { CSS } from 'styled-components/dist/types';
 import { ContainedButton, OutlinedButton } from './button';
 
 export interface Tab {
   name: string;
   element: React.ReactNode;
+  disabled?: boolean;
 }
 
 export function TabButton(props: {
   value: number;
   index: number;
   children: React.ReactNode;
+  disabled?: boolean;
   onClick: (idx: number) => void;
 }): JSX.Element {
   const { value, index } = props;
   if (value === index) {
     return (
       <OutlinedButton
-        style={{ color: 'black', borderColor: 'black' }}
+        style={{
+          backgroundColor: value === index ? 'white' : 'rgb(218, 183, 250)',
+          borderColor: 'black',
+          color: 'black',
+        }}
+        disabled={props.disabled}
         onClick={() => props.onClick(index)}
       >
         {props.children}
@@ -34,9 +42,10 @@ export function TabButton(props: {
   return (
     <ContainedButton
       style={{
-        backgroundColor: 'rgb(231, 231, 231)',
+        backgroundColor: value === index ? 'white' : 'rgb(218, 183, 250)',
         color: 'black',
       }}
+      disabled={props.disabled}
       onClick={() => props.onClick(index)}
     >
       {props.children}
@@ -55,7 +64,11 @@ export function TabItem(props: {
   );
 }
 
-export function Tabs(props: { tabs: Tab[] }): JSX.Element {
+export function Tabs(props: {
+  tabs: Tab[];
+  tabsStyle?: CSS.Properties;
+  tabViewStyle?: CSS.Properties;
+}): JSX.Element {
   const { tabs } = props;
   const [selectedTab, setSelectedTab] = React.useState<number>(0);
   const tab = tabs[selectedTab];
@@ -63,19 +76,19 @@ export function Tabs(props: { tabs: Tab[] }): JSX.Element {
   if (tabs.length === 0) return <div />;
   return (
     <div>
-      <div className="row spacing">
-        {tabs.map((t, i) => (
+      <div className="row spacing" style={props.tabsStyle}>
+        {tabs.map((tab, i) => (
           <TabButton
             key={i}
-            value={selectedTab}
             index={i}
+            value={selectedTab}
+            disabled={tab.disabled}
             onClick={setSelectedTab}
           >
-            {t.name}
+            {tab.name}
           </TabButton>
         ))}
       </div>
-      <div></div>
       <AnimatePresence mode="wait">
         <motion.div
           key={tab ? tab.name : 'empty'}
@@ -83,6 +96,7 @@ export function Tabs(props: { tabs: Tab[] }): JSX.Element {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: -10, opacity: 0 }}
           transition={{ duration: 0.2 }}
+          style={props.tabViewStyle}
         >
           {tab.element}
         </motion.div>

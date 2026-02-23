@@ -6,39 +6,22 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React from 'react';
 import { makeStyles } from 'tss-react/mui';
-import { CheckCircleOutline, ChevronRight, Person } from '@mui/icons-material';
+import { ChevronRight, Search } from '@mui/icons-material';
 import {
   Button,
   Card,
   CardContent,
   Grid,
-  LinearProgress,
+  TextField,
   Typography,
 } from '@mui/material';
 import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
-import { Room } from '../../../store/slices/game/types';
-import { GAMES } from '../../../game/types';
-import AvatarSprite from '../../avatar-sprite';
+import ProgressBar from '../../progress-bar';
+import RoomCard from './room-card';
+import SkillCard from './skill-card';
+import { Classroom } from '../../../store/slices/educational-data/types';
 
 const styles = makeStyles()(() => ({
-  root: {
-    display: 'flex',
-    flexDirection: 'column',
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 200,
-    bottom: 0,
-    color: 'white',
-    backgroundColor: 'rgb(114, 20, 201)',
-    padding: 40,
-    paddingTop: 40,
-    marginTop: 40,
-    borderTopRightRadius: 40,
-    borderTopLeftRadius: 40,
-    overflow: 'auto',
-    scrollbarWidth: 'none',
-  },
   card: {
     borderRadius: 10,
   },
@@ -51,179 +34,40 @@ const styles = makeStyles()(() => ({
     fontWeight: 'bold',
     marginBottom: 10,
   },
-  skillItem: {
-    display: 'flex',
-    flexDirection: 'row',
-    padding: 5,
-    paddingLeft: 10,
-    paddingRight: 10,
-    borderRadius: 10,
-    backgroundColor: 'white',
-    justifyContent: 'space-between',
-  },
 }));
 
-function ProgressBar(props: { value: number; size?: number }): JSX.Element {
-  return (
-    <LinearProgress
-      variant="determinate"
-      value={props.value}
-      style={{ height: props.size || 15, borderRadius: 40 }}
-      sx={{
-        backgroundColor: 'rgb(217, 217, 217)',
-        '& .MuiLinearProgress-bar': {
-          backgroundColor: 'orange',
-          borderTopRightRadius: 40,
-          borderBottomRightRadius: 40,
-        },
-      }}
-    />
-  );
-}
-
-function SkillCard(): JSX.Element {
-  const { classes } = styles();
-  return (
-    <div className={classes.skillItem}>
-      <Typography>Common core standard / subskill</Typography>
-      <div className="row center-div">
-        <Person fontSize="small" />
-        <Typography>16</Typography>
-      </div>
-    </div>
-  );
-}
-
-function RoomCard(props: { room: Room }): JSX.Element {
-  const { room } = props;
-  const { classes } = styles();
-  const game = GAMES.find((g) => g.id === room?.gameData.gameId);
-
-  return (
-    <div>
-      <Card className={classes.card}>
-        <CardContent className="column spacing">
-          <div className="row" style={{ justifyContent: 'space-between' }}>
-            <Typography
-              style={{
-                whiteSpace: 'nowrap',
-                overflowX: 'scroll',
-                scrollbarWidth: 'none',
-              }}
-              className={classes.headerText}
-            >
-              {room.name}
-            </Typography>
-            <CheckCircleOutline color="success" />
-          </div>
-          <div
-            className="row center-div"
-            style={{
-              justifyContent: 'space-evenly',
-              overflowX: 'scroll',
-              scrollbarWidth: 'none',
-            }}
-          >
-            {room.gameData.players.map((player) => {
-              const curDate = new Date().getTime();
-              const loginAt = new Date(player.lastLoginAt).getTime();
-              const hoursSince = Math.floor(
-                Math.abs(curDate - loginAt) / (1000 * 60 * 60)
-              );
-              return (
-                <div key={player._id} className="column center-div">
-                  <AvatarSprite player={player} bgColor="rgb(218, 183, 250)" />
-                  <Typography
-                    variant="body2"
-                    fontSize={12}
-                    fontWeight="bold"
-                    align="center"
-                    style={{ marginTop: 5 }}
-                  >
-                    {player.name}
-                  </Typography>
-                  <Typography fontSize={10} fontWeight="lighter">
-                    {hoursSince === 0 ? 'ACTIVE' : `${hoursSince} HOURS AGO`}
-                  </Typography>
-                </div>
-              );
-            })}
-          </div>
-          <ProgressBar value={25} />
-          <Typography variant="body2" textAlign="end">
-            {game?.name || room?.gameData.gameId}
-          </Typography>
-        </CardContent>
-      </Card>
-      <div
-        className="row"
-        style={{ width: '100%', justifyContent: 'flex-end' }}
-      >
-        <Button color="inherit" endIcon={<ChevronRight />}>
-          Room Report
-        </Button>
-      </div>
-    </div>
-  );
-}
-
 export default function ActiveSessionView(props: {
-  classId: string;
+  classroom: Classroom;
 }): JSX.Element {
-  const { classId } = props;
+  const { classroom } = props;
   const { classes } = styles();
   const { educationalData } = useWithEducationalData();
-  const gameRooms = educationalData.rooms.filter((r) => r.classId === classId);
+  const [studentSearch, setStudentSearch] = React.useState<string>();
+  const gameRooms = educationalData.rooms.filter(
+    (r) => r.classId === classroom._id
+  );
 
   return (
-    <div className={classes.root}>
+    <div className="dashboard">
       <Typography variant="h5" fontWeight="bold">
         ACTIVE SESSION
       </Typography>
 
       <div className="column spacing" style={{ marginTop: 10 }}>
-        <Typography className={classes.header}>Overall Progress</Typography>
+        <div
+          className="row center-div"
+          style={{ justifyContent: 'space-between' }}
+        >
+          <Typography className={classes.header}>Overall Progress</Typography>
+          <Button color="inherit" endIcon={<ChevronRight />}>
+            Class Report
+          </Button>
+        </div>
         <Card className={classes.card}>
           <CardContent style={{ padding: 30 }}>
-            <ProgressBar value={50} size={30} />
-            <div
-              className="row"
-              style={{ justifyContent: 'space-between', marginTop: 10 }}
-            >
-              <Typography style={{ color: 'gray' }}>PHASE 1</Typography>
-              <Typography style={{ color: 'gray' }}>PHASE 2</Typography>
-              <Typography style={{ color: 'gray' }}>PHASE 3</Typography>
-              <Typography style={{ color: 'gray' }}>PHASE 4</Typography>
-              <Typography style={{ color: 'gray' }}>PHASE 5</Typography>
-              <Typography style={{ color: 'gray' }}>PHASE 6</Typography>
-            </div>
+            <ProgressBar value={50} size="large" />
           </CardContent>
         </Card>
-        <Button
-          color="inherit"
-          style={{ alignSelf: 'end' }}
-          endIcon={<ChevronRight />}
-        >
-          Class Report
-        </Button>
-      </div>
-
-      <div className="column spacing" style={{ marginTop: 10 }}>
-        <Typography className={classes.header}>Open Rooms</Typography>
-        {gameRooms.length === 0 && (
-          <Typography variant="body2" align="center">
-            There are no open rooms yet
-          </Typography>
-        )}
-        <Grid container spacing={2}>
-          {gameRooms.map((room, idx) => {
-            return (
-              <Grid item xs={4} key={`room-${idx}`}>
-                <RoomCard room={room} />
-              </Grid>
-            );
-          })}
-        </Grid>
       </div>
 
       <div className="column spacing" style={{ marginTop: 10 }}>
@@ -250,6 +94,54 @@ export default function ActiveSessionView(props: {
       </div>
 
       <div className="column spacing" style={{ marginTop: 10 }}>
+        <Typography className={classes.header}>Open Rooms</Typography>
+        <div
+          className="row center-div"
+          style={{
+            backgroundColor: 'rgb(217, 217, 217)',
+            borderRadius: 60,
+            height: 40,
+            paddingLeft: 15,
+          }}
+        >
+          <Search style={{ color: 'rgb(137, 137, 137)' }} />
+          <TextField
+            variant="standard"
+            label="Student Search"
+            fullWidth
+            value={studentSearch}
+            onChange={(e) => setStudentSearch(e.target.value)}
+            style={{ marginLeft: 10, marginBottom: 10 }}
+          />
+        </div>
+        {gameRooms.length === 0 && (
+          <Typography variant="body2" align="center">
+            There are no open rooms yet
+          </Typography>
+        )}
+        <Grid container spacing={2}>
+          {gameRooms
+            .filter((room) => {
+              if (!studentSearch) return true;
+              return room.gameData.players.find((p) =>
+                p.name.toLowerCase().includes(studentSearch.toLowerCase())
+              );
+            })
+            .map((room, idx) => {
+              return (
+                <Grid item xs={6} md={4} lg={3} key={`room-${idx}`}>
+                  <RoomCard
+                    room={room}
+                    classroom={classroom}
+                    classes={classes}
+                  />
+                </Grid>
+              );
+            })}
+        </Grid>
+      </div>
+
+      <div className="column spacing" style={{ marginTop: 10 }}>
         <div className="row" style={{ justifyContent: 'space-between' }}>
           <Typography className={classes.header}>Trouble Spots</Typography>
           <Button
@@ -269,7 +161,7 @@ export default function ActiveSessionView(props: {
             >
               <CardContent className="column spacing">
                 <Typography className={classes.headerText}>
-                  Difficult Questions
+                  Challenge Section
                 </Typography>
                 <SkillCard />
                 <SkillCard />

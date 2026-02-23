@@ -6,16 +6,16 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React from 'react';
 import { Button, Typography } from '@mui/material';
-
 import { useAppSelector } from '../../store/hooks';
 import { useWithEducationalData } from '../../store/slices/educational-data/use-with-educational-data';
 import { ClassMembershipStatus } from '../../store/slices/educational-data/types';
 import { DropdownButton } from '../button';
 import { LoadStatus } from '../../types';
 import { Tabs } from '../tab';
-import TeacherHome from './teacher-view/teacher-home-page';
-import TeacherManageClass from './teacher-view/teacher-manage-class';
 import TeacherLoading from './teacher-view/teacher-loading-page';
+import TeacherHome from './teacher-view/teacher-home-page';
+import TeacherReports from './teacher-view/teacher-reports-page';
+import TeacherManageClass from './teacher-view/teacher-manage-class';
 
 export default function TeacherLandingPage(): JSX.Element {
   const { educationalData, createClassroom } = useWithEducationalData();
@@ -60,10 +60,12 @@ export default function TeacherLandingPage(): JSX.Element {
       style={{
         width: '100%',
         height: '100%',
-        padding: 20,
       }}
     >
       <div style={{ padding: 20 }}>
+        <Typography fontSize={18} fontWeight="bold" style={{ marginBottom: 5 }}>
+          Teacher Home
+        </Typography>
         {myClasses.length === 0 ? (
           <Typography variant="body1" color="error" align="center">
             You haven&apos;t created any classes yet. Click the button below to
@@ -130,14 +132,18 @@ export default function TeacherLandingPage(): JSX.Element {
               </DropdownButton>
             </div>
             <Tabs
+              tabsStyle={{
+                position: 'absolute',
+                top: '75px',
+              }}
               tabs={[
                 {
                   name: 'HOME',
                   element: <TeacherHome classroom={myClass} />,
                 },
                 {
-                  name: 'ANALYTICS / REPORTS',
-                  element: '',
+                  name: 'REPORTS',
+                  element: <TeacherReports classroom={myClass} />,
                 },
                 {
                   name: 'MANAGE CLASS',

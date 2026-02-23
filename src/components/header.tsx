@@ -7,12 +7,13 @@ The full terms of this copyright and license should always be found in the root 
 import React from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Button, IconButton, TextField, Typography } from '@mui/material';
-import { Create, Home, Save } from '@mui/icons-material';
+import { Create, Save } from '@mui/icons-material';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { clearPlayer } from '../store/slices/player';
 import AvatarSprite from './avatar-sprite';
 import { UseWithLogin } from '../store/slices/player/use-with-login';
 import { useWithEducationalData } from '../store/slices/educational-data/use-with-educational-data';
+import { ContainedButton } from './button';
 
 export function Header(props: { useLogin: UseWithLogin }) {
   const dispatch = useAppDispatch();
@@ -34,77 +35,105 @@ export function Header(props: { useLogin: UseWithLogin }) {
     navigate('/classes');
   }
 
+  if (!player) {
+    return (
+      <header
+        className="header row center-div"
+        style={{
+          height: 80,
+          justifyContent: 'space-between',
+          paddingLeft: 20,
+          paddingRight: 20,
+        }}
+      >
+        <img height={60} src="/logo.png" alt="image" />
+        <ContainedButton style={{ backgroundColor: 'white', color: 'black' }}>
+          HELP
+        </ContainedButton>
+      </header>
+    );
+  }
+
   return (
-    <header
-      className="row center-div header"
-      style={{ justifyContent: 'space-between' }}
-    >
-      <div style={{ marginLeft: 20, width: 150 }}>
-        <IconButton onClick={homeButtonClick}>
-          <Home style={{ color: 'white' }} />
+    <header className="column header" style={{ height: 120 }}>
+      <div
+        className="row center-div"
+        style={{ justifyContent: 'space-between' }}
+      >
+        <IconButton style={{ width: 150 }} onClick={homeButtonClick}>
+          <img height={60} src="/logo.png" alt="image" />
         </IconButton>
+        <div className="row center-div">
+          {isEditing ? (
+            <TextField
+              style={{ width: 300 }}
+              sx={{ input: { color: 'white' } }}
+              value={name}
+              variant="standard"
+              onChange={(e) => setName(e.target.value)}
+            />
+          ) : (
+            <Typography variant="h5">{room ? room.name : ''}</Typography>
+          )}
+          {pathname.startsWith('/game/') ? (
+            <IconButton
+              style={{ color: 'white' }}
+              onClick={() => {
+                if (isEditing) {
+                  renameGameRoom(room?._id || '', name);
+                  setIsEditing(false);
+                } else {
+                  setIsEditing(true);
+                }
+              }}
+            >
+              {isEditing ? <Save /> : <Create />}
+            </IconButton>
+          ) : undefined}
+        </div>
+        <div style={{ display: 'flex', width: 150, alignItems: 'center' }}>
+          {pathname.startsWith('/game/') ? (
+            <Button
+              variant="text"
+              disabled={!player || !room}
+              style={{
+                height: 'fit-content',
+                color: 'white',
+                marginRight: 5,
+                padding: 0,
+              }}
+              onClick={() => leaveGameRoom(room?._id || '')}
+            >
+              Leave Room
+            </Button>
+          ) : (
+            <Button
+              disabled={!player}
+              style={{
+                height: 'fit-content',
+                color: 'white',
+                textTransform: 'none',
+              }}
+              onClick={() => {
+                dispatch(clearPlayer());
+                logout();
+              }}
+            >
+              Logout
+            </Button>
+          )}
+          {player && (
+            <AvatarSprite bgColor="rgb(217, 217, 217)" player={player} />
+          )}
+        </div>
       </div>
-      <div className="row center-div">
-        {isEditing ? (
-          <TextField
-            style={{ width: 300 }}
-            sx={{ input: { color: 'white' } }}
-            value={name}
-            variant="standard"
-            onChange={(e) => setName(e.target.value)}
-          />
-        ) : (
-          <Typography variant="h5">
-            {room ? room.name : 'Math Meridio'}
-          </Typography>
-        )}
-        {pathname.startsWith('/game/') ? (
-          <IconButton
-            style={{ color: 'white' }}
-            onClick={() => {
-              if (isEditing) {
-                renameGameRoom(room?._id || '', name);
-                setIsEditing(false);
-              } else {
-                setIsEditing(true);
-              }
-            }}
-          >
-            {isEditing ? <Save /> : <Create />}
-          </IconButton>
-        ) : undefined}
-      </div>
-      <div style={{ display: 'flex', width: 150, alignItems: 'center' }}>
-        {pathname.startsWith('/game/') ? (
-          <Button
-            variant="text"
-            disabled={!player || !room}
-            style={{
-              height: 'fit-content',
-              color: 'white',
-              marginRight: 5,
-              padding: 0,
-            }}
-            onClick={() => leaveGameRoom(room?._id || '')}
-          >
-            Leave Room
-          </Button>
-        ) : (
-          <Button
-            variant="outlined"
-            disabled={!player}
-            style={{ height: 'fit-content', color: 'white', marginRight: 5 }}
-            onClick={() => {
-              dispatch(clearPlayer());
-              logout();
-            }}
-          >
-            Logout
-          </Button>
-        )}
-        {player && (
-          <AvatarSprite bgColor="rgb(217, 217, 217)" player={player} />
-        )}
+      <div
+        className="row center-div"
+        style={{ justifyContent: 'end', paddingRight: 40 }}
+      >
+        <ContainedButton style={{ backgroundColor: 'white', color: 'black' }}>
+          HELP
+        </ContainedButton>
       </div>
     </header>
   );

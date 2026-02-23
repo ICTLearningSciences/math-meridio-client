@@ -5,28 +5,28 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import React from 'react';
+import { Person } from '@mui/icons-material';
 import { Typography } from '@mui/material';
-import { Classroom } from '../../../store/slices/educational-data/types';
-import ActiveSessionView from './teacher-session-page';
-import { RoomSetupView } from './teacher-room-setup';
 
-export default function TeacherHome(props: {
-  classroom?: Classroom;
-}): JSX.Element {
-  const { classroom } = props;
-
-  if (!classroom) {
-    return (
-      <div className="root center-div">
-        <Typography variant="h6" color="error">
-          Classroom not found
-        </Typography>
+export default function SkillCard(): JSX.Element {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'row',
+        padding: 5,
+        paddingLeft: 10,
+        paddingRight: 10,
+        borderRadius: 10,
+        backgroundColor: 'white',
+        justifyContent: 'space-between',
+      }}
+    >
+      <Typography>Common core standard / subskill</Typography>
+      <div className="row center-div">
+        <Person fontSize="small" />
+        <Typography>16</Typography>
       </div>
-    );
-  }
-
-  if (!classroom.startedAt) {
-    return <RoomSetupView classId={classroom._id} />;
-  }
-  return <ActiveSessionView classroom={classroom} />;
+    </div>
+  );
 }

@@ -22,6 +22,7 @@ const buttonStyles = makeStyles()(() => ({
     textTransform: 'none',
     fontSize: 12,
     borderRadius: 32,
+    fontWeight: 'bold',
   },
   textButton: {
     fontSize: 12,
@@ -156,7 +157,13 @@ export function DropdownButton(props: {
   return (
     <div>
       <Button
-        style={{ color: 'black', fontSize: 18, fontWeight: 'bold' }}
+        variant="outlined"
+        style={{
+          borderColor: 'black',
+          color: 'black',
+          fontWeight: 'bold',
+          borderRadius: 30,
+        }}
         endIcon={<ArrowDropDown />}
         onClick={handleButtonClick}
       >
