@@ -23,6 +23,7 @@ export const MAX_MESSAGE_LENGTH = 200;
 
 export default function ChatForm(props: {
   sendMessage: (msg: string) => void;
+  isMyTurn: boolean;
 }): JSX.Element {
   const [input, setInput] = React.useState<string>('');
   const {
@@ -31,7 +32,7 @@ export default function ChatForm(props: {
     browserSupportsSpeechRecognition,
     resetTranscript,
   } = useSpeechRecognition();
-  const { sendMessage } = props;
+  const { sendMessage, isMyTurn } = props;
 
   React.useEffect(() => {
     if (listening) {
@@ -52,10 +53,13 @@ export default function ChatForm(props: {
   }
 
   function onKeyPress(
-    e: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>
+    e: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>,
+    isMyTurn: boolean
   ): void {
     if (e.key === 'Enter') {
-      onSend();
+      if (isMyTurn) {
+        onSend();
+      }
       e.preventDefault();
     }
   }
@@ -81,7 +85,7 @@ export default function ChatForm(props: {
           value={input}
           disabled={listening}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => onKeyPress(e)}
+          onKeyDown={(e) => onKeyPress(e, isMyTurn)}
           style={{ backgroundColor: 'white' }}
           multiline
           inputProps={{ maxLength: MAX_MESSAGE_LENGTH }}
@@ -107,7 +111,7 @@ export default function ChatForm(props: {
                 color="primary"
                 edge="end"
                 onClick={onSend}
-                disabled={input.length > MAX_MESSAGE_LENGTH}
+                disabled={input.length > MAX_MESSAGE_LENGTH || !isMyTurn}
               >
                 <Send />
               </IconButton>

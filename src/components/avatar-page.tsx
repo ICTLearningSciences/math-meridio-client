@@ -153,7 +153,7 @@ function AvatarPage(): JSX.Element {
           width: window.innerWidth,
         }}
       />
-      <ChatForm sendMessage={onUserMessage} />
+      <ChatForm sendMessage={onUserMessage} isMyTurn={true} />
     </>
   );
 }

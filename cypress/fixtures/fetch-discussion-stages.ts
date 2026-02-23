@@ -5,7 +5,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 
-import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperations, PromptOutputTypes } from "../../src/components/discussion-stage-builder/types";
+import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperations, PromptOutputTypes, RequireInputType } from "../../src/components/discussion-stage-builder/types";
 
 
 
@@ -43,7 +43,7 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "saveResponseVariableName": "",
                           "disableFreeInput": false,
                           "predefinedResponses": [],
-"requireAllUserInputs": false
+"requireInputType": RequireInputType.SINGLE_RESPONSE_REQUIRED
                       }
                   ]
               }
@@ -69,7 +69,7 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "saveResponseVariableName": "user_hypothesis",
                           "disableFreeInput": false,
                           "predefinedResponses": [],
-"requireAllUserInputs": false
+"requireInputType": RequireInputType.SINGLE_RESPONSE_REQUIRED
                       },
                       {
                           "lastStep": false,
@@ -126,7 +126,7 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "saveResponseVariableName": "why_their_strategy",
                           "disableFreeInput": false,
                           "predefinedResponses": [],
-"requireAllUserInputs": false
+"requireInputType": RequireInputType.SINGLE_RESPONSE_REQUIRED
                       },
                       {
                           "lastStep": false,
@@ -227,7 +227,7 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "saveResponseVariableName": "recent_response",
                           "disableFreeInput": false,
                           "predefinedResponses": [],
-"requireAllUserInputs": false
+"requireInputType": RequireInputType.SINGLE_RESPONSE_REQUIRED
                       }
                   ]
               }
@@ -253,7 +253,7 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "saveResponseVariableName": "recent_message",
                           "disableFreeInput": false,
                           "predefinedResponses": [],
-"requireAllUserInputs": false
+"requireInputType": RequireInputType.SINGLE_RESPONSE_REQUIRED
                       },
                       {
                           "lastStep": false,
@@ -276,7 +276,7 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "saveResponseVariableName": "algorithm_explanation",
                           "disableFreeInput": false,
                           "predefinedResponses": [],
-"requireAllUserInputs": false
+"requireInputType": RequireInputType.SINGLE_RESPONSE_REQUIRED
                       },
                       {
                           "lastStep": true,
@@ -314,7 +314,7 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "saveResponseVariableName": "user_hypothesis",
                           "disableFreeInput": false,
                           "predefinedResponses": [],
-"requireAllUserInputs": false
+"requireInputType": RequireInputType.SINGLE_RESPONSE_REQUIRED
                       },
                       {
                           "lastStep": true,
@@ -381,7 +381,7 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "saveResponseVariableName": "user_response",
                           "disableFreeInput": false,
                           "predefinedResponses": [],
-"requireAllUserInputs": false
+"requireInputType": RequireInputType.SINGLE_RESPONSE_REQUIRED
                       },
                       {
                           "lastStep": false,
@@ -461,7 +461,7 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "saveResponseVariableName": "user_response",
                           "disableFreeInput": false,
                           "predefinedResponses": [],
-"requireAllUserInputs": false
+"requireInputType": RequireInputType.SINGLE_RESPONSE_REQUIRED
                       },
                       {
                           "lastStep": false,
@@ -484,7 +484,7 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "saveResponseVariableName": "user_kicking_seq",
                           "disableFreeInput": false,
                           "predefinedResponses": [],
-"requireAllUserInputs": false
+"requireInputType": RequireInputType.SINGLE_RESPONSE_REQUIRED
                       },
                       {
                           "lastStep": true,
@@ -522,7 +522,7 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "saveResponseVariableName": "user_feedback",
                           "disableFreeInput": false,
                           "predefinedResponses": [],
-"requireAllUserInputs": false
+"requireInputType": RequireInputType.SINGLE_RESPONSE_REQUIRED
                       },
                       {
                           "lastStep": false,
@@ -579,7 +579,7 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "saveResponseVariableName": "",
                           "disableFreeInput": false,
                           "predefinedResponses": [],
-"requireAllUserInputs": false
+"requireInputType": RequireInputType.SINGLE_RESPONSE_REQUIRED
                       }
                   ]
               }
@@ -605,7 +605,7 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "saveResponseVariableName": "user_hypothesis",
                           "disableFreeInput": false,
                           "predefinedResponses": [],
-"requireAllUserInputs": false
+"requireInputType": RequireInputType.SINGLE_RESPONSE_REQUIRED
                       },
                       {
                           "lastStep": false,
@@ -616,7 +616,7 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "saveResponseVariableName": "why_their_strategy",
                           "disableFreeInput": false,
                           "predefinedResponses": [],
-"requireAllUserInputs": false
+"requireInputType": RequireInputType.SINGLE_RESPONSE_REQUIRED
                       },
                       {
                           "lastStep": true,
@@ -645,7 +645,7 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "saveResponseVariableName": "user_hypothesis",
                           "disableFreeInput": false,
                           "predefinedResponses": [],
-"requireAllUserInputs": false
+"requireInputType": RequireInputType.SINGLE_RESPONSE_REQUIRED
                       },
                       {
                           "lastStep": false,
@@ -683,7 +683,7 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "saveResponseVariableName": "user_hypothesis",
                           "disableFreeInput": false,
                           "predefinedResponses": [],
-"requireAllUserInputs": false
+"requireInputType": RequireInputType.SINGLE_RESPONSE_REQUIRED
                       }
                   ]
               }
@@ -782,7 +782,7 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "saveResponseVariableName": "user_response",
                           "disableFreeInput": false,
                           "predefinedResponses": [],
-"requireAllUserInputs": false
+"requireInputType": RequireInputType.SINGLE_RESPONSE_REQUIRED
                       },
                       {
                           "lastStep": true,
@@ -833,7 +833,7 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "saveResponseVariableName": "user_response",
                           "disableFreeInput": false,
                           "predefinedResponses": [],
-"requireAllUserInputs": false
+"requireInputType": RequireInputType.SINGLE_RESPONSE_REQUIRED
                       }
                   ]
               },
@@ -857,7 +857,7 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "saveResponseVariableName": "algorithm_explanation",
                           "disableFreeInput": false,
                           "predefinedResponses": [],
-"requireAllUserInputs": false
+"requireInputType": RequireInputType.SINGLE_RESPONSE_REQUIRED
                       },
                       {
                           "lastStep": false,
@@ -902,7 +902,7 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "saveResponseVariableName": "algorithm_explanation",
                           "disableFreeInput": false,
                           "predefinedResponses": [],
-"requireAllUserInputs": false
+"requireInputType": RequireInputType.SINGLE_RESPONSE_REQUIRED
                       }
                   ]
               }
@@ -928,7 +928,7 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "saveResponseVariableName": "user_hypothesis",
                           "disableFreeInput": false,
                           "predefinedResponses": [],
-"requireAllUserInputs": false
+"requireInputType": RequireInputType.SINGLE_RESPONSE_REQUIRED
                       },
                       {
                           "lastStep": false,
@@ -966,7 +966,7 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "saveResponseVariableName": "user_hypothesis",
                           "disableFreeInput": false,
                           "predefinedResponses": [],
-"requireAllUserInputs": false
+"requireInputType": RequireInputType.SINGLE_RESPONSE_REQUIRED
                       },
                       {
                           "lastStep": true,
@@ -1043,7 +1043,7 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "saveResponseVariableName": "user_hypothesis",
                           "disableFreeInput": false,
                           "predefinedResponses": [],
-"requireAllUserInputs": false
+"requireInputType": RequireInputType.SINGLE_RESPONSE_REQUIRED
                       },
                       {
                           "lastStep": false,
@@ -1081,7 +1081,7 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "saveResponseVariableName": "user_hypothesis",
                           "disableFreeInput": false,
                           "predefinedResponses": [],
-"requireAllUserInputs": false
+"requireInputType": RequireInputType.SINGLE_RESPONSE_REQUIRED
                       },
                       {
                           "lastStep": true,
@@ -1143,7 +1143,7 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "saveResponseVariableName": "user_response",
                           "disableFreeInput": false,
                           "predefinedResponses": [],
-"requireAllUserInputs": false
+"requireInputType": RequireInputType.SINGLE_RESPONSE_REQUIRED
                       },
                       {
                           "lastStep": true,
@@ -1201,7 +1201,7 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "saveResponseVariableName": "user_response",
                           "disableFreeInput": false,
                           "predefinedResponses": [],
-"requireAllUserInputs": false
+"requireInputType": RequireInputType.SINGLE_RESPONSE_REQUIRED
                       }
                   ]
               },
@@ -1225,7 +1225,7 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "saveResponseVariableName": "algorithm_explanation",
                           "disableFreeInput": false,
                           "predefinedResponses": [],
-"requireAllUserInputs": false
+"requireInputType": RequireInputType.SINGLE_RESPONSE_REQUIRED
                       },
                       {
                           "lastStep": false,
@@ -1270,7 +1270,7 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "saveResponseVariableName": "algorithm_explanation",
                           "disableFreeInput": false,
                           "predefinedResponses": [],
-"requireAllUserInputs": false
+"requireInputType": RequireInputType.SINGLE_RESPONSE_REQUIRED
                       }
                   ]
               },
@@ -1323,7 +1323,7 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "saveResponseVariableName": "user_response",
                           "disableFreeInput": false,
                           "predefinedResponses": [],
-"requireAllUserInputs": false
+"requireInputType": RequireInputType.SINGLE_RESPONSE_REQUIRED
                       },
                       {
                           "lastStep": false,
@@ -1361,7 +1361,7 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "saveResponseVariableName": "user_response",
                           "disableFreeInput": false,
                           "predefinedResponses": [],
-"requireAllUserInputs": false
+"requireInputType": RequireInputType.SINGLE_RESPONSE_REQUIRED
                       },
                       {
                           "stepId": "d2bf811b-afe2-41c9-a604-ef99facc77d0",
@@ -1387,7 +1387,7 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "saveResponseVariableName": "user_response",
                           "disableFreeInput": false,
                           "predefinedResponses": [],
-"requireAllUserInputs": false
+"requireInputType": RequireInputType.SINGLE_RESPONSE_REQUIRED
                       },
                       {
                           "lastStep": false,
@@ -1425,7 +1425,7 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "saveResponseVariableName": "user_response",
                           "disableFreeInput": false,
                           "predefinedResponses": [],
-"requireAllUserInputs": false
+"requireInputType": RequireInputType.SINGLE_RESPONSE_REQUIRED
                       }
                   ]
               }
@@ -1473,7 +1473,7 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "saveResponseVariableName": "user_hypothesis",
                           "disableFreeInput": false,
                           "predefinedResponses": [],
-"requireAllUserInputs": false
+"requireInputType": RequireInputType.SINGLE_RESPONSE_REQUIRED
                       },
                       {
                           "lastStep": false,
@@ -1484,7 +1484,7 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "saveResponseVariableName": "why_their_strategy",
                           "disableFreeInput": false,
                           "predefinedResponses": [],
-"requireAllUserInputs": false
+"requireInputType": RequireInputType.SINGLE_RESPONSE_REQUIRED
                       },
                       {
                           "lastStep": true,
@@ -1513,7 +1513,7 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "saveResponseVariableName": "user_hypothesis",
                           "disableFreeInput": false,
                           "predefinedResponses": [],
-"requireAllUserInputs": false
+"requireInputType": RequireInputType.SINGLE_RESPONSE_REQUIRED
                       },
                       {
                           "lastStep": false,
@@ -1551,7 +1551,7 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "saveResponseVariableName": "user_hypothesis",
                           "disableFreeInput": false,
                           "predefinedResponses": [],
-                          "requireAllUserInputs": false
+                          "requireInputType": RequireInputType.SINGLE_RESPONSE_REQUIRED
                       }
                   ]
               }

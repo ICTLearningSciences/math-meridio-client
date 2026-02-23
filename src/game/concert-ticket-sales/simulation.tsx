@@ -47,6 +47,7 @@ export function PlayerStrategy(props: {
     if (!canSimulate) return;
     const simData: ConcertTicketSalesSimulationData = {
       player: props.player._id,
+      playerAvatar: props.player,
       generalAdmissionTicketsUpForSale: generalAdmissionTicketsUpForSale,
       generalAdmissionTicketsSold: Math.round(
         generalAdmissionTicketsUpForSale *

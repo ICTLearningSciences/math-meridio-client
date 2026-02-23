@@ -7,6 +7,7 @@ The full terms of this copyright and license should always be found in the root 
 import { Room, RoomPhase, SenderType } from "../../src/store/slices/game/types";
 import { Player } from "../../src/store/slices/player/types";
 import { v4 as uuidv4 } from 'uuid';
+import { RequireInputType } from "../../src/components/discussion-stage-builder/types";
 
 
 export interface CreateAndJoinRoomResponse {
@@ -20,8 +21,14 @@ export function defaultNbaStarterRoomData(classId: string, user: Player): Room {
         "classId": classId,
         "groupId": undefined,
         "phase": RoomPhase.PROCESSING,
-        "gameData": {
+        "gameData": {   
+            "playersStatusRecord": {},
             "gameId": "basketball",
+            "curGameState": {
+                "curState": RequireInputType.SINGLE_RESPONSE_REQUIRED,
+                "playersLeftToRespond": [],
+                "studentReadyToContinue": false
+            },
             "players": [
                 user
             ],

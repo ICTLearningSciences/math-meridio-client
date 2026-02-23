@@ -373,3 +373,31 @@ export async function fetchStudentDataHydration(): Promise<FetchEducationalDataH
     }
   );
 }
+
+export const createClassMembershipQuery = `
+  mutation CreateClassMembership($classId: String!, $userEmail: String!) {
+    createClassMembership(classId: $classId, userEmail: $userEmail) {
+      ${classMembershipDataQuery}
+    }
+  }
+`;
+
+export async function createClassMembership(
+  classId: string,
+  userEmail: string
+): Promise<ClassMembership> {
+  const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
+  return await execGql<ClassMembership>(
+    {
+      query: createClassMembershipQuery,
+      variables: {
+        classId,
+        userEmail,
+      },
+    },
+    {
+      dataPath: 'createClassMembership',
+      accessToken: accessToken,
+    }
+  );
+}

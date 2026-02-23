@@ -96,6 +96,15 @@ export const fullDiscussionStageQueryData = `
           message
       }
 
+      ... on EndOfPhaseReflectionStepType {
+          lastStep
+          stepId
+          stepType
+          phaseTitle
+          message
+          questions
+      }
+
       ... on RequestUserInputStageStepType {
           lastStep
           stepId
@@ -104,6 +113,7 @@ export const fullDiscussionStageQueryData = `
           message
           saveResponseVariableName
           disableFreeInput
+          requireInputType
           predefinedResponses{
               clientId
               message
@@ -147,7 +157,17 @@ export const fullRoomQueryData = `
   _id
   name
   classId
+  phase
   gameData {
+    persistTruthGlobalStateData
+
+    curGameState {
+          curState
+          playersLeftToRespond
+          curRoundNumber
+          selectedQuestion
+          studentReflections
+    }
     gameId
     players {
       ${userDataQuery}

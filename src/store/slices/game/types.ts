@@ -4,6 +4,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
+import { CurGameState } from '../../../components/discussion-stage-builder/types';
 import { Player } from '../player/types';
 
 export enum SenderType {
@@ -42,11 +43,29 @@ export interface Room {
   gameData: GameData;
 }
 
+export enum PlayerComputedState {
+  NEVER_ACCESSED_ACTIVITY = 'NEVER_ACCESSED_ACTIVITY', // no heartebeat ever recorded
+  PAUSED_BY_ADMIN = 'PAUSED_BY_ADMIN', // paused by admin
+  REPORTED_AWAY_BY_OTHER_PLAYER = 'REPORTED_AWAY_BY_OTHER_PLAYER',
+  REPORTED_AWAY_BY_FRONTEND_DETECTION = 'REPORTED_AWAY_BY_FRONTEND_DETECTION',
+  INACTIVE = 'INACTIVE', // no heartbeat in the last 15 seconds
+  ACTIVE = 'ACTIVE', // has active heartbeats in the last 15 seconds
+}
+
+export interface PlayerStatusData {
+  computedState: PlayerComputedState;
+}
+
+export type UserId = string;
+export type PlayerStatusRecord = Record<UserId, PlayerStatusData>;
+
 export interface GameData {
+  curGameState: CurGameState;
   gameId: string;
   players: Player[];
   chat: ChatMessage[];
   globalStateData: GlobalStateData;
+  playersStatusRecord: PlayerStatusRecord;
   playersGameStateData: PlayerStateData;
 }
 

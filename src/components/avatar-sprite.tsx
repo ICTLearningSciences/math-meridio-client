@@ -10,6 +10,7 @@ import { Player } from '../store/slices/player/types';
 function AvatarSprite(props: {
   player: Player | undefined;
   bgColor?: string;
+  border?: boolean;
 }): JSX.Element {
   const { player } = props;
 
@@ -24,7 +25,7 @@ function AvatarSprite(props: {
         minWidth: 40,
         borderRadius: 40,
         padding: 3,
-        border: '1px solid rgb(114, 20, 201)',
+        border: props.border ? '1px solid rgb(114, 20, 201)' : 'none',
         backgroundColor: props.bgColor || 'white',
       }}
     >

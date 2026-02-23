@@ -75,6 +75,13 @@ export const createNewClassInviteCode = createAsyncThunk(
   }
 );
 
+export const createClassMembership = createAsyncThunk(
+  'educationalData/createClassMembership',
+  async (args: { classId: string; userEmail: string }) => {
+    return await api.createClassMembership(args.classId, args.userEmail);
+  }
+);
+
 export const revokeClassInviteCode = createAsyncThunk(
   'educationalData/revokeClassInviteCode',
   async (args: { classId: string; classroomCode: string }) => {
@@ -272,6 +279,10 @@ export const educationalDataSlice = createSlice({
 
       .addCase(sendMessageToGameRoom.fulfilled, (state, action) => {
         addOrUpdateGameRoom(state, action.payload);
+      })
+
+      .addCase(createClassMembership.fulfilled, (state, action) => {
+        addOrUpdateClassMembership(state, action.payload);
       })
 
       .addCase(fetchInstructorDataHydration.pending, (state) => {
