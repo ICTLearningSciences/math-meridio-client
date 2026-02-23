@@ -26,11 +26,12 @@ export function defaultClassroomData(classroomOwnerId: string, classroomId: stri
     }
 }
 
-export function defaultClassroomMembershipData(classroomId: string, userId: string): ClassMembership {
+export function defaultClassroomMembershipData(classroomId: string, userId: string, userEmail: string): ClassMembership {
     return {
         classId: classroomId,
         userId: userId,
         status: ClassMembershipStatus.MEMBER,
+        userEmail: userEmail,
     }
 }
 

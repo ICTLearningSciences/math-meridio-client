@@ -27,6 +27,7 @@ export function freshRoomData(attendingRoomOwner: Player): Room {
         "phase": RoomPhase.NO_ACTIVE_PROCESSING,
         "gameData": {
             "gameId": "concert-ticket-sales",
+            "playersStatusRecord": {},
             "curGameState": {
                 "curState": RequireInputType.SINGLE_RESPONSE_REQUIRED,
                 "playersLeftToRespond": [],

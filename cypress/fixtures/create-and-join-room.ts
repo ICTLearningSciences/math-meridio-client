@@ -21,6 +21,7 @@ export function defaultNbaStarterRoomData(classId: string, user: Player): Room {
         "classId": classId,
         "phase": RoomPhase.PROCESSING,
         "gameData": {   
+            "playersStatusRecord": {},
             "gameId": "basketball",
             "curGameState": {
                 "curState": RequireInputType.SINGLE_RESPONSE_REQUIRED,

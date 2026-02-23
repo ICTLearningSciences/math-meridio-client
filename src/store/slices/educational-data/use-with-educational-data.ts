@@ -71,6 +71,10 @@ export interface UseWithEducationalData {
   room: Room | undefined;
   updateMyRoomGameStateData: (gameStateData: GameStateData) => Promise<Room>;
   sendMessageToGameRoom: (message: string) => Promise<Room>;
+  createClassMembership: (
+    classId: string,
+    userEmail: string
+  ) => Promise<ClassMembership>;
   curGame: Game | undefined;
 }
 
@@ -271,6 +275,15 @@ export function useWithEducationalData(): UseWithEducationalData {
     ).unwrap();
   }
 
+  async function createClassMembership(
+    classId: string,
+    userEmail: string
+  ): Promise<ClassMembership> {
+    return await dispatch(
+      educationalDataActions.createClassMembership({ classId, userEmail })
+    ).unwrap();
+  }
+
   return {
     fetchInstructorDataHydration,
     fetchStudentDataHydration,
@@ -298,5 +311,6 @@ export function useWithEducationalData(): UseWithEducationalData {
     ownerIsPresent: ownerIsPresent || false,
     room,
     curGame,
+    createClassMembership,
   };
 }

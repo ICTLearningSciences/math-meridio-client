@@ -42,12 +42,29 @@ export interface Room {
   gameData: GameData;
 }
 
+export enum PlayerComputedState {
+  NEVER_ACCESSED_ACTIVITY = 'NEVER_ACCESSED_ACTIVITY', // no heartebeat ever recorded
+  PAUSED_BY_ADMIN = 'PAUSED_BY_ADMIN', // paused by admin
+  REPORTED_AWAY_BY_OTHER_PLAYER = 'REPORTED_AWAY_BY_OTHER_PLAYER',
+  REPORTED_AWAY_BY_FRONTEND_DETECTION = 'REPORTED_AWAY_BY_FRONTEND_DETECTION',
+  INACTIVE = 'INACTIVE', // no heartbeat in the last 15 seconds
+  ACTIVE = 'ACTIVE', // has active heartbeats in the last 15 seconds
+}
+
+export interface PlayerStatusData {
+  computedState: PlayerComputedState;
+}
+
+export type UserId = string;
+export type PlayerStatusRecord = Record<UserId, PlayerStatusData>;
+
 export interface GameData {
   curGameState: CurGameState;
   gameId: string;
   players: Player[];
   chat: ChatMessage[];
   globalStateData: GlobalStateData;
+  playersStatusRecord: PlayerStatusRecord;
   playersGameStateData: PlayerStateData;
 }
 

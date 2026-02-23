@@ -49,13 +49,15 @@ export enum ClassMembershipStatus {
 
 export interface ClassMembership {
   classId: string;
-  userId: string;
+  userId?: string;
+  userEmail: string;
   status: ClassMembershipStatus;
 }
 
 export const classMembershipDataQuery = `
     classId
     userId
+    userEmail
     status
   `;
 
