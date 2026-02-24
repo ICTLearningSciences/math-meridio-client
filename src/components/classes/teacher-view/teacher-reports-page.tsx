@@ -96,8 +96,6 @@ function RoomsReports(props: { classroom: Classroom }): JSX.Element {
                       <Card style={{ backgroundColor: 'rgb(231, 231, 231)' }}>
                         <CardContent className="column spacing">
                           <Typography>Challenge Section</Typography>
-                          <SkillCard />
-                          <SkillCard />
                         </CardContent>
                       </Card>
                     </Grid>

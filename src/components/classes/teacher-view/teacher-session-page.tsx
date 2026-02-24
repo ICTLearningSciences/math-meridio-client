@@ -43,9 +43,27 @@ export default function ActiveSessionView(props: {
   const { classes } = styles();
   const { educationalData } = useWithEducationalData();
   const [studentSearch, setStudentSearch] = React.useState<string>();
+  const [skillsMet, setSkillsMet] = React.useState<Record<string, number>>({});
+
   const gameRooms = educationalData.rooms.filter(
     (r) => r.classId === classroom._id
   );
+
+  React.useEffect(() => {
+    const skillsMet: Record<string, number> = {};
+    for (const room of gameRooms) {
+      for (const standard of Object.entries(
+        room.gameData.mathStandardsCompleted
+      )) {
+        if (!(standard[0] in skillsMet)) {
+          skillsMet[standard[0]] = standard[1] ? 1 : 0;
+        } else if (standard[1]) {
+          skillsMet[standard[0]] = skillsMet[standard[0]] + 1;
+        }
+      }
+    }
+    setSkillsMet(skillsMet);
+  }, [gameRooms]);
 
   return (
     <div className="dashboard">
@@ -86,9 +104,16 @@ export default function ActiveSessionView(props: {
           style={{ backgroundColor: 'rgb(231, 231, 231)' }}
         >
           <CardContent className="column spacing">
-            <SkillCard />
-            <SkillCard />
-            <SkillCard />
+            {Object.entries(skillsMet).map((skill, sIdx) => {
+              return (
+                <SkillCard
+                  key={skill[0]}
+                  name={skill[0]}
+                  numMet={skill[1]}
+                  numTotal={gameRooms.length}
+                />
+              );
+            })}
           </CardContent>
         </Card>
       </div>
@@ -163,8 +188,6 @@ export default function ActiveSessionView(props: {
                 <Typography className={classes.headerText}>
                   Challenge Section
                 </Typography>
-                <SkillCard />
-                <SkillCard />
               </CardContent>
             </Card>
             <div

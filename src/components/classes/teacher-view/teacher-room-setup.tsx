@@ -296,7 +296,7 @@ export function RoomSetupView(props: { classId: string }): JSX.Element {
         variant="contained"
         color="primary"
         fullWidth
-        disabled={starting}
+        disabled={starting || studentMembers.length === 0}
         onClick={handleStartGame}
       >
         {starting ? 'Starting...' : 'Start Game'}

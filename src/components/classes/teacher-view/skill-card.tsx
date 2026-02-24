@@ -8,7 +8,11 @@ import React from 'react';
 import { Person } from '@mui/icons-material';
 import { Typography } from '@mui/material';
 
-export default function SkillCard(): JSX.Element {
+export default function SkillCard(props: {
+  name: string;
+  numMet: number;
+  numTotal: number;
+}): JSX.Element {
   return (
     <div
       style={{
@@ -22,10 +26,12 @@ export default function SkillCard(): JSX.Element {
         justifyContent: 'space-between',
       }}
     >
-      <Typography>Common core standard / subskill</Typography>
+      <Typography>{props.name}</Typography>
       <div className="row center-div">
         <Person fontSize="small" />
-        <Typography>16</Typography>
+        <Typography>
+          {props.numMet}/{props.numTotal}
+        </Typography>
       </div>
     </div>
   );
