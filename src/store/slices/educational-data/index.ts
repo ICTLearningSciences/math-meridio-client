@@ -263,6 +263,13 @@ export const shareClassroomWithInstructor = createAsyncThunk(
   }
 );
 
+export const assignGameToGameRoom = createAsyncThunk(
+  'educationalData/assignGameToGameRoom',
+  async (args: { roomId: string; gameId: string }) => {
+    return await api.assignGameToGameRoom(args.roomId, args.gameId);
+  }
+);
+
 export const educationalDataSlice = createSlice({
   name: 'educationalData',
   initialState,
@@ -416,7 +423,11 @@ export const educationalDataSlice = createSlice({
       })
 
       .addCase(assignClassGroupsAndStart.fulfilled, (state, action) => {
-        addOrUpdateClass(state, action.payload);
+        const { updatedClassroom, createdRooms } = action.payload;
+        addOrUpdateClass(state, updatedClassroom);
+        createdRooms.forEach((room) => {
+          addOrUpdateGameRoom(state, room);
+        });
       })
 
       .addCase(adjustClassroomArchiveStatus.fulfilled, (state, action) => {
@@ -429,6 +440,10 @@ export const educationalDataSlice = createSlice({
 
       .addCase(shareClassroomWithInstructor.fulfilled, (state, action) => {
         addOrUpdateClass(state, action.payload);
+      })
+
+      .addCase(assignGameToGameRoom.fulfilled, (state, action) => {
+        addOrUpdateGameRoom(state, action.payload);
       });
   },
 });
