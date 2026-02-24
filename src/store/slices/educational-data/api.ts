@@ -405,3 +405,28 @@ export async function createClassMembership(
     }
   );
 }
+
+export const shareClassroomWithInstructorMutation = `
+  mutation ShareClassroomWithInstructor($classId: String!, $instructorEmail: String!) {
+    shareClassroomWithInstructor(classId: $classId, instructorEmail: $instructorEmail) {
+      ${classroomDataQuery}
+    }
+  }
+`;
+
+export async function shareClassroomWithInstructor(
+  classId: string,
+  instructorEmail: string
+): Promise<Classroom> {
+  const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
+  return await execGql<Classroom>(
+    {
+      query: shareClassroomWithInstructorMutation,
+      variables: { classId, instructorEmail },
+    },
+    {
+      dataPath: 'shareClassroomWithInstructor',
+      accessToken: accessToken,
+    }
+  );
+}

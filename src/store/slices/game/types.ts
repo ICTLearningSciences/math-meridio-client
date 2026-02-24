@@ -76,6 +76,7 @@ export interface GameData {
   globalStateData: GlobalStateData;
   playersStatusRecord: PlayerStatusRecord;
   playersGameStateData: PlayerStateData;
+  mathStandardsCompleted: Record<string, boolean>; // Keyed by math standard display name
 }
 
 export interface GameDataGQL extends Omit<GameData, 'players'> {

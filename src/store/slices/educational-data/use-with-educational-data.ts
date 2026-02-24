@@ -90,6 +90,10 @@ export interface UseWithEducationalData {
     userIdToPause: string
   ) => Promise<Room>;
   reportPlayerAway: (userIdToReportAway: string) => Promise<Room>;
+  shareClassroomWithInstructor: (
+    classId: string,
+    instructorEmail: string
+  ) => Promise<Classroom>;
 }
 
 export function useWithEducationalData(rId?: string): UseWithEducationalData {
@@ -350,6 +354,18 @@ export function useWithEducationalData(rId?: string): UseWithEducationalData {
     return await gameRoomApi.reportPlayerAway(roomId, userIdToReportAway);
   }
 
+  async function shareClassroomWithInstructor(
+    classId: string,
+    instructorEmail: string
+  ): Promise<Classroom> {
+    return await dispatch(
+      educationalDataActions.shareClassroomWithInstructor({
+        classId,
+        instructorEmail,
+      })
+    ).unwrap();
+  }
+
   return {
     fetchInstructorDataHydration,
     fetchStudentDataHydration,
@@ -382,5 +398,6 @@ export function useWithEducationalData(rId?: string): UseWithEducationalData {
     createClassMembership,
     togglePlayerPausedInRoomStatus,
     reportPlayerAway,
+    shareClassroomWithInstructor,
   };
 }

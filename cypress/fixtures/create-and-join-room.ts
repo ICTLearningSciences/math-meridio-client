@@ -22,6 +22,7 @@ export function defaultNbaStarterRoomData(classId: string, user: Player): Room {
         "groupId": undefined,
         "phase": RoomPhase.PROCESSING,
         "gameData": {   
+            "mathStandardsCompleted": {},
             "playersStatusRecord": {},
             "gameId": "basketball",
             "curGameState": {

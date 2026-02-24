@@ -31,6 +31,7 @@ export const classroomDataQuery = `
     name
     description
     teacherId
+    sharedWithInstructorIds
     inviteCodes {
         code
         validUntil
