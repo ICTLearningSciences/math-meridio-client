@@ -9,11 +9,16 @@ import { Typography } from '@mui/material';
 import { Classroom } from '../../../store/slices/educational-data/types';
 import ActiveSessionView from './teacher-session-page';
 import { RoomSetupView } from './teacher-room-setup';
+import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
 
 export default function TeacherHome(props: {
   classroom?: Classroom;
 }): JSX.Element {
   const { classroom } = props;
+  const { educationalData } = useWithEducationalData();
+  const rooms = educationalData.rooms.filter(
+    (r) => r.classId === classroom?._id
+  );
 
   if (!classroom) {
     return (
@@ -25,7 +30,7 @@ export default function TeacherHome(props: {
     );
   }
 
-  if (!classroom.startedAt) {
+  if (rooms.length === 0) {
     return <RoomSetupView classId={classroom._id} />;
   }
   return <ActiveSessionView classroom={classroom} />;

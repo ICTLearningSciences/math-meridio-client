@@ -227,6 +227,10 @@ export default function TeacherReports(props: {
   classroom?: Classroom;
 }): JSX.Element {
   const { classroom } = props;
+  const { educationalData } = useWithEducationalData();
+  const rooms = educationalData.rooms.filter(
+    (r) => r.classId === classroom?._id
+  );
 
   if (!classroom) {
     return (
@@ -238,7 +242,7 @@ export default function TeacherReports(props: {
     );
   }
 
-  if (!classroom.startedAt) {
+  if (rooms.length === 0) {
     return <RoomSetupView classId={classroom._id} />;
   }
   return (

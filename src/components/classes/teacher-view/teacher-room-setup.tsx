@@ -111,11 +111,8 @@ function NewDroppableGroup(): JSX.Element {
 
 export function RoomSetupView(props: { classId: string }): JSX.Element {
   const { classId } = props;
-  const {
-    educationalData,
-    assignClassGroupsAndStart,
-    fetchInstructorDataHydration,
-  } = useWithEducationalData();
+  const { educationalData, assignClassGroupsAndStart } =
+    useWithEducationalData();
   const [groupSize, setGroupSize] = React.useState<number>(3);
   const [studentMembers, setStudentMembers] = React.useState<ClassMembership[]>(
     []
@@ -193,7 +190,6 @@ export function RoomSetupView(props: { classId: string }): JSX.Element {
     setStarting(true);
     try {
       await assignClassGroupsAndStart(classId, studentMembers);
-      await fetchInstructorDataHydration();
     } catch (err) {
       console.error('Failed to start class', err);
     } finally {
@@ -204,7 +200,7 @@ export function RoomSetupView(props: { classId: string }): JSX.Element {
   return (
     <div className="column spacing" style={{ marginTop: 40 }}>
       <Typography variant="body2" color="error" align="center">
-        You have not yet started a game.
+        You have not yet started a session.
       </Typography>
 
       <Typography fontSize={16} fontWeight="bold" style={{ marginTop: 40 }}>

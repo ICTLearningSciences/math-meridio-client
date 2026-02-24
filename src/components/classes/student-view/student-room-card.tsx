@@ -18,7 +18,7 @@ export function StudentRoomCard(props: {
   gameId?: string;
 }): JSX.Element {
   const navigate = useNavigate();
-  const { joinGameRoom } = useWithEducationalData();
+  const { assignGameToGameRoom } = useWithEducationalData();
   const { room, classId } = props;
   const [joining, setJoining] = useState<boolean>();
 
@@ -28,10 +28,11 @@ export function StudentRoomCard(props: {
   );
 
   const handleJoinRoom = async (roomId: string) => {
+    if (!hasGame) return;
     setJoining(true);
     try {
-      if (!room.gameData.gameId) {
-        await joinGameRoom(roomId);
+      if (!room.gameData.gameId && props.gameId) {
+        await assignGameToGameRoom(roomId, props.gameId);
       }
       navigate(`/classes/${classId}/room/${roomId}`);
     } catch (err) {
