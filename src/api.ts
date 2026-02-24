@@ -190,6 +190,7 @@ export const fullRoomQueryData = `
       gameStateData
     }
     playersGameStateData
+    mathStandardsCompleted
     playersStatusRecord
   }
 `;

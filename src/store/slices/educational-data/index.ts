@@ -235,6 +235,16 @@ export const setPlayerPauseStatus = createAsyncThunk(
   }
 );
 
+export const shareClassroomWithInstructor = createAsyncThunk(
+  'educationalData/shareClassroomWithInstructor',
+  async (args: { classId: string; instructorEmail: string }) => {
+    return await api.shareClassroomWithInstructor(
+      args.classId,
+      args.instructorEmail
+    );
+  }
+);
+
 export const educationalDataSlice = createSlice({
   name: 'educationalData',
   initialState,
@@ -388,6 +398,10 @@ export const educationalDataSlice = createSlice({
       })
 
       .addCase(updateClassNameDescription.fulfilled, (state, action) => {
+        addOrUpdateClass(state, action.payload);
+      })
+
+      .addCase(shareClassroomWithInstructor.fulfilled, (state, action) => {
         addOrUpdateClass(state, action.payload);
       });
   },

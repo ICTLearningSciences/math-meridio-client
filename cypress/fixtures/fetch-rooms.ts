@@ -26,6 +26,7 @@ export function freshRoomData(attendingRoomOwner: Player): Room {
         "classId": "697d7ba20e83375926c1241b",
         "phase": RoomPhase.NO_ACTIVE_PROCESSING,
         "gameData": {
+            "mathStandardsCompleted": {},
             "gameId": "concert-ticket-sales",
             "playersStatusRecord": {},
             "curGameState": {
