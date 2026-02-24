@@ -20,6 +20,26 @@ import { SolutionGameStateData } from './types';
 
 export const SIMULTAION_VIEWED_KEY = 'viewed-simulation';
 
+export function getPercentString(num: number): string {
+  if (Number.isNaN(num)) return '0%';
+  return `${Math.round(num * 100)}%`;
+}
+
+export function getLastActivityString(date: Date): string {
+  const currentDate = new Date().getTime();
+  const lastActivityAt = new Date(date).getTime();
+  const minsSince = Math.floor(
+    Math.abs(currentDate - lastActivityAt) / (1000 * 60)
+  );
+  const activityStr =
+    minsSince < 60
+      ? `${minsSince} MINS AGO`
+      : minsSince < 60 * 24
+      ? `${Math.floor(minsSince / 60)} HOURS AGO`
+      : `${Math.floor(minsSince / (60 * 24))} DAYS AGO`;
+  return activityStr;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function equals<T>(val1: T, val2: T): boolean {
   return JSON.stringify(val1) === JSON.stringify(val2);

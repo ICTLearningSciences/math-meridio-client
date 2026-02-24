@@ -92,10 +92,10 @@ export interface UseWithEducationalData {
   reportPlayerAway: (userIdToReportAway: string) => Promise<Room>;
 }
 
-export function useWithEducationalData(): UseWithEducationalData {
+export function useWithEducationalData(rId?: string): UseWithEducationalData {
   const dispatch = useAppDispatch();
   const state = useAppSelector((state) => state.educationalData);
-  const { roomId } = useParams<{ roomId: string }>();
+  const { roomId } = rId ? { roomId: rId } : useParams<{ roomId: string }>();
   const { player } = useAppSelector((state) => state.playerData);
   const room = state.rooms.find((r) => r._id === roomId);
   const ownerIsPresent = room?.gameData.players.some(

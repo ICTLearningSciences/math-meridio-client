@@ -13,29 +13,10 @@ import { useWithEducationalData } from '../../../store/slices/educational-data/u
 import { RoomSetupView } from './teacher-room-setup';
 import { Tabs } from '../../tab';
 import ProgressBar from '../../progress-bar';
-import AvatarSprite from '../../avatar-sprite';
+import { PlayerSprite } from '../../avatar-sprite';
 import SkillCard from './skill-card';
-import { Room } from '../../../store/slices/game/types';
-
-function SummaryReports(props: { classroom: Classroom }): JSX.Element {
-  return (
-    <div className="dashboard">
-      <Typography variant="h5" fontWeight="bold">
-        SUMMARY
-      </Typography>
-    </div>
-  );
-}
-
-function IndividualReports(props: { classroom: Classroom }): JSX.Element {
-  return (
-    <div className="dashboard">
-      <Typography variant="h5" fontWeight="bold">
-        INDIVIDUAL REPORT
-      </Typography>
-    </div>
-  );
-}
+import { Room, SenderType } from '../../../store/slices/game/types';
+import { getPercentString } from '../../../helpers';
 
 function RoomsReports(props: { classroom: Classroom }): JSX.Element {
   const { classroom } = props;
@@ -56,6 +37,11 @@ function RoomsReports(props: { classroom: Classroom }): JSX.Element {
       </Typography>
       <div className="column spacing" style={{ marginTop: 40 }}>
         {gameRooms.map((room, rIdx) => {
+          const totalWords = room.gameData.chat
+            .filter((c) => c.sender === SenderType.PLAYER)
+            .reduce((pre: number, cur) => {
+              return pre + cur.message.split(' ').length;
+            }, 0);
           return (
             <Card key={`room-${rIdx}`}>
               <CardContent
@@ -84,30 +70,21 @@ function RoomsReports(props: { classroom: Classroom }): JSX.Element {
                     }}
                   >
                     {room.gameData.players.map((player, pIdx) => {
+                      const studentWords = room.gameData.chat
+                        .filter((c) => c.senderId === player._id)
+                        .reduce((pre: number, cur) => {
+                          return pre + cur.message.split(' ').length;
+                        }, 0);
                       return (
-                        <div
-                          key={`player-${pIdx}`}
-                          className="column center-div"
-                        >
-                          <AvatarSprite
-                            player={player}
-                            bgColor="rgb(218, 183, 250)"
-                          />
-                          <Typography
-                            variant="body2"
-                            align="center"
-                            style={{ marginTop: 5 }}
-                          >
-                            {player.name}
-                          </Typography>
+                        <PlayerSprite key={`player-${pIdx}`} player={player}>
                           <Typography
                             variant="body2"
                             fontWeight="bold"
                             style={{ marginTop: 5 }}
                           >
-                            20%
+                            {getPercentString(studentWords / totalWords)}
                           </Typography>
-                        </div>
+                        </PlayerSprite>
                       );
                     })}
                   </div>
@@ -174,18 +151,18 @@ export default function TeacherReports(props: {
         right: '20px',
       }}
       tabs={[
-        {
-          name: 'SUMMARY',
-          element: <SummaryReports classroom={classroom} />,
-        },
+        // {
+        //   name: 'SUMMARY',
+        //   element: <SummaryReports classroom={classroom} />,
+        // },
         {
           name: 'ROOM REPORTS',
           element: <RoomsReports classroom={classroom} />,
         },
-        {
-          name: 'INDIVIDUAL REPORTS',
-          element: <IndividualReports classroom={classroom} />,
-        },
+        // {
+        //   name: 'INDIVIDUAL REPORTS',
+        //   element: <IndividualReports classroom={classroom} />,
+        // },
       ]}
     />
   );

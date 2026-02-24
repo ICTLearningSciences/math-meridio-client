@@ -4,10 +4,15 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as motion from 'motion/react-client';
-import { ArrowForward } from '@mui/icons-material';
+import {
+  ArrowForward,
+  CheckCircleOutline,
+  ErrorOutline,
+  WarningAmberOutlined,
+} from '@mui/icons-material';
 import {
   Card,
   CardContent,
@@ -18,11 +23,12 @@ import {
 
 import { Room } from '../../../store/slices/game/types';
 import { GAMES } from '../../../game/types';
-import AvatarSprite from '../../avatar-sprite';
+import AvatarSprite, { PlayerSprite } from '../../avatar-sprite';
+import { TwoOptionDialog } from '../../dialog';
 import ProgressBar from '../../progress-bar';
+import { getLastActivityString } from '../../../helpers';
 import { Classroom } from '../../../store/slices/educational-data/types';
 import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
-import { TwoOptionDialog } from '../../dialog';
 import { Player } from '../../../store/slices/player/types';
 
 export default function RoomCard(props: {
@@ -32,11 +38,43 @@ export default function RoomCard(props: {
 }): JSX.Element {
   const { room, classroom, classes } = props;
   const navigate = useNavigate();
-  const { togglePlayerPausedInRoomStatus } = useWithEducationalData();
+  const { pingGameRoomProcess, togglePlayerPausedInRoomStatus } =
+    useWithEducationalData();
   const [pausePlayer, setPausePlayer] = React.useState<Player>();
   const [updating, setUpdating] = React.useState<boolean>(false);
+  const [isInCooldown, setIsInCooldown] = React.useState(false);
 
+  const cooldownTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const game = GAMES.find((g) => g.id === room?.gameData.gameId);
+  const numPlayersPaused = Object.values(
+    room.gameData.playersStatusRecord
+  ).filter((p) => p.pausedByAdmin || p.reportedAwayStatus.isAway).length;
+
+  useEffect(() => {
+    if (!isInCooldown) {
+      pingRoom();
+    }
+  }, [isInCooldown]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (cooldownTimeoutRef.current) {
+        clearTimeout(cooldownTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const pingRoom = async () => {
+    setIsInCooldown(true);
+    if (cooldownTimeoutRef.current) {
+      clearTimeout(cooldownTimeoutRef.current);
+    }
+    pingGameRoomProcess(room._id);
+    cooldownTimeoutRef.current = setTimeout(() => {
+      setIsInCooldown(false);
+    }, 1000);
+  };
 
   const enterRoom = () => {
     navigate(`/classes/${classroom._id}/room/${room._id}`);
@@ -73,7 +111,15 @@ export default function RoomCard(props: {
             >
               {room.name}
             </Typography>
+            {!numPlayersPaused ? (
+              <CheckCircleOutline color="success" />
+            ) : numPlayersPaused === room.gameData.players.length ? (
+              <ErrorOutline color="error" />
+            ) : (
+              <WarningAmberOutlined color="warning" />
+            )}
           </div>
+
           <div
             className="row center-div"
             style={{
@@ -88,17 +134,7 @@ export default function RoomCard(props: {
                 'ACTIVE';
               const isPaused =
                 room.gameData.playersStatusRecord[player._id].pausedByAdmin;
-              const curDate = new Date().getTime();
-              const loginAt = new Date(player.lastLoginAt).getTime();
-              const minsSince = Math.floor(
-                Math.abs(curDate - loginAt) / (1000 * 60)
-              );
-              const activityStr =
-                minsSince < 60
-                  ? `${minsSince} MINS AGO`
-                  : minsSince < 60 * 24
-                  ? `${Math.floor(minsSince / 60)} HOURS AGO`
-                  : `${Math.floor(minsSince / (60 * 24))} DAYS AGO`;
+
               if (isPaused) {
                 return (
                   <Tooltip key={player._id} title="Unpause player">
@@ -114,7 +150,6 @@ export default function RoomCard(props: {
                           isPaused={isPaused}
                         />
                       </motion.div>
-
                       <Typography
                         variant="body2"
                         fontSize={12}
@@ -131,23 +166,18 @@ export default function RoomCard(props: {
                   </Tooltip>
                 );
               }
+
               return (
-                <div key={player._id} className="column center-div">
-                  <AvatarSprite player={player} bgColor="rgb(218, 183, 250)" />
-                  <Typography
-                    variant="body2"
-                    fontSize={12}
-                    fontWeight="bold"
-                    align="center"
-                    style={{ marginTop: 5 }}
-                  >
-                    {player.name}
-                  </Typography>
+                <PlayerSprite
+                  key={player._id}
+                  player={player}
+                  status={room.gameData.playersStatusRecord[player._id]}
+                >
                   <Typography fontSize={10} fontWeight="lighter">
                     {isActive
                       ? room.gameData.playersStatusRecord[player._id]
                           .computedState
-                      : activityStr}
+                      : getLastActivityString(player.lastLoginAt)}
                   </Typography>
                   <Tooltip title="Pause player">
                     <motion.div
@@ -164,40 +194,40 @@ export default function RoomCard(props: {
                           : 'white',
                         border: `1px solid ${isActive ? 'white' : 'black'}`,
                       }}
-                    ></motion.div>
+                    />
                   </Tooltip>
-                </div>
+                </PlayerSprite>
               );
             })}
           </div>
+
           <ProgressBar value={25} />
           <Typography variant="body2">
             {game?.name || room?.gameData.gameId}
           </Typography>
-          <IconButton
-            size="small"
-            style={{ position: 'absolute', bottom: 5, right: 5 }}
-            onClick={enterRoom}
-          >
-            <ArrowForward />
-          </IconButton>
+          <Tooltip title="Enter room">
+            <IconButton
+              size="small"
+              style={{ position: 'absolute', bottom: 5, right: 5 }}
+              onClick={enterRoom}
+            >
+              <ArrowForward />
+            </IconButton>
+          </Tooltip>
         </CardContent>
       </Card>
+
       {pausePlayer && (
         <TwoOptionDialog
-          title={`Mark ${pausePlayer.name} as ${
+          title={`Mark [${pausePlayer.name}] as ${
             room.gameData.playersStatusRecord[pausePlayer._id].pausedByAdmin
-              ? 'active'
-              : 'inactive'
+              ? 'Active'
+              : 'Inactive'
           }?`}
           open={Boolean(pausePlayer)}
           actionInProgress={updating}
           option1={{
-            display: `${
-              room.gameData.playersStatusRecord[pausePlayer._id].pausedByAdmin
-                ? 'Unpause'
-                : 'Pause'
-            } Player`,
+            display: 'Confirm',
             onClick: () => onTogglePause(),
           }}
           option2={{

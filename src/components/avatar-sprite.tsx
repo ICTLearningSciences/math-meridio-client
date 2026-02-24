@@ -7,8 +7,38 @@ The full terms of this copyright and license should always be found in the root 
 import React from 'react';
 import { Player } from '../store/slices/player/types';
 import { Pause } from '@mui/icons-material';
+import { Typography } from '@mui/material';
+import { PlayerStatusData } from '../store/slices/game/types';
 
-function AvatarSprite(props: {
+export function PlayerSprite(props: {
+  player: Player | undefined;
+  status?: PlayerStatusData;
+  children?: React.ReactNode;
+}): JSX.Element {
+  const { player, status } = props;
+  if (!player) return <div />;
+  return (
+    <div key={player._id} className="column center-div">
+      <AvatarSprite
+        player={player}
+        bgColor="rgb(218, 183, 250)"
+        isPaused={status?.pausedByAdmin}
+      />
+      <Typography
+        variant="body2"
+        fontSize={12}
+        fontWeight="bold"
+        align="center"
+        style={{ marginTop: 5 }}
+      >
+        {player.name}
+      </Typography>
+      {props.children}
+    </div>
+  );
+}
+
+export default function AvatarSprite(props: {
   player: Player | undefined;
   isPaused?: boolean;
   bgColor?: string;
@@ -71,5 +101,3 @@ function AvatarSprite(props: {
     </div>
   );
 }
-
-export default AvatarSprite;
