@@ -80,6 +80,7 @@ export interface UseWithEducationalData {
     roomId: string,
     userIdToPause: string
   ) => Promise<Room>;
+  reportPlayerAway: (userIdToReportAway: string) => Promise<Room>;
 }
 
 export function useWithEducationalData(): UseWithEducationalData {
@@ -307,6 +308,13 @@ export function useWithEducationalData(): UseWithEducationalData {
     ).unwrap();
   }
 
+  async function reportPlayerAway(userIdToReportAway: string): Promise<Room> {
+    if (!roomId) {
+      throw new Error('Room ID is required to report player away');
+    }
+    return await gameRoomApi.reportPlayerAway(roomId, userIdToReportAway);
+  }
+
   return {
     fetchInstructorDataHydration,
     fetchStudentDataHydration,
@@ -336,5 +344,6 @@ export function useWithEducationalData(): UseWithEducationalData {
     curGame,
     createClassMembership,
     togglePlayerPausedInRoomStatus,
+    reportPlayerAway,
   };
 }
