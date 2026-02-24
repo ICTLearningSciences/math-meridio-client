@@ -17,6 +17,7 @@ import * as gameRoomApi from '../../../hooks/game-rooms/game-room-api';
 import { useParams } from 'react-router-dom';
 import { useMemo } from 'react';
 import { Game, GAMES } from '../../../game/types';
+import { AssignClassGroupsAndStartResponse } from './api';
 
 export interface UseWithEducationalData {
   educationalData: educationalDataActions.EducationalDataStateData;
@@ -54,7 +55,7 @@ export interface UseWithEducationalData {
   assignClassGroupsAndStart: (
     classId: string,
     groups: ClassMembership[]
-  ) => Promise<Classroom>;
+  ) => Promise<AssignClassGroupsAndStartResponse>;
   adjustClassroomArchiveStatus: (
     classId: string,
     setArchived: boolean
@@ -94,6 +95,7 @@ export interface UseWithEducationalData {
     classId: string,
     instructorEmail: string
   ) => Promise<Classroom>;
+  assignGameToGameRoom: (roomId: string, gameId: string) => Promise<Room>;
 }
 
 export function useWithEducationalData(rId?: string): UseWithEducationalData {
@@ -206,7 +208,7 @@ export function useWithEducationalData(rId?: string): UseWithEducationalData {
   async function assignClassGroupsAndStart(
     classId: string,
     groups: ClassMembership[]
-  ): Promise<Classroom> {
+  ): Promise<AssignClassGroupsAndStartResponse> {
     return await dispatch(
       educationalDataActions.assignClassGroupsAndStart({
         classId,
@@ -366,6 +368,15 @@ export function useWithEducationalData(rId?: string): UseWithEducationalData {
     ).unwrap();
   }
 
+  async function assignGameToGameRoom(
+    roomId: string,
+    gameId: string
+  ): Promise<Room> {
+    return await dispatch(
+      educationalDataActions.assignGameToGameRoom({ roomId, gameId })
+    ).unwrap();
+  }
+
   return {
     fetchInstructorDataHydration,
     fetchStudentDataHydration,
@@ -399,5 +410,6 @@ export function useWithEducationalData(rId?: string): UseWithEducationalData {
     togglePlayerPausedInRoomStatus,
     reportPlayerAway,
     shareClassroomWithInstructor,
+    assignGameToGameRoom,
   };
 }

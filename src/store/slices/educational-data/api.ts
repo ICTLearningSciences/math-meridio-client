@@ -17,6 +17,7 @@ import { userDataQuery } from '../player/api';
 import { fullRoomQueryData } from '../../../api';
 import { requireLocalStorageGet as localStorageGet } from '../../local-storage';
 import { ACCESS_TOKEN_KEY } from '../../local-storage';
+import { Room } from '../game/types';
 
 export async function createClassroom(): Promise<Classroom> {
   const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
@@ -270,16 +271,26 @@ export async function assignStudentToGroup(
   );
 }
 
+export interface AssignClassGroupsAndStartResponse {
+  updatedClassroom: Classroom;
+  createdRooms: Room[];
+}
+
 export async function assignClassGroupsAndStart(
   classId: string,
   groups: ClassMembership[]
-): Promise<Classroom> {
+): Promise<AssignClassGroupsAndStartResponse> {
   const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
-  return await execGql<Classroom>(
+  return await execGql<AssignClassGroupsAndStartResponse>(
     {
       query: `mutation AssignClassGroupsAndStart($classId: String!, $groups: [ClassMembershipInputType]!) {
     assignClassGroupsAndStart(classId: $classId, groups: $groups) {
-        ${classroomDataQuery}
+        updatedClassroom {
+            ${classroomDataQuery}
+        }
+        createdRooms {
+            ${fullRoomQueryData}
+        }
     }
   }`,
       variables: {
@@ -426,6 +437,31 @@ export async function shareClassroomWithInstructor(
     },
     {
       dataPath: 'shareClassroomWithInstructor',
+      accessToken: accessToken,
+    }
+  );
+}
+
+const assignGameToGameRoomMutation = `
+  mutation AssignGameToGameRoom($roomId: String!, $gameId: String!) {
+    assignGameToGameRoom(roomId: $roomId, gameId: $gameId) {
+      ${fullRoomQueryData}
+    }
+  }
+`;
+
+export async function assignGameToGameRoom(
+  roomId: string,
+  gameId: string
+): Promise<Room> {
+  const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
+  return await execGql<Room>(
+    {
+      query: assignGameToGameRoomMutation,
+      variables: { roomId, gameId },
+    },
+    {
+      dataPath: 'assignGameToGameRoom',
       accessToken: accessToken,
     }
   );
