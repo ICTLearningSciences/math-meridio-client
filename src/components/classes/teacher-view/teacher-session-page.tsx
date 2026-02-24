@@ -12,6 +12,7 @@ import {
   Card,
   CardContent,
   Grid,
+  MenuItem,
   TextField,
   Typography,
 } from '@mui/material';
@@ -20,6 +21,7 @@ import ProgressBar from '../../progress-bar';
 import RoomCard from './room-card';
 import SkillCard from './skill-card';
 import { Classroom } from '../../../store/slices/educational-data/types';
+import { GAMES } from '../../../game/types';
 
 const styles = makeStyles()(() => ({
   card: {
@@ -44,9 +46,10 @@ export default function ActiveSessionView(props: {
   const { educationalData } = useWithEducationalData();
   const [studentSearch, setStudentSearch] = React.useState<string>();
   const [skillsMet, setSkillsMet] = React.useState<Record<string, number>>({});
+  const [game, setGame] = React.useState<string>();
 
   const gameRooms = educationalData.rooms.filter(
-    (r) => r.classId === classroom._id
+    (r) => r.classId === classroom._id && (!game || r.gameData.gameId === game)
   );
 
   React.useEffect(() => {
@@ -76,7 +79,25 @@ export default function ActiveSessionView(props: {
           className="row center-div"
           style={{ justifyContent: 'space-between' }}
         >
-          <Typography className={classes.header}>Overall Progress</Typography>
+          <div className="row center-div">
+            <Typography className={classes.header}>
+              Overall Progress:
+            </Typography>
+            <TextField
+              select
+              label="Select Game"
+              variant="standard"
+              style={{ width: 300, marginLeft: 10, color: 'white' }}
+              onChange={(e) => setGame(e.target.value)}
+            >
+              <MenuItem value={undefined}>Show All</MenuItem>
+              {GAMES.map((game) => (
+                <MenuItem key={game.id} value={game.id}>
+                  {game.name}
+                </MenuItem>
+              ))}
+            </TextField>
+          </div>
           <Button color="inherit" endIcon={<ChevronRight />}>
             Class Report
           </Button>
@@ -209,7 +230,7 @@ export default function ActiveSessionView(props: {
                   Need Help
                 </Typography>
                 <Typography variant="h2" fontWeight="bold" textAlign="center">
-                  8
+                  0
                 </Typography>
               </CardContent>
             </Card>

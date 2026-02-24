@@ -111,8 +111,11 @@ function NewDroppableGroup(): JSX.Element {
 
 export function RoomSetupView(props: { classId: string }): JSX.Element {
   const { classId } = props;
-  const { educationalData, assignClassGroupsAndStart } =
-    useWithEducationalData();
+  const {
+    educationalData,
+    assignClassGroupsAndStart,
+    fetchInstructorDataHydration,
+  } = useWithEducationalData();
   const [groupSize, setGroupSize] = React.useState<number>(3);
   const [studentMembers, setStudentMembers] = React.useState<ClassMembership[]>(
     []
@@ -190,6 +193,7 @@ export function RoomSetupView(props: { classId: string }): JSX.Element {
     setStarting(true);
     try {
       await assignClassGroupsAndStart(classId, studentMembers);
+      await fetchInstructorDataHydration();
     } catch (err) {
       console.error('Failed to start class', err);
     } finally {

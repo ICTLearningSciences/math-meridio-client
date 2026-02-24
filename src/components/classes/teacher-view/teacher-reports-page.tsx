@@ -18,10 +18,110 @@ import SkillCard from './skill-card';
 import { Room, SenderType } from '../../../store/slices/game/types';
 import { getPercentString } from '../../../helpers';
 
+// function RoomReport(props: {
+//   room: Room,
+// }): JSX.Element {
+//   const { room } = props;
+//   const [skillsMet, setSkillsMet] = React.useState<Record<string, number>>({});
+//   // React.useEffect(() => {
+//   //   const skillsMet: Record<string, number> = {};
+//   //   for (const room of gameRooms) {
+//   //     for (const standard of Object.entries(
+//   //       room.gameData.mathStandardsCompleted
+//   //     )) {
+//   //       if (!(standard[0] in skillsMet)) {
+//   //         skillsMet[standard[0]] = standard[1] ? 1 : 0;
+//   //       } else if (standard[1]) {
+//   //         skillsMet[standard[0]] = skillsMet[standard[0]] + 1;
+//   //       }
+//   //     }
+//   //   }
+//   //   setSkillsMet(skillsMet);
+//   // }, [gameRooms]);
+
+//   return (
+//     <Card>
+//       <CardContent
+//         className="column spacing"
+//         style={{ position: 'relative', padding: 20 }}
+//       >
+//         <Typography
+//           fontSize={20}
+//           fontWeight="bold"
+//           style={{ marginBottom: 20 }}
+//         >
+//           {room.name}
+//         </Typography>
+//         <ProgressBar value={25} size="large" />
+//         <div className="column spacing" style={{ marginTop: 20 }}>
+//           <Typography>Student Contributions</Typography>
+//           <div
+//             className="row center-div"
+//             style={{
+//               border: '1px solid black',
+//               borderRadius: 10,
+//               justifyContent: 'space-evenly',
+//               overflowX: 'scroll',
+//               scrollbarWidth: 'none',
+//               padding: 10,
+//             }}
+//           >
+//             {room.gameData.players.map((player, pIdx) => {
+//               const studentWords = room.gameData.chat
+//                 .filter((c) => c.senderId === player._id)
+//                 .reduce((pre: number, cur) => {
+//                   return pre + cur.message.split(' ').length;
+//                 }, 0);
+//               return (
+//                 <PlayerSprite key={`player-${pIdx}`} player={player}>
+//                   <Typography
+//                     variant="body2"
+//                     fontWeight="bold"
+//                     style={{ marginTop: 5 }}
+//                   >
+//                     {getPercentString(studentWords / totalWords)}
+//                   </Typography>
+//                 </PlayerSprite>
+//               );
+//             })}
+//           </div>
+//         </div>
+//         <div className="column spacing" style={{ marginTop: 20 }}>
+//           <Typography>Trouble Spots</Typography>
+//           <Grid container spacing={2}>
+//             <Grid item xs={7}>
+//               <Card style={{ backgroundColor: 'rgb(231, 231, 231)' }}>
+//                 <CardContent className="column spacing">
+//                   <Typography>Challenge Section</Typography>
+
+//                 </CardContent>
+//               </Card>
+//             </Grid>
+//             <Grid item xs={5}></Grid>
+//           </Grid>
+//         </div>
+//         <div
+//           className="row"
+//           style={{ width: '100%', justifyContent: 'flex-end' }}
+//         >
+//           <Button
+//             color="inherit"
+//             endIcon={<ArrowForward />}
+//             onClick={() => enterRoom(room)}
+//           >
+//             Enter Room
+//           </Button>
+//         </div>
+//       </CardContent>
+//     </Card>
+//   )
+// }
+
 function RoomsReports(props: { classroom: Classroom }): JSX.Element {
   const { classroom } = props;
   const navigate = useNavigate();
   const { educationalData } = useWithEducationalData();
+
   const gameRooms = educationalData.rooms.filter(
     (r) => r.classId === classroom._id
   );
