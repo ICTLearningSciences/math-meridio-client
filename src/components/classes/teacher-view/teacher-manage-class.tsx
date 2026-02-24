@@ -25,6 +25,7 @@ import {
   Classroom,
 } from '../../../store/slices/educational-data/types';
 import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
+import { Player } from '../../../store/slices/player/types';
 
 export default function TeacherManageClass(props: {
   classroom?: Classroom;
@@ -32,9 +33,11 @@ export default function TeacherManageClass(props: {
   const { classroom } = props;
   const {
     educationalData,
+    fetchInstructorDataHydration,
     revokeClassInviteCode,
     createNewClassInviteCode,
     updateClassNameDescription,
+    removeStudentFromClass,
   } = useWithEducationalData();
 
   const [inviteDialogOpen, setInviteDialogOpen] = React.useState(false);
@@ -85,6 +88,16 @@ export default function TeacherManageClass(props: {
       await revokeClassInviteCode(classroom._id, code);
     } catch (err) {
       console.error('Failed to revoke invite code', err);
+    }
+  };
+
+  const handleRemoveStudent = async (student: Player) => {
+    if (!classroom) return;
+    try {
+      await removeStudentFromClass(student._id, classroom._id);
+      await fetchInstructorDataHydration();
+    } catch (err) {
+      console.error('Failed to remove student', err);
     }
   };
 
@@ -229,19 +242,38 @@ export default function TeacherManageClass(props: {
               <TableRow>
                 <TableCell>Name</TableCell>
                 <TableCell>Email</TableCell>
+                <TableCell>Assigned Group</TableCell>
                 <TableCell>Last Login</TableCell>
+                <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {students.map((student) => (
-                <TableRow key={student._id}>
-                  <TableCell>{student.name}</TableCell>
-                  <TableCell>{student.email}</TableCell>
-                  <TableCell>
-                    {new Date(student.lastLoginAt).toLocaleString()}
-                  </TableCell>
-                </TableRow>
-              ))}
+              {students.map((student) => {
+                const groupId = studentMemberships.find(
+                  (s) => s.userId === student._id
+                )?.groupId;
+                return (
+                  <TableRow key={student._id}>
+                    <TableCell>{student.name}</TableCell>
+                    <TableCell>{student.email}</TableCell>
+                    <TableCell>
+                      {groupId === undefined ? 'None' : groupId}
+                    </TableCell>
+                    <TableCell>
+                      {new Date(student.lastLoginAt).toLocaleString()}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        size="small"
+                        color="error"
+                        onClick={() => handleRemoveStudent(student)}
+                      >
+                        Kick
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </TableContainer>

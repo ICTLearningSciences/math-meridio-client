@@ -87,7 +87,7 @@ export default function ActiveSessionView(props: {
               select
               label="Select Game"
               variant="standard"
-              style={{ width: 300, marginLeft: 10, color: 'white' }}
+              style={{ width: 300, marginLeft: 10 }}
               onChange={(e) => setGame(e.target.value)}
             >
               <MenuItem value={undefined}>Show All</MenuItem>

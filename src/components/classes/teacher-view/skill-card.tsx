@@ -27,10 +27,10 @@ export default function SkillCard(props: {
       }}
     >
       <Typography>{props.name}</Typography>
-      <div className="row center-div">
+      <div className="row center-div spacing">
         <Person fontSize="small" />
         <Typography>
-          {props.numMet}/{props.numTotal}
+          {props.numMet} / {props.numTotal}
         </Typography>
       </div>
     </div>
