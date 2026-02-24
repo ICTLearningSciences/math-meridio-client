@@ -71,7 +71,7 @@ export interface FetchEducationalDataHydrationResponse {
   rooms: Room[];
   students: Player[];
   classMemberships: ClassMembership[];
-  gamesList: StaticGame[];
+  gameList: StaticGame[];
 }
 
 export interface RoomHeartBeat {

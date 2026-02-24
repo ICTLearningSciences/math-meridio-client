@@ -286,7 +286,7 @@ export async function fetchInstructorDataHydration(): Promise<FetchEducationalDa
         classMemberships {
             ${classMembershipDataQuery}
         }
-        gamesList {
+        gameList {
             id
             name
         }

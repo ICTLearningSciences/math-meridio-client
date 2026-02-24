@@ -30,7 +30,7 @@ export interface EducationalDataStateData {
   students: Player[];
   classMemberships: ClassMembership[];
   hydrationLoadStatus: LoadingState;
-  gamesList: StaticGame[];
+  gameList: StaticGame[];
 }
 
 const initialState: EducationalDataStateData = {
@@ -39,7 +39,7 @@ const initialState: EducationalDataStateData = {
   students: [],
   classMemberships: [],
   hydrationLoadStatus: { status: LoadStatus.NONE },
-  gamesList: [],
+  gameList: [],
 };
 
 /** Actions */
@@ -224,12 +224,27 @@ export const sendMessageToGameRoom = createAsyncThunk(
   }
 );
 
+export const setPlayerPauseStatus = createAsyncThunk(
+  'educationalData/setPlayerPauseStatus',
+  async (args: { roomId: string; playerId: string; isPaused: boolean }) => {
+    return await gameRoomApi.setPlayerPauseStatus(
+      args.roomId,
+      args.playerId,
+      args.isPaused
+    );
+  }
+);
+
 export const educationalDataSlice = createSlice({
   name: 'educationalData',
   initialState,
   reducers: {},
   extraReducers: (builder) => {
     builder
+
+      .addCase(setPlayerPauseStatus.fulfilled, (state, action) => {
+        addOrUpdateGameRoom(state, action.payload);
+      })
 
       .addCase(updatePlayerGameStateData.fulfilled, (state, action) => {
         addOrUpdateGameRoom(state, action.payload);
@@ -284,14 +299,14 @@ export const educationalDataSlice = createSlice({
         state.rooms = [];
         state.students = [];
         state.classMemberships = [];
-        state.gamesList = [];
+        state.gameList = [];
       })
       .addCase(fetchInstructorDataHydration.fulfilled, (state, action) => {
         state.classes = action.payload.classes;
         state.rooms = action.payload.rooms;
         state.students = action.payload.students;
         state.classMemberships = action.payload.classMemberships;
-        state.gamesList = action.payload.gamesList;
+        state.gameList = action.payload.gameList;
         state.hydrationLoadStatus = {
           status: LoadStatus.DONE,
           endedAt: Date.now.toString(),
@@ -311,7 +326,7 @@ export const educationalDataSlice = createSlice({
         state.rooms = [];
         state.students = [];
         state.classMemberships = [];
-        state.gamesList = [];
+        state.gameList = [];
         state.hydrationLoadStatus = {
           status: LoadStatus.FAILED,
           failedAt: Date.now.toString(),
@@ -323,7 +338,7 @@ export const educationalDataSlice = createSlice({
         state.rooms = action.payload.rooms;
         state.students = action.payload.students;
         state.classMemberships = action.payload.classMemberships;
-        state.gamesList = action.payload.gamesList;
+        state.gameList = action.payload.gameList;
         state.hydrationLoadStatus = {
           status: LoadStatus.DONE,
           endedAt: Date.now.toString(),
