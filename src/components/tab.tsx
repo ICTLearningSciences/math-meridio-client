@@ -29,7 +29,7 @@ export function TabButton(props: {
       <OutlinedButton
         style={{
           backgroundColor: value === index ? 'white' : 'rgb(218, 183, 250)',
-          borderColor: 'black',
+          border: '1px solid black',
           color: 'black',
         }}
         disabled={props.disabled}

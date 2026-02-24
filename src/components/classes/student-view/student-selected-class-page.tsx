@@ -47,9 +47,7 @@ export default function StudentSelectedClassPage(): JSX.Element {
   );
   const myGroup = studentMemberships.find((c) => c.userId === player?._id);
 
-  const _gameRooms = educationalData.rooms.filter(
-    (r) => r.classId === classId && r.groupId === myGroup?.groupId
-  );
+  const _gameRooms = educationalData.rooms.filter((r) => r.classId === classId);
   const gameRooms = selectedGame
     ? _gameRooms.filter((r) => r.gameData.gameId === selectedGame.id)
     : [];

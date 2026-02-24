@@ -75,10 +75,8 @@ function RoomsReports(props: { classroom: Classroom }): JSX.Element {
                   <div
                     className="row center-div"
                     style={{
-                      borderStyle: 'solid',
+                      border: '1px solid black',
                       borderRadius: 10,
-                      borderWidth: 1,
-                      borderColor: 'black',
                       justifyContent: 'space-evenly',
                       overflowX: 'scroll',
                       scrollbarWidth: 'none',

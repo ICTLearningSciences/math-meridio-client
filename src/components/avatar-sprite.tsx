@@ -6,9 +6,11 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React from 'react';
 import { Player } from '../store/slices/player/types';
+import { Pause } from '@mui/icons-material';
 
 function AvatarSprite(props: {
   player: Player | undefined;
+  isPaused?: boolean;
   bgColor?: string;
   border?: boolean;
 }): JSX.Element {
@@ -21,35 +23,51 @@ function AvatarSprite(props: {
         position: 'relative',
         height: 40,
         width: 40,
-        minHeight: 40,
-        minWidth: 40,
         borderRadius: 40,
         padding: 3,
         border: props.border ? '1px solid rgb(114, 20, 201)' : 'none',
         backgroundColor: props.bgColor || 'white',
       }}
     >
-      {player.avatar
-        .filter((a) => a.id && a.type)
-        .map((a) => (
-          <div
-            key={a.id}
-            style={{
-              backgroundImage: `url(/assets/avatar/sprite/${
-                a.type?.split('_')[1]
-              }/${a.id}.png)`,
-              position: 'absolute',
-              transform: 'scale(1.5)',
-              left: 7,
-              top: 1,
-              width: 32,
-              height: 40,
-              backgroundPosition: `top left -${
-                a.variant ? a.variant * 32 * 8 : 0
-              }px`,
-            }}
-          />
-        ))}
+      {props.isPaused ? (
+        <div
+          className="column center-div"
+          style={{
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            borderRadius: 40,
+            backgroundColor: 'black',
+            opacity: 0.3,
+          }}
+        >
+          <Pause style={{ color: 'white' }} />
+        </div>
+      ) : (
+        player.avatar
+          .filter((a) => a.id && a.type)
+          .map((a) => (
+            <div
+              key={a.id}
+              style={{
+                backgroundImage: `url(/assets/avatar/sprite/${
+                  a.type?.split('_')[1]
+                }/${a.id}.png)`,
+                position: 'absolute',
+                transform: 'scale(1.5)',
+                left: 7,
+                top: 1,
+                width: 32,
+                height: 40,
+                backgroundPosition: `top left -${
+                  a.variant ? a.variant * 32 * 8 : 0
+                }px`,
+              }}
+            />
+          ))
+      )}
     </div>
   );
 }

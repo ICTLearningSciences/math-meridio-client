@@ -55,20 +55,29 @@ export default function RoomCard(props: {
             }}
           >
             {room.gameData.players.map((player) => {
+              const isActive =
+                room.gameData.playersStatusRecord[player._id].computedState ===
+                'ACTIVE';
+              const isPaused =
+                room.gameData.playersStatusRecord[player._id].pausedByAdmin;
               const curDate = new Date().getTime();
               const loginAt = new Date(player.lastLoginAt).getTime();
-              const hoursSince = Math.floor(
-                Math.abs(curDate - loginAt) / (1000 * 60 * 60)
+              const minsSince = Math.floor(
+                Math.abs(curDate - loginAt) / (1000 * 60)
               );
               const activityStr =
-                hoursSince === 0
-                  ? 'ACTIVE'
-                  : hoursSince > 24
-                  ? `${Math.floor(hoursSince / 24)} DAYS AGO`
-                  : `${hoursSince} HOURS AGO`;
+                minsSince < 60
+                  ? `${minsSince} MINS AGO`
+                  : minsSince < 60 * 24
+                  ? `${Math.floor(minsSince / 60)} HOURS AGO`
+                  : `${Math.floor(minsSince / (60 * 24))} DAYS AGO`;
               return (
                 <div key={player._id} className="column center-div">
-                  <AvatarSprite player={player} bgColor="rgb(218, 183, 250)" />
+                  <AvatarSprite
+                    player={player}
+                    bgColor="rgb(218, 183, 250)"
+                    isPaused={isPaused}
+                  />
                   <Typography
                     variant="body2"
                     fontSize={12}
@@ -79,8 +88,28 @@ export default function RoomCard(props: {
                     {player.name}
                   </Typography>
                   <Typography fontSize={10} fontWeight="lighter">
-                    {activityStr}
+                    {isPaused
+                      ? 'PAUSED'
+                      : isActive
+                      ? room.gameData.playersStatusRecord[player._id]
+                          .computedState
+                      : activityStr}
                   </Typography>
+                  {!isPaused && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        marginRight: -30,
+                        width: 12,
+                        height: 12,
+                        borderRadius: 12,
+                        backgroundColor: isActive
+                          ? 'rgb(91, 197, 57)'
+                          : 'white',
+                        border: `1px solid ${isActive ? 'white' : 'black'}`,
+                      }}
+                    />
+                  )}
                 </div>
               );
             })}
