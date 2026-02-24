@@ -24,6 +24,7 @@ export const MAX_MESSAGE_LENGTH = 200;
 export default function ChatForm(props: {
   sendMessage: (msg: string) => void;
   isMyTurn: boolean;
+  isPaused?: boolean;
 }): JSX.Element {
   const [input, setInput] = React.useState<string>('');
   const {
@@ -32,7 +33,7 @@ export default function ChatForm(props: {
     browserSupportsSpeechRecognition,
     resetTranscript,
   } = useSpeechRecognition();
-  const { sendMessage, isMyTurn } = props;
+  const { sendMessage, isMyTurn, isPaused } = props;
 
   React.useEffect(() => {
     if (listening) {
@@ -75,58 +76,71 @@ export default function ChatForm(props: {
   }
 
   return (
-    <div className="row" style={{ width: '100%' }}>
-      <FormControl variant="outlined" style={{ flex: 1 }}>
-        <InputLabel>Chat:</InputLabel>
-        <OutlinedInput
-          data-cy="chat-input"
-          label="Chat:"
-          type="text"
-          value={input}
-          disabled={listening}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => onKeyPress(e, isMyTurn)}
-          style={{ backgroundColor: 'white' }}
-          multiline
-          inputProps={{ maxLength: MAX_MESSAGE_LENGTH }}
-          startAdornment={
-            input.length > MAX_MESSAGE_LENGTH * 0.75 && (
-              <InputAdornment position="start">
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  margin={0}
-                  padding={0}
+    <div style={{ width: '100%' }}>
+      {isPaused && (
+        <Typography
+          variant="body2"
+          color="error"
+          sx={{ mb: 1, textAlign: 'center', fontWeight: 'bold' }}
+        >
+          You have been paused by your instructor.
+        </Typography>
+      )}
+      <div className="row" style={{ width: '100%' }}>
+        <FormControl variant="outlined" style={{ flex: 1 }}>
+          <InputLabel>Chat:</InputLabel>
+          <OutlinedInput
+            data-cy="chat-input"
+            label="Chat:"
+            type="text"
+            value={input}
+            disabled={listening || isPaused}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => onKeyPress(e, isMyTurn)}
+            style={{ backgroundColor: 'white' }}
+            multiline
+            inputProps={{ maxLength: MAX_MESSAGE_LENGTH }}
+            startAdornment={
+              input.length > MAX_MESSAGE_LENGTH * 0.75 && (
+                <InputAdornment position="start">
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    margin={0}
+                    padding={0}
+                  >
+                    {input.length}/{MAX_MESSAGE_LENGTH}
+                  </Typography>
+                </InputAdornment>
+              )
+            }
+            endAdornment={
+              <InputAdornment position="end">
+                <IconButton
+                  data-cy="send-message-button"
+                  type="submit"
+                  color="primary"
+                  edge="end"
+                  onClick={onSend}
+                  disabled={
+                    input.length > MAX_MESSAGE_LENGTH || !isMyTurn || isPaused
+                  }
                 >
-                  {input.length}/{MAX_MESSAGE_LENGTH}
-                </Typography>
+                  <Send />
+                </IconButton>
               </InputAdornment>
-            )
-          }
-          endAdornment={
-            <InputAdornment position="end">
-              <IconButton
-                data-cy="send-message-button"
-                type="submit"
-                color="primary"
-                edge="end"
-                onClick={onSend}
-                disabled={input.length > MAX_MESSAGE_LENGTH || !isMyTurn}
-              >
-                <Send />
-              </IconButton>
-            </InputAdornment>
-          }
-        />
-      </FormControl>
-      <Fab
-        color={listening ? 'primary' : 'inherit'}
-        onClick={onToggleSTT}
-        disabled={!browserSupportsSpeechRecognition}
-        style={{ marginLeft: 10 }}
-      >
-        {listening ? <Mic /> : <MicOutlined />}
-      </Fab>
+            }
+          />
+        </FormControl>
+        <Fab
+          color={listening ? 'primary' : 'inherit'}
+          onClick={onToggleSTT}
+          disabled={!browserSupportsSpeechRecognition || isPaused}
+          style={{ marginLeft: 10 }}
+        >
+          {listening ? <Mic /> : <MicOutlined />}
+        </Fab>
+      </div>
     </div>
   );
 }

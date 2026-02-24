@@ -30,10 +30,17 @@ import ChatForm from './chat-form';
 import withAuthorizationOnly from '../../wrap-with-authorization-only';
 import Popup from '../popup';
 import EndOfPhaseReflectionModal from './end-of-phase-reflection-modal';
+import AwayStatusModal from './away-status-modal';
+import PausedStatusModal from './paused-status-modal';
 import { useWithConfig } from '../../store/slices/config/use-with-config';
 import { useWithWindow } from '../../hooks/use-with-window';
 import EventSystem from '../../game/event-system';
-import { GameData, Room, RoomPhase } from '../../store/slices/game/types';
+import {
+  GameData,
+  PlayerComputedState,
+  Room,
+  RoomPhase,
+} from '../../store/slices/game/types';
 import { Game } from '../../game/types';
 
 import '../../layout.css';
@@ -173,6 +180,17 @@ function GamePage(): JSX.Element {
     fetchRoom,
   } = outletContext;
   const navigate = useNavigate();
+  const myStatusInRoom =
+    player?._id && room
+      ? room?.gameData.playersStatusRecord[player?._id]
+      : undefined;
+  const iAmAway =
+    myStatusInRoom?.computedState ===
+      PlayerComputedState.REPORTED_AWAY_BY_OTHER_PLAYER ||
+    myStatusInRoom?.computedState ===
+      PlayerComputedState.REPORTED_AWAY_BY_FRONTEND_DETECTION;
+  const iAmPaused =
+    myStatusInRoom?.computedState === PlayerComputedState.PAUSED_BY_ADMIN;
   const { windowHeight, windowWidth } = useWithWindow();
 
   const isSingleResponseRequired =
@@ -513,9 +531,19 @@ function GamePage(): JSX.Element {
             requestUserInputPhaseData={room.gameData.curGameState}
             uiGameData={room.gameData}
           />
-          <ChatForm sendMessage={sendMessageToGameRoom} isMyTurn={isMyTurn} />
+          <ChatForm
+            sendMessage={sendMessageToGameRoom}
+            isMyTurn={isMyTurn}
+            isPaused={iAmPaused}
+          />
         </Stack>
       </GridLayout>
+      <AwayStatusModal
+        roomId={room._id}
+        playerId={player._id}
+        iAmAway={iAmAway}
+      />
+      <PausedStatusModal iAmPaused={iAmPaused} />
     </div>
   );
 }

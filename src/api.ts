@@ -136,19 +136,19 @@ export const fullDiscussionStageQueryData = `
           customSystemRole
       }
 
-                                ... on ConditionalActivityStepType {
-                              stepId
-                              stepType
-                              lastStep
-                              jumpToStepId
-                              conditionals{
-                                  stateDataKey
-                                  checking
-                                  operation
-                                  expectedValue
-                                  targetStepId
-                              }
-                          }
+      ... on ConditionalActivityStepType {
+          stepId
+          stepType
+          lastStep
+          jumpToStepId
+          conditionals{
+              stateDataKey
+              checking
+              operation
+              expectedValue
+              targetStepId
+          }
+      }
     }
   }
 `;
@@ -190,6 +190,7 @@ export const fullRoomQueryData = `
       gameStateData
     }
     playersGameStateData
+    playersStatusRecord
   }
 `;
 

@@ -52,7 +52,16 @@ export enum PlayerComputedState {
   ACTIVE = 'ACTIVE', // has active heartbeats in the last 15 seconds
 }
 
+export interface ReportedAwayStatus {
+  isAway: boolean;
+  reportedAwayAt?: Date;
+  reportedBy?: 'STUDENT' | 'FRONTEND_SYSTEM';
+}
+
 export interface PlayerStatusData {
+  lastHeartbeatAt?: Date;
+  reportedAwayStatus: ReportedAwayStatus;
+  pausedByAdmin: boolean;
   computedState: PlayerComputedState;
 }
 

@@ -85,6 +85,11 @@ export interface UseWithEducationalData {
     userEmail: string
   ) => Promise<ClassMembership>;
   curGame: Game | undefined;
+  togglePlayerPausedInRoomStatus: (
+    roomId: string,
+    userIdToPause: string
+  ) => Promise<Room>;
+  reportPlayerAway: (userIdToReportAway: string) => Promise<Room>;
 }
 
 export function useWithEducationalData(): UseWithEducationalData {
@@ -98,7 +103,7 @@ export function useWithEducationalData(): UseWithEducationalData {
   );
   const curGame = useMemo(() => {
     return GAMES.find((g) => g.id === room?.gameData.gameId);
-  }, [room, state.gamesList]);
+  }, [room, state.gameList]);
 
   async function fetchInstructorDataHydration(): Promise<FetchEducationalDataHydrationResponse> {
     return await dispatch(
@@ -319,6 +324,32 @@ export function useWithEducationalData(): UseWithEducationalData {
     ).unwrap();
   }
 
+  async function togglePlayerPausedInRoomStatus(
+    roomId: string,
+    userIdToPause: string
+  ): Promise<Room> {
+    const targetRoom = state.rooms.find((r) => r._id === roomId);
+    if (!targetRoom) {
+      throw new Error('Room not found');
+    }
+    const currentPauseStatus =
+      targetRoom?.gameData.playersStatusRecord[userIdToPause]?.pausedByAdmin;
+    return await dispatch(
+      educationalDataActions.setPlayerPauseStatus({
+        roomId,
+        playerId: userIdToPause,
+        isPaused: !currentPauseStatus,
+      })
+    ).unwrap();
+  }
+
+  async function reportPlayerAway(userIdToReportAway: string): Promise<Room> {
+    if (!roomId) {
+      throw new Error('Room ID is required to report player away');
+    }
+    return await gameRoomApi.reportPlayerAway(roomId, userIdToReportAway);
+  }
+
   return {
     fetchInstructorDataHydration,
     fetchStudentDataHydration,
@@ -349,5 +380,7 @@ export function useWithEducationalData(): UseWithEducationalData {
     room,
     curGame,
     createClassMembership,
+    togglePlayerPausedInRoomStatus,
+    reportPlayerAway,
   };
 }

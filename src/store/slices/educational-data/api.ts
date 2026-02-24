@@ -336,6 +336,10 @@ export async function fetchInstructorDataHydration(): Promise<FetchEducationalDa
         classMemberships {
             ${classMembershipDataQuery}
         }
+        gameList {
+            id
+            name
+        }
     }
   }`,
     },
