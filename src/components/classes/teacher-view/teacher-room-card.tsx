@@ -26,10 +26,7 @@ import { GAMES } from '../../../game/types';
 import AvatarSprite, { PlayerSprite } from '../../avatar-sprite';
 import { TwoOptionDialog } from '../../dialog';
 import ProgressBar from '../../progress-bar';
-import {
-  calculatePercentSkillsMet,
-  getLastActivityString,
-} from '../../../helpers';
+import { getLastActivityString } from '../../../helpers';
 import { Classroom } from '../../../store/slices/educational-data/types';
 import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
 import { Player } from '../../../store/slices/player/types';
@@ -176,11 +173,7 @@ export default function RoomCard(props: {
             })}
           </div>
 
-          <ProgressBar
-            value={calculatePercentSkillsMet(
-              room.gameData.mathStandardsCompleted
-            )}
-          />
+          <ProgressBar phases={room.gameData.phaseProgression} />
           <Typography variant="body2">
             {game?.name || room?.gameData.gameId}
           </Typography>

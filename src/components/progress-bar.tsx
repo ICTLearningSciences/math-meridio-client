@@ -6,17 +6,22 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React from 'react';
 import { LinearProgress, Typography } from '@mui/material';
+import { PhaseProgression } from '../store/slices/game/types';
 
 export default function ProgressBar(props: {
-  value: number;
+  phases: PhaseProgression;
   size?: 'large';
 }): JSX.Element {
+  const { phases } = props;
+  const phase = phases.phasesCompleted.length;
+  const value = !phases.totalPhases ? 0 : (phase / phases.totalPhases) * 100;
+
   if (props.size === 'large') {
     return (
       <div>
         <LinearProgress
           variant="determinate"
-          value={props.value}
+          value={value}
           style={{ height: 30, borderRadius: 40 }}
           sx={{
             backgroundColor: 'rgb(217, 217, 217)',
@@ -29,14 +34,16 @@ export default function ProgressBar(props: {
         />
         <div
           className="row"
-          style={{ justifyContent: 'space-between', marginTop: 10 }}
+          style={{ justifyContent: 'space-evenly', marginTop: 10 }}
         >
-          <Typography style={{ color: 'gray' }}>PHASE 1</Typography>
-          <Typography style={{ color: 'gray' }}>PHASE 2</Typography>
-          <Typography style={{ color: 'gray' }}>PHASE 3</Typography>
-          <Typography style={{ color: 'gray' }}>PHASE 4</Typography>
-          <Typography style={{ color: 'gray' }}>PHASE 5</Typography>
-          <Typography style={{ color: 'gray' }}>PHASE 6</Typography>
+          {Array.from({ length: phases.totalPhases }, (_, index) => (
+            <Typography
+              key={index}
+              style={{ color: phase > index ? 'orange' : 'gray' }}
+            >
+              PHASE {index + 1}
+            </Typography>
+          ))}
         </div>
       </div>
     );
@@ -44,7 +51,7 @@ export default function ProgressBar(props: {
   return (
     <LinearProgress
       variant="determinate"
-      value={props.value}
+      value={value}
       style={{ height: 15, borderRadius: 40 }}
       sx={{
         backgroundColor: 'rgb(217, 217, 217)',

@@ -15,7 +15,7 @@ import ProgressBar from '../../progress-bar';
 import { PlayerSprite } from '../../avatar-sprite';
 import SkillCard from './skill-card';
 import { Room, SenderType } from '../../../store/slices/game/types';
-import { calculatePercentSkillsMet, getPercentString } from '../../../helpers';
+import { getPercentString } from '../../../helpers';
 import { GAMES } from '../../../game/types';
 import { Player } from '../../../store/slices/player/types';
 
@@ -78,12 +78,7 @@ function RoomReportCard(props: {
           </Typography>
         </div>
         <Collapse className="column spacing" in={!collapsed}>
-          <ProgressBar
-            value={calculatePercentSkillsMet(
-              room.gameData.mathStandardsCompleted
-            )}
-            size="large"
-          />
+          <ProgressBar phases={room.gameData.phaseProgression} size="large" />
           <div className="column spacing" style={{ marginTop: 20 }}>
             <Typography>Student Contributions</Typography>
             <div

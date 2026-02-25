@@ -25,6 +25,8 @@ import { GAMES } from '../../../game/types';
 import { Player } from '../../../store/slices/player/types';
 import { DropdownButton } from '../../button';
 import { useSearchParams } from 'react-router-dom';
+import { PhaseProgression } from '../../../store/slices/game/types';
+import { calculateMedian } from '../../../helpers';
 
 const styles = makeStyles()(() => ({
   card: {
@@ -54,7 +56,7 @@ export default function ActiveSessionView(props: {
   const { educationalData } = useWithEducationalData();
   const [studentSearch, setStudentSearch] = React.useState<string>();
   const [skills, setSkills] = React.useState<Record<string, SkillsMet>>({});
-  const [phase, setPhase] = React.useState<number>(0);
+  const [phase, setPhase] = React.useState<PhaseProgression>();
   const [game, setGame] = React.useState<string>();
   const [_searchParams, setSearchParams] = useSearchParams();
 
@@ -86,8 +88,28 @@ export default function ActiveSessionView(props: {
       }
     }
     setSkills(skills);
-    setPhase(0);
-  }, [gameRooms]);
+  }, []);
+
+  React.useEffect(() => {
+    if (game) {
+      let totalPhases = 0;
+      const phasesCompleted: number[] = [];
+      for (const room of gameRooms) {
+        totalPhases = room.gameData.phaseProgression.totalPhases;
+        phasesCompleted.push(
+          room.gameData.phaseProgression.phasesCompleted.length
+        );
+      }
+      const median = calculateMedian(phasesCompleted);
+      setPhase({
+        phasesStarted: Array.from({ length: median }),
+        phasesCompleted: Array.from({ length: median }),
+        totalPhases,
+      });
+    } else {
+      setPhase(undefined);
+    }
+  }, [game]);
 
   return (
     <div className="dashboard">
@@ -121,7 +143,7 @@ export default function ActiveSessionView(props: {
                 borderColor: 'white',
                 marginLeft: '10px',
               }}
-            ></DropdownButton>
+            />
           </div>
           <Button
             color="inherit"
@@ -133,7 +155,13 @@ export default function ActiveSessionView(props: {
         </div>
         <Card className={classes.card}>
           <CardContent style={{ padding: 30 }}>
-            <ProgressBar value={phase} size="large" />
+            {phase ? (
+              <ProgressBar phases={phase} size="large" />
+            ) : (
+              <Typography variant="body2" color="error">
+                Please select a game first to view progress
+              </Typography>
+            )}
           </CardContent>
         </Card>
       </div>
