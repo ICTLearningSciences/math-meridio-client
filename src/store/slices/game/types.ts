@@ -68,6 +68,12 @@ export interface PlayerStatusData {
 export type UserId = string;
 export type PlayerStatusRecord = Record<UserId, PlayerStatusData>;
 
+export interface PhaseProgression {
+  phasesStarted: string[];
+  phasesCompleted: string[];
+  totalPhases: number;
+}
+
 export interface GameData {
   curGameState: CurGameState;
   gameId: string;
@@ -77,6 +83,7 @@ export interface GameData {
   playersStatusRecord: PlayerStatusRecord;
   playersGameStateData: PlayerStateData;
   mathStandardsCompleted: Record<string, boolean>; // Keyed by math standard display name
+  phaseProgression: PhaseProgression;
 }
 
 export interface GameDataGQL extends Omit<GameData, 'players'> {

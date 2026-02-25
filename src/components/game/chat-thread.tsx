@@ -99,7 +99,7 @@ export default function ChatThread(props: {
   const { player } = useAppSelector((state) => state.playerData);
   const allMessages = uiGameData.chat || [];
   const { displayedMessages, isAnimating } = useAnimatedMessages(allMessages);
-  const messages = displayedMessages;
+  const messages = displayedMessages.filter((msg) => msg.message);
   const players = uiGameData.players;
   const playersBeingWaitedFor =
     requestUserInputPhaseData.playersLeftToRespond.reduce((acc, id) => {

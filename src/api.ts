@@ -101,6 +101,7 @@ export const fullDiscussionStageQueryData = `
           stepId
           stepType
           phaseTitle
+          skipReflectionCollection
           message
           questions
       }
@@ -191,6 +192,11 @@ export const fullRoomQueryData = `
     }
     playersGameStateData
     mathStandardsCompleted
+    phaseProgression {
+      phasesStarted
+      phasesCompleted
+      totalPhases
+    }
     playersStatusRecord
   }
 `;

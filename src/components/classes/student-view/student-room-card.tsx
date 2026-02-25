@@ -23,9 +23,6 @@ export function StudentRoomCard(props: {
   const [joining, setJoining] = useState<boolean>();
 
   const hasGame = Boolean(room.gameData.gameId || props.gameId);
-  const ownerPresent = room.gameData.players.some(
-    (p) => p._id === room.gameData.globalStateData.roomOwnerId
-  );
 
   const handleJoinRoom = async (roomId: string) => {
     if (!hasGame) return;
