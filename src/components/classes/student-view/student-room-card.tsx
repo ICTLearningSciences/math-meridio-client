@@ -58,15 +58,6 @@ export function StudentRoomCard(props: {
               {room.gameData.players.length}{' '}
               {room.gameData.players.length === 1 ? 'player' : 'players'}
             </Typography>
-            {!ownerPresent && (
-              <Typography
-                variant="body2"
-                color="warning.main"
-                style={{ marginTop: 5 }}
-              >
-                Owner not present
-              </Typography>
-            )}
             {!hasGame && (
               <Typography
                 variant="body2"
