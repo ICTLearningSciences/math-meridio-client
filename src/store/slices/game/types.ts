@@ -39,7 +39,39 @@ export interface Room {
   name: string;
   phase: RoomPhase;
   classId?: string;
+  groupId?: number;
   gameData: GameData;
+}
+
+export enum PlayerComputedState {
+  NEVER_ACCESSED_ACTIVITY = 'NEVER_ACCESSED_ACTIVITY', // no heartebeat ever recorded
+  PAUSED_BY_ADMIN = 'PAUSED_BY_ADMIN', // paused by admin
+  REPORTED_AWAY_BY_OTHER_PLAYER = 'REPORTED_AWAY_BY_OTHER_PLAYER',
+  REPORTED_AWAY_BY_FRONTEND_DETECTION = 'REPORTED_AWAY_BY_FRONTEND_DETECTION',
+  INACTIVE = 'INACTIVE', // no heartbeat in the last 15 seconds
+  ACTIVE = 'ACTIVE', // has active heartbeats in the last 15 seconds
+}
+
+export interface ReportedAwayStatus {
+  isAway: boolean;
+  reportedAwayAt?: Date;
+  reportedBy?: 'STUDENT' | 'FRONTEND_SYSTEM';
+}
+
+export interface PlayerStatusData {
+  lastHeartbeatAt?: Date;
+  reportedAwayStatus: ReportedAwayStatus;
+  pausedByAdmin: boolean;
+  computedState: PlayerComputedState;
+}
+
+export type UserId = string;
+export type PlayerStatusRecord = Record<UserId, PlayerStatusData>;
+
+export interface PhaseProgression {
+  phasesStarted: string[];
+  phasesCompleted: string[];
+  totalPhases: number;
 }
 
 export interface GameData {
@@ -48,7 +80,10 @@ export interface GameData {
   players: Player[];
   chat: ChatMessage[];
   globalStateData: GlobalStateData;
+  playersStatusRecord: PlayerStatusRecord;
   playersGameStateData: PlayerStateData;
+  mathStandardsCompleted: Record<string, boolean>; // Keyed by math standard display name
+  phaseProgression: PhaseProgression;
 }
 
 export interface GameDataGQL extends Omit<GameData, 'players'> {

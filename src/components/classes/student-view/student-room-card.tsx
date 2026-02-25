@@ -15,27 +15,30 @@ export function StudentRoomCard(props: {
   room: Room;
   player: Player;
   classId: string;
+  gameId?: string;
 }): JSX.Element {
   const navigate = useNavigate();
-  const { joinGameRoom } = useWithEducationalData();
-  const { room, player, classId } = props;
-  const [joining, setJoining] = useState<string>();
-  const isInRoom = room.gameData.players.some((p) => p._id === player?._id);
-  const ownerPresent = room.gameData.players.some(
-    (p) => p._id === room.gameData.globalStateData.roomOwnerId
-  );
+  const { assignGameToGameRoom } = useWithEducationalData();
+  const { room, classId } = props;
+  const [joining, setJoining] = useState<boolean>();
+
+  const hasGame = Boolean(room.gameData.gameId || props.gameId);
 
   const handleJoinRoom = async (roomId: string) => {
-    setJoining(roomId);
+    if (!hasGame) return;
+    setJoining(true);
     try {
-      await joinGameRoom(roomId);
+      if (!room.gameData.gameId && props.gameId) {
+        await assignGameToGameRoom(roomId, props.gameId);
+      }
       navigate(`/classes/${classId}/room/${roomId}`);
     } catch (err) {
       console.error('Failed to join room', err);
     } finally {
-      setJoining(undefined);
+      setJoining(false);
     }
   };
+
   return (
     <Card key={room._id} style={{ width: '100%' }}>
       <CardContent>
@@ -52,23 +55,23 @@ export function StudentRoomCard(props: {
               {room.gameData.players.length}{' '}
               {room.gameData.players.length === 1 ? 'player' : 'players'}
             </Typography>
-            {!ownerPresent && (
+            {!hasGame && (
               <Typography
                 variant="body2"
                 color="warning.main"
                 style={{ marginTop: 5 }}
               >
-                Owner not present
+                Please select a game to start
               </Typography>
             )}
           </div>
           <Button
-            variant={isInRoom ? 'contained' : 'outlined'}
+            variant="contained"
             color="primary"
             onClick={() => handleJoinRoom(room._id)}
-            disabled={joining === room._id}
+            disabled={joining || !hasGame}
           >
-            {joining === room._id ? 'Joining...' : isInRoom ? 'Rejoin' : 'Join'}
+            {joining ? 'Joining...' : !hasGame ? 'Start' : 'Join'}
           </Button>
         </div>
       </CardContent>

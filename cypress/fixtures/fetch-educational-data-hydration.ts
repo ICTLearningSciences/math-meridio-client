@@ -20,17 +20,20 @@ export function defaultClassroomData(classroomOwnerId: string, classroomId: stri
         name: "My Classroom",
         description: "My Classroom Description",
         createdAt: new Date(),
+        startedAt: undefined,
         archivedAt: undefined,
         teacherId: classroomOwnerId,
         inviteCodes: [],
     }
 }
 
-export function defaultClassroomMembershipData(classroomId: string, userId: string): ClassMembership {
+export function defaultClassroomMembershipData(classroomId: string, groupId: number, userId: string, userEmail: string): ClassMembership {
     return {
         classId: classroomId,
+        groupId: groupId,
         userId: userId,
         status: ClassMembershipStatus.MEMBER,
+        userEmail: userEmail,
     }
 }
 
@@ -41,7 +44,7 @@ export function fetchStudentDataHydrationResponse(): FetchStudentEducationalData
             classes: [],
             rooms: [],
             students: [],
-            gamesList: [],
+            gameList: [],
             classMemberships: [],
         }
     }
@@ -53,7 +56,7 @@ export function fetchInstructorDataHydrationResponse(): FetchInstructorEducation
             classes: [],
             rooms: [],
             students: [],
-            gamesList: [],
+            gameList: [],
             classMemberships: [],
         }
     }

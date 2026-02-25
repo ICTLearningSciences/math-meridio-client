@@ -22,6 +22,7 @@ export interface Classroom {
   teacherId: string;
   inviteCodes: InviteCode[];
   createdAt: Date;
+  startedAt?: Date;
   archivedAt?: Date;
 }
 
@@ -30,6 +31,7 @@ export const classroomDataQuery = `
     name
     description
     teacherId
+    sharedWithInstructorIds
     inviteCodes {
         code
         validUntil
@@ -37,6 +39,7 @@ export const classroomDataQuery = `
         uses
     }
     createdAt
+    startedAt
     archivedAt
   `;
 
@@ -49,13 +52,17 @@ export enum ClassMembershipStatus {
 
 export interface ClassMembership {
   classId: string;
+  groupId: number;
   userId: string;
+  userEmail: string;
   status: ClassMembershipStatus;
 }
 
 export const classMembershipDataQuery = `
     classId
+    groupId
     userId
+    userEmail
     status
   `;
 
@@ -69,7 +76,7 @@ export interface FetchEducationalDataHydrationResponse {
   rooms: Room[];
   students: Player[];
   classMemberships: ClassMembership[];
-  gamesList: StaticGame[];
+  gameList: StaticGame[];
 }
 
 export interface RoomHeartBeat {

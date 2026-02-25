@@ -101,6 +101,7 @@ export const fullDiscussionStageQueryData = `
           stepId
           stepType
           phaseTitle
+          skipReflectionCollection
           message
           questions
       }
@@ -136,19 +137,19 @@ export const fullDiscussionStageQueryData = `
           customSystemRole
       }
 
-                                ... on ConditionalActivityStepType {
-                              stepId
-                              stepType
-                              lastStep
-                              jumpToStepId
-                              conditionals{
-                                  stateDataKey
-                                  checking
-                                  operation
-                                  expectedValue
-                                  targetStepId
-                              }
-                          }
+      ... on ConditionalActivityStepType {
+          stepId
+          stepType
+          lastStep
+          jumpToStepId
+          conditionals{
+              stateDataKey
+              checking
+              operation
+              expectedValue
+              targetStepId
+          }
+      }
     }
   }
 `;
@@ -190,6 +191,13 @@ export const fullRoomQueryData = `
       gameStateData
     }
     playersGameStateData
+    mathStandardsCompleted
+    phaseProgression {
+      phasesStarted
+      phasesCompleted
+      totalPhases
+    }
+    playersStatusRecord
   }
 `;
 

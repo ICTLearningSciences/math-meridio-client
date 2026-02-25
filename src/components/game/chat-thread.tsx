@@ -16,7 +16,7 @@ import {
   Typography,
 } from '@mui/material';
 import { GameData, SenderType } from '../../store/slices/game/types';
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import AvatarSprite from '../avatar-sprite';
 import {
   CurGameState,
@@ -26,6 +26,8 @@ import WaitingForPlayers from './waiting-for-players';
 import { Player } from '../../store/slices/player/types';
 import { ProcessingIndicator } from './processing-indicator';
 import { useAnimatedMessages } from './use-animated-messages';
+import { useOutletContext } from 'react-router-dom';
+import { UseWithEducationalData } from '../../store/slices/educational-data/use-with-educational-data';
 
 const useStyles = makeStyles()(() => ({
   chatThread: {
@@ -91,11 +93,13 @@ export default function ChatThread(props: {
   uiGameData: GameData;
 }): JSX.Element {
   const { roomIsProcessing, requestUserInputPhaseData, uiGameData } = props;
+  const { reportPlayerAway } = useOutletContext<UseWithEducationalData>();
+
   const { classes } = useStyles();
   const { player } = useAppSelector((state) => state.playerData);
   const allMessages = uiGameData.chat || [];
   const { displayedMessages, isAnimating } = useAnimatedMessages(allMessages);
-  const messages = displayedMessages;
+  const messages = displayedMessages.filter((msg) => msg.message);
   const players = uiGameData.players;
   const playersBeingWaitedFor =
     requestUserInputPhaseData.playersLeftToRespond.reduce((acc, id) => {
@@ -112,6 +116,34 @@ export default function ChatThread(props: {
       RequireInputType.SINGLE_RESPONSE_REQUIRED ||
     requestUserInputPhaseData.curState ===
       RequireInputType.ALL_USER_RESPONSES_REQUIRED_FREE_FOR_ALL;
+
+  // Track when request user input state starts for the 60-second timer
+  const [requestInputStartTime, setRequestInputStartTime] = useState<
+    number | null
+  >(null);
+  const previousIsInRequestUserInputState = useRef(false);
+
+  useEffect(() => {
+    // If it just became true, record the start time
+    if (
+      isInRequestUserInputState &&
+      !previousIsInRequestUserInputState.current
+    ) {
+      console.log('ChatThread: Request user input state started');
+      setRequestInputStartTime(Date.now());
+    }
+
+    // If it just became false, clear the start time
+    if (
+      !isInRequestUserInputState &&
+      previousIsInRequestUserInputState.current
+    ) {
+      console.log('ChatThread: Request user input state ended');
+      setRequestInputStartTime(null);
+    }
+
+    previousIsInRequestUserInputState.current = isInRequestUserInputState;
+  }, [isInRequestUserInputState]);
 
   enum PlayerColors {
     Blue = 'info.main',
@@ -318,12 +350,14 @@ export default function ChatThread(props: {
         })}
         {(roomIsProcessing || isAnimating) && <ProcessingIndicator />}
         <WaitingForPlayers
+          reportPlayerAway={reportPlayerAway}
           numPlayersInRoom={players?.length || 0}
           playersBeingWaitedFor={playersBeingWaitedFor || []}
           currentPlayerId={player?._id}
           isInRequestUserInputState={isInRequestUserInputState}
           requestUserInputPhaseData={requestUserInputPhaseData}
           roomIsProcessing={roomIsProcessing}
+          requestInputStartTime={requestInputStartTime}
         />
       </Stack>
     </div>

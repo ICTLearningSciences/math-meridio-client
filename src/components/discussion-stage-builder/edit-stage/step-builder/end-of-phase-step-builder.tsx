@@ -31,6 +31,7 @@ export function getDefaultEndOfPhaseReflection(): EndOfPhaseReflectionStep {
     lastStep: false,
     stepType: DiscussionStageStepType.END_OF_PHASE_REFLECTION,
     phaseTitle: '',
+    skipReflectionCollection: false,
     message: '',
     questions: [''],
     jumpToStepId: '',
@@ -118,6 +119,13 @@ export function EndOfPhaseReflectionStepBuilder(props: {
           value={step.message}
           onChange={(e) => {
             updateField('message', e);
+          }}
+        />
+        <CheckBoxInput
+          label="Skip Reflection Popup"
+          value={step.skipReflectionCollection}
+          onChange={(e) => {
+            updateField('skipReflectionCollection', e);
           }}
         />
         <ColumnDiv>

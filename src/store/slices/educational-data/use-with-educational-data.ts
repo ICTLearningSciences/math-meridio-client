@@ -17,6 +17,7 @@ import * as gameRoomApi from '../../../hooks/game-rooms/game-room-api';
 import { useParams } from 'react-router-dom';
 import { useMemo } from 'react';
 import { Game, GAMES } from '../../../game/types';
+import { AssignClassGroupsAndStartResponse } from './api';
 
 export interface UseWithEducationalData {
   educationalData: educationalDataActions.EducationalDataStateData;
@@ -46,6 +47,15 @@ export interface UseWithEducationalData {
     studentId: string,
     classId: string
   ) => Promise<ClassMembership>;
+  assignStudentToGroup: (
+    studentId: string,
+    classId: string,
+    groupId: number
+  ) => Promise<ClassMembership>;
+  assignClassGroupsAndStart: (
+    classId: string,
+    groups: ClassMembership[]
+  ) => Promise<AssignClassGroupsAndStartResponse>;
   adjustClassroomArchiveStatus: (
     classId: string,
     setArchived: boolean
@@ -71,13 +81,27 @@ export interface UseWithEducationalData {
   room: Room | undefined;
   updateMyRoomGameStateData: (gameStateData: GameStateData) => Promise<Room>;
   sendMessageToGameRoom: (message: string) => Promise<Room>;
+  createClassMembership: (
+    classId: string,
+    userEmail: string
+  ) => Promise<ClassMembership>;
   curGame: Game | undefined;
+  togglePlayerPausedInRoomStatus: (
+    roomId: string,
+    userIdToPause: string
+  ) => Promise<Room>;
+  reportPlayerAway: (userIdToReportAway: string) => Promise<Room>;
+  shareClassroomWithInstructor: (
+    classId: string,
+    instructorEmail: string
+  ) => Promise<Classroom>;
+  assignGameToGameRoom: (roomId: string, gameId: string) => Promise<Room>;
 }
 
-export function useWithEducationalData(): UseWithEducationalData {
+export function useWithEducationalData(rId?: string): UseWithEducationalData {
   const dispatch = useAppDispatch();
   const state = useAppSelector((state) => state.educationalData);
-  const { roomId } = useParams<{ roomId: string }>();
+  const { roomId } = rId ? { roomId: rId } : useParams<{ roomId: string }>();
   const { player } = useAppSelector((state) => state.playerData);
   const room = state.rooms.find((r) => r._id === roomId);
   const ownerIsPresent = room?.gameData.players.some(
@@ -85,7 +109,7 @@ export function useWithEducationalData(): UseWithEducationalData {
   );
   const curGame = useMemo(() => {
     return GAMES.find((g) => g.id === room?.gameData.gameId);
-  }, [room, state.gamesList]);
+  }, [room, state.gameList]);
 
   async function fetchInstructorDataHydration(): Promise<FetchEducationalDataHydrationResponse> {
     return await dispatch(
@@ -164,6 +188,32 @@ export function useWithEducationalData(): UseWithEducationalData {
   ): Promise<ClassMembership> {
     return await dispatch(
       educationalDataActions.unblockStudentFromClass({ studentId, classId })
+    ).unwrap();
+  }
+
+  async function assignStudentToGroup(
+    studentId: string,
+    classId: string,
+    groupId: number
+  ): Promise<ClassMembership> {
+    return await dispatch(
+      educationalDataActions.assignStudentToGroup({
+        studentId,
+        classId,
+        groupId,
+      })
+    ).unwrap();
+  }
+
+  async function assignClassGroupsAndStart(
+    classId: string,
+    groups: ClassMembership[]
+  ): Promise<AssignClassGroupsAndStartResponse> {
+    return await dispatch(
+      educationalDataActions.assignClassGroupsAndStart({
+        classId,
+        groups,
+      })
     ).unwrap();
   }
 
@@ -271,6 +321,62 @@ export function useWithEducationalData(): UseWithEducationalData {
     ).unwrap();
   }
 
+  async function createClassMembership(
+    classId: string,
+    userEmail: string
+  ): Promise<ClassMembership> {
+    return await dispatch(
+      educationalDataActions.createClassMembership({ classId, userEmail })
+    ).unwrap();
+  }
+
+  async function togglePlayerPausedInRoomStatus(
+    roomId: string,
+    userIdToPause: string
+  ): Promise<Room> {
+    const targetRoom = state.rooms.find((r) => r._id === roomId);
+    if (!targetRoom) {
+      throw new Error('Room not found');
+    }
+    const currentPauseStatus =
+      targetRoom?.gameData.playersStatusRecord[userIdToPause]?.pausedByAdmin;
+    return await dispatch(
+      educationalDataActions.setPlayerPauseStatus({
+        roomId,
+        playerId: userIdToPause,
+        isPaused: !currentPauseStatus,
+      })
+    ).unwrap();
+  }
+
+  async function reportPlayerAway(userIdToReportAway: string): Promise<Room> {
+    if (!roomId) {
+      throw new Error('Room ID is required to report player away');
+    }
+    return await gameRoomApi.reportPlayerAway(roomId, userIdToReportAway);
+  }
+
+  async function shareClassroomWithInstructor(
+    classId: string,
+    instructorEmail: string
+  ): Promise<Classroom> {
+    return await dispatch(
+      educationalDataActions.shareClassroomWithInstructor({
+        classId,
+        instructorEmail,
+      })
+    ).unwrap();
+  }
+
+  async function assignGameToGameRoom(
+    roomId: string,
+    gameId: string
+  ): Promise<Room> {
+    return await dispatch(
+      educationalDataActions.assignGameToGameRoom({ roomId, gameId })
+    ).unwrap();
+  }
+
   return {
     fetchInstructorDataHydration,
     fetchStudentDataHydration,
@@ -282,6 +388,8 @@ export function useWithEducationalData(): UseWithEducationalData {
     removeStudentFromClass,
     blockStudentFromClass,
     unblockStudentFromClass,
+    assignStudentToGroup,
+    assignClassGroupsAndStart,
     adjustClassroomArchiveStatus,
     updateClassNameDescription,
     joinGameRoom,
@@ -298,5 +406,10 @@ export function useWithEducationalData(): UseWithEducationalData {
     ownerIsPresent: ownerIsPresent || false,
     room,
     curGame,
+    createClassMembership,
+    togglePlayerPausedInRoomStatus,
+    reportPlayerAway,
+    shareClassroomWithInstructor,
+    assignGameToGameRoom,
   };
 }
