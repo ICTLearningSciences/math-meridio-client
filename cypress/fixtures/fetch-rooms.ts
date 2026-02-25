@@ -28,6 +28,11 @@ export function freshRoomData(attendingRoomOwner: Player): Room {
         "phase": RoomPhase.NO_ACTIVE_PROCESSING,
         "gameData": {
             "mathStandardsCompleted": {},
+            "phaseProgression": {
+                "phasesStarted": [],
+                "phasesCompleted": [],
+                "totalPhases": 0
+            },
             "gameId": "concert-ticket-sales",
             "playersStatusRecord": {},
             "curGameState": {

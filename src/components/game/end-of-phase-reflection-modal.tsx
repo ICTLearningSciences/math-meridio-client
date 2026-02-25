@@ -134,6 +134,10 @@ export default function EndOfPhaseReflectionModal({
     try {
       await submitReadyToContinue(room._id);
       setHasSubmittedReady(true);
+      // turn back to false after 4 seconds
+      setTimeout(() => {
+        setHasSubmittedReady(false);
+      }, 4000);
     } catch (error) {
       console.error('Failed to submit ready to continue:', error);
       setHasSubmittedReady(false);
