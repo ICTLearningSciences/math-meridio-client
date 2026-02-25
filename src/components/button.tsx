@@ -5,6 +5,9 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import React from 'react';
+import * as motion from 'motion/react-client';
+import { CSS } from 'styled-components/dist/types';
+import { makeStyles } from 'tss-react/mui';
 import {
   Button,
   ButtonBaseProps,
@@ -13,8 +16,6 @@ import {
   MenuItem,
 } from '@mui/material';
 import { ArrowDropDown } from '@mui/icons-material';
-import * as motion from 'motion/react-client';
-import { makeStyles } from 'tss-react/mui';
 
 const buttonStyles = makeStyles()(() => ({
   button: {
@@ -140,6 +141,7 @@ export function DropdownButton(props: {
   value: string | undefined;
   items: string[];
   children?: React.ReactNode;
+  buttonStyle?: CSS.Properties;
   onSelect: (v: string) => void;
   renderItem?: (v: string) => JSX.Element | string;
 }): JSX.Element {
@@ -159,10 +161,11 @@ export function DropdownButton(props: {
       <Button
         variant="outlined"
         style={{
-          borderColor: 'black',
+          border: '1px black solid',
           color: 'black',
           fontWeight: 'bold',
           borderRadius: 30,
+          ...props.buttonStyle,
         }}
         endIcon={<ArrowDropDown />}
         onClick={handleButtonClick}

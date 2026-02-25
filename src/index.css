@@ -48,20 +48,22 @@ body {
 .dashboard {
   display: flex;
   flex-direction: column;
-  position: absolute;
-  left: 0px;
-  right: 0px;
-  top: 200px;
-  bottom: 0px;
   color: white;
+  margin-left: -20px;
+  margin-right: -20px;
+  margin-bottom: -20px;
   background-image: linear-gradient(to bottom, rgb(114, 20, 201), rgb(59, 7, 105));
   padding: 40px;
   padding-top: 40px;
   margin-top: 40px;
   border-top-right-radius: 40px;
   border-top-left-radius: 40px;
-  overflow: auto;
-  scrollbar-width: none;
+}
+
+.card {
+  padding: 10px;
+  padding-left: 15px;
+  padding-right: 15px;
 }
 
 .row {

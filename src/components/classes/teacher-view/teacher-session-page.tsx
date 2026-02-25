@@ -12,16 +12,19 @@ import {
   Card,
   CardContent,
   Grid,
-  MenuItem,
   TextField,
   Typography,
 } from '@mui/material';
+
 import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
 import ProgressBar from '../../progress-bar';
 import RoomCard from './teacher-room-card';
 import SkillCard from './skill-card';
 import { Classroom } from '../../../store/slices/educational-data/types';
 import { GAMES } from '../../../game/types';
+import { Player } from '../../../store/slices/player/types';
+import { DropdownButton } from '../../button';
+import { useSearchParams } from 'react-router-dom';
 
 const styles = makeStyles()(() => ({
   card: {
@@ -39,8 +42,8 @@ const styles = makeStyles()(() => ({
 }));
 
 interface SkillsMet {
-  numMet: number;
-  numTotal: number;
+  playersMet: Player[];
+  players: Player[];
 }
 
 export default function ActiveSessionView(props: {
@@ -51,36 +54,39 @@ export default function ActiveSessionView(props: {
   const { educationalData } = useWithEducationalData();
   const [studentSearch, setStudentSearch] = React.useState<string>();
   const [skills, setSkills] = React.useState<Record<string, SkillsMet>>({});
-  const [skillProgress, setSkillProgress] = React.useState<number>(0);
+  const [phase, setPhase] = React.useState<number>(0);
   const [game, setGame] = React.useState<string>();
+  const [_searchParams, setSearchParams] = useSearchParams();
 
   const gameRooms = educationalData.rooms.filter(
     (r) => r.classId === classroom._id && (!game || r.gameData.gameId === game)
   );
+  const students = educationalData.students.filter((s) =>
+    gameRooms.find((r) => r.gameData.players.find((p) => p._id === s._id))
+  );
 
   React.useEffect(() => {
     const skills: Record<string, SkillsMet> = {};
-    for (const room of gameRooms) {
-      for (const standard of Object.entries(
-        room.gameData.mathStandardsCompleted
-      )) {
-        if (!(standard[0] in skills)) {
-          skills[standard[0]] = { numMet: 0, numTotal: 0 };
+    for (const student of students) {
+      const room = gameRooms.find((r) =>
+        r.gameData.players.find((p) => p._id === student._id)
+      );
+      if (room) {
+        for (const standard of Object.entries(
+          room.gameData.mathStandardsCompleted
+        )) {
+          if (!(standard[0] in skills)) {
+            skills[standard[0]] = { playersMet: [], players: [] };
+          }
+          if (standard[1]) {
+            skills[standard[0]].playersMet.push(student);
+          }
+          skills[standard[0]].players.push(student);
         }
-        if (standard[1]) {
-          skills[standard[0]].numMet++;
-        }
-        skills[standard[0]].numTotal++;
       }
     }
-    let numMet = 0;
-    let numTotal = 0;
-    for (const skill of Object.values(skills)) {
-      numMet += skill.numMet;
-      numTotal += skill.numTotal;
-    }
     setSkills(skills);
-    setSkillProgress(numTotal === 0 ? 0 : (numMet / numTotal) * 100);
+    setPhase(0);
   }, [gameRooms]);
 
   return (
@@ -98,58 +104,36 @@ export default function ActiveSessionView(props: {
             <Typography className={classes.header}>
               Overall Progress:
             </Typography>
-            <TextField
-              select
-              label="Select Game"
-              variant="standard"
-              style={{ width: 300, marginLeft: 10 }}
-              onChange={(e) => setGame(e.target.value)}
-            >
-              <MenuItem value={undefined}>Show All</MenuItem>
-              {GAMES.map((game) => (
-                <MenuItem key={game.id} value={game.id}>
-                  {game.name}
-                </MenuItem>
-              ))}
-            </TextField>
+            <DropdownButton
+              label={GAMES.find((g) => g.id === game)?.name || 'All Games'}
+              value={game}
+              items={['', ...GAMES.map((g) => g.id)]}
+              onSelect={(id: string) => setGame(id)}
+              renderItem={(id) => {
+                return (
+                  <Typography>
+                    {GAMES.find((g) => g.id === id)?.name || 'Show All'}
+                  </Typography>
+                );
+              }}
+              buttonStyle={{
+                color: 'white',
+                borderColor: 'white',
+                marginLeft: '10px',
+              }}
+            ></DropdownButton>
           </div>
-          <Button color="inherit" endIcon={<ChevronRight />}>
+          <Button
+            color="inherit"
+            endIcon={<ChevronRight />}
+            onClick={() => setSearchParams({ tab: '1' })}
+          >
             Class Report
           </Button>
         </div>
         <Card className={classes.card}>
           <CardContent style={{ padding: 30 }}>
-            <ProgressBar value={skillProgress} size="large" />
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="column spacing" style={{ marginTop: 10 }}>
-        <div className="row" style={{ justifyContent: 'space-between' }}>
-          <Typography className={classes.header}>Skills Practiced</Typography>
-          <Button
-            color="inherit"
-            style={{ alignSelf: 'end' }}
-            endIcon={<ChevronRight />}
-          >
-            View Report
-          </Button>
-        </div>
-        <Card
-          className={classes.card}
-          style={{ backgroundColor: 'rgb(231, 231, 231)' }}
-        >
-          <CardContent className="column spacing">
-            {Object.entries(skills).map((skill) => {
-              return (
-                <SkillCard
-                  key={skill[0]}
-                  name={skill[0]}
-                  numMet={skill[1].numMet}
-                  numTotal={skill[1].numTotal}
-                />
-              );
-            })}
+            <ProgressBar value={phase} size="large" />
           </CardContent>
         </Card>
       </div>
@@ -172,7 +156,7 @@ export default function ActiveSessionView(props: {
             fullWidth
             value={studentSearch}
             onChange={(e) => setStudentSearch(e.target.value)}
-            style={{ marginLeft: 10, marginBottom: 10 }}
+            style={{ marginLeft: 10, marginBottom: 15 }}
           />
         </div>
         {gameRooms.length === 0 && (
@@ -203,19 +187,43 @@ export default function ActiveSessionView(props: {
       </div>
 
       <div className="column spacing" style={{ marginTop: 10 }}>
-        <div className="row" style={{ justifyContent: 'space-between' }}>
-          <Typography className={classes.header}>Trouble Spots</Typography>
-          <Button
-            color="inherit"
-            style={{ alignSelf: 'end' }}
-            endIcon={<ChevronRight />}
-          >
-            View Report
-          </Button>
-        </div>
-
         <Grid container spacing={2}>
-          <Grid item xs={7}>
+          <Grid item xs={6}>
+            <Typography className={classes.header}>Skills Practiced</Typography>
+            <Card
+              className={classes.card}
+              style={{ backgroundColor: 'rgb(231, 231, 231)' }}
+            >
+              <CardContent className="column spacing">
+                {Object.entries(skills)
+                  .sort((a, b) => {
+                    return b[1].playersMet.length - a[1].playersMet.length;
+                  })
+                  .map((skill) => {
+                    return (
+                      <SkillCard
+                        key={skill[0]}
+                        name={skill[0]}
+                        players={skill[1].players}
+                        playersMet={skill[1].playersMet}
+                      />
+                    );
+                  })}
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={6}>
+            <div className="row" style={{ justifyContent: 'space-between' }}>
+              <Typography className={classes.header}>Trouble Spots</Typography>
+              <Button
+                color="inherit"
+                style={{ alignSelf: 'end' }}
+                endIcon={<ChevronRight />}
+                onClick={() => setSearchParams({ tab: '1' })}
+              >
+                Monitor Students
+              </Button>
+            </div>
             <Card
               className={classes.card}
               style={{ backgroundColor: 'rgb(231, 231, 231)' }}
@@ -224,51 +232,8 @@ export default function ActiveSessionView(props: {
                 <Typography className={classes.headerText}>
                   Challenge Section
                 </Typography>
-                {Object.entries(skills)
-                  .filter((skill) => skill[1].numMet / skill[1].numTotal < 0.5)
-                  .map((skill) => {
-                    return (
-                      <SkillCard
-                        key={skill[0]}
-                        name={skill[0]}
-                        numMet={skill[1].numMet}
-                        numTotal={skill[1].numTotal}
-                      />
-                    );
-                  })}
               </CardContent>
             </Card>
-            <div
-              className="row"
-              style={{ width: '100%', justifyContent: 'flex-end' }}
-            >
-              <Button color="inherit" endIcon={<ChevronRight />}>
-                Monitor Students
-              </Button>
-            </div>
-          </Grid>
-          <Grid item xs={5}>
-            <Card
-              className={classes.card}
-              style={{ backgroundColor: 'rgb(231, 231, 231)' }}
-            >
-              <CardContent>
-                <Typography className={classes.headerText}>
-                  Need Help
-                </Typography>
-                <Typography variant="h2" fontWeight="bold" textAlign="center">
-                  0
-                </Typography>
-              </CardContent>
-            </Card>
-            <div
-              className="row"
-              style={{ width: '100%', justifyContent: 'flex-end' }}
-            >
-              <Button color="inherit" endIcon={<ChevronRight />}>
-                Monitor Rooms
-              </Button>
-            </div>
           </Grid>
         </Grid>
       </div>

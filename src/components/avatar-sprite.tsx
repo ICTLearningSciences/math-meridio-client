@@ -8,21 +8,23 @@ import React from 'react';
 import { Player } from '../store/slices/player/types';
 import { Pause } from '@mui/icons-material';
 import { Typography } from '@mui/material';
-import { PlayerStatusData } from '../store/slices/game/types';
 
 export function PlayerSprite(props: {
   player: Player | undefined;
-  status?: PlayerStatusData;
+  color?: string;
   children?: React.ReactNode;
 }): JSX.Element {
-  const { player, status } = props;
+  const { player } = props;
   if (!player) return <div />;
   return (
-    <div key={player._id} className="column center-div">
+    <div
+      key={player._id}
+      className="column center-div"
+      style={{ position: 'relative' }}
+    >
       <AvatarSprite
         player={player}
-        bgColor="rgb(218, 183, 250)"
-        isPaused={status?.pausedByAdmin}
+        bgColor={props.color || 'rgb(218, 183, 250)'}
       />
       <Typography
         variant="body2"

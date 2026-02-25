@@ -68,10 +68,25 @@ export function Tabs(props: {
   tabs: Tab[];
   tabsStyle?: CSS.Properties;
   tabViewStyle?: CSS.Properties;
+  selectedTab?: number;
+  onSelectTab?: (t: number) => void;
 }): JSX.Element {
   const { tabs } = props;
-  const [selectedTab, setSelectedTab] = React.useState<number>(0);
+  const [selectedTab, setSelectedTab] = React.useState<number>(
+    props.selectedTab || 0
+  );
   const tab = tabs[selectedTab];
+
+  React.useEffect(() => {
+    setSelectedTab(props.selectedTab || 0);
+  }, [props.selectedTab]);
+
+  const handleSelectTab = (n: number) => {
+    setSelectedTab(n);
+    if (props.onSelectTab) {
+      props.onSelectTab(n);
+    }
+  };
 
   if (tabs.length === 0) return <div />;
   return (
@@ -83,7 +98,7 @@ export function Tabs(props: {
             index={i}
             value={selectedTab}
             disabled={tab.disabled}
-            onClick={setSelectedTab}
+            onClick={handleSelectTab}
           >
             {tab.name}
           </TabButton>

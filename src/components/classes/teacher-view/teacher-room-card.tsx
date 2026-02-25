@@ -147,11 +147,7 @@ export default function RoomCard(props: {
               }
 
               return (
-                <PlayerSprite
-                  key={player._id}
-                  player={player}
-                  status={room.gameData.playersStatusRecord[player._id]}
-                >
+                <PlayerSprite key={player._id} player={player}>
                   <Typography fontSize={10} fontWeight="lighter">
                     {isActive
                       ? room.gameData.playersStatusRecord[player._id]

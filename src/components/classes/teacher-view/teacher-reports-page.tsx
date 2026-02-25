@@ -11,13 +11,18 @@ import { ArrowForward } from '@mui/icons-material';
 import { Classroom } from '../../../store/slices/educational-data/types';
 import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
 import { RoomSetupView } from './teacher-room-setup';
-import { Tabs } from '../../tab';
 import ProgressBar from '../../progress-bar';
 import { PlayerSprite } from '../../avatar-sprite';
 import SkillCard from './skill-card';
 import { Room, SenderType } from '../../../store/slices/game/types';
 import { calculatePercentSkillsMet, getPercentString } from '../../../helpers';
 import { GAMES } from '../../../game/types';
+import { Player } from '../../../store/slices/player/types';
+
+interface SkillsMet {
+  playersMet: Player[];
+  players: Player[];
+}
 
 function RoomReportCard(props: {
   classroom: Classroom;
@@ -26,6 +31,25 @@ function RoomReportCard(props: {
   const { classroom, room } = props;
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = React.useState<boolean>(false);
+  const [skills, setSkills] = React.useState<Record<string, SkillsMet>>({});
+
+  React.useEffect(() => {
+    const skills: Record<string, SkillsMet> = {};
+    for (const student of room.gameData.players) {
+      for (const standard of Object.entries(
+        room.gameData.mathStandardsCompleted
+      )) {
+        if (!(standard[0] in skills)) {
+          skills[standard[0]] = { playersMet: [], players: [] };
+        }
+        if (standard[1]) {
+          skills[standard[0]].playersMet.push(student);
+        }
+        skills[standard[0]].players.push(student);
+      }
+    }
+    setSkills(skills);
+  }, [room]);
 
   const game = GAMES.find((g) => g.id === room?.gameData.gameId);
   const totalWords = room.gameData.chat
@@ -97,18 +121,20 @@ function RoomReportCard(props: {
             <Typography>Skills Practiced</Typography>
             <Card style={{ backgroundColor: 'rgb(231, 231, 231)' }}>
               <CardContent className="column spacing">
-                {Object.entries(room.gameData.mathStandardsCompleted).map(
-                  (skill) => {
+                {Object.entries(skills)
+                  .sort((a, b) => {
+                    return b[1].playersMet.length - a[1].playersMet.length;
+                  })
+                  .map((skill) => {
                     return (
                       <SkillCard
                         key={skill[0]}
                         name={skill[0]}
-                        numMet={skill[1] ? 1 : 0}
-                        numTotal={1}
+                        players={skill[1].players}
+                        playersMet={skill[1].playersMet}
                       />
                     );
-                  }
-                )}
+                  })}
               </CardContent>
             </Card>
           </div>
@@ -180,27 +206,6 @@ export default function TeacherReports(props: {
   if (rooms.length === 0) {
     return <RoomSetupView classId={classroom._id} />;
   }
-  return (
-    <Tabs
-      tabsStyle={{
-        position: 'absolute',
-        top: '200px',
-        right: '20px',
-      }}
-      tabs={[
-        // {
-        //   name: 'SUMMARY',
-        //   element: <SummaryReports classroom={classroom} />,
-        // },
-        {
-          name: 'ROOM REPORTS',
-          element: <RoomsReports classroom={classroom} />,
-        },
-        // {
-        //   name: 'INDIVIDUAL REPORTS',
-        //   element: <IndividualReports classroom={classroom} />,
-        // },
-      ]}
-    />
-  );
+
+  return <RoomsReports classroom={classroom} />;
 }
