@@ -57,12 +57,12 @@ export abstract class GameScene extends Scene {
 
   preload() {
     // Load the assets for the UI
-    this.load.setPath('assets/wordui');
+    this.load.setPath('/assets/wordui');
     this.load.image('mic', 'icons/icons_256/microphone.png');
     this.load.image('button', 'buttons/long_buttons/blue_button_complete.png');
 
     // Load the assets for the avatars
-    this.load.setPath('assets/avatar/sprite');
+    this.load.setPath('/assets/avatar/sprite');
     for (const a of SPRITE_BODY) {
       this.loadSprite(a.id, `body/${a.id}.png`, 32, 32);
     }
