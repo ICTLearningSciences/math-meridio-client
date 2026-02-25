@@ -20,7 +20,6 @@ import TeacherManageClass from './teacher-view/teacher-manage-class';
 export default function TeacherLandingPage(): JSX.Element {
   const { educationalData, createClassroom } = useWithEducationalData();
   const { player } = useAppSelector((state) => state.playerData);
-
   const [classId, setClassId] = React.useState<string>();
   const [creating, setCreating] = React.useState(false);
 

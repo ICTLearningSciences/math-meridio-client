@@ -13,6 +13,7 @@ export default function SkillCard(props: {
   numMet: number;
   numTotal: number;
 }): JSX.Element {
+  const percentMet = props.numMet / props.numTotal;
   return (
     <div
       style={{
@@ -27,12 +28,33 @@ export default function SkillCard(props: {
       }}
     >
       <Typography>{props.name}</Typography>
-      <div className="row center-div spacing">
-        <Person fontSize="small" />
-        <Typography>
-          {props.numMet} / {props.numTotal}
-        </Typography>
-      </div>
+      {props.numTotal === 1 ? (
+        <div className="row center-div spacing">
+          <Typography
+            color={
+              percentMet === 1
+                ? 'success'
+                : percentMet < 0.5
+                ? 'error'
+                : undefined
+            }
+          >
+            {props.numMet === 1 ? 'Met' : 'Not met'}
+          </Typography>
+        </div>
+      ) : (
+        <div
+          className="row center-div spacing"
+          color={
+            percentMet === 1 ? 'green' : percentMet < 0.5 ? 'red' : undefined
+          }
+        >
+          <Person fontSize="small" />
+          <Typography>
+            {props.numMet} / {props.numTotal}
+          </Typography>
+        </div>
+      )}
     </div>
   );
 }

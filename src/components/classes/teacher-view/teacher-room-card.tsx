@@ -26,7 +26,10 @@ import { GAMES } from '../../../game/types';
 import AvatarSprite, { PlayerSprite } from '../../avatar-sprite';
 import { TwoOptionDialog } from '../../dialog';
 import ProgressBar from '../../progress-bar';
-import { getLastActivityString } from '../../../helpers';
+import {
+  calculatePercentSkillsMet,
+  getLastActivityString,
+} from '../../../helpers';
 import { Classroom } from '../../../store/slices/educational-data/types';
 import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
 import { Player } from '../../../store/slices/player/types';
@@ -38,43 +41,19 @@ export default function RoomCard(props: {
 }): JSX.Element {
   const { room, classroom, classes } = props;
   const navigate = useNavigate();
-  const { pingGameRoomProcess, togglePlayerPausedInRoomStatus } =
-    useWithEducationalData();
+  const { togglePlayerPausedInRoomStatus } = useWithEducationalData();
   const [pausePlayer, setPausePlayer] = React.useState<Player>();
   const [updating, setUpdating] = React.useState<boolean>(false);
-  const [isInCooldown, setIsInCooldown] = React.useState(false);
 
-  const cooldownTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const game = GAMES.find((g) => g.id === room?.gameData.gameId);
-  const numPlayersPaused = Object.values(
-    room.gameData.playersStatusRecord
-  ).filter((p) => p.pausedByAdmin || p.reportedAwayStatus.isAway).length;
-
-  useEffect(() => {
-    if (!isInCooldown) {
-      pingRoom();
-    }
-  }, [isInCooldown]);
-
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (cooldownTimeoutRef.current) {
-        clearTimeout(cooldownTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  const pingRoom = async () => {
-    setIsInCooldown(true);
-    if (cooldownTimeoutRef.current) {
-      clearTimeout(cooldownTimeoutRef.current);
-    }
-    pingGameRoomProcess(room._id);
-    cooldownTimeoutRef.current = setTimeout(() => {
-      setIsInCooldown(false);
-    }, 1000);
-  };
+  const numPlayersPaused = room.gameData.players
+    .map((p) => room.gameData.playersStatusRecord[p._id])
+    .filter(
+      (s) =>
+        s.pausedByAdmin ||
+        s.reportedAwayStatus.isAway ||
+        s.computedState !== 'ACTIVE'
+    ).length;
 
   const enterRoom = () => {
     navigate(`/classes/${classroom._id}/room/${room._id}`);
@@ -201,7 +180,11 @@ export default function RoomCard(props: {
             })}
           </div>
 
-          <ProgressBar value={25} />
+          <ProgressBar
+            value={calculatePercentSkillsMet(
+              room.gameData.mathStandardsCompleted
+            )}
+          />
           <Typography variant="body2">
             {game?.name || room?.gameData.gameId}
           </Typography>

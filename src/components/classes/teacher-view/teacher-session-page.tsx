@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
 import ProgressBar from '../../progress-bar';
-import RoomCard from './room-card';
+import RoomCard from './teacher-room-card';
 import SkillCard from './skill-card';
 import { Classroom } from '../../../store/slices/educational-data/types';
 import { GAMES } from '../../../game/types';
@@ -38,6 +38,11 @@ const styles = makeStyles()(() => ({
   },
 }));
 
+interface SkillsMet {
+  numMet: number;
+  numTotal: number;
+}
+
 export default function ActiveSessionView(props: {
   classroom: Classroom;
 }): JSX.Element {
@@ -45,7 +50,8 @@ export default function ActiveSessionView(props: {
   const { classes } = styles();
   const { educationalData } = useWithEducationalData();
   const [studentSearch, setStudentSearch] = React.useState<string>();
-  const [skillsMet, setSkillsMet] = React.useState<Record<string, number>>({});
+  const [skills, setSkills] = React.useState<Record<string, SkillsMet>>({});
+  const [skillProgress, setSkillProgress] = React.useState<number>(0);
   const [game, setGame] = React.useState<string>();
 
   const gameRooms = educationalData.rooms.filter(
@@ -53,19 +59,28 @@ export default function ActiveSessionView(props: {
   );
 
   React.useEffect(() => {
-    const skillsMet: Record<string, number> = {};
+    const skills: Record<string, SkillsMet> = {};
     for (const room of gameRooms) {
       for (const standard of Object.entries(
         room.gameData.mathStandardsCompleted
       )) {
-        if (!(standard[0] in skillsMet)) {
-          skillsMet[standard[0]] = standard[1] ? 1 : 0;
-        } else if (standard[1]) {
-          skillsMet[standard[0]] = skillsMet[standard[0]] + 1;
+        if (!(standard[0] in skills)) {
+          skills[standard[0]] = { numMet: 0, numTotal: 0 };
         }
+        if (standard[1]) {
+          skills[standard[0]].numMet++;
+        }
+        skills[standard[0]].numTotal++;
       }
     }
-    setSkillsMet(skillsMet);
+    let numMet = 0;
+    let numTotal = 0;
+    for (const skill of Object.values(skills)) {
+      numMet += skill.numMet;
+      numTotal += skill.numTotal;
+    }
+    setSkills(skills);
+    setSkillProgress(numTotal === 0 ? 0 : (numMet / numTotal) * 100);
   }, [gameRooms]);
 
   return (
@@ -104,7 +119,7 @@ export default function ActiveSessionView(props: {
         </div>
         <Card className={classes.card}>
           <CardContent style={{ padding: 30 }}>
-            <ProgressBar value={50} size="large" />
+            <ProgressBar value={skillProgress} size="large" />
           </CardContent>
         </Card>
       </div>
@@ -125,13 +140,13 @@ export default function ActiveSessionView(props: {
           style={{ backgroundColor: 'rgb(231, 231, 231)' }}
         >
           <CardContent className="column spacing">
-            {Object.entries(skillsMet).map((skill, sIdx) => {
+            {Object.entries(skills).map((skill) => {
               return (
                 <SkillCard
                   key={skill[0]}
                   name={skill[0]}
-                  numMet={skill[1]}
-                  numTotal={gameRooms.length}
+                  numMet={skill[1].numMet}
+                  numTotal={skill[1].numTotal}
                 />
               );
             })}
@@ -209,6 +224,18 @@ export default function ActiveSessionView(props: {
                 <Typography className={classes.headerText}>
                   Challenge Section
                 </Typography>
+                {Object.entries(skills)
+                  .filter((skill) => skill[1].numMet / skill[1].numTotal < 0.5)
+                  .map((skill) => {
+                    return (
+                      <SkillCard
+                        key={skill[0]}
+                        name={skill[0]}
+                        numMet={skill[1].numMet}
+                        numTotal={skill[1].numTotal}
+                      />
+                    );
+                  })}
               </CardContent>
             </Card>
             <div

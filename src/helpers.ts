@@ -20,6 +20,19 @@ import { SolutionGameStateData } from './types';
 
 export const SIMULTAION_VIEWED_KEY = 'viewed-simulation';
 
+export function calculatePercentSkillsMet(
+  mathStandardsCompleted: Record<string, boolean>
+): number {
+  if (Object.values(mathStandardsCompleted).length === 0) return 0;
+  let numMet = 0;
+  let numTotal = 0;
+  for (const isDone of Object.values(mathStandardsCompleted)) {
+    if (isDone) numMet++;
+    numTotal++;
+  }
+  return (numMet / numTotal) * 100;
+}
+
 export function getPercentString(num: number): string {
   if (Number.isNaN(num)) return '0%';
   return `${Math.round(num * 100)}%`;
