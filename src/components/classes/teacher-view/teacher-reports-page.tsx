@@ -17,6 +17,7 @@ import { PlayerSprite } from '../../avatar-sprite';
 import SkillCard from './skill-card';
 import { Room, SenderType } from '../../../store/slices/game/types';
 import { calculatePercentSkillsMet, getPercentString } from '../../../helpers';
+import { GAMES } from '../../../game/types';
 
 function RoomReportCard(props: {
   classroom: Classroom;
@@ -26,6 +27,7 @@ function RoomReportCard(props: {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = React.useState<boolean>(false);
 
+  const game = GAMES.find((g) => g.id === room?.gameData.gameId);
   const totalWords = room.gameData.chat
     .filter((c) => c.sender === SenderType.PLAYER)
     .reduce((pre: number, cur) => {
@@ -48,7 +50,7 @@ function RoomReportCard(props: {
             fontWeight="bold"
             style={{ marginBottom: 20 }}
           >
-            {room.name}
+            {`${room.name}: ${game?.name}`}
           </Typography>
         </div>
         <Collapse className="column spacing" in={!collapsed}>
