@@ -141,7 +141,10 @@ function SimulationSpace(props: {
                   value={playerId}
                   style={{ width: '100%', padding: 0, margin: 0 }}
                 >
-                  {game.showPlayerStrategy(player, psd)}
+                  {game.showPlayerStrategy(player, {
+                    ...gameStateData.globalStateData.gameStateData,
+                    ...psd,
+                  })}
                 </MenuItem>
               );
             }
