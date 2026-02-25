@@ -28,7 +28,6 @@ import {
 import ChatThread from './chat-thread';
 import ChatForm from './chat-form';
 import withAuthorizationOnly from '../../wrap-with-authorization-only';
-import Popup from '../popup';
 import EndOfPhaseReflectionModal from './end-of-phase-reflection-modal';
 import AwayStatusModal from './away-status-modal';
 import PausedStatusModal from './paused-status-modal';
@@ -173,7 +172,6 @@ function GamePage(): JSX.Element {
   const { player } = useAppSelector((state) => state.playerData);
   const {
     curGame,
-    ownerIsPresent,
     room,
     updateMyRoomGameStateData,
     sendMessageToGameRoom,
@@ -223,8 +221,6 @@ function GamePage(): JSX.Element {
     );
   }
 
-  const [popupOpen, setPopupOpen] = React.useState(false);
-  const [alreadyShownPopup, setAlreadyShownPopup] = React.useState(false);
   const [layout, setLayout] = React.useState<GridLayout.Layout[]>([
     getLayout('problem', { h: 1 }),
     getLayout('approach', { h: 3, y: 2 }),
@@ -247,11 +243,7 @@ function GamePage(): JSX.Element {
       console.log('navigating to home');
       navigate('/classes');
     }
-    if (!alreadyShownPopup && !ownerIsPresent) {
-      setPopupOpen(true);
-      setAlreadyShownPopup(true);
-    }
-  }, [Boolean(room), ownerIsPresent]);
+  }, [Boolean(room)]);
 
   React.useEffect(() => {
     EventSystem.on('simulate', () => setExpanded(2));
@@ -393,10 +385,6 @@ function GamePage(): JSX.Element {
     }
   }
 
-  const handleClosePopup = () => {
-    setPopupOpen(false);
-  };
-
   const handleLayout = (newLayout: GridLayout.Layout[]) => {
     // resize chat width
     if (newLayout[4].w !== layout[4].w) {
@@ -426,7 +414,6 @@ function GamePage(): JSX.Element {
 
   return (
     <div className="root" style={{ backgroundColor: '#cfdaf8' }}>
-      <Popup open={popupOpen} onClose={handleClosePopup} />
       <EndOfPhaseReflectionModal
         room={room}
         player={player}

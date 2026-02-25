@@ -4,34 +4,43 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import React, { useContext } from 'react';
+import {
+  useLocation,
+  useNavigate,
+  useOutletContext,
+  useParams,
+} from 'react-router-dom';
 import { Button, IconButton, TextField, Typography } from '@mui/material';
 import { Create, Save } from '@mui/icons-material';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { clearPlayer } from '../store/slices/player';
 import AvatarSprite from './avatar-sprite';
 import { UseWithLogin } from '../store/slices/player/use-with-login';
-import { useWithEducationalData } from '../store/slices/educational-data/use-with-educational-data';
 import { ContainedButton } from './button';
+import { useWithEducationalData } from '../store/slices/educational-data/use-with-educational-data';
 
 export function Header(props: { useLogin: UseWithLogin }) {
   const dispatch = useAppDispatch();
   const { player } = useAppSelector((state) => state.playerData);
   const { roomId } = useParams<{ roomId: string }>();
-  const { educationalData } = useWithEducationalData();
-  const room = educationalData.rooms.find((r) => r._id === roomId);
-  const [name, setName] = React.useState<string>(room?.name || '');
   const [isEditing, setIsEditing] = React.useState<boolean>(false);
   const { logout } = props.useLogin;
   const { pathname } = useLocation();
-  const { leaveGameRoom, renameGameRoom } = useWithEducationalData();
+  const {
+    leaveGameRoom,
+    renameGameRoom,
+    educationalData,
+    fetchInstructorDataHydration,
+  } = useWithEducationalData();
+  const room = educationalData.rooms.find((r) => r._id === roomId);
+  const [name, setName] = React.useState<string>(room?.name || '');
   const navigate = useNavigate();
 
   function homeButtonClick() {
-    if (roomId) {
-      leaveGameRoom(roomId);
-    }
+    // if (roomId) {
+    //   leaveGameRoom(roomId);
+    // }
     navigate('/classes');
   }
 
@@ -131,8 +140,17 @@ export function Header(props: { useLogin: UseWithLogin }) {
         className="row center-div"
         style={{ justifyContent: 'end', paddingRight: 40 }}
       >
-        <ContainedButton style={{ backgroundColor: 'white', color: 'black' }}>
+        {/* <ContainedButton style={{ backgroundColor: 'white', color: 'black' }}>
           HELP
+        </ContainedButton> */}
+
+        <ContainedButton
+          style={{ backgroundColor: 'white', color: 'black' }}
+          onClick={() => {
+            fetchInstructorDataHydration();
+          }}
+        >
+          Refresh
         </ContainedButton>
       </div>
     </header>
