@@ -47,6 +47,7 @@ import { UseWithEducationalData } from '../../store/slices/educational-data/use-
 import { useAppSelector } from '../../store/hooks';
 import { RequireInputType } from '../discussion-stage-builder/types';
 import { viewGameRoomSimulation } from '../../hooks/game-rooms/game-room-api';
+import ProgressBar from '../progress-bar';
 
 const COLS = 6;
 const ROWS = 4;
@@ -417,6 +418,9 @@ function GamePage(): JSX.Element {
 
   return (
     <div className="root" style={{ backgroundColor: '#cfdaf8' }}>
+      <div style={{ position: 'absolute', top: 55, width: '50%' }}>
+        <ProgressBar phases={room.gameData.phaseProgression} size="large" />
+      </div>
       <EndOfPhaseReflectionModal
         room={room}
         player={player}
