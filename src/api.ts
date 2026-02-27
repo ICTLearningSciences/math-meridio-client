@@ -142,12 +142,12 @@ export const fullDiscussionStageQueryData = `
           stepType
           lastStep
           jumpToStepId
-          conditionals{
+          targetStepId
+          conditionalsToMeet{
               stateDataKey
               checking
               operation
               expectedValue
-              targetStepId
           }
       }
     }

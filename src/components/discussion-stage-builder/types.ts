@@ -214,10 +214,10 @@ export interface LogicStepConditional {
   checking: Checking;
   operation: NumericOperations;
   expectedValue: string;
-  targetStepId: string;
 }
 
 export interface ConditionalActivityStep extends StageBuilderStep {
   stepType: DiscussionStageStepType.CONDITIONAL;
-  conditionals: LogicStepConditional[];
+  targetStepId: string;
+  conditionalsToMeet: LogicStepConditional[];
 }
