@@ -7,7 +7,7 @@ The full terms of this copyright and license should always be found in the root 
 
 import { ChatMessage } from './store/slices/game/types';
 import axios from 'axios';
-import { IStage } from './components/discussion-stage-builder/types';
+import { DiscussionStageStep, DiscussionStageStepType, FlowItem, IStage, StartOfPhaseStep } from './components/discussion-stage-builder/types';
 import { DiscussionStage } from './components/discussion-stage-builder/types';
 import { isDiscussionStage } from './components/discussion-stage-builder/types';
 import { Avatar } from './store/slices/player/types';
@@ -209,4 +209,10 @@ export function copyAndSet<T>(array: T[], idx: number, value: T): T[] {
     return [...array, value];
   }
   return [...array.slice(0, idx), value, ...array.slice(idx + 1)];
+}
+
+export function getAllStartOfPhaseSteps(flowsList: FlowItem[]): StartOfPhaseStep[] {
+  const allSteps: DiscussionStageStep[] = flowsList.flatMap((flow) => flow.steps);
+  const startOfPhaseSteps = allSteps.filter((step) => step.stepType === DiscussionStageStepType.START_OF_PHASE) as StartOfPhaseStep[];
+  return startOfPhaseSteps;
 }

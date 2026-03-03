@@ -6,7 +6,7 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React from 'react';
 import { v4 as uuid } from 'uuid';
-import { Button, IconButton } from '@mui/material';
+import { Button, FormControl, InputLabel, MenuItem, Select, IconButton } from '@mui/material';
 import { Delete } from '@mui/icons-material';
 import {
   ColumnDiv,
@@ -25,12 +25,13 @@ import {
   EndOfPhaseReflectionStep,
   FlowItem,
 } from '../../types';
+import { getAllStartOfPhaseSteps } from '../../../../helpers';
 export function getDefaultEndOfPhaseReflection(): EndOfPhaseReflectionStep {
   return {
     stepId: uuid(),
     lastStep: false,
     stepType: DiscussionStageStepType.END_OF_PHASE_REFLECTION,
-    phaseTitle: '',
+    parentStartOfPhaseStepId: '',
     skipReflectionCollection: false,
     message: '',
     questions: [''],
@@ -47,8 +48,10 @@ export function EndOfPhaseReflectionStepBuilder(props: {
   width?: string;
   height?: string;
 }): JSX.Element {
-  const { step, stepIndex, updateLocalStage } = props;
+  const { step, stepIndex, updateLocalStage, flowsList } = props;
   const [collapsed, setCollapsed] = React.useState<boolean>(false);
+
+  const startOfPhaseSteps = getAllStartOfPhaseSteps(flowsList);
 
   function updateField(field: string, value: string | boolean | string[]) {
     updateLocalStage((prevValue) => {
@@ -71,7 +74,7 @@ export function EndOfPhaseReflectionStepBuilder(props: {
       };
     });
   }
-  console.log('step', step);
+
   return (
     <RoundedBorderDiv
       style={{
@@ -107,13 +110,29 @@ export function EndOfPhaseReflectionStepBuilder(props: {
       </IconButton>
       <h4 style={{ alignSelf: 'center' }}>End of Phase Reflection</h4>
       <Collapse in={!collapsed}>
-        <InputField
-          label="Phase Title"
-          value={step.phaseTitle}
-          onChange={(e) => {
-            updateField('phaseTitle', e);
-          }}
-        />
+
+
+      <FormControl variant="standard" sx={{ m: 1, minWidth: 120 }} fullWidth>
+      <InputLabel id={'select-field-label'}>Ending Phase</InputLabel>
+      <Select
+        labelId="select-ending-phase-label"
+        id="select-ending-phase"
+        value={step.parentStartOfPhaseStepId}
+        onChange={(e) => {
+          updateField('parentStartOfPhaseStepId', e.target.value as string);
+        }}
+        label="Ending Phase"
+      >
+        {startOfPhaseSteps.map((step) => (
+          <MenuItem key={step.stepId} value={step.stepId}>
+            {step.phaseTitle}
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
+
+
+      
         <InputField
           label="Message"
           value={step.message}

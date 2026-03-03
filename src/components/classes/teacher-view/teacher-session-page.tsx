@@ -102,6 +102,7 @@ export default function ActiveSessionView(props: {
       }
       const median = calculateMedian(phasesCompleted);
       setPhase({
+        curPhaseTitle: "",
         phasesStarted: Array.from({ length: median }),
         phasesCompleted: Array.from({ length: median }),
         totalPhases,
