@@ -36,8 +36,9 @@ export function getDefaultConditionalStep(): ConditionalActivityStep {
   return {
     stepId: uuid(),
     stepType: DiscussionStageStepType.CONDITIONAL,
+    targetStepId: '',
     jumpToStepId: '',
-    conditionals: [],
+    conditionalsToMeet: [],
     lastStep: false,
   };
 }
@@ -95,7 +96,7 @@ export function ConditionalStepBuilder(props: {
                 const step = s as ConditionalActivityStep;
                 return {
                   ...step,
-                  conditionals: step.conditionals.map((c, i) => {
+                  conditionalsToMeet: step.conditionalsToMeet.map((c, i) => {
                     if (i === index) {
                       return {
                         ...c,
@@ -156,10 +157,10 @@ export function ConditionalStepBuilder(props: {
       </h4>
       <Collapse in={!collapsed}>
         <ColumnCenterDiv>
-          {step.conditionals.map((conditional, index) => {
+          {step.conditionalsToMeet.map((conditional, index) => {
             return (
               <ColumnCenterDiv
-                key={`${conditional.stateDataKey}-${index}-${conditional.checking}-${conditional.expectedValue}-${conditional.targetStepId}`}
+                key={`${conditional.stateDataKey}-${index}-${conditional.checking}-${conditional.expectedValue}`}
                 style={{
                   border: '1px solid black',
                   position: 'relative',
@@ -174,7 +175,7 @@ export function ConditionalStepBuilder(props: {
                     label="Data Key"
                     value={conditional.stateDataKey}
                     onChange={(v) => {
-                      const newConditionals = [...step.conditionals];
+                      const newConditionals = [...step.conditionalsToMeet];
                       newConditionals[index].stateDataKey = v;
                       updateConditionalField(index, 'stateDataKey', v);
                     }}
@@ -184,7 +185,7 @@ export function ConditionalStepBuilder(props: {
                     value={conditional.checking}
                     options={Object.values(Checking)}
                     onChange={(v) => {
-                      const newConditionals = [...step.conditionals];
+                      const newConditionals = [...step.conditionalsToMeet];
                       newConditionals[index].checking = v as Checking;
                       updateConditionalField(index, 'checking', v);
                     }}
@@ -195,7 +196,7 @@ export function ConditionalStepBuilder(props: {
                       value={conditional.operation}
                       options={Object.values(NumericOperations)}
                       onChange={(v) => {
-                        const newConditionals = [...step.conditionals];
+                        const newConditionals = [...step.conditionalsToMeet];
                         newConditionals[index].operation =
                           v as NumericOperations;
                         updateConditionalField(index, 'operation', v);
@@ -206,7 +207,7 @@ export function ConditionalStepBuilder(props: {
                     label="Expected Value"
                     value={conditional.expectedValue}
                     onChange={(v) => {
-                      const newConditionals = [...step.conditionals];
+                      const newConditionals = [...step.conditionalsToMeet];
                       newConditionals[index].expectedValue = v;
                       updateConditionalField(index, 'expectedValue', v);
                     }}
@@ -224,9 +225,10 @@ export function ConditionalStepBuilder(props: {
                                   const step = s as ConditionalActivityStep;
                                   return {
                                     ...step,
-                                    conditionals: step.conditionals.filter(
-                                      (c, i) => i !== index
-                                    ),
+                                    conditionalsToMeet:
+                                      step.conditionalsToMeet.filter(
+                                        (c, i) => i !== index
+                                      ),
                                   };
                                 }
                                 return s;
@@ -240,33 +242,31 @@ export function ConditionalStepBuilder(props: {
                     <Delete />
                   </IconButton>
                 </RowDiv>
-                <FlowStepSelector
-                  title="Target Step"
-                  flowsList={props.flowsList}
-                  width="100%"
-                  currentJumpToStepId={conditional.targetStepId}
-                  rowOrColumn="column"
-                  onStepSelected={(stepId) => {
-                    const newConditionals = [...step.conditionals];
-                    newConditionals[index].targetStepId = stepId;
-                    updateField('conditionals', newConditionals);
-                  }}
-                />
               </ColumnCenterDiv>
             );
           })}
 
+          <FlowStepSelector
+            title="Target Step"
+            flowsList={props.flowsList}
+            width="100%"
+            currentJumpToStepId={step.targetStepId}
+            rowOrColumn="column"
+            onStepSelected={(stepId) => {
+              updateField('targetStepId', stepId);
+            }}
+          />
+
           <Button
             variant="outlined"
             onClick={() => {
-              updateField('conditionals', [
-                ...step.conditionals,
+              updateField('conditionalsToMeet', [
+                ...step.conditionalsToMeet,
                 {
                   stateDataKey: '',
                   operation: NumericOperations.EQUALS,
                   checking: Checking.VALUE,
                   expectedValue: '',
-                  targetStepId: '',
                 } as LogicStepConditional,
               ]);
             }}

@@ -13,8 +13,12 @@ export default function ProgressBar(props: {
   size?: 'large';
 }): JSX.Element {
   const { phases } = props;
-  const phase = phases.phasesCompleted.length;
-  const value = !phases.totalPhases ? 0 : (phase / phases.totalPhases) * 100;
+  const phaseIndex = phases.curPhaseStepId
+    ? phases.startingPhaseStepsOrdered.indexOf(phases.curPhaseStepId)
+    : 0;
+  const value = !phases.startingPhaseStepsOrdered.length
+    ? 0
+    : (phaseIndex / phases.startingPhaseStepsOrdered.length) * 100;
 
   if (props.size === 'large') {
     return (
@@ -36,14 +40,17 @@ export default function ProgressBar(props: {
           className="row"
           style={{ justifyContent: 'space-evenly', marginTop: 10 }}
         >
-          {Array.from({ length: phases.totalPhases }, (_, index) => (
-            <Typography
-              key={index}
-              style={{ color: phase > index ? 'orange' : 'gray' }}
-            >
-              PHASE {index + 1}
-            </Typography>
-          ))}
+          {Array.from(
+            { length: phases.startingPhaseStepsOrdered.length },
+            (_, index) => (
+              <Typography
+                key={index}
+                style={{ color: phaseIndex >= index ? 'orange' : 'gray' }}
+              >
+                PHASE {index + 1}
+              </Typography>
+            )
+          )}
         </div>
       </div>
     );

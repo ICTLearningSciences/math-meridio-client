@@ -71,7 +71,9 @@ export type PlayerStatusRecord = Record<UserId, PlayerStatusData>;
 export interface PhaseProgression {
   phasesStarted: string[];
   phasesCompleted: string[];
-  totalPhases: number;
+  curPhaseTitle: string;
+  curPhaseStepId: string;
+  startingPhaseStepsOrdered: string[];
 }
 
 export interface GameData {

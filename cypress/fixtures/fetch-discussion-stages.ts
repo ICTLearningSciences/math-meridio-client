@@ -88,13 +88,13 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "stepType": DiscussionStageStepType.CONDITIONAL,
                           "lastStep": false,
                           "jumpToStepId": "b8770926-4a6a-4802-b8f3-74ec6a072cb7",
-                          "conditionals": [
+                          "targetStepId": "53b0b249-057b-407b-8dca-37724b5cd97e",
+                          "conditionalsToMeet": [
                               {
                                   "stateDataKey": "stayed_on_topic",
                                   "checking": Checking.VALUE,
                                   "operation": NumericOperations.EQUALS,
                                   "expectedValue": "true",
-                                  "targetStepId": "53b0b249-057b-407b-8dca-37724b5cd97e"
                               }
                           ]
                       },
@@ -663,14 +663,14 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "stepId": "f3dc9e26-41b4-49fc-9fcf-5ddbe0d67dad",
                           "stepType": DiscussionStageStepType.CONDITIONAL,
                           "lastStep": false,
+                          "targetStepId": "225cc2e6-9b7b-477f-ae1e-ae00cac911ff",
                           "jumpToStepId": "",
-                          "conditionals": [
+                          "conditionalsToMeet": [
                               {
                                   "stateDataKey": "didUserProvideStrategy",
                                   "checking": Checking.VALUE,
                                   "operation": NumericOperations.EQUALS,
                                   "expectedValue": "true",
-                                  "targetStepId": "225cc2e6-9b7b-477f-ae1e-ae00cac911ff"
                               }
                           ]
                       },
@@ -814,13 +814,13 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "stepType": DiscussionStageStepType.CONDITIONAL,
                           "lastStep": false,
                           "jumpToStepId": "",
-                          "conditionals": [
+                          "targetStepId": "bc64d1e8-492f-48bf-b293-3a177d11705e",
+                          "conditionalsToMeet": [
                               {
                                   "stateDataKey": "understands_equation",
                                   "checking": Checking.VALUE,
                                   "operation": NumericOperations.EQUALS,
                                   "expectedValue": "true",
-                                  "targetStepId": "bc64d1e8-492f-48bf-b293-3a177d11705e"
                               }
                           ]
                       },
@@ -883,13 +883,13 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "stepType": DiscussionStageStepType.CONDITIONAL,
                           "lastStep": false,
                           "jumpToStepId": "",
-                          "conditionals": [
+                          "targetStepId": "7eb6026b-dce2-41a6-87b3-3427df72d789",
+                          "conditionalsToMeet": [
                               {
                                   "stateDataKey": "understands_addition",
                                   "checking": Checking.VALUE,
                                   "operation": NumericOperations.EQUALS,
                                   "expectedValue": "true",
-                                  "targetStepId": "7eb6026b-dce2-41a6-87b3-3427df72d789"
                               }
                           ]
                       },
@@ -947,13 +947,13 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "stepType": DiscussionStageStepType.CONDITIONAL,
                           "lastStep": false,
                           "jumpToStepId": "",
-                          "conditionals": [
+                          "targetStepId": "a9a18f5c-ce3e-46d4-b0e3-32ac4694105c",
+                          "conditionalsToMeet": [
                               {
                                   "stateDataKey": "best_strategy_found",
                                   "checking": Checking.VALUE,
                                   "operation": NumericOperations.EQUALS,
                                   "expectedValue": "true",
-                                  "targetStepId": "a9a18f5c-ce3e-46d4-b0e3-32ac4694105c"
                               }
                           ]
                       },
@@ -1062,13 +1062,13 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "stepType": DiscussionStageStepType.CONDITIONAL,
                           "lastStep": false,
                           "jumpToStepId": "",
-                          "conditionals": [
+                          "targetStepId": "a9a18f5c-ce3e-46d4-b0e3-32ac4694105c",
+                          "conditionalsToMeet": [
                               {
                                   "stateDataKey": "best_strategy_found",
                                   "checking": Checking.VALUE,
                                   "operation": NumericOperations.EQUALS,
                                   "expectedValue": "true",
-                                  "targetStepId": "a9a18f5c-ce3e-46d4-b0e3-32ac4694105c"
                               }
                           ]
                       },
@@ -1170,28 +1170,39 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "jsonResponseData": "[{\"clientId\": \"ae4f2467-e10f-4043-ad12-dad80e0413fd\", \"name\": \"understands_ticket_prices\", \"type\": \"string\", \"isRequired\": true, \"additionalInfo\": \"\\\"true\\\" if the user mentions or considers the profit/money/revenue earned per ticket sold, or if this value is already true: {{understands_ticket_prices}}. Otherwise, \\\"false\\\".\"}, {\"clientId\": \"9c881b83-a8a7-4bd8-b969-191d9dc80c0e\", \"name\": \"understands_conversion_rate\", \"type\": \"string\", \"isRequired\": true, \"additionalInfo\": \"\\\"true\\\" if the student mentions anything related to the conversion rate, the proportion of tickets sold, the percent of tickets sold, how many tickets we end up selling, or similar concepts, or if this value is already true: {{understands_conversion_rate}}. Otherwise, \\\"false\\\".\\\"\"}, {\"clientId\": \"e6bdecab-5240-4348-aedd-4da1fd11b4a2\", \"name\": \"understands_multiplication\", \"type\": \"string\", \"isRequired\": true, \"additionalInfo\": \"\\\"true\\\" if the user clearly demonstrates they understand that all three variables (number of tickets, conversion rate, and profit/revenue/money per ticket) must be multiplied together, or if this value is already true: {{understands_multiplication}}. Otherwise, \\\"false\\\".\"}, {\"clientId\": \"25d45e57-648f-4256-856a-763a60b87c25\", \"name\": \"responseMessage\", \"type\": \"string\", \"isRequired\": true, \"additionalInfo\": \"your response. If understands_equation is \\\"true\\\", then don't pose a question to the user. Just congratulate them on figuring out how much money is made from a single ticket type. Please respond in 1-2 sentences.\"}, {\"clientId\": \"cb935ab0-c2ca-40e9-89f3-8f2446a67552\", \"name\": \"understands_equation\", \"type\": \"string\", \"isRequired\": true, \"additionalInfo\": \"\\\"true\\\" if the user understands the three parts to the equation: ticket price, conversion rate, and that they must multiply the parts together. IF understands_ticket_prices, understands_conversion_rate, and understands_multiplication are all \\\"true\\\", then this must also be \\\"true\\\". else \\\"false\\\"\"}, {\"clientId\": \"6b580331-3ec9-43ab-a7cd-6d1cfc6419d3\", \"name\": \"num_rounds\", \"type\": \"string\", \"isRequired\": true, \"additionalInfo\": \"Here is the starting number: {{num_rounds}}. If the starting number is missing, start at 1, RETURN the starting number incremented by 1\"}]",
                           "customSystemRole": ""
                       },
+
                       {
-                          "stepId": "58325f8a-9864-4163-93d8-425409034006",
-                          "stepType": DiscussionStageStepType.CONDITIONAL,
-                          "lastStep": false,
-                          "jumpToStepId": "",
-                          "conditionals": [
-                              {
-                                  "stateDataKey": "understands_equation",
-                                  "checking": Checking.VALUE,
-                                  "operation": NumericOperations.EQUALS,
-                                  "expectedValue": "true",
-                                  "targetStepId": "bc64d1e8-492f-48bf-b293-3a177d11705e"
-                              },
-                              {
-                                  "stateDataKey": "num_rounds",
-                                  "checking": Checking.VALUE,
-                                  "operation": NumericOperations.GREATER_THAN_EQUALS,
-                                  "expectedValue": "5",
-                                  "targetStepId": "6da5ebe6-db4a-4ac6-80fc-b5bc5acccbf6"
-                              }
-                          ]
-                      },
+                        "stepId": "58325f8a-9864-4163-93d8-425409034006",
+                        "stepType": DiscussionStageStepType.CONDITIONAL,
+                        "lastStep": false,
+                        "jumpToStepId": "",
+                                "targetStepId": "bc64d1e8-492f-48bf-b293-3a177d11705e",
+                        "conditionalsToMeet": [
+                            {
+                                "stateDataKey": "understands_equation",
+                                "checking": Checking.VALUE,
+                                "operation": NumericOperations.EQUALS,
+                                "expectedValue": "true",
+                            }
+                        ]
+                    },
+                    {
+                        "stepId": "58325f8a-9864-4163-93d8-425409034006",
+                        "stepType": DiscussionStageStepType.CONDITIONAL,
+                        "lastStep": false,
+                        "jumpToStepId": "",
+                        "targetStepId": "6da5ebe6-db4a-4ac6-80fc-b5bc5acccbf6",
+                        "conditionalsToMeet": [
+                            {
+                                "stateDataKey": "num_rounds",
+                                "checking": Checking.VALUE,
+                                "operation": NumericOperations.GREATER_THAN_EQUALS,
+                                "expectedValue": "5",
+                            }
+                        ]
+                    },
+
+
                       {
                           "lastStep": false,
                           "stepId": "4fd7ddfa-f0c8-434a-8a84-9662743d537f",
@@ -1251,13 +1262,13 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "stepType": DiscussionStageStepType.CONDITIONAL,
                           "lastStep": false,
                           "jumpToStepId": "",
-                          "conditionals": [
+                          "targetStepId": "7eb6026b-dce2-41a6-87b3-3427df72d789",
+                          "conditionalsToMeet": [
                               {
                                   "stateDataKey": "understands_addition",
                                   "checking": Checking.VALUE,
                                   "operation": NumericOperations.EQUALS,
                                   "expectedValue": "true",
-                                  "targetStepId": "7eb6026b-dce2-41a6-87b3-3427df72d789"
                               }
                           ]
                       },
@@ -1285,35 +1296,55 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "jumpToStepId": "",
                           "message": "Looks like you may be struggling to understand this portion of the equation. Let's break it down."
                       },
+
+
                       {
-                          "stepId": "86975899-66df-4cc9-b03a-60ea8a6c0092",
-                          "stepType": DiscussionStageStepType.CONDITIONAL,
-                          "lastStep": false,
-                          "jumpToStepId": "",
-                          "conditionals": [
-                              {
-                                  "stateDataKey": "understands_conversion_rate",
-                                  "checking": Checking.VALUE,
-                                  "operation": NumericOperations.EQUALS,
-                                  "expectedValue": "false",
-                                  "targetStepId": "392d18a9-7dfd-4c92-8cbd-81d6d898b66a"
-                              },
-                              {
-                                  "stateDataKey": "understands_multiplication",
-                                  "checking": Checking.VALUE,
-                                  "operation": NumericOperations.EQUALS,
-                                  "expectedValue": "false",
-                                  "targetStepId": "392d18a9-7dfd-4c92-8cbd-81d6d898b66a"
-                              },
-                              {
-                                  "stateDataKey": "understands_ticket_prices",
-                                  "checking": Checking.VALUE,
-                                  "operation": NumericOperations.EQUALS,
-                                  "expectedValue": "false",
-                                  "targetStepId": "928997f9-b8b0-4037-9af5-3fba5719fced"
-                              }
-                          ]
-                      },
+                        "stepId": "86975899-66df-4cc9-b03a-60ea8a6c0092",
+                        "stepType": DiscussionStageStepType.CONDITIONAL,
+                        "lastStep": false,
+                        "jumpToStepId": "",
+                        "targetStepId": "392d18a9-7dfd-4c92-8cbd-81d6d898b66a",
+                        "conditionalsToMeet": [
+                            {
+                                "stateDataKey": "understands_conversion_rate",
+                                "checking": Checking.VALUE,
+                                "operation": NumericOperations.EQUALS,
+                                "expectedValue": "false",
+                            }
+                        ]
+                    },
+                      {
+                        "stepId": "86975899-66df-4cc9-b03a-60ea8a6c0092",
+                        "stepType": DiscussionStageStepType.CONDITIONAL,
+                        "lastStep": false,
+                        "jumpToStepId": "",
+                        "targetStepId": "392d18a9-7dfd-4c92-8cbd-81d6d898b66a",
+                        "conditionalsToMeet": [
+                            {
+                                "stateDataKey": "understands_multiplication",
+                                "checking": Checking.VALUE,
+                                "operation": NumericOperations.EQUALS,
+                                "expectedValue": "false",
+                            }
+                        ]
+                    },
+                    {
+                        "stepId": "86975899-66df-4cc9-b03a-60ea8a6c0092",
+                        "stepType": DiscussionStageStepType.CONDITIONAL,
+                        "lastStep": false,
+                        "jumpToStepId": "",
+                        "targetStepId": "928997f9-b8b0-4037-9af5-3fba5719fced",
+                        "conditionalsToMeet": [
+                            {
+                                "stateDataKey": "understands_ticket_prices",
+                                "checking": Checking.VALUE,
+                                "operation": NumericOperations.EQUALS,
+                                "expectedValue": "false",
+                            }
+                        ]
+                    },
+
+
                       {
                           "lastStep": false,
                           "stepId": "392d18a9-7dfd-4c92-8cbd-81d6d898b66a",
@@ -1342,13 +1373,13 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "stepType": DiscussionStageStepType.CONDITIONAL,
                           "lastStep": false,
                           "jumpToStepId": "",
-                          "conditionals": [
+                          "targetStepId": "d2bf811b-afe2-41c9-a604-ef99facc77d0",
+                          "conditionalsToMeet": [
                               {
                                   "stateDataKey": "understands_tickets_sold_equation",
                                   "checking": Checking.VALUE,
                                   "operation": NumericOperations.EQUALS,
                                   "expectedValue": "true",
-                                  "targetStepId": "d2bf811b-afe2-41c9-a604-ef99facc77d0"
                               }
                           ]
                       },
@@ -1368,13 +1399,13 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "stepType": DiscussionStageStepType.CONDITIONAL,
                           "lastStep": false,
                           "jumpToStepId": "bc64d1e8-492f-48bf-b293-3a177d11705e",
-                          "conditionals": [
+                          "targetStepId": "928997f9-b8b0-4037-9af5-3fba5719fced",
+                          "conditionalsToMeet": [
                               {
                                   "stateDataKey": "understands_ticket_prices",
                                   "checking": Checking.VALUE,
                                   "operation": NumericOperations.EQUALS,
                                   "expectedValue": "false",
-                                  "targetStepId": "928997f9-b8b0-4037-9af5-3fba5719fced"
                               }
                           ]
                       },
@@ -1405,14 +1436,14 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "stepId": "f6352288-d21b-4267-ac9d-286f38bfc2e2",
                           "stepType": DiscussionStageStepType.CONDITIONAL,
                           "lastStep": false,
+                          "targetStepId": "bc64d1e8-492f-48bf-b293-3a177d11705e",
                           "jumpToStepId": "",
-                          "conditionals": [
+                          "conditionalsToMeet": [
                               {
                                   "stateDataKey": "understands_ticket_prices",
                                   "checking": Checking.VALUE,
                                   "operation": NumericOperations.EQUALS,
                                   "expectedValue": "true",
-                                  "targetStepId": "bc64d1e8-492f-48bf-b293-3a177d11705e"
                               }
                           ]
                       },
@@ -1532,13 +1563,13 @@ import { Checking, DiscussionStageGQL, DiscussionStageStepType, NumericOperation
                           "stepType": DiscussionStageStepType.CONDITIONAL,
                           "lastStep": false,
                           "jumpToStepId": "",
-                          "conditionals": [
+                          "targetStepId": "225cc2e6-9b7b-477f-ae1e-ae00cac911ff",
+                          "conditionalsToMeet": [
                               {
                                   "stateDataKey": "didUserProvideStrategy",
                                   "checking": Checking.VALUE,
                                   "operation": NumericOperations.EQUALS,
                                   "expectedValue": "true",
-                                  "targetStepId": "225cc2e6-9b7b-477f-ae1e-ae00cac911ff"
                               }
                           ]
                       },

@@ -10,6 +10,7 @@ import { EditDiscussionStage } from './edit-stage/edit-stage';
 import { DiscussionStage } from './types';
 import { useWithStages } from '../../store/slices/stages/use-with-stages';
 import { Button, TextField } from '@mui/material';
+import { getAllStartOfPhaseSteps } from '../../helpers';
 
 export function StageBuilderPage(props: {
   goToStage: (stage: DiscussionStage) => void;
@@ -22,6 +23,8 @@ export function StageBuilderPage(props: {
   const { goToStage } = props;
   const existingStages: DiscussionStage[] = discussionStages;
 
+  const gameIdentifierToStartOfPhaseSteps =
+    getAllStartOfPhaseSteps(existingStages);
   const [selectedStageClientId, setSelectedStageClientId] =
     React.useState<string>('');
   const [password, setPassword] = React.useState<string>('');
@@ -75,6 +78,7 @@ export function StageBuilderPage(props: {
         saveStage={async (stage) => {
           return await addOrUpdateDiscussionStage(stage, password);
         }}
+        gameIdentifierToStartOfPhaseSteps={gameIdentifierToStartOfPhaseSteps}
       />
     );
   }
