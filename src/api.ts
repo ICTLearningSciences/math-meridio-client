@@ -204,7 +204,8 @@ export const fullRoomQueryData = `
       phasesStarted
       phasesCompleted
       curPhaseTitle
-      totalPhases
+      curPhaseStepId
+      startingPhaseStepsOrdered
     }
     playersStatusRecord
   }

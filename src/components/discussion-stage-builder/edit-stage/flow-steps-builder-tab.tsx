@@ -38,7 +38,10 @@ import {
   EndOfPhaseReflectionStepBuilder,
   getDefaultEndOfPhaseReflection,
 } from './step-builder/end-of-phase-step-builder';
-import { getDefaultStartOfPhase, StartOfPhaseStepBuilder } from './step-builder/start-of-phase-builder';
+import {
+  getDefaultStartOfPhase,
+  StartOfPhaseStepBuilder,
+} from './step-builder/start-of-phase-builder';
 export function FlowStepsBuilderTab(props: {
   flow: FlowItem;
   flowsList: FlowItem[];
@@ -46,8 +49,15 @@ export function FlowStepsBuilderTab(props: {
   updateStep: (step: DiscussionStageStep, flowClientId: string) => void;
   deleteStep: (stepId: string, flowClientId: string) => void;
   setPreviewPromptId: (id: string) => void;
+  startOfPhaseSteps: StartOfPhaseStep[];
 }) {
-  const { flow, flowsList, updateLocalStage, setPreviewPromptId } = props;
+  const {
+    flow,
+    flowsList,
+    updateLocalStage,
+    setPreviewPromptId,
+    startOfPhaseSteps,
+  } = props;
 
   function renderActivityStep(step: DiscussionStageStep, i: number) {
     switch (step.stepType) {
@@ -85,6 +95,7 @@ export function FlowStepsBuilderTab(props: {
             updateStep={(step) => props.updateStep(step, flow.clientId)}
             deleteStep={() => props.deleteStep(step.stepId, flow.clientId)}
             flowsList={flowsList}
+            startOfPhaseSteps={startOfPhaseSteps}
           />
         );
       case DiscussionStageStepType.REQUEST_USER_INPUT:

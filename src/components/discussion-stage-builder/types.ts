@@ -20,7 +20,7 @@ export type DiscussionStageStep =
   | SystemMessageStageStep
   | RequestUserInputStageStep
   | PromptStageStep
-  | ConditionalActivityStep 
+  | ConditionalActivityStep
   | EndOfPhaseReflectionStep
   | StartOfPhaseStep;
 

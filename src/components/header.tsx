@@ -14,6 +14,9 @@ import AvatarSprite from './avatar-sprite';
 import { UseWithLogin } from '../store/slices/player/use-with-login';
 import { ContainedButton } from './button';
 import { useWithEducationalData } from '../store/slices/educational-data/use-with-educational-data';
+import { getCurPhaseTitleFromRoom } from '../store/slices/educational-data/helpers';
+import { RowDiv } from '../styled-components';
+import { EducationalRole } from '../store/slices/player/types';
 
 export function Header(props: { useLogin: UseWithLogin }) {
   const dispatch = useAppDispatch();
@@ -28,7 +31,20 @@ export function Header(props: { useLogin: UseWithLogin }) {
     educationalData,
     fetchInstructorDataHydration,
   } = useWithEducationalData();
+  const isInstructor = player?.educationalRole === EducationalRole.INSTRUCTOR;
   const room = educationalData.rooms.find((r) => r._id === roomId);
+  const totalPhases =
+    room?.gameData.phaseProgression.startingPhaseStepsOrdered.length;
+  const curPhaseIndex =
+    room?.gameData.phaseProgression.startingPhaseStepsOrdered.indexOf(
+      room?.gameData.phaseProgression.curPhaseStepId || ''
+    );
+  // const completedPhases = room?.gameData.phaseProgression.phasesCompleted.length;
+  const progressString =
+    totalPhases !== undefined && curPhaseIndex !== undefined
+      ? `${curPhaseIndex + 1}/${totalPhases}`
+      : '';
+  const curPhaseTitle = room ? getCurPhaseTitleFromRoom(room) : '';
   const [name, setName] = React.useState<string>(room?.name || '');
   const navigate = useNavigate();
 
@@ -131,23 +147,34 @@ export function Header(props: { useLogin: UseWithLogin }) {
           )}
         </div>
       </div>
-      <div
-        className="row center-div"
-        style={{ justifyContent: 'end', paddingRight: 40 }}
+      <RowDiv
+        style={{
+          justifyContent: 'space-between',
+        }}
       >
-        {/* <ContainedButton style={{ backgroundColor: 'white', color: 'black' }}>
-          HELP
-        </ContainedButton> */}
+        <div style={{ flex: 1 }} />
 
-        <ContainedButton
-          style={{ backgroundColor: 'white', color: 'black' }}
-          onClick={() => {
-            fetchInstructorDataHydration();
-          }}
-        >
-          Refresh
-        </ContainedButton>
-      </div>
+        <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+          {curPhaseTitle && (
+            <Typography variant="h6" style={{ flex: 1 }} textAlign="center">
+              <b>Phase {progressString}:</b> {curPhaseTitle}
+            </Typography>
+          )}
+        </div>
+
+        <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+          {isInstructor && (
+            <Button
+              style={{ backgroundColor: 'white', color: 'black' }}
+              onClick={() => {
+                fetchInstructorDataHydration();
+              }}
+            >
+              Refresh
+            </Button>
+          )}
+        </div>
+      </RowDiv>
     </header>
   );
 }

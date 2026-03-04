@@ -8,10 +8,7 @@ import React from 'react';
 import { v4 as uuid } from 'uuid';
 import { IconButton } from '@mui/material';
 import { Delete } from '@mui/icons-material';
-import {
-  RoundedBorderDiv,
-  TopLeftText,
-} from '../../../../styled-components';
+import { RoundedBorderDiv, TopLeftText } from '../../../../styled-components';
 import { InputField } from '../../shared/input-components';
 import Collapse from '@mui/material/Collapse';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';

@@ -72,7 +72,8 @@ export interface PhaseProgression {
   phasesStarted: string[];
   phasesCompleted: string[];
   curPhaseTitle: string;
-  totalPhases: number;
+  curPhaseStepId: string;
+  startingPhaseStepsOrdered: string[];
 }
 
 export interface GameData {

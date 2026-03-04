@@ -25,9 +25,10 @@ export function defaultNbaStarterRoomData(classId: string, user: Player): Room {
             "mathStandardsCompleted": {},
             "phaseProgression": {
                 "phasesStarted": [],
-                "phasesCompleted": [],
+                "phasesCompleted": [],  
                 "curPhaseTitle": "",
-                "totalPhases": 0
+                "curPhaseStepId": "",
+                "startingPhaseStepsOrdered": []
             },
             "playersStatusRecord": {},
             "gameId": "basketball",

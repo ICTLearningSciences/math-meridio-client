@@ -95,17 +95,19 @@ export default function ActiveSessionView(props: {
       let totalPhases = 0;
       const phasesCompleted: number[] = [];
       for (const room of gameRooms) {
-        totalPhases = room.gameData.phaseProgression.totalPhases;
+        totalPhases =
+          room.gameData.phaseProgression.startingPhaseStepsOrdered.length;
         phasesCompleted.push(
           room.gameData.phaseProgression.phasesCompleted.length
         );
       }
       const median = calculateMedian(phasesCompleted);
       setPhase({
-        curPhaseTitle: "",
+        curPhaseTitle: '',
         phasesStarted: Array.from({ length: median }),
         phasesCompleted: Array.from({ length: median }),
-        totalPhases,
+        curPhaseStepId: '',
+        startingPhaseStepsOrdered: [],
       });
     } else {
       setPhase(undefined);
