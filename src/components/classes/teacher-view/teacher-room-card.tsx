@@ -6,7 +6,6 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import * as motion from 'motion/react-client';
 import {
   ArrowForward,
   CheckCircleOutline,
@@ -23,13 +22,9 @@ import {
 
 import { Room } from '../../../store/slices/game/types';
 import { GAMES } from '../../../game/types';
-import AvatarSprite, { PlayerSprite } from '../../avatar-sprite';
-import { TwoOptionDialog } from '../../dialog';
+import { PlayerActivitySprite } from '../../avatar-sprite';
 import ProgressBar from '../../progress-bar';
-import { getLastActivityString } from '../../../helpers';
 import { Classroom } from '../../../store/slices/educational-data/types';
-import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
-import { Player } from '../../../store/slices/player/types';
 
 export default function RoomCard(props: {
   classroom: Classroom;
@@ -38,9 +33,6 @@ export default function RoomCard(props: {
 }): JSX.Element {
   const { room, classroom, classes } = props;
   const navigate = useNavigate();
-  const { togglePlayerPausedInRoomStatus } = useWithEducationalData();
-  const [pausePlayer, setPausePlayer] = React.useState<Player>();
-  const [updating, setUpdating] = React.useState<boolean>(false);
 
   const game = GAMES.find((g) => g.id === room?.gameData.gameId);
   const numPlayersPaused = room.gameData.players
@@ -54,19 +46,6 @@ export default function RoomCard(props: {
 
   const enterRoom = () => {
     navigate(`/classes/${classroom._id}/room/${room._id}`);
-  };
-
-  const onTogglePause = async () => {
-    if (!pausePlayer) return;
-    setUpdating(true);
-    try {
-      await togglePlayerPausedInRoomStatus(room._id, pausePlayer._id);
-      setUpdating(false);
-      setPausePlayer(undefined);
-    } catch {
-      setUpdating(false);
-      setPausePlayer(undefined);
-    }
   };
 
   return (
@@ -104,73 +83,13 @@ export default function RoomCard(props: {
               scrollbarWidth: 'none',
             }}
           >
-            {room.gameData.players.map((player) => {
-              const isActive =
-                room.gameData.playersStatusRecord[player._id].computedState ===
-                'ACTIVE';
-              const isPaused =
-                room.gameData.playersStatusRecord[player._id].pausedByAdmin;
-
-              if (isPaused) {
-                return (
-                  <Tooltip key={player._id} title="Unpause player">
-                    <div className="column center-div">
-                      <motion.div
-                        className="column center-div"
-                        whileHover={{ scale: 1.05, filter: 'brightness(0.8)' }}
-                        onClick={() => setPausePlayer(player)}
-                      >
-                        <AvatarSprite
-                          player={player}
-                          bgColor="rgb(218, 183, 250)"
-                          isPaused={isPaused}
-                        />
-                      </motion.div>
-                      <Typography
-                        variant="body2"
-                        fontSize={12}
-                        fontWeight="bold"
-                        align="center"
-                        style={{ marginTop: 5 }}
-                      >
-                        {player.name}
-                      </Typography>
-                      <Typography fontSize={10} fontWeight="lighter">
-                        PAUSED
-                      </Typography>
-                    </div>
-                  </Tooltip>
-                );
-              }
-
-              return (
-                <PlayerSprite key={player._id} player={player}>
-                  <Typography fontSize={10} fontWeight="lighter">
-                    {isActive
-                      ? room.gameData.playersStatusRecord[player._id]
-                          .computedState
-                      : getLastActivityString(player.lastLoginAt)}
-                  </Typography>
-                  <Tooltip title="Pause player">
-                    <motion.div
-                      whileHover={{ scale: 1.05, filter: 'brightness(0.8)' }}
-                      onClick={() => setPausePlayer(player)}
-                      style={{
-                        position: 'absolute',
-                        marginRight: -30,
-                        width: 12,
-                        height: 12,
-                        borderRadius: 12,
-                        backgroundColor: isActive
-                          ? 'rgb(91, 197, 57)'
-                          : 'white',
-                        border: `1px solid ${isActive ? 'white' : 'black'}`,
-                      }}
-                    />
-                  </Tooltip>
-                </PlayerSprite>
-              );
-            })}
+            {room.gameData.players.map((player) => (
+              <PlayerActivitySprite
+                key={player._id}
+                player={player}
+                room={room}
+              />
+            ))}
           </div>
 
           <ProgressBar phases={room.gameData.phaseProgression} />
@@ -188,26 +107,6 @@ export default function RoomCard(props: {
           </Tooltip>
         </CardContent>
       </Card>
-
-      {pausePlayer && (
-        <TwoOptionDialog
-          title={`Mark [${pausePlayer.name}] as ${
-            room.gameData.playersStatusRecord[pausePlayer._id].pausedByAdmin
-              ? 'Active'
-              : 'Inactive'
-          }?`}
-          open={Boolean(pausePlayer)}
-          actionInProgress={updating}
-          option1={{
-            display: 'Confirm',
-            onClick: () => onTogglePause(),
-          }}
-          option2={{
-            display: 'Cancel',
-            onClick: () => setPausePlayer(undefined),
-          }}
-        />
-      )}
     </div>
   );
 }
