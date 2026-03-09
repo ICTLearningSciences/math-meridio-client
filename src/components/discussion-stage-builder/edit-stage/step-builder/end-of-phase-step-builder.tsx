@@ -56,8 +56,7 @@ export function EndOfPhaseReflectionStepBuilder(props: {
   width?: string;
   height?: string;
 }): JSX.Element {
-  const { step, stepIndex, updateLocalStage, flowsList, startOfPhaseSteps } =
-    props;
+  const { step, stepIndex, updateLocalStage, startOfPhaseSteps } = props;
   const [collapsed, setCollapsed] = React.useState<boolean>(false);
 
   function updateField(field: string, value: string | boolean | string[]) {
