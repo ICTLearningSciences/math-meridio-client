@@ -182,8 +182,7 @@ export interface JsonResponseData {
   subData?: JsonResponseData[];
 }
 
-export interface PromptStageStepGql extends StageBuilderStep {
-  stepType: DiscussionStageStepType.PROMPT;
+export interface PromptConfiguration {
   promptText: string;
   responseFormat: string;
   includeChatLogContext: boolean;
@@ -192,9 +191,20 @@ export interface PromptStageStepGql extends StageBuilderStep {
   customSystemRole: string;
 }
 
-export interface PromptStageStep
-  extends Omit<PromptStageStepGql, 'jsonResponseData'> {
-  jsonResponseData?: JsonResponseData[];
+export interface PromptStageStepGql extends StageBuilderStep {
+  stepType: DiscussionStageStepType.PROMPT;
+  prompts: PromptConfiguration[];
+}
+
+export interface PromptStageStep extends Omit<PromptStageStepGql, 'prompts'> {
+  prompts: {
+    promptText: string;
+    responseFormat: string;
+    includeChatLogContext: boolean;
+    outputDataType: PromptOutputTypes;
+    jsonResponseData: JsonResponseData[];
+    customSystemRole: string;
+  }[];
 }
 
 // LogicOperation

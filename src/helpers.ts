@@ -10,7 +10,6 @@ import axios from 'axios';
 import {
   DiscussionStageStep,
   DiscussionStageStepType,
-  FlowItem,
   IStage,
   StartOfPhaseStep,
 } from './components/discussion-stage-builder/types';

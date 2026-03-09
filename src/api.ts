@@ -137,12 +137,14 @@ export const fullDiscussionStageQueryData = `
           stepId
           stepType
           jumpToStepId
-          promptText
-          responseFormat
-          includeChatLogContext
-          outputDataType
-          jsonResponseData
-          customSystemRole
+          prompts{
+            promptText
+            responseFormat
+            includeChatLogContext
+            outputDataType
+            jsonResponseData
+            customSystemRole
+          }
       }
 
       ... on ConditionalActivityStepType {
@@ -219,8 +221,10 @@ export function convertDiscussionStageToGQl(
     flow.steps.forEach((step) => {
       if (step.stepType === DiscussionStageStepType.PROMPT) {
         const _step = step as PromptStageStepGql;
-        if (_step.jsonResponseData) {
-          _step.jsonResponseData = JSON.stringify(_step.jsonResponseData);
+        for (const prompt of _step.prompts) {
+          if (prompt.jsonResponseData) {
+            prompt.jsonResponseData = JSON.stringify(prompt.jsonResponseData);
+          }
         }
       }
     });
@@ -235,9 +239,13 @@ export function convertGqlToDiscussionStage(
   copy.flowsList.forEach((flow) => {
     flow.steps.forEach((step) => {
       if (step.stepType === DiscussionStageStepType.PROMPT) {
-        const _step = step as PromptStageStepGql;
-        if (typeof _step.jsonResponseData === 'string') {
-          _step.jsonResponseData = JSON.parse(_step.jsonResponseData as string);
+        const _step = step as unknown as PromptStageStepGql;
+        for (const prompt of _step.prompts) {
+          if (typeof prompt.jsonResponseData === 'string') {
+            prompt.jsonResponseData = JSON.parse(
+              prompt.jsonResponseData as string
+            );
+          }
         }
       }
     });
