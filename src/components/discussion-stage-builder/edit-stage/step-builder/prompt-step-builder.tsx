@@ -12,6 +12,7 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React from 'react';
 
+import InfoIcon from '@mui/icons-material/Info';
 import {
   CheckBoxInput,
   InputField,
@@ -30,6 +31,7 @@ import {
   Tabs,
   Tab,
   Box,
+  Tooltip,
 } from '@mui/material';
 import { Delete, Add } from '@mui/icons-material';
 import { v4 as uuid } from 'uuid';
@@ -49,6 +51,8 @@ import {
   FlowItem,
   JsonResponseData,
   JsonResponseDataType,
+  ProcessPromptAs,
+  PromptConfiguration,
   PromptStageStep,
 } from '../../types';
 import {
@@ -75,6 +79,7 @@ export function defaultPromptBuilder(): PromptStageStep {
     stepType: DiscussionStageStepType.PROMPT,
     prompts: [
       {
+        processPromptAs: ProcessPromptAs.INDIVIDUALLY,
         promptText: '',
         responseFormat: '',
         outputDataType: PromptOutputTypes.TEXT,
@@ -93,8 +98,12 @@ export enum ViewingInputType {
   NONE = 'NONE',
 }
 
-function getEmptyPromptConfiguration() {
+function getEmptyPromptConfiguration(): Omit<
+  PromptConfiguration,
+  'jsonResponseData'
+> & { jsonResponseData: JsonResponseData[] } {
   return {
+    processPromptAs: ProcessPromptAs.INDIVIDUALLY,
     promptText: '',
     responseFormat: '',
     outputDataType: PromptOutputTypes.TEXT,
@@ -301,6 +310,27 @@ function PromptConfigurationEditor(
         />
       </RowDiv>
 
+      <RowDiv>
+        <SelectInputField
+          label="Process Prompt As"
+          value={promptConfig.processPromptAs}
+          options={[...Object.values(ProcessPromptAs)]}
+          onChange={(e) => {
+            updatePromptField(
+              promptIndex,
+              'processPromptAs',
+              e as ProcessPromptAs
+            );
+          }}
+        />
+        <Tooltip
+          title={`GROUP: executes a single prompt that aggregates data from all users and updates all users data with the same results.
+          
+          INDIVIDUALLY: executes a separate prompt for each user, analyzing and updating their individual data with the results.`}
+        >
+          <InfoIcon />
+        </Tooltip>
+      </RowDiv>
       <InputField
         label="Prompt Text"
         value={promptConfig.promptText}
