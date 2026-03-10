@@ -182,7 +182,13 @@ export interface JsonResponseData {
   subData?: JsonResponseData[];
 }
 
+export enum ProcessPromptAs {
+  GROUP = 'GROUP',
+  INDIVIDUALLY = 'INDIVIDUALLY',
+}
+
 export interface PromptConfiguration {
+  processPromptAs: ProcessPromptAs;
   promptText: string;
   responseFormat: string;
   includeChatLogContext: boolean;
@@ -198,6 +204,7 @@ export interface PromptStageStepGql extends StageBuilderStep {
 
 export interface PromptStageStep extends Omit<PromptStageStepGql, 'prompts'> {
   prompts: {
+    processPromptAs: ProcessPromptAs;
     promptText: string;
     responseFormat: string;
     includeChatLogContext: boolean;

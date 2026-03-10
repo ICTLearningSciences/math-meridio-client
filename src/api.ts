@@ -138,6 +138,7 @@ export const fullDiscussionStageQueryData = `
           stepType
           jumpToStepId
           prompts{
+            processPromptAs
             promptText
             responseFormat
             includeChatLogContext
