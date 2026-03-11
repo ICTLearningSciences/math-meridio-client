@@ -50,6 +50,12 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import { TextDialog } from '../../../dialog';
 import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+} from '@mui/material';
+import {
   DiscussionStage,
   DiscussionStageStepType,
   FlowItem,
@@ -129,6 +135,39 @@ function getEmptyPromptConfiguration(): Omit<
       includeMessagesFromOtherUsers: false,
     },
   };
+}
+
+interface ConversionConfirmationDialogProps {
+  open: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+  convertingTo: 'analyze' | 'normal';
+}
+
+function ConversionConfirmationDialog(
+  props: ConversionConfirmationDialogProps
+): JSX.Element {
+  const { open, onConfirm, onCancel, convertingTo } = props;
+
+  const message =
+    convertingTo === 'analyze'
+      ? 'Converting this prompt will cause you to lose the current prompt configuration. Are you sure you want to continue?'
+      : 'Converting back to a normal prompt will cause you to lose the Analyze Math Standards configuration. Are you sure you want to continue?';
+
+  return (
+    <Dialog open={open} onClose={onCancel}>
+      <DialogTitle>Confirm Conversion</DialogTitle>
+      <DialogContent>{message}</DialogContent>
+      <DialogActions>
+        <Button onClick={onCancel} color="primary">
+          No
+        </Button>
+        <Button onClick={onConfirm} color="primary" variant="contained">
+          Yes
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
 }
 
 interface IncludeMessageContextUpdaterProps {
@@ -356,6 +395,87 @@ function IncludeMessageContextUpdater(
   );
 }
 
+interface AnalyzeLearningObjectivesPromptEditorProps {
+  promptIndex: number;
+  promptConfig: PromptStageStep['prompts'][0];
+  updatePromptField: (
+    promptIndex: number,
+    field: string,
+    value: string | boolean | JsonResponseData[] | IncludeMessageContext
+  ) => void;
+  flowsList: FlowItem[];
+  stepId: string;
+  onConvertToNormal: () => void;
+}
+
+function AnalyzeLearningObjectivesPromptEditor(
+  props: AnalyzeLearningObjectivesPromptEditorProps
+): JSX.Element {
+  const {
+    promptIndex,
+    promptConfig,
+    updatePromptField,
+    flowsList,
+    stepId,
+    onConvertToNormal,
+  } = props;
+
+  return (
+    <Box sx={{ p: 2 }}>
+      {/* Info Message */}
+      <Box
+        sx={{
+          p: 2,
+          mb: 2,
+          backgroundColor: '#e3f2fd',
+          border: '1px solid #2196f3',
+          borderRadius: 1,
+        }}
+      >
+        <InfoIcon sx={{ verticalAlign: 'middle', mr: 1, color: '#2196f3' }} />
+        <span>
+          This is a special prompt that will include the learning objectives and
+          the learning objective analysis prompt for you. Be sure to add any
+          user data to analyze to the Include Prompt Data section and/or include
+          portions of the chat log as needed.
+        </span>
+      </Box>
+
+      {/* Convert Back Button */}
+      <Button
+        variant="outlined"
+        color="secondary"
+        onClick={onConvertToNormal}
+        sx={{ mb: 2 }}
+      >
+        Convert to Normal Prompt
+      </Button>
+
+      {/* Include Prompt Data (was Prompt Text) */}
+      <InputField
+        label="Include Prompt Data"
+        value={promptConfig.promptText}
+        onChange={(e) => {
+          updatePromptField(promptIndex, 'promptText', e);
+        }}
+        width="100%"
+        maxRows={20}
+      />
+
+      {/* Include Message Context */}
+      <IncludeMessageContextUpdater
+        isIndividualMode={true}
+        includeMessageContext={promptConfig.includeMessageContext}
+        updateIncludeMessageContext={(context) => {
+          updatePromptField(promptIndex, 'includeMessageContext', context);
+        }}
+        flowsList={flowsList}
+        currentStepId={stepId}
+      />
+    </Box>
+  );
+}
+
 interface PromptConfigurationEditorProps {
   promptIndex: number;
   promptConfig: PromptStageStep['prompts'][0];
@@ -396,6 +516,11 @@ function PromptConfigurationEditor(
     React.useState<boolean>(false);
   const [viewingInputType, setViewingInputType] =
     React.useState<ViewingInputType>(ViewingInputType.PROMPT_TEXT);
+  const [showConversionDialog, setShowConversionDialog] =
+    React.useState<boolean>(false);
+  const [conversionTarget, setConversionTarget] = React.useState<
+    'analyze' | 'normal'
+  >('analyze');
 
   function editJsonResponseData(
     clientId: string,
@@ -450,6 +575,42 @@ function PromptConfigurationEditor(
     }
   }
 
+  function handleConvertToAnalyze() {
+    setConversionTarget('analyze');
+    setShowConversionDialog(true);
+  }
+
+  function handleConvertToNormal() {
+    setConversionTarget('normal');
+    setShowConversionDialog(true);
+  }
+
+  function confirmConversion() {
+    if (conversionTarget === 'analyze') {
+      // Convert to Analyze Learning Objectives mode
+      updatePromptField(promptIndex, 'analyzeLearningObjectives', true);
+      updatePromptField(
+        promptIndex,
+        'processPromptAs',
+        ProcessPromptAs.INDIVIDUALLY
+      );
+      updatePromptField(promptIndex, 'outputDataType', PromptOutputTypes.JSON);
+      updatePromptField(promptIndex, 'promptText', '');
+      updatePromptField(promptIndex, 'responseFormat', '');
+      updatePromptField(promptIndex, 'customSystemRole', '');
+      updatePromptField(promptIndex, 'jsonResponseData', []);
+    } else {
+      // Convert to Normal mode
+      updatePromptField(promptIndex, 'analyzeLearningObjectives', false);
+      updatePromptField(promptIndex, 'promptText', '');
+    }
+    setShowConversionDialog(false);
+  }
+
+  function cancelConversion() {
+    setShowConversionDialog(false);
+  }
+
   async function executePromptTest() {
     setExecuteInProgress(true);
     const llmRequest: GenericLlmRequest = {
@@ -482,8 +643,48 @@ function PromptConfigurationEditor(
     }
   }
 
+  // If in Analyze Learning Objectives mode, render the special UI
+  if (promptConfig.analyzeLearningObjectives) {
+    return (
+      <>
+        <AnalyzeLearningObjectivesPromptEditor
+          promptIndex={promptIndex}
+          promptConfig={promptConfig}
+          updatePromptField={updatePromptField}
+          flowsList={flowsList}
+          stepId={stepId}
+          onConvertToNormal={handleConvertToNormal}
+        />
+        <ConversionConfirmationDialog
+          open={showConversionDialog}
+          onConfirm={confirmConversion}
+          onCancel={cancelConversion}
+          convertingTo={conversionTarget}
+        />
+      </>
+    );
+  }
+
+  // Normal prompt UI
   return (
     <Box sx={{ p: 2 }}>
+      <ConversionConfirmationDialog
+        open={showConversionDialog}
+        onConfirm={confirmConversion}
+        onCancel={cancelConversion}
+        convertingTo={conversionTarget}
+      />
+
+      {/* Convert to Analyze Math Standards Button */}
+      <Button
+        variant="outlined"
+        color="primary"
+        onClick={handleConvertToAnalyze}
+        sx={{ mb: 2 }}
+      >
+        Convert to Analyze Math Standards Prompt
+      </Button>
+
       <RowDiv
         data-cy="run-prompt-buttons"
         style={{
