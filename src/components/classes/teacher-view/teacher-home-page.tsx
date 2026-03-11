@@ -5,39 +5,33 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { Typography } from '@mui/material';
+import { Classroom } from '../../../store/slices/educational-data/types';
+import ActiveSessionView from './teacher-session-page';
+import { RoomSetupView } from './teacher-room-setup';
+import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
 
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+export default function TeacherHome(props: {
+  classroom?: Classroom;
+}): JSX.Element {
+  const { classroom } = props;
+  const { educationalData } = useWithEducationalData();
+  const rooms = educationalData.rooms.filter(
+    (r) => r.classId === classroom?._id
+  );
 
-import './fonts/Caprasimo-Regular.ttf';
-import './fonts/SigmarOne-Regular.ttf';
-import './index.css';
+  if (!classroom) {
+    return (
+      <div className="root center-div">
+        <Typography variant="h6" color="error">
+          Classroom not found
+        </Typography>
+      </div>
+    );
+  }
 
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: 'rgb(114, 20, 201)',
-    },
-    secondary: {
-      main: 'rgb(118, 118, 118)',
-    },
-  },
-});
-
-const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
-);
-root.render(
-  <ThemeProvider theme={theme}>
-    <React.StrictMode>
-      <App />
-    </React.StrictMode>
-  </ThemeProvider>
-);
-
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
+  if (rooms.length === 0) {
+    return <RoomSetupView classId={classroom._id} />;
+  }
+  return <ActiveSessionView classroom={classroom} />;
+}

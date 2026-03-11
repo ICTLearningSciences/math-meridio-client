@@ -19,13 +19,20 @@ import { equals } from '../../../helpers';
 import { DiscussionStage, FlowItem } from '../types';
 import { ColumnDiv, RowDiv } from '../../../styled-components';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import { AllStartOfPhaseSteps } from '../../../helpers';
 export function EditDiscussionStage(props: {
   goToStage: (stage: DiscussionStage) => void;
   stage: DiscussionStage;
   saveStage: (stage: DiscussionStage) => Promise<DiscussionStage>;
   returnTo: () => void;
+  gameIdentifierToStartOfPhaseSteps: AllStartOfPhaseSteps;
 }): JSX.Element {
-  const { stage, saveStage: _saveStage, returnTo } = props;
+  const {
+    stage,
+    saveStage: _saveStage,
+    returnTo,
+    gameIdentifierToStartOfPhaseSteps,
+  } = props;
 
   const [localStageCopy, setLocalStageCopy] = React.useState<DiscussionStage>(
     JSON.parse(JSON.stringify(stage))
@@ -147,6 +154,7 @@ export function EditDiscussionStage(props: {
       <StageFlowContainer
         localStage={localStageCopy}
         updateLocalStage={setLocalStageCopy}
+        gameIdentifierToStartOfPhaseSteps={gameIdentifierToStartOfPhaseSteps}
       />
     </ColumnDiv>
   );

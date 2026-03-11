@@ -8,6 +8,7 @@ import {
   DiscussionStage,
   IStage,
 } from './components/discussion-stage-builder/types';
+import { Player } from './store/slices/player/types';
 
 export enum PromptOutputTypes {
   TEXT = 'TEXT',
@@ -129,4 +130,9 @@ export interface GamePhaseReflections {
   question: string;
   roundNumber: number;
   reflections: Record<string, string>; // keyed by player ID
+}
+
+export interface SkillsMet {
+  playersMet: Player[];
+  players: Player[];
 }

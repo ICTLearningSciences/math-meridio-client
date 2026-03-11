@@ -28,12 +28,18 @@ import {
 import ChatThread from './chat-thread';
 import ChatForm from './chat-form';
 import withAuthorizationOnly from '../../wrap-with-authorization-only';
-import Popup from '../popup';
 import EndOfPhaseReflectionModal from './end-of-phase-reflection-modal';
+import AwayStatusModal from './away-status-modal';
+import PausedStatusModal from './paused-status-modal';
 import { useWithConfig } from '../../store/slices/config/use-with-config';
 import { useWithWindow } from '../../hooks/use-with-window';
 import EventSystem from '../../game/event-system';
-import { GameData, Room, RoomPhase } from '../../store/slices/game/types';
+import {
+  GameData,
+  PlayerComputedState,
+  Room,
+  RoomPhase,
+} from '../../store/slices/game/types';
 import { Game } from '../../game/types';
 
 import '../../layout.css';
@@ -41,6 +47,7 @@ import { UseWithEducationalData } from '../../store/slices/educational-data/use-
 import { useAppSelector } from '../../store/hooks';
 import { RequireInputType } from '../discussion-stage-builder/types';
 import { viewGameRoomSimulation } from '../../hooks/game-rooms/game-room-api';
+import ProgressBar from '../progress-bar';
 
 const COLS = 6;
 const ROWS = 4;
@@ -135,7 +142,10 @@ function SimulationSpace(props: {
                   value={playerId}
                   style={{ width: '100%', padding: 0, margin: 0 }}
                 >
-                  {game.showPlayerStrategy(player, psd)}
+                  {game.showPlayerStrategy(player, {
+                    ...gameStateData.globalStateData.gameStateData,
+                    ...psd,
+                  })}
                 </MenuItem>
               );
             }
@@ -166,13 +176,23 @@ function GamePage(): JSX.Element {
   const { player } = useAppSelector((state) => state.playerData);
   const {
     curGame,
-    ownerIsPresent,
     room,
     updateMyRoomGameStateData,
     sendMessageToGameRoom,
     fetchRoom,
   } = outletContext;
   const navigate = useNavigate();
+  const myStatusInRoom =
+    player?._id && room
+      ? room?.gameData.playersStatusRecord[player?._id]
+      : undefined;
+  const iAmAway =
+    myStatusInRoom?.computedState ===
+      PlayerComputedState.REPORTED_AWAY_BY_OTHER_PLAYER ||
+    myStatusInRoom?.computedState ===
+      PlayerComputedState.REPORTED_AWAY_BY_FRONTEND_DETECTION;
+  const iAmPaused =
+    myStatusInRoom?.computedState === PlayerComputedState.PAUSED_BY_ADMIN;
   const { windowHeight, windowWidth } = useWithWindow();
 
   const isSingleResponseRequired =
@@ -205,8 +225,6 @@ function GamePage(): JSX.Element {
     );
   }
 
-  const [popupOpen, setPopupOpen] = React.useState(false);
-  const [alreadyShownPopup, setAlreadyShownPopup] = React.useState(false);
   const [layout, setLayout] = React.useState<GridLayout.Layout[]>([
     getLayout('problem', { h: 1 }),
     getLayout('approach', { h: 3, y: 2 }),
@@ -229,11 +247,7 @@ function GamePage(): JSX.Element {
       console.log('navigating to home');
       navigate('/classes');
     }
-    if (!alreadyShownPopup && !ownerIsPresent) {
-      setPopupOpen(true);
-      setAlreadyShownPopup(true);
-    }
-  }, [Boolean(room), ownerIsPresent]);
+  }, [Boolean(room)]);
 
   React.useEffect(() => {
     EventSystem.on('simulate', () => setExpanded(2));
@@ -375,10 +389,6 @@ function GamePage(): JSX.Element {
     }
   }
 
-  const handleClosePopup = () => {
-    setPopupOpen(false);
-  };
-
   const handleLayout = (newLayout: GridLayout.Layout[]) => {
     // resize chat width
     if (newLayout[4].w !== layout[4].w) {
@@ -408,7 +418,9 @@ function GamePage(): JSX.Element {
 
   return (
     <div className="root" style={{ backgroundColor: '#cfdaf8' }}>
-      <Popup open={popupOpen} onClose={handleClosePopup} />
+      <div style={{ position: 'absolute', top: 55, width: 500 }}>
+        <ProgressBar phases={room.gameData.phaseProgression} />
+      </div>
       <EndOfPhaseReflectionModal
         room={room}
         player={player}
@@ -513,9 +525,19 @@ function GamePage(): JSX.Element {
             requestUserInputPhaseData={room.gameData.curGameState}
             uiGameData={room.gameData}
           />
-          <ChatForm sendMessage={sendMessageToGameRoom} isMyTurn={isMyTurn} />
+          <ChatForm
+            sendMessage={sendMessageToGameRoom}
+            isMyTurn={isMyTurn}
+            isPaused={iAmPaused}
+          />
         </Stack>
       </GridLayout>
+      <AwayStatusModal
+        roomId={room._id}
+        playerId={player._id}
+        iAmAway={iAmAway}
+      />
+      <PausedStatusModal iAmPaused={iAmPaused} />
     </div>
   );
 }

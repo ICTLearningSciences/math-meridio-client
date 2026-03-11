@@ -15,6 +15,10 @@ import {
   PromptStageStep,
 } from '../types';
 import { getStepFromFlowList } from '../helpers';
+import {
+  AllStartOfPhaseSteps,
+  getGameIdentifierFromStageTitle,
+} from '../../../helpers';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -48,8 +52,10 @@ function a11yProps(index: number) {
 export function StageFlowContainer(props: {
   localStage: DiscussionStage;
   updateLocalStage: React.Dispatch<React.SetStateAction<DiscussionStage>>;
+  gameIdentifierToStartOfPhaseSteps: AllStartOfPhaseSteps;
 }): JSX.Element {
-  const { localStage, updateLocalStage } = props;
+  const { localStage, updateLocalStage, gameIdentifierToStartOfPhaseSteps } =
+    props;
   const flowsList = localStage.flowsList;
 
   const [value, setValue] = useState(0);
@@ -112,6 +118,7 @@ export function StageFlowContainer(props: {
   });
 
   const customTabPanels = flowsList.map((flow, index) => {
+    const gameIdentifier = getGameIdentifierFromStageTitle(localStage.title);
     return (
       <CustomTabPanel key={flow.clientId} value={value} index={index}>
         <FlowStepsBuilderTab
@@ -121,6 +128,7 @@ export function StageFlowContainer(props: {
           updateStep={updateStep}
           deleteStep={deleteStep}
           setPreviewPromptId={(id: string) => setPreviewPromptId(id)}
+          startOfPhaseSteps={gameIdentifierToStartOfPhaseSteps[gameIdentifier]}
         />
       </CustomTabPanel>
     );

@@ -4,8 +4,15 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
+/*
+This software is Copyright ©️ 2020 The University of Southern California. All Rights Reserved.
+Permission to use, copy, modify, and distribute this software and its documentation for educational, research and non-profit purposes, without fee, and without a written agreement is hereby granted, provided that the above copyright notice and subject to the full license file found in the root of this software deliverable. Permission to make commercial use of this software may be obtained by contacting:  USC Stevens Center for Innovation University of Southern California 1150 S. Olive Street, Suite 2300, Los Angeles, CA 90115, USA Email: accounting@stevens.usc.edu
+
+The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
+*/
 import React from 'react';
 
+import InfoIcon from '@mui/icons-material/Info';
 import {
   CheckBoxInput,
   InputField,
@@ -13,12 +20,20 @@ import {
 } from '../../shared/input-components';
 import {
   GenericLlmRequest,
-  PromptConfiguration,
+  PromptConfiguration as PromptConfigurationType,
   PromptOutputTypes,
   PromptRoles,
 } from '../../../../types';
-import { Button, CircularProgress, IconButton } from '@mui/material';
-import { Delete } from '@mui/icons-material';
+import {
+  Button,
+  CircularProgress,
+  IconButton,
+  Tabs,
+  Tab,
+  Box,
+  Tooltip,
+} from '@mui/material';
+import { Delete, Add } from '@mui/icons-material';
 import { v4 as uuid } from 'uuid';
 import { JumpToAlternateStep } from '../../shared/jump-to-alternate-step';
 import { AiServicesResponseTypes } from '../../../../ai-services/ai-service-types';
@@ -36,6 +51,8 @@ import {
   FlowItem,
   JsonResponseData,
   JsonResponseDataType,
+  ProcessPromptAs,
+  PromptConfiguration,
   PromptStageStep,
 } from '../../types';
 import {
@@ -60,12 +77,17 @@ export function defaultPromptBuilder(): PromptStageStep {
     stepId: uuid(),
     lastStep: false,
     stepType: DiscussionStageStepType.PROMPT,
-    promptText: '',
-    responseFormat: '',
-    outputDataType: PromptOutputTypes.TEXT,
-    jsonResponseData: [],
-    includeChatLogContext: false,
-    customSystemRole: '',
+    prompts: [
+      {
+        processPromptAs: ProcessPromptAs.INDIVIDUALLY,
+        promptText: '',
+        responseFormat: '',
+        outputDataType: PromptOutputTypes.TEXT,
+        jsonResponseData: [] as JsonResponseData[],
+        includeChatLogContext: false,
+        customSystemRole: '',
+      },
+    ],
     jumpToStepId: '',
   };
 }
@@ -74,6 +96,386 @@ export enum ViewingInputType {
   PROMPT_TEXT = 'PROMPT_TEXT',
   RESPONSE_FORMAT = 'RESPONSE_FORMAT',
   NONE = 'NONE',
+}
+
+function getEmptyPromptConfiguration(): Omit<
+  PromptConfiguration,
+  'jsonResponseData'
+> & { jsonResponseData: JsonResponseData[] } {
+  return {
+    processPromptAs: ProcessPromptAs.INDIVIDUALLY,
+    promptText: '',
+    responseFormat: '',
+    outputDataType: PromptOutputTypes.TEXT,
+    jsonResponseData: [] as JsonResponseData[],
+    includeChatLogContext: false,
+    customSystemRole: '',
+  };
+}
+
+interface PromptConfigurationEditorProps {
+  promptIndex: number;
+  promptConfig: PromptStageStep['prompts'][0];
+  updatePromptField: (
+    promptIndex: number,
+    field: string,
+    value: string | boolean | JsonResponseData[]
+  ) => void;
+  deletePrompt: (promptIndex: number) => void;
+  canDelete: boolean;
+  stepId: string;
+}
+
+function PromptConfigurationEditor(
+  props: PromptConfigurationEditorProps
+): JSX.Element {
+  const {
+    promptIndex,
+    promptConfig,
+    updatePromptField,
+    deletePrompt,
+    canDelete,
+  } = props;
+  const { firstAvailableAzureServiceModel } = useWithConfig();
+
+  const [viewRunResults, setViewRunResults] =
+    React.useState<AiServicesResponseTypes>();
+  const [previousRunResults, setPreviousRunResults] = React.useState<
+    AiServicesResponseTypes[]
+  >([]);
+  const [viewingPreviousRuns, setViewingPreviousRuns] =
+    React.useState<boolean>(false);
+  const [executeError, setExecuteError] = React.useState<string>('');
+  const [executeInProgress, setExecuteInProgress] =
+    React.useState<boolean>(false);
+  const [viewingInputType, setViewingInputType] =
+    React.useState<ViewingInputType>(ViewingInputType.PROMPT_TEXT);
+
+  function editJsonResponseData(
+    clientId: string,
+    field: string,
+    value: string | boolean,
+    parentJsonResponseDataIds: string[]
+  ) {
+    const updated = recursiveUpdateNestedJsonResponseData(
+      clientId,
+      field,
+      value,
+      promptConfig.jsonResponseData || [],
+      parentJsonResponseDataIds
+    );
+    updatePromptField(promptIndex, 'jsonResponseData', updated);
+  }
+
+  function addNewJsonResponseData(parentJsonResponseDataIds: string[]) {
+    if (!parentJsonResponseDataIds?.length) {
+      updatePromptField(promptIndex, 'jsonResponseData', [
+        ...(promptConfig.jsonResponseData || []),
+        getEmptyJsonResponseData(),
+      ]);
+    } else {
+      const updated = recursiveAddNewJsonResponseData(
+        parentJsonResponseDataIds,
+        promptConfig.jsonResponseData || []
+      );
+      updatePromptField(promptIndex, 'jsonResponseData', updated);
+    }
+  }
+
+  function deleteJsonResponseData(
+    clientId: string,
+    parentJsonResponseDataIds: string[]
+  ) {
+    if (!parentJsonResponseDataIds?.length) {
+      updatePromptField(
+        promptIndex,
+        'jsonResponseData',
+        (promptConfig.jsonResponseData || []).filter(
+          (jrd) => jrd.clientId !== clientId
+        )
+      );
+    } else {
+      const updated = recursiveDeleteJsonResponseData(
+        clientId,
+        promptConfig.jsonResponseData || [],
+        parentJsonResponseDataIds
+      );
+      updatePromptField(promptIndex, 'jsonResponseData', updated);
+    }
+  }
+
+  async function executePromptTest() {
+    setExecuteInProgress(true);
+    const llmRequest: GenericLlmRequest = {
+      prompts: [],
+      targetAiServiceModel: firstAvailableAzureServiceModel(),
+      outputDataType: promptConfig.outputDataType,
+      responseFormat: promptConfig.responseFormat,
+      systemRole: promptConfig.customSystemRole,
+    };
+    const promptConfiguration: PromptConfigurationType = {
+      promptText: promptConfig.promptText,
+      promptRole: PromptRoles.SYSTEM,
+    };
+    llmRequest.prompts.push(promptConfiguration);
+    if (promptConfig.jsonResponseData?.length) {
+      llmRequest.responseFormat +=
+        recursivelyConvertExpectedDataToAiPromptString(
+          promptConfig.jsonResponseData
+        );
+    }
+    try {
+      const _response = await syncLlmRequest(llmRequest);
+      setViewRunResults(_response);
+      setPreviousRunResults([...previousRunResults, _response]);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (e: any) {
+      setExecuteError(e.message);
+    } finally {
+      setExecuteInProgress(false);
+    }
+  }
+
+  return (
+    <Box sx={{ p: 2 }}>
+      <RowDiv
+        data-cy="run-prompt-buttons"
+        style={{
+          alignSelf: 'center',
+          marginBottom: 10,
+        }}
+      >
+        {!executeInProgress ? (
+          <Button
+            style={{
+              marginRight: 10,
+            }}
+            onClick={() => {
+              executePromptTest();
+            }}
+          >
+            Run
+          </Button>
+        ) : (
+          <CircularProgress
+            style={{
+              marginRight: 10,
+            }}
+          />
+        )}
+        <Button
+          style={{
+            marginRight: 10,
+          }}
+          disabled={executeInProgress || !previousRunResults.length}
+          onClick={() => {
+            setViewingPreviousRuns(true);
+          }}
+        >
+          View Previous Runs
+        </Button>
+        <Button
+          color="error"
+          disabled={!canDelete}
+          onClick={() => {
+            deletePrompt(promptIndex);
+          }}
+        >
+          <Delete /> Delete Prompt
+        </Button>
+        <ViewPreviousRunModal
+          previousRunStepData={viewRunResults?.aiAllStepsData}
+          open={Boolean(viewRunResults)}
+          close={() => {
+            setViewRunResults(undefined);
+          }}
+        />
+        <ViewPreviousRunsModal
+          previousRuns={previousRunResults}
+          open={viewingPreviousRuns}
+          close={() => {
+            setViewingPreviousRuns(false);
+          }}
+          setRunToView={(run) => {
+            setViewRunResults(run);
+          }}
+        />
+        <TextDialog
+          title="Error"
+          body={executeError}
+          open={Boolean(executeError)}
+          close={() => {
+            setExecuteError('');
+          }}
+        />
+      </RowDiv>
+
+      <RowDiv>
+        <SelectInputField
+          label="Process Prompt As"
+          value={promptConfig.processPromptAs}
+          options={[...Object.values(ProcessPromptAs)]}
+          onChange={(e) => {
+            updatePromptField(
+              promptIndex,
+              'processPromptAs',
+              e as ProcessPromptAs
+            );
+          }}
+        />
+        <Tooltip
+          title={`GROUP: executes a single prompt that aggregates data from all users and updates all users data with the same results.
+          
+          INDIVIDUALLY: executes a separate prompt for each user, analyzing and updating their individual data with the results.`}
+        >
+          <InfoIcon />
+        </Tooltip>
+      </RowDiv>
+      <InputField
+        label="Prompt Text"
+        value={promptConfig.promptText}
+        onFocus={() => {
+          setViewingInputType(ViewingInputType.PROMPT_TEXT);
+        }}
+        maxRows={viewingInputType === ViewingInputType.PROMPT_TEXT ? 20 : 3}
+        onChange={(e) => {
+          updatePromptField(promptIndex, 'promptText', e);
+        }}
+        width="100%"
+      />
+      <InputField
+        label="Response Format"
+        value={promptConfig.responseFormat}
+        onFocus={() => {
+          setViewingInputType(ViewingInputType.RESPONSE_FORMAT);
+        }}
+        maxRows={viewingInputType === ViewingInputType.RESPONSE_FORMAT ? 20 : 3}
+        onChange={(e) => {
+          updatePromptField(promptIndex, 'responseFormat', e);
+        }}
+        width="100%"
+      />
+
+      <SelectInputField
+        label="Output Data Type"
+        value={promptConfig.outputDataType}
+        options={[...Object.values(PromptOutputTypes)]}
+        onChange={(e) => {
+          updatePromptField(promptIndex, 'outputDataType', e);
+        }}
+      />
+
+      {promptConfig.outputDataType === PromptOutputTypes.JSON && (
+        <JsonResponseDataUpdater
+          jsonResponseData={promptConfig.jsonResponseData || []}
+          editDataField={editJsonResponseData}
+          addNewJsonResponseData={addNewJsonResponseData}
+          deleteJsonResponseData={deleteJsonResponseData}
+          parentJsonResponseDataIds={[]}
+        />
+      )}
+
+      <CheckBoxInput
+        label="Include Chat History"
+        value={promptConfig.includeChatLogContext}
+        onChange={(e) => {
+          updatePromptField(promptIndex, 'includeChatLogContext', e);
+        }}
+      />
+
+      <InputField
+        label="Custom System Role"
+        value={promptConfig.customSystemRole}
+        onChange={(e) => {
+          updatePromptField(promptIndex, 'customSystemRole', e);
+        }}
+        width="100%"
+      />
+    </Box>
+  );
+}
+
+function recursiveUpdateNestedJsonResponseData(
+  clientId: string,
+  field: string,
+  value: string | boolean,
+  baseJsonResponseDatas: JsonResponseData[],
+  parentJsonResponseDataIds: string[]
+): JsonResponseData[] {
+  if (!parentJsonResponseDataIds?.length) {
+    return baseJsonResponseDatas.map((jrd) => {
+      if (jrd.clientId === clientId) {
+        return {
+          ...jrd,
+          [field]: value,
+        };
+      }
+      return jrd;
+    });
+  } else {
+    return baseJsonResponseDatas.map((jrd) => {
+      if (jrd.clientId === parentJsonResponseDataIds[0]) {
+        return {
+          ...jrd,
+          subData: recursiveUpdateNestedJsonResponseData(
+            clientId,
+            field,
+            value,
+            jrd.subData || [],
+            parentJsonResponseDataIds.slice(1)
+          ),
+        };
+      }
+      return jrd;
+    });
+  }
+}
+
+function recursiveAddNewJsonResponseData(
+  parentJsonResponseDataIds: string[],
+  baseJsonResponseDatas: JsonResponseData[]
+): JsonResponseData[] {
+  if (!parentJsonResponseDataIds?.length) {
+    return [...baseJsonResponseDatas, getEmptyJsonResponseData()];
+  } else {
+    return baseJsonResponseDatas.map((jrd) => {
+      if (jrd.clientId === parentJsonResponseDataIds[0]) {
+        return {
+          ...jrd,
+          subData: recursiveAddNewJsonResponseData(
+            parentJsonResponseDataIds.slice(1),
+            jrd.subData || []
+          ),
+        };
+      }
+      return jrd;
+    });
+  }
+}
+
+function recursiveDeleteJsonResponseData(
+  clientId: string,
+  baseJsonResponseDatas: JsonResponseData[],
+  parentJsonResponseDataIds: string[]
+): JsonResponseData[] {
+  // for all json response data, if the clientId matches, remove it
+  if (!parentJsonResponseDataIds?.length) {
+    return baseJsonResponseDatas.filter((jrd) => jrd.clientId !== clientId);
+  } else {
+    return baseJsonResponseDatas.map((jrd) => {
+      if (jrd.clientId === parentJsonResponseDataIds[0]) {
+        return {
+          ...jrd,
+          subData: recursiveDeleteJsonResponseData(
+            clientId,
+            jrd.subData || [],
+            parentJsonResponseDataIds.slice(1)
+          ),
+        };
+      }
+      return jrd;
+    });
+  }
 }
 
 export function PromptStepBuilder(props: {
@@ -88,38 +490,15 @@ export function PromptStepBuilder(props: {
   width?: string;
   height?: string;
 }): JSX.Element {
-  const {
-    step,
-    stepIndex,
-    updateLocalStage,
-    previewed,
-    stopPreview,
-    startPreview,
-    deleteStep,
-    flowsList,
-  } = props;
-  const { firstAvailableAzureServiceModel } = useWithConfig();
+  const { step, stepIndex, updateLocalStage, deleteStep, flowsList } = props;
   const currentFLow = flowsList.find((f) => {
     return f.steps.find((s) => s.stepId === step.stepId);
   });
 
-  const [viewRunResults, setViewRunResults] =
-    React.useState<AiServicesResponseTypes>();
-  const [previousRunResults, setPreviousRunResults] = React.useState<
-    AiServicesResponseTypes[]
-  >([]);
-  const [viewingPreviousRuns, setViewingPreviousRuns] =
-    React.useState<boolean>(false);
-  const [executeError, setExecuteError] = React.useState<string>('');
-  const [executeInProgress, setExecuteInProgress] =
-    React.useState<boolean>(false);
   const [collapsed, setCollapsed] = React.useState<boolean>(false);
-  const [viewingInputType, setViewingInputType] =
-    React.useState<ViewingInputType>(ViewingInputType.PROMPT_TEXT);
-  function updateField(
-    field: string,
-    value: string | boolean | JsonResponseData[]
-  ) {
+  const [selectedTab, setSelectedTab] = React.useState<number>(0);
+
+  function updateStepField(field: string, value: string | boolean) {
     updateLocalStage((prevValue) => {
       return {
         ...prevValue,
@@ -141,94 +520,10 @@ export function PromptStepBuilder(props: {
     });
   }
 
-  function recursiveUpdateNestedJsonResponseData(
-    clientId: string,
+  function updatePromptField(
+    promptIndex: number,
     field: string,
-    value: string | boolean,
-    baseJsonResponseDatas: JsonResponseData[],
-    parentJsonResponseDataIds: string[]
-  ): JsonResponseData[] {
-    if (!parentJsonResponseDataIds?.length) {
-      return baseJsonResponseDatas.map((jrd) => {
-        if (jrd.clientId === clientId) {
-          return {
-            ...jrd,
-            [field]: value,
-          };
-        }
-        return jrd;
-      });
-    } else {
-      return baseJsonResponseDatas.map((jrd) => {
-        if (jrd.clientId === parentJsonResponseDataIds[0]) {
-          return {
-            ...jrd,
-            subData: recursiveUpdateNestedJsonResponseData(
-              clientId,
-              field,
-              value,
-              jrd.subData || [],
-              parentJsonResponseDataIds.slice(1)
-            ),
-          };
-        }
-        return jrd;
-      });
-    }
-  }
-
-  function recursiveAddNewJsonResponseData(
-    parentJsonResponseDataIds: string[],
-    baseJsonResponseDatas: JsonResponseData[]
-  ): JsonResponseData[] {
-    if (!parentJsonResponseDataIds?.length) {
-      return [...baseJsonResponseDatas, getEmptyJsonResponseData()];
-    } else {
-      return baseJsonResponseDatas.map((jrd) => {
-        if (jrd.clientId === parentJsonResponseDataIds[0]) {
-          return {
-            ...jrd,
-            subData: recursiveAddNewJsonResponseData(
-              parentJsonResponseDataIds.slice(1),
-              jrd.subData || []
-            ),
-          };
-        }
-        return jrd;
-      });
-    }
-  }
-
-  function recursiveDeleteJsonResponseData(
-    clientId: string,
-    baseJsonResponseDatas: JsonResponseData[],
-    parentJsonResponseDataIds: string[]
-  ): JsonResponseData[] {
-    // for all json response data, if the clientId matches, remove it
-    if (!parentJsonResponseDataIds?.length) {
-      return baseJsonResponseDatas.filter((jrd) => jrd.clientId !== clientId);
-    } else {
-      return baseJsonResponseDatas.map((jrd) => {
-        if (jrd.clientId === parentJsonResponseDataIds[0]) {
-          return {
-            ...jrd,
-            subData: recursiveDeleteJsonResponseData(
-              clientId,
-              jrd.subData || [],
-              parentJsonResponseDataIds.slice(1)
-            ),
-          };
-        }
-        return jrd;
-      });
-    }
-  }
-
-  function editJsonResponseData(
-    clientId: string,
-    field: string,
-    value: string | boolean,
-    parentJsonResponseDataIds: string[]
+    value: string | boolean | JsonResponseData[]
   ) {
     updateLocalStage((prevValue) => {
       return {
@@ -238,42 +533,15 @@ export function PromptStepBuilder(props: {
             ...f,
             steps: f.steps.map((s) => {
               if (s.stepId === step.stepId) {
-                const responseData =
-                  (s as PromptStageStep).jsonResponseData || [];
-                // if no parentJsonResponseData is provided, then just update the steps base json response data (look for or add to list)
-                if (!parentJsonResponseDataIds?.length) {
-                  const index = responseData.findIndex(
-                    (jrd) => jrd.clientId === clientId
-                  );
-                  if (index >= 0) {
-                    return {
-                      ...s,
-                      jsonResponseData: responseData.map((jrd) => {
-                        if (jrd.clientId === clientId) {
-                          return {
-                            ...jrd,
-                            [field]: value,
-                          };
-                        }
-                        return jrd;
-                      }),
-                    };
-                  } else {
-                    throw new Error('JsonResponseData not found');
-                  }
-                } else {
-                  // if there is a parentJsonResponseData, recursives update fields by looking for objects, and looking into their subData to update
-                  return {
-                    ...s,
-                    jsonResponseData: recursiveUpdateNestedJsonResponseData(
-                      clientId,
-                      field,
-                      value,
-                      responseData,
-                      parentJsonResponseDataIds
-                    ),
-                  };
-                }
+                const prompts = [...(s as PromptStageStep).prompts];
+                prompts[promptIndex] = {
+                  ...prompts[promptIndex],
+                  [field]: value,
+                };
+                return {
+                  ...s,
+                  prompts,
+                };
               }
               return s;
             }),
@@ -283,7 +551,7 @@ export function PromptStepBuilder(props: {
     });
   }
 
-  function addNewJsonResponseData(parentJsonResponseDataIds: string[]) {
+  function addNewPrompt() {
     updateLocalStage((prevValue) => {
       return {
         ...prevValue,
@@ -292,23 +560,13 @@ export function PromptStepBuilder(props: {
             ...f,
             steps: f.steps.map((s) => {
               if (s.stepId === step.stepId) {
-                if (!parentJsonResponseDataIds?.length) {
-                  return {
-                    ...s,
-                    jsonResponseData: [
-                      ...((s as PromptStageStep).jsonResponseData || []),
-                      getEmptyJsonResponseData(),
-                    ],
-                  };
-                } else {
-                  return {
-                    ...s,
-                    jsonResponseData: recursiveAddNewJsonResponseData(
-                      parentJsonResponseDataIds,
-                      (s as PromptStageStep).jsonResponseData || []
-                    ),
-                  };
-                }
+                return {
+                  ...s,
+                  prompts: [
+                    ...(s as PromptStageStep).prompts,
+                    getEmptyPromptConfiguration(),
+                  ],
+                };
               }
               return s;
             }),
@@ -316,75 +574,38 @@ export function PromptStepBuilder(props: {
         }),
       };
     });
+    // Switch to the new tab
+    setSelectedTab(step.prompts.length);
   }
 
-  function deleteJsonResponseData(
-    clientId: string,
-    parentJsonResponseDataIds: string[]
-  ) {
-    updateLocalStage((prevValue) => {
-      return {
-        ...prevValue,
-        flowsList: prevValue.flowsList.map((f) => {
-          return {
-            ...f,
-            steps: f.steps.map((s) => {
-              if (s.stepId === step.stepId) {
-                const responseData =
-                  (s as PromptStageStep).jsonResponseData || [];
-                if (!parentJsonResponseDataIds?.length) {
-                  return {
-                    ...s,
-                    jsonResponseData: responseData.filter(
-                      (jrd) => jrd.clientId !== clientId
-                    ),
-                  };
-                } else {
-                  return {
-                    ...s,
-                    jsonResponseData: recursiveDeleteJsonResponseData(
-                      clientId,
-                      responseData,
-                      parentJsonResponseDataIds
-                    ),
-                  };
-                }
-              }
-              return s;
-            }),
-          };
-        }),
-      };
-    });
-  }
-
-  async function executePromptTest() {
-    setExecuteInProgress(true);
-    const llmRequest: GenericLlmRequest = {
-      prompts: [],
-      targetAiServiceModel: firstAvailableAzureServiceModel(),
-      outputDataType: step.outputDataType,
-      responseFormat: step.responseFormat,
-      systemRole: step.customSystemRole,
-    };
-    const promptConfig: PromptConfiguration = {
-      promptText: step.promptText,
-      promptRole: PromptRoles.SYSTEM,
-    };
-    llmRequest.prompts.push(promptConfig);
-    if (step.jsonResponseData?.length) {
-      llmRequest.responseFormat +=
-        recursivelyConvertExpectedDataToAiPromptString(step.jsonResponseData);
+  function deletePrompt(promptIndex: number) {
+    if (step.prompts.length <= 1) {
+      return; // Don't delete if only one prompt remains
     }
-    try {
-      const _response = await syncLlmRequest(llmRequest);
-      setViewRunResults(_response);
-      setPreviousRunResults([...previousRunResults, _response]);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (e: any) {
-      setExecuteError(e.message);
-    } finally {
-      setExecuteInProgress(false);
+    updateLocalStage((prevValue) => {
+      return {
+        ...prevValue,
+        flowsList: prevValue.flowsList.map((f) => {
+          return {
+            ...f,
+            steps: f.steps.map((s) => {
+              if (s.stepId === step.stepId) {
+                return {
+                  ...s,
+                  prompts: (s as PromptStageStep).prompts.filter(
+                    (_, index) => index !== promptIndex
+                  ),
+                };
+              }
+              return s;
+            }),
+          };
+        }),
+      };
+    });
+    // Adjust selected tab if necessary
+    if (selectedTab >= step.prompts.length - 1) {
+      setSelectedTab(Math.max(0, step.prompts.length - 2));
     }
   }
 
@@ -397,7 +618,7 @@ export function PromptStepBuilder(props: {
         position: 'relative',
         flexDirection: 'column',
         padding: 10,
-        border: previewed ? '3px solid black' : '1px solid black',
+        border: '1px solid black',
       }}
     >
       <TopLeftText>{`Step ${stepIndex + 1}`}</TopLeftText>
@@ -412,88 +633,6 @@ export function PromptStepBuilder(props: {
       >
         {collapsed ? <ExpandMoreIcon /> : <ExpandLessIcon />}
       </IconButton>
-      <RowDiv
-        data-cy="run-prompt-buttons"
-        style={{
-          width: 'fit-content',
-          alignSelf: 'center',
-        }}
-      >
-        {previewed && (
-          <>
-            {!executeInProgress ? (
-              <Button
-                style={{
-                  marginRight: 10,
-                }}
-                onClick={() => {
-                  executePromptTest();
-                }}
-              >
-                Run
-              </Button>
-            ) : (
-              <CircularProgress
-                style={{
-                  marginRight: 10,
-                }}
-              />
-            )}
-            <Button
-              style={{
-                marginRight: 10,
-              }}
-              disabled={executeInProgress || !previousRunResults.length}
-              onClick={() => {
-                setViewingPreviousRuns(true);
-              }}
-            >
-              View Previous Runs
-            </Button>
-            <ViewPreviousRunModal
-              previousRunStepData={viewRunResults?.aiAllStepsData}
-              open={Boolean(viewRunResults)}
-              close={() => {
-                setViewRunResults(undefined);
-              }}
-            />
-            <ViewPreviousRunsModal
-              previousRuns={previousRunResults}
-              open={viewingPreviousRuns}
-              close={() => {
-                setViewingPreviousRuns(false);
-              }}
-              setRunToView={(run) => {
-                setViewRunResults(run);
-              }}
-            />
-            <TextDialog
-              title="Error"
-              body={executeError}
-              open={Boolean(executeError)}
-              close={() => {
-                setExecuteError('');
-              }}
-            />
-          </>
-        )}
-        <Button
-          variant={previewed ? 'contained' : 'outlined'}
-          style={{
-            width: 'fit-content',
-            alignSelf: 'center',
-          }}
-          onClick={() => {
-            if (previewed) {
-              stopPreview();
-            } else {
-              startPreview();
-            }
-          }}
-        >
-          {previewed ? 'Return' : 'Preview'}
-        </Button>
-      </RowDiv>
       <IconButton
         style={{
           position: 'absolute',
@@ -508,84 +647,64 @@ export function PromptStepBuilder(props: {
       </IconButton>
       <h4 style={{ alignSelf: 'center' }}>Prompt</h4>
       <Collapse in={!collapsed}>
-        <InputField
-          label="Prompt Text"
-          value={step.promptText}
-          onFocus={() => {
-            setViewingInputType(ViewingInputType.PROMPT_TEXT);
-          }}
-          maxRows={viewingInputType === ViewingInputType.PROMPT_TEXT ? 20 : 3}
-          onChange={(e) => {
-            updateField('promptText', e);
-          }}
-          width="100%"
-        />
-        <InputField
-          label="Response Format"
-          value={step.responseFormat}
-          onFocus={() => {
-            setViewingInputType(ViewingInputType.RESPONSE_FORMAT);
-          }}
-          maxRows={
-            viewingInputType === ViewingInputType.RESPONSE_FORMAT ? 20 : 3
-          }
-          onChange={(e) => {
-            updateField('responseFormat', e);
-          }}
-          width="100%"
-        />
-
-        <SelectInputField
-          label="Output Data Type"
-          value={step.outputDataType}
-          options={[...Object.values(PromptOutputTypes)]}
-          onChange={(e) => {
-            updateField('outputDataType', e);
-          }}
-        />
-
-        {step.outputDataType === PromptOutputTypes.JSON && (
-          <JsonResponseDataUpdater
-            jsonResponseData={step.jsonResponseData || []}
-            editDataField={editJsonResponseData}
-            addNewJsonResponseData={addNewJsonResponseData}
-            deleteJsonResponseData={deleteJsonResponseData}
-            parentJsonResponseDataIds={[]}
+        {/* Global step fields */}
+        <Box sx={{ mb: 2, p: 2, border: '1px solid #ccc', borderRadius: 1 }}>
+          <h5>Step Settings</h5>
+          <CheckBoxInput
+            label="Is final step (discussion finished)?"
+            value={step.lastStep}
+            onChange={(e) => {
+              updateStepField('lastStep', e);
+            }}
           />
-        )}
 
-        <CheckBoxInput
-          label="Include Chat History"
-          value={step.includeChatLogContext}
-          onChange={(e) => {
-            updateField('includeChatLogContext', e);
-          }}
-        />
+          <JumpToAlternateStep
+            step={step}
+            flowsList={props.flowsList}
+            onNewStepSelected={(stepId) => {
+              updateStepField('jumpToStepId', stepId);
+            }}
+          />
+        </Box>
 
-        <InputField
-          label="Custom System Role"
-          value={step.customSystemRole}
-          onChange={(e) => {
-            updateField('customSystemRole', e);
+        {/* Prompt configurations tabs */}
+        <Box
+          sx={{
+            borderBottom: 1,
+            borderColor: 'divider',
+            display: 'flex',
+            alignItems: 'center',
           }}
-          width="100%"
-        />
+        >
+          <Tabs
+            value={selectedTab}
+            onChange={(_, newValue) => setSelectedTab(newValue)}
+            variant="scrollable"
+            scrollButtons="auto"
+          >
+            {step.prompts.map((_, index) => (
+              <Tab key={index} label={`Prompt ${index + 1}`} />
+            ))}
+          </Tabs>
+          <IconButton color="primary" onClick={addNewPrompt} sx={{ ml: 2 }}>
+            <Add />
+          </IconButton>
+        </Box>
 
-        <CheckBoxInput
-          label="Is final step (discussion finished)?"
-          value={step.lastStep}
-          onChange={(e) => {
-            updateField('lastStep', e);
-          }}
-        />
-
-        <JumpToAlternateStep
-          step={step}
-          flowsList={props.flowsList}
-          onNewStepSelected={(stepId) => {
-            updateField('jumpToStepId', stepId);
-          }}
-        />
+        {step.prompts.map((promptConfig, index) => (
+          <Box key={index} role="tabpanel" hidden={selectedTab !== index}>
+            {selectedTab === index && (
+              <PromptConfigurationEditor
+                promptIndex={index}
+                promptConfig={promptConfig}
+                updatePromptField={updatePromptField}
+                deletePrompt={deletePrompt}
+                canDelete={step.prompts.length > 1}
+                stepId={step.stepId}
+              />
+            )}
+          </Box>
+        ))}
       </Collapse>
     </RoundedBorderDiv>
   );

@@ -36,7 +36,7 @@ export function useWithPollActiveRoom() {
     const intervalId = setInterval(() => {
       pingRef.current(roomId);
       fetchRef.current(roomId);
-    }, 2000);
+    }, 1000);
 
     // Cleanup: clear interval when roomId changes or component unmounts
     return () => {

@@ -10,8 +10,8 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { Stack, Typography } from '@mui/material';
+import React, { useEffect, useState, useRef } from 'react';
+import { Stack, Typography, Button, CircularProgress } from '@mui/material';
 import { Player } from '../../store/slices/player/types';
 import {
   CurGameState,
@@ -19,6 +19,7 @@ import {
 } from '../discussion-stage-builder/types';
 import { RowDiv } from '../../styled-components';
 import AvatarSprite from '../avatar-sprite';
+import { Room } from '../../store/slices/game/types';
 
 enum PlayerColors {
   Blue = 'info.main',
@@ -36,6 +37,8 @@ interface WaitingForPlayersProps {
   requestUserInputPhaseData: CurGameState;
   roomIsProcessing: boolean;
   isInRequestUserInputState: boolean;
+  reportPlayerAway: (userIdToReportAway: string) => Promise<Room>;
+  requestInputStartTime: number | null; // Timestamp when isInRequestUserInputState became true
 }
 
 export default function WaitingForPlayers(
@@ -48,7 +51,73 @@ export default function WaitingForPlayers(
     requestUserInputPhaseData,
     roomIsProcessing,
     isInRequestUserInputState,
+    reportPlayerAway,
+    requestInputStartTime,
   } = props;
+
+  const [currentTime, setCurrentTime] = useState(Date.now());
+  const [reportingPlayerId, setReportingPlayerId] = useState<string | null>(
+    null
+  );
+  const [recentlyReportedPlayers, setRecentlyReportedPlayers] = useState<
+    Set<string>
+  >(new Set());
+  const reportTimeoutRefs = useRef<Map<string, NodeJS.Timeout>>(new Map());
+
+  // Update current time every second to check if 60 seconds have passed
+  useEffect(() => {
+    if (!requestInputStartTime || !isInRequestUserInputState) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [requestInputStartTime, isInRequestUserInputState]);
+
+  const has60SecondsPassed =
+    requestInputStartTime !== null &&
+    currentTime - requestInputStartTime >= 60000;
+
+  const handleReportAway = async (playerId: string) => {
+    setReportingPlayerId(playerId);
+    try {
+      await reportPlayerAway(playerId);
+
+      // Show "Reported" for 5 seconds
+      setReportingPlayerId(null);
+      setRecentlyReportedPlayers((prev) => new Set(prev).add(playerId));
+
+      // Clear any existing timeout for this player
+      if (reportTimeoutRefs.current.has(playerId)) {
+        clearTimeout(reportTimeoutRefs.current.get(playerId)!);
+      }
+
+      // Set timeout to remove from recently reported after 5 seconds
+      const timeout = setTimeout(() => {
+        setRecentlyReportedPlayers((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(playerId);
+          return newSet;
+        });
+        reportTimeoutRefs.current.delete(playerId);
+      }, 5000);
+
+      reportTimeoutRefs.current.set(playerId, timeout);
+    } catch (error) {
+      console.error('Failed to report player away:', error);
+      setReportingPlayerId(null);
+    }
+  };
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      reportTimeoutRefs.current.forEach((timeout) => clearTimeout(timeout));
+    };
+  }, []);
 
   if (
     !playersBeingWaitedFor ||
@@ -65,6 +134,19 @@ export default function WaitingForPlayers(
     RequireInputType.ALL_USER_RESPONSES_REQUIRED_IN_ORDER;
   const shouldShowUpNext =
     isOrderedResponse && playersBeingWaitedFor.length > 1;
+
+  const shouldShowReportButton = (
+    playerIndex: number,
+    playerId: string
+  ): boolean => {
+    if (currentPlayerId === playerId) {
+      return false;
+    }
+    if (isOrderedResponse) {
+      return playerIndex === 0 && has60SecondsPassed;
+    }
+    return has60SecondsPassed;
+  };
 
   return (
     <Stack
@@ -117,6 +199,30 @@ export default function WaitingForPlayers(
               >
                 (You)
               </Typography>
+            ) : shouldShowReportButton(i, p._id) ? (
+              <Button
+                variant="text"
+                size="small"
+                onClick={() => handleReportAway(p._id)}
+                disabled={
+                  reportingPlayerId === p._id ||
+                  recentlyReportedPlayers.has(p._id)
+                }
+                sx={{
+                  minWidth: '100px',
+                  fontSize: '0.75rem',
+                  textTransform: 'none',
+                  width: 'fit-content',
+                }}
+              >
+                {reportingPlayerId === p._id ? (
+                  <CircularProgress size={16} sx={{ color: 'black' }} />
+                ) : recentlyReportedPlayers.has(p._id) ? (
+                  'Reported'
+                ) : (
+                  'Report Away'
+                )}
+              </Button>
             ) : undefined}
           </RowDiv>
           {i === 0 && shouldShowUpNext && (

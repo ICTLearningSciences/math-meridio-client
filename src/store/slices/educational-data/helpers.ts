@@ -59,3 +59,7 @@ export function removeGameRoom(
 ) {
   state.rooms = state.rooms.filter((r) => r._id !== removedRoom._id);
 }
+
+export function getCurPhaseTitleFromRoom(room: Room): string {
+  return room.gameData.phaseProgression.curPhaseTitle;
+}

@@ -23,7 +23,7 @@ export class AvatarCreator extends GameScene {
   preload() {
     super.preload();
     //  Load the assets for the game - Replace with your own assets
-    this.load.setPath('assets');
+    this.load.setPath('/assets');
     this.load.image('search', 'wordui/icons/icons_256/looking_glass_2.png');
   }
 

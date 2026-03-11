@@ -7,7 +7,12 @@ The full terms of this copyright and license should always be found in the root 
 
 import { ChatMessage } from './store/slices/game/types';
 import axios from 'axios';
-import { IStage } from './components/discussion-stage-builder/types';
+import {
+  DiscussionStageStep,
+  DiscussionStageStepType,
+  IStage,
+  StartOfPhaseStep,
+} from './components/discussion-stage-builder/types';
 import { DiscussionStage } from './components/discussion-stage-builder/types';
 import { isDiscussionStage } from './components/discussion-stage-builder/types';
 import { Avatar } from './store/slices/player/types';
@@ -19,6 +24,62 @@ import {
 import { SolutionGameStateData } from './types';
 
 export const SIMULTAION_VIEWED_KEY = 'viewed-simulation';
+
+export function calculateMedian(values: number[]): number {
+  if (values.length === 0) {
+    throw new Error('Input array is empty');
+  }
+  // Sorting values, preventing original array
+  // from being mutated.
+  values = [...values].sort((a, b) => a - b);
+  const half = Math.floor(values.length / 2);
+  return values.length % 2
+    ? values[half]
+    : (values[half - 1] + values[half]) / 2;
+}
+
+export function calculateSum(values: number[]): number {
+  const sum = values.reduce((a, b) => a + b, 0);
+  return sum;
+}
+
+export function calculateAverage(values: number[]): number {
+  const avg = calculateSum(values) / values.length || 0;
+  return avg;
+}
+
+export function calculatePercentSkillsMet(
+  mathStandardsCompleted: Record<string, boolean>
+): number {
+  if (Object.values(mathStandardsCompleted).length === 0) return 0;
+  let numMet = 0;
+  let numTotal = 0;
+  for (const isDone of Object.values(mathStandardsCompleted)) {
+    if (isDone) numMet++;
+    numTotal++;
+  }
+  return (numMet / numTotal) * 100;
+}
+
+export function getPercentString(num: number): string {
+  if (Number.isNaN(num)) return '0%';
+  return `${Math.round(num * 100)}%`;
+}
+
+export function getLastActivityString(date: Date): string {
+  const currentDate = new Date().getTime();
+  const lastActivityAt = new Date(date).getTime();
+  const minsSince = Math.floor(
+    Math.abs(currentDate - lastActivityAt) / (1000 * 60)
+  );
+  const activityStr =
+    minsSince < 60
+      ? `${minsSince} MINS AGO`
+      : minsSince < 60 * 24
+      ? `${Math.floor(minsSince / 60)} HOURS AGO`
+      : `${Math.floor(minsSince / (60 * 24))} DAYS AGO`;
+  return activityStr;
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function equals<T>(val1: T, val2: T): boolean {
@@ -163,4 +224,41 @@ export function copyAndSet<T>(array: T[], idx: number, value: T): T[] {
     return [...array, value];
   }
   return [...array.slice(0, idx), value, ...array.slice(idx + 1)];
+}
+
+export type GameIdentifier =
+  | 'Basketball'
+  | 'Concert Ticket Sales'
+  | 'Test Base';
+export type AllStartOfPhaseSteps = Record<GameIdentifier, StartOfPhaseStep[]>;
+
+export function getAllStartOfPhaseSteps(
+  stages: DiscussionStage[]
+): AllStartOfPhaseSteps {
+  const startOfPhaseSteps: AllStartOfPhaseSteps = stages.reduce(
+    (acc, stage) => {
+      const thisStagesSteps: DiscussionStageStep[] = stage.flowsList.flatMap(
+        (flow) => flow.steps
+      );
+      const targetGameIdentifier = getGameIdentifierFromStageTitle(stage.title);
+      if (!acc[targetGameIdentifier]) {
+        acc[targetGameIdentifier] = [];
+      }
+      const thisStagesStartOfPhaseSteps = thisStagesSteps.filter(
+        (step) => step.stepType === DiscussionStageStepType.START_OF_PHASE
+      ) as StartOfPhaseStep[];
+      acc[targetGameIdentifier].push(...thisStagesStartOfPhaseSteps);
+      return acc;
+    },
+    {} as AllStartOfPhaseSteps
+  );
+  return startOfPhaseSteps;
+}
+
+export function getGameIdentifierFromStageTitle(title: string): GameIdentifier {
+  return title.includes('Basketball')
+    ? 'Basketball'
+    : title.includes('Concert')
+    ? 'Concert Ticket Sales'
+    : 'Test Base';
 }

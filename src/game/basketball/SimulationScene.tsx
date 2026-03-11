@@ -52,7 +52,7 @@ export class SimulationScene extends GameScene {
   preload() {
     super.preload();
     //  Load the assets for the game - Replace with your own assets
-    this.load.setPath('assets/basketball');
+    this.load.setPath('/assets/basketball');
     this.load.image('court', 'court_side.jpg');
     this.load.image('hoop', 'court_hoop.jpg');
     this.load.image('basketball', 'basketball.png');

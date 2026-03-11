@@ -7,7 +7,7 @@ The full terms of this copyright and license should always be found in the root 
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import * as api from './api';
 import * as mainApi from '../../../api';
-import { LoadStatus, LoadingState } from '../../../types';
+import { GamePhaseReflections, LoadStatus, LoadingState } from '../../../types';
 import { ClassMembership, Classroom } from './types';
 import { Player } from '../player/types';
 import { GameStateData, Room } from '../game/types';
@@ -29,8 +29,9 @@ export interface EducationalDataStateData {
   rooms: Room[];
   students: Player[];
   classMemberships: ClassMembership[];
+  phaseReflections: GamePhaseReflections[];
   hydrationLoadStatus: LoadingState;
-  gamesList: StaticGame[];
+  gameList: StaticGame[];
 }
 
 const initialState: EducationalDataStateData = {
@@ -38,8 +39,9 @@ const initialState: EducationalDataStateData = {
   rooms: [],
   students: [],
   classMemberships: [],
+  phaseReflections: [],
   hydrationLoadStatus: { status: LoadStatus.NONE },
-  gamesList: [],
+  gameList: [],
 };
 
 /** Actions */
@@ -72,6 +74,13 @@ export const createNewClassInviteCode = createAsyncThunk(
       args.validUntil,
       args.numUses
     );
+  }
+);
+
+export const createClassMembership = createAsyncThunk(
+  'educationalData/createClassMembership',
+  async (args: { classId: string; userEmail: string }) => {
+    return await api.createClassMembership(args.classId, args.userEmail);
   }
 );
 
@@ -114,6 +123,24 @@ export const unblockStudentFromClass = createAsyncThunk(
   'educationalData/unblockStudentFromClass',
   async (args: { studentId: string; classId: string }) => {
     return await api.unblockStudentFromClass(args.studentId, args.classId);
+  }
+);
+
+export const assignStudentToGroup = createAsyncThunk(
+  'educationalData/assignStudentToGroup',
+  async (args: { studentId: string; classId: string; groupId: number }) => {
+    return await api.assignStudentToGroup(
+      args.studentId,
+      args.classId,
+      args.groupId
+    );
+  }
+);
+
+export const assignClassGroupsAndStart = createAsyncThunk(
+  'educationalData/assignClassGroupsAndStart',
+  async (args: { classId: string; groups: ClassMembership[] }) => {
+    return await api.assignClassGroupsAndStart(args.classId, args.groups);
   }
 );
 
@@ -217,12 +244,44 @@ export const sendMessageToGameRoom = createAsyncThunk(
   }
 );
 
+export const setPlayerPauseStatus = createAsyncThunk(
+  'educationalData/setPlayerPauseStatus',
+  async (args: { roomId: string; playerId: string; isPaused: boolean }) => {
+    return await gameRoomApi.setPlayerPauseStatus(
+      args.roomId,
+      args.playerId,
+      args.isPaused
+    );
+  }
+);
+
+export const shareClassroomWithInstructor = createAsyncThunk(
+  'educationalData/shareClassroomWithInstructor',
+  async (args: { classId: string; instructorEmail: string }) => {
+    return await api.shareClassroomWithInstructor(
+      args.classId,
+      args.instructorEmail
+    );
+  }
+);
+
+export const assignGameToGameRoom = createAsyncThunk(
+  'educationalData/assignGameToGameRoom',
+  async (args: { roomId: string; gameId: string }) => {
+    return await api.assignGameToGameRoom(args.roomId, args.gameId);
+  }
+);
+
 export const educationalDataSlice = createSlice({
   name: 'educationalData',
   initialState,
   reducers: {},
   extraReducers: (builder) => {
     builder
+
+      .addCase(setPlayerPauseStatus.fulfilled, (state, action) => {
+        addOrUpdateGameRoom(state, action.payload);
+      })
 
       .addCase(updatePlayerGameStateData.fulfilled, (state, action) => {
         addOrUpdateGameRoom(state, action.payload);
@@ -256,6 +315,10 @@ export const educationalDataSlice = createSlice({
         addOrUpdateGameRoom(state, action.payload);
       })
 
+      .addCase(createClassMembership.fulfilled, (state, action) => {
+        addOrUpdateClassMembership(state, action.payload);
+      })
+
       .addCase(fetchInstructorDataHydration.pending, (state) => {
         state.hydrationLoadStatus = {
           status: LoadStatus.IN_PROGRESS,
@@ -273,14 +336,16 @@ export const educationalDataSlice = createSlice({
         state.rooms = [];
         state.students = [];
         state.classMemberships = [];
-        state.gamesList = [];
+        state.phaseReflections = [];
+        state.gameList = [];
       })
       .addCase(fetchInstructorDataHydration.fulfilled, (state, action) => {
         state.classes = action.payload.classes;
         state.rooms = action.payload.rooms;
         state.students = action.payload.students;
         state.classMemberships = action.payload.classMemberships;
-        state.gamesList = action.payload.gamesList;
+        state.phaseReflections = action.payload.phaseReflections;
+        state.gameList = action.payload.gameList;
         state.hydrationLoadStatus = {
           status: LoadStatus.DONE,
           endedAt: Date.now.toString(),
@@ -300,7 +365,7 @@ export const educationalDataSlice = createSlice({
         state.rooms = [];
         state.students = [];
         state.classMemberships = [];
-        state.gamesList = [];
+        state.gameList = [];
         state.hydrationLoadStatus = {
           status: LoadStatus.FAILED,
           failedAt: Date.now.toString(),
@@ -312,7 +377,8 @@ export const educationalDataSlice = createSlice({
         state.rooms = action.payload.rooms;
         state.students = action.payload.students;
         state.classMemberships = action.payload.classMemberships;
-        state.gamesList = action.payload.gamesList;
+        state.phaseReflections = action.payload.phaseReflections;
+        state.gameList = action.payload.gameList;
         state.hydrationLoadStatus = {
           status: LoadStatus.DONE,
           endedAt: Date.now.toString(),
@@ -357,12 +423,32 @@ export const educationalDataSlice = createSlice({
         addOrUpdateClassMembership(state, action.payload);
       })
 
+      .addCase(assignStudentToGroup.fulfilled, (state, action) => {
+        addOrUpdateClassMembership(state, action.payload);
+      })
+
+      .addCase(assignClassGroupsAndStart.fulfilled, (state, action) => {
+        const { updatedClassroom, createdRooms } = action.payload;
+        addOrUpdateClass(state, updatedClassroom);
+        createdRooms.forEach((room) => {
+          addOrUpdateGameRoom(state, room);
+        });
+      })
+
       .addCase(adjustClassroomArchiveStatus.fulfilled, (state, action) => {
         addOrUpdateClass(state, action.payload);
       })
 
       .addCase(updateClassNameDescription.fulfilled, (state, action) => {
         addOrUpdateClass(state, action.payload);
+      })
+
+      .addCase(shareClassroomWithInstructor.fulfilled, (state, action) => {
+        addOrUpdateClass(state, action.payload);
+      })
+
+      .addCase(assignGameToGameRoom.fulfilled, (state, action) => {
+        addOrUpdateGameRoom(state, action.payload);
       });
   },
 });

@@ -244,3 +244,91 @@ export async function submitReadyToContinue(roomId: string): Promise<boolean> {
   );
   return data;
 }
+
+export const reportPlayerAwayMutation = `
+  mutation ReportPlayerAway($roomId: String!, $playerId: ID!) {
+    reportPlayerAway(roomId: $roomId, playerId: $playerId) {
+      ${fullRoomQueryData}
+    }
+  }
+`;
+
+export async function reportPlayerAway(
+  roomId: string,
+  playerId: string
+): Promise<Room> {
+  const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
+  if (!accessToken) {
+    throw new Error('No access token found');
+  }
+  const data = await execGql<Room>(
+    {
+      query: reportPlayerAwayMutation,
+      variables: { roomId, playerId },
+    },
+    {
+      dataPath: 'reportPlayerAway',
+      accessToken: accessToken,
+    }
+  );
+  return data;
+}
+
+export const clearAwayStatusMutation = `
+  mutation ClearAwayStatus($roomId: String!, $playerId: ID!) {
+    clearAwayStatus(roomId: $roomId, playerId: $playerId) {
+      ${fullRoomQueryData}
+    }
+  }
+`;
+
+export async function clearAwayStatus(
+  roomId: string,
+  playerId: string
+): Promise<Room> {
+  const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
+  if (!accessToken) {
+    throw new Error('No access token found');
+  }
+  const data = await execGql<Room>(
+    {
+      query: clearAwayStatusMutation,
+      variables: { roomId, playerId },
+    },
+    {
+      dataPath: 'clearAwayStatus',
+      accessToken: accessToken,
+    }
+  );
+  return data;
+}
+
+export const setPlayerPauseStatusMutation = `
+  mutation SetPlayerPauseStatus($roomId: String!, $playerId: ID!, $isPaused: Boolean!) {
+    setPlayerPauseStatus(roomId: $roomId, playerId: $playerId, isPaused: $isPaused) {
+      ${fullRoomQueryData}
+    }
+  }
+`;
+
+export async function setPlayerPauseStatus(
+  roomId: string,
+  playerId: string,
+  isPaused: boolean
+): Promise<Room> {
+  const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
+  if (!accessToken) {
+    throw new Error('No access token found');
+  }
+  const data = await execGql<Room>(
+    {
+      query: setPlayerPauseStatusMutation,
+      variables: { roomId, playerId, isPaused },
+    },
+    {
+      dataPath: 'setPlayerPauseStatus',
+      accessToken: accessToken,
+    }
+  );
+  return data;
+}

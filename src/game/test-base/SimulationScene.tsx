@@ -83,7 +83,7 @@ export class SimulationScene extends GameScene {
   preload() {
     super.preload();
     // Load the assets for the game
-    this.load.setPath('assets/concert');
+    this.load.setPath('/assets/concert');
     this.load.image('money', 'money.png');
     this.load.image('bg_tickets', 'map_tickets.png');
     this.load.image('bg_concert', 'map_concert.png');

@@ -12,11 +12,13 @@ import {
   classroomDataQuery,
   FetchEducationalDataHydrationResponse,
   JoinClassroomResponse,
+  phaseReflectionsDataQuery,
 } from './types';
 import { userDataQuery } from '../player/api';
 import { fullRoomQueryData } from '../../../api';
 import { requireLocalStorageGet as localStorageGet } from '../../local-storage';
 import { ACCESS_TOKEN_KEY } from '../../local-storage';
+import { Room } from '../game/types';
 
 export async function createClassroom(): Promise<Classroom> {
   const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
@@ -244,6 +246,66 @@ export async function unblockStudentFromClass(
   );
 }
 
+export async function assignStudentToGroup(
+  studentId: string,
+  classId: string,
+  groupId: number
+): Promise<ClassMembership> {
+  const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
+  return await execGql<ClassMembership>(
+    {
+      query: `mutation AssignStudentToGroup($studentId: String!, $classId: String!, $groupId: Int!) {
+    assignStudentToGroup(studentId: $studentId, classId: $classId, groupId: $groupId) {
+        ${classMembershipDataQuery}
+    }
+  }`,
+      variables: {
+        studentId,
+        classId,
+        groupId,
+      },
+    },
+    {
+      dataPath: 'assignStudentToGroup',
+      accessToken: accessToken,
+    }
+  );
+}
+
+export interface AssignClassGroupsAndStartResponse {
+  updatedClassroom: Classroom;
+  createdRooms: Room[];
+}
+
+export async function assignClassGroupsAndStart(
+  classId: string,
+  groups: ClassMembership[]
+): Promise<AssignClassGroupsAndStartResponse> {
+  const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
+  return await execGql<AssignClassGroupsAndStartResponse>(
+    {
+      query: `mutation AssignClassGroupsAndStart($classId: String!, $groups: [ClassMembershipInputType]!) {
+    assignClassGroupsAndStart(classId: $classId, groups: $groups) {
+        updatedClassroom {
+            ${classroomDataQuery}
+        }
+        createdRooms {
+            ${fullRoomQueryData}
+        }
+    }
+  }`,
+      variables: {
+        classId,
+        groups,
+      },
+    },
+    {
+      dataPath: 'assignClassGroupsAndStart',
+      accessToken: accessToken,
+    }
+  );
+}
+
 export async function adjustClassroomArchiveStatus(
   classId: string,
   setArchived: boolean
@@ -286,7 +348,10 @@ export async function fetchInstructorDataHydration(): Promise<FetchEducationalDa
         classMemberships {
             ${classMembershipDataQuery}
         }
-        gamesList {
+        phaseReflections {
+            ${phaseReflectionsDataQuery}
+        }
+        gameList {
             id
             name
         }
@@ -323,6 +388,84 @@ export async function fetchStudentDataHydration(): Promise<FetchEducationalDataH
     },
     {
       dataPath: 'fetchStudentDataHydration',
+      accessToken: accessToken,
+    }
+  );
+}
+
+export const createClassMembershipQuery = `
+  mutation CreateClassMembership($classId: String!, $userEmail: String!) {
+    createClassMembership(classId: $classId, userEmail: $userEmail) {
+      ${classMembershipDataQuery}
+    }
+  }
+`;
+
+export async function createClassMembership(
+  classId: string,
+  userEmail: string
+): Promise<ClassMembership> {
+  const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
+  return await execGql<ClassMembership>(
+    {
+      query: createClassMembershipQuery,
+      variables: {
+        classId,
+        userEmail,
+      },
+    },
+    {
+      dataPath: 'createClassMembership',
+      accessToken: accessToken,
+    }
+  );
+}
+
+export const shareClassroomWithInstructorMutation = `
+  mutation ShareClassroomWithInstructor($classId: String!, $instructorEmail: String!) {
+    shareClassroomWithInstructor(classId: $classId, instructorEmail: $instructorEmail) {
+      ${classroomDataQuery}
+    }
+  }
+`;
+
+export async function shareClassroomWithInstructor(
+  classId: string,
+  instructorEmail: string
+): Promise<Classroom> {
+  const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
+  return await execGql<Classroom>(
+    {
+      query: shareClassroomWithInstructorMutation,
+      variables: { classId, instructorEmail },
+    },
+    {
+      dataPath: 'shareClassroomWithInstructor',
+      accessToken: accessToken,
+    }
+  );
+}
+
+const assignGameToGameRoomMutation = `
+  mutation AssignGameToGameRoom($roomId: String!, $gameId: String!) {
+    assignGameToGameRoom(roomId: $roomId, gameId: $gameId) {
+      ${fullRoomQueryData}
+    }
+  }
+`;
+
+export async function assignGameToGameRoom(
+  roomId: string,
+  gameId: string
+): Promise<Room> {
+  const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
+  return await execGql<Room>(
+    {
+      query: assignGameToGameRoomMutation,
+      variables: { roomId, gameId },
+    },
+    {
+      dataPath: 'assignGameToGameRoom',
       accessToken: accessToken,
     }
   );
