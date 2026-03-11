@@ -66,12 +66,12 @@ export interface UserPhaseMetrics {
   numWordsSentInPhase: number;
 }
 
-
 export interface PlayerStatusData {
   lastHeartbeatAt?: Date;
   reportedAwayStatus: ReportedAwayStatus;
   pausedByAdmin: boolean;
   computedState: PlayerComputedState;
+  needsHelpInRoom: boolean;
   phaseMetrics: Record<PhaseStepId, UserPhaseMetrics>;
 }
 

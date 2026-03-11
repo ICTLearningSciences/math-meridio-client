@@ -96,6 +96,7 @@ export interface UseWithEducationalData {
     instructorEmail: string
   ) => Promise<Classroom>;
   assignGameToGameRoom: (roomId: string, gameId: string) => Promise<Room>;
+  setPlayerNeedsHelpInRoom: (needsHelp: boolean) => Promise<Room>;
 }
 
 export function useWithEducationalData(rId?: string): UseWithEducationalData {
@@ -377,6 +378,15 @@ export function useWithEducationalData(rId?: string): UseWithEducationalData {
     ).unwrap();
   }
 
+  async function setPlayerNeedsHelpInRoom(needsHelp: boolean): Promise<Room> {
+    if (!roomId) {
+      throw new Error('Room ID is required to set player needs help in room');
+    }
+    return await dispatch(
+      educationalDataActions.setPlayerNeedsHelpInRoom({ roomId, needsHelp })
+    ).unwrap();
+  }
+
   return {
     fetchInstructorDataHydration,
     fetchStudentDataHydration,
@@ -411,5 +421,6 @@ export function useWithEducationalData(rId?: string): UseWithEducationalData {
     reportPlayerAway,
     shareClassroomWithInstructor,
     assignGameToGameRoom,
+    setPlayerNeedsHelpInRoom,
   };
 }

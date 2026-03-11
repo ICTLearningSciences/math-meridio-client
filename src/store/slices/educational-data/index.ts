@@ -272,6 +272,13 @@ export const assignGameToGameRoom = createAsyncThunk(
   }
 );
 
+export const setPlayerNeedsHelpInRoom = createAsyncThunk(
+  'educationalData/setPlayerNeedsHelpInRoom',
+  async (args: { roomId: string; needsHelp: boolean }) => {
+    return await api.setPlayerNeedsHelpInRoom(args.roomId, args.needsHelp);
+  }
+);
+
 export const educationalDataSlice = createSlice({
   name: 'educationalData',
   initialState,
@@ -448,6 +455,10 @@ export const educationalDataSlice = createSlice({
       })
 
       .addCase(assignGameToGameRoom.fulfilled, (state, action) => {
+        addOrUpdateGameRoom(state, action.payload);
+      })
+
+      .addCase(setPlayerNeedsHelpInRoom.fulfilled, (state, action) => {
         addOrUpdateGameRoom(state, action.payload);
       });
   },

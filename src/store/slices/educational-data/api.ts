@@ -470,3 +470,28 @@ export async function assignGameToGameRoom(
     }
   );
 }
+
+export const setPlayerNeedsHelpInRoomMutation = `
+  mutation SetNeedsHelpInGameRoom($roomId: String!, $needsHelp: Boolean!) {
+    setNeedsHelpInGameRoom(roomId: $roomId, needsHelp: $needsHelp) {
+        ${fullRoomQueryData}
+    }
+  }
+`;
+
+export async function setPlayerNeedsHelpInRoom(
+  roomId: string,
+  needsHelp: boolean
+): Promise<Room> {
+  const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
+  return await execGql<Room>(
+    {
+      query: setPlayerNeedsHelpInRoomMutation,
+      variables: { roomId, needsHelp },
+    },
+    {
+      dataPath: 'setNeedsHelpInGameRoom',
+      accessToken: accessToken,
+    }
+  );
+}

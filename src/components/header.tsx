@@ -16,7 +16,7 @@ import { ContainedButton } from './button';
 import { useWithEducationalData } from '../store/slices/educational-data/use-with-educational-data';
 import { getCurPhaseTitleFromRoom } from '../store/slices/educational-data/helpers';
 import { RowDiv } from '../styled-components';
-import { EducationalRole } from '../store/slices/player/types';
+import { HelpRequestButton } from './help-request-button';
 
 export function Header(props: { useLogin: UseWithLogin }) {
   const dispatch = useAppDispatch();
@@ -25,13 +25,8 @@ export function Header(props: { useLogin: UseWithLogin }) {
   const [isEditing, setIsEditing] = React.useState<boolean>(false);
   const { logout } = props.useLogin;
   const { pathname } = useLocation();
-  const {
-    leaveGameRoom,
-    renameGameRoom,
-    educationalData,
-    fetchInstructorDataHydration,
-  } = useWithEducationalData();
-  const isInstructor = player?.educationalRole === EducationalRole.INSTRUCTOR;
+  const { renameGameRoom, educationalData, setPlayerNeedsHelpInRoom } =
+    useWithEducationalData();
   const room = educationalData.rooms.find((r) => r._id === roomId);
   const totalPhases =
     room?.gameData.phaseProgression.startingPhaseStepsOrdered.length;
@@ -39,6 +34,11 @@ export function Header(props: { useLogin: UseWithLogin }) {
     room?.gameData.phaseProgression.startingPhaseStepsOrdered.indexOf(
       room?.gameData.phaseProgression.curPhaseStepId || ''
     );
+
+  const myStatusInRoom =
+    player?._id && room
+      ? room?.gameData.playersStatusRecord[player?._id]
+      : undefined;
   // const completedPhases = room?.gameData.phaseProgression.phasesCompleted.length;
   const progressString =
     totalPhases !== undefined && curPhaseIndex !== undefined
@@ -49,9 +49,6 @@ export function Header(props: { useLogin: UseWithLogin }) {
   const navigate = useNavigate();
 
   function homeButtonClick() {
-    // if (roomId) {
-    //   leaveGameRoom(roomId);
-    // }
     navigate('/classes');
   }
 
@@ -80,10 +77,11 @@ export function Header(props: { useLogin: UseWithLogin }) {
         className="row center-div"
         style={{ justifyContent: 'space-between' }}
       >
-        <IconButton style={{ width: 150 }} onClick={homeButtonClick}>
+        <IconButton style={{ width: '26%' }} onClick={homeButtonClick}>
           <img height={60} src="/logo.png" alt="image" />
         </IconButton>
-        <div className="row center-div">
+        {/* Empty div for spacing */}
+        <div className="row center-div" style={{ width: '48%' }}>
           {isEditing ? (
             <TextField
               style={{ width: 300 }}
@@ -111,8 +109,15 @@ export function Header(props: { useLogin: UseWithLogin }) {
             </IconButton>
           ) : undefined}
         </div>
-        <div style={{ display: 'flex', width: 150, alignItems: 'center' }}>
-          {pathname.startsWith('/game/') ? (
+        <div style={{ width: '13%' }}>
+          <HelpRequestButton
+            myStatusInRoom={myStatusInRoom}
+            setPlayerNeedsHelpInRoom={setPlayerNeedsHelpInRoom}
+          />
+        </div>
+        {/* Profile Section */}
+        <div style={{ display: 'flex', width: '13%', alignItems: 'center' }}>
+          {pathname.includes('/room/') ? (
             <Button
               variant="text"
               disabled={!player || !room}
@@ -121,8 +126,9 @@ export function Header(props: { useLogin: UseWithLogin }) {
                 color: 'white',
                 marginRight: 5,
                 padding: 0,
+                textTransform: 'none',
               }}
-              onClick={() => leaveGameRoom(room?._id || '')}
+              onClick={() => navigate('/classes')}
             >
               Leave Room
             </Button>
