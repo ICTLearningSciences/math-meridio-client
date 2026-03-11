@@ -12,6 +12,7 @@ import {
   classroomDataQuery,
   FetchEducationalDataHydrationResponse,
   JoinClassroomResponse,
+  phaseReflectionsDataQuery,
 } from './types';
 import { userDataQuery } from '../player/api';
 import { fullRoomQueryData } from '../../../api';
@@ -346,6 +347,9 @@ export async function fetchInstructorDataHydration(): Promise<FetchEducationalDa
         }
         classMemberships {
             ${classMembershipDataQuery}
+        }
+        phaseReflections {
+            ${phaseReflectionsDataQuery}
         }
         gameList {
             id

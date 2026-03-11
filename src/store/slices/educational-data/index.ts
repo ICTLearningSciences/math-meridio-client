@@ -7,7 +7,7 @@ The full terms of this copyright and license should always be found in the root 
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import * as api from './api';
 import * as mainApi from '../../../api';
-import { LoadStatus, LoadingState } from '../../../types';
+import { GamePhaseReflections, LoadStatus, LoadingState } from '../../../types';
 import { ClassMembership, Classroom } from './types';
 import { Player } from '../player/types';
 import { GameStateData, Room } from '../game/types';
@@ -29,6 +29,7 @@ export interface EducationalDataStateData {
   rooms: Room[];
   students: Player[];
   classMemberships: ClassMembership[];
+  phaseReflections: GamePhaseReflections[];
   hydrationLoadStatus: LoadingState;
   gameList: StaticGame[];
 }
@@ -38,6 +39,7 @@ const initialState: EducationalDataStateData = {
   rooms: [],
   students: [],
   classMemberships: [],
+  phaseReflections: [],
   hydrationLoadStatus: { status: LoadStatus.NONE },
   gameList: [],
 };
@@ -334,6 +336,7 @@ export const educationalDataSlice = createSlice({
         state.rooms = [];
         state.students = [];
         state.classMemberships = [];
+        state.phaseReflections = [];
         state.gameList = [];
       })
       .addCase(fetchInstructorDataHydration.fulfilled, (state, action) => {
@@ -341,6 +344,7 @@ export const educationalDataSlice = createSlice({
         state.rooms = action.payload.rooms;
         state.students = action.payload.students;
         state.classMemberships = action.payload.classMemberships;
+        state.phaseReflections = action.payload.phaseReflections;
         state.gameList = action.payload.gameList;
         state.hydrationLoadStatus = {
           status: LoadStatus.DONE,
@@ -373,6 +377,7 @@ export const educationalDataSlice = createSlice({
         state.rooms = action.payload.rooms;
         state.students = action.payload.students;
         state.classMemberships = action.payload.classMemberships;
+        state.phaseReflections = action.payload.phaseReflections;
         state.gameList = action.payload.gameList;
         state.hydrationLoadStatus = {
           status: LoadStatus.DONE,

@@ -14,8 +14,10 @@ import {
   CircularProgress,
   Menu,
   MenuItem,
+  Typography,
 } from '@mui/material';
 import { ArrowDropDown } from '@mui/icons-material';
+import { GAMES } from '../game/types';
 
 const buttonStyles = makeStyles()(() => ({
   button: {
@@ -194,5 +196,29 @@ export function DropdownButton(props: {
         {props.children}
       </Menu>
     </div>
+  );
+}
+
+export function GamesDropdown(props: {
+  game?: string;
+  setGame: (id: string) => void;
+  buttonStyle?: CSS.Properties;
+}): JSX.Element {
+  const { game, setGame } = props;
+  return (
+    <DropdownButton
+      label={GAMES.find((g) => g.id === game)?.name || 'All Games'}
+      value={game}
+      items={['', ...GAMES.map((g) => g.id)]}
+      onSelect={(id: string) => setGame(id)}
+      renderItem={(id) => {
+        return (
+          <Typography>
+            {GAMES.find((g) => g.id === id)?.name || 'Show All'}
+          </Typography>
+        );
+      }}
+      buttonStyle={props.buttonStyle}
+    />
   );
 }

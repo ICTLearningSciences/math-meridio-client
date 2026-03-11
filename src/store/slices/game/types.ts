@@ -68,12 +68,18 @@ export interface PlayerStatusData {
 export type UserId = string;
 export type PlayerStatusRecord = Record<UserId, PlayerStatusData>;
 
+export interface LearningObjective {
+  title: string;
+  criteria: string;
+}
+
 export interface PhaseProgression {
   phasesStarted: string[];
   phasesCompleted: string[];
   curPhaseTitle: string;
   curPhaseStepId: string;
   startingPhaseStepsOrdered: string[];
+  learningObjectives: LearningObjective[];
 }
 
 export interface GameData {
