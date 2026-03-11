@@ -81,6 +81,7 @@ export type PlayerStatusRecord = Record<UserId, PlayerStatusData>;
 export interface LearningObjective {
   title: string;
   criteria: string;
+  variableName: string;
 }
 
 export interface PhaseProgression {

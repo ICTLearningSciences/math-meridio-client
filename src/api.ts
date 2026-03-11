@@ -101,6 +101,11 @@ export const fullDiscussionStageQueryData = `
           stepId
           stepType
           phaseTitle
+                                        learningObjectives{
+                                variableName
+                                title
+                                criteria
+                              }
       }
 
       ... on EndOfPhaseReflectionStepType {

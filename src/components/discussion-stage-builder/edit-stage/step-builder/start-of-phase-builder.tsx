@@ -6,9 +6,15 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React from 'react';
 import { v4 as uuid } from 'uuid';
-import { IconButton } from '@mui/material';
+import { IconButton, Button } from '@mui/material';
 import { Delete } from '@mui/icons-material';
-import { RoundedBorderDiv, TopLeftText } from '../../../../styled-components';
+import {
+  RoundedBorderDiv,
+  TopLeftText,
+  ColumnCenterDiv,
+  ColumnDiv,
+  RowDiv,
+} from '../../../../styled-components';
 import { InputField } from '../../shared/input-components';
 import Collapse from '@mui/material/Collapse';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -19,6 +25,7 @@ import {
   FlowItem,
   StartOfPhaseStep,
 } from '../../types';
+import { LearningObjective } from '../../../../store/slices/game/types';
 export function getDefaultStartOfPhase(): StartOfPhaseStep {
   return {
     stepId: uuid(),
@@ -26,7 +33,161 @@ export function getDefaultStartOfPhase(): StartOfPhaseStep {
     stepType: DiscussionStageStepType.START_OF_PHASE,
     phaseTitle: '',
     jumpToStepId: '',
+    learningObjectives: [],
   };
+}
+
+function LearningObjectiveUpdater(props: {
+  learningObjective: LearningObjective;
+  updateLearningObjective: (
+    updatedObjective: Partial<LearningObjective>,
+    index: number
+  ) => void;
+  deleteLearningObjective: () => void;
+  index: number;
+}): JSX.Element {
+  const {
+    learningObjective,
+    updateLearningObjective,
+    deleteLearningObjective,
+    index,
+  } = props;
+  return (
+    <RowDiv
+      style={{
+        borderTop: '1px dotted black',
+        width: '90%',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+      }}
+    >
+      <ColumnDiv
+        style={{
+          width: '90%',
+        }}
+      >
+        <InputField
+          label="Title"
+          width="100%"
+          value={learningObjective.title}
+          onChange={(e) => {
+            updateLearningObjective(
+              {
+                title: e,
+              },
+              index
+            );
+          }}
+        />
+        <InputField
+          label="Criteria"
+          width="100%"
+          value={learningObjective.criteria}
+          onChange={(e) => {
+            updateLearningObjective(
+              {
+                criteria: e,
+              },
+              index
+            );
+          }}
+        />
+        <InputField
+          label="Variable Name (e.g. 'numCorrect', 'numIncorrect', 'numQuestions')"
+          width="100%"
+          value={learningObjective.variableName}
+          onChange={(e) => {
+            updateLearningObjective(
+              {
+                variableName: e,
+              },
+              index
+            );
+          }}
+        />
+      </ColumnDiv>
+      <IconButton onClick={deleteLearningObjective} color="primary">
+        <Delete />
+      </IconButton>
+    </RowDiv>
+  );
+}
+
+function LearningObjectivesUpdater(props: {
+  learningObjectives: LearningObjective[];
+  updateLearningObjectives: (
+    learningObjectives:
+      | LearningObjective[]
+      | ((prev: LearningObjective[]) => LearningObjective[])
+  ) => void;
+  width?: string;
+}): JSX.Element {
+  const { learningObjectives, updateLearningObjectives } = props;
+
+  function updateLearningObjective(
+    updatedObjective: Partial<LearningObjective>,
+    index: number
+  ) {
+    updateLearningObjectives((prevObjectives) => {
+      return prevObjectives.map((obj, i) => {
+        if (i === index) {
+          return {
+            ...obj,
+            ...updatedObjective,
+          };
+        }
+        return obj;
+      });
+    });
+  }
+
+  function addNewLearningObjective() {
+    updateLearningObjectives((prevObjectives) => [
+      ...(prevObjectives || []),
+      {
+        title: '',
+        criteria: '',
+        variableName: '',
+      },
+    ]);
+  }
+
+  function deleteLearningObjective(index: number) {
+    updateLearningObjectives((prevObjectives) =>
+      prevObjectives.filter((_, i) => i !== index)
+    );
+  }
+
+  return (
+    <ColumnCenterDiv
+      style={{
+        width: props.width || '100%',
+        border: '1px solid black',
+        alignSelf: 'center',
+        justifyContent: 'center',
+        padding: 10,
+        marginTop: 10,
+      }}
+    >
+      <span style={{ fontWeight: 'bold' }}>Learning Objectives</span>
+
+      {learningObjectives?.length > 0 &&
+        learningObjectives.map((objective, index) => (
+          <LearningObjectiveUpdater
+            key={index}
+            learningObjective={objective}
+            index={index}
+            updateLearningObjective={updateLearningObjective}
+            deleteLearningObjective={() => {
+              deleteLearningObjective(index);
+            }}
+          />
+        ))}
+      <Button onClick={addNewLearningObjective}>
+        + Add Learning Objective
+      </Button>
+    </ColumnCenterDiv>
+  );
 }
 export function StartOfPhaseStepBuilder(props: {
   step: StartOfPhaseStep;
@@ -39,9 +200,11 @@ export function StartOfPhaseStepBuilder(props: {
   height?: string;
 }): JSX.Element {
   const { step, stepIndex, updateLocalStage } = props;
-  const [collapsed, setCollapsed] = React.useState<boolean>(false);
 
-  function updateField(field: string, value: string | boolean | string[]) {
+  function updateField(
+    field: string,
+    value: string | boolean | string[] | LearningObjective[]
+  ) {
     updateLocalStage((prevValue) => {
       return {
         ...prevValue,
@@ -61,6 +224,39 @@ export function StartOfPhaseStepBuilder(props: {
         }),
       };
     });
+  }
+
+  function updateLearningObjectives(
+    learningObjectives:
+      | LearningObjective[]
+      | ((prev: LearningObjective[]) => LearningObjective[])
+  ) {
+    if (typeof learningObjectives === 'function') {
+      updateLocalStage((prevValue) => {
+        return {
+          ...prevValue,
+          flowsList: prevValue.flowsList.map((f) => {
+            return {
+              ...f,
+              steps: f.steps.map((s) => {
+                if (s.stepId === step.stepId) {
+                  const currentStep = s as StartOfPhaseStep;
+                  return {
+                    ...s,
+                    learningObjectives: learningObjectives(
+                      currentStep.learningObjectives || []
+                    ),
+                  };
+                }
+                return s;
+              }),
+            };
+          }),
+        };
+      });
+    } else {
+      updateField('learningObjectives', learningObjectives);
+    }
   }
 
   return (
@@ -85,27 +281,18 @@ export function StartOfPhaseStepBuilder(props: {
       >
         <Delete />
       </IconButton>
-      <IconButton
-        style={{
-          width: 'fit-content',
-          position: 'absolute',
-          left: 10,
-          top: 40,
-        }}
-        onClick={() => setCollapsed(!collapsed)}
-      >
-        {collapsed ? <ExpandMoreIcon /> : <ExpandLessIcon />}
-      </IconButton>
       <h4 style={{ alignSelf: 'center' }}>Start of Phase</h4>
-      <Collapse in={!collapsed}>
-        <InputField
-          label="Phase Title"
-          value={step.phaseTitle}
-          onChange={(e) => {
-            updateField('phaseTitle', e);
-          }}
-        />
-      </Collapse>
+      <InputField
+        label="Phase Title"
+        value={step.phaseTitle}
+        onChange={(e) => {
+          updateField('phaseTitle', e);
+        }}
+      />
+      <LearningObjectivesUpdater
+        learningObjectives={step.learningObjectives}
+        updateLearningObjectives={updateLearningObjectives}
+      />
     </RoundedBorderDiv>
   );
 }
