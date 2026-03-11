@@ -29,7 +29,7 @@ body {
 
 .page {
   width: 100%;
-  height: 88%;
+  height: 92%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -55,7 +55,7 @@ body {
   background-image: linear-gradient(to bottom, rgb(114, 20, 201), rgb(59, 7, 105));
   padding: 40px;
   padding-top: 40px;
-  margin-top: 40px;
+  margin-top: 20px;
   border-top-right-radius: 40px;
   border-top-left-radius: 40px;
 }

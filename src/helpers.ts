@@ -38,6 +38,16 @@ export function calculateMedian(values: number[]): number {
     : (values[half - 1] + values[half]) / 2;
 }
 
+export function calculateSum(values: number[]): number {
+  const sum = values.reduce((a, b) => a + b, 0);
+  return sum;
+}
+
+export function calculateAverage(values: number[]): number {
+  const avg = calculateSum(values) / values.length || 0;
+  return avg;
+}
+
 export function calculatePercentSkillsMet(
   mathStandardsCompleted: Record<string, boolean>
 ): number {

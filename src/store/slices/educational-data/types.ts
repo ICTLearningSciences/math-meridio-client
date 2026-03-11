@@ -5,6 +5,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import { StaticGame } from '.';
+import { GamePhaseReflections } from '../../../types';
 import { Room } from '../game/types';
 import { Player } from '../player/types';
 
@@ -66,6 +67,14 @@ export const classMembershipDataQuery = `
     status
   `;
 
+export const phaseReflectionsDataQuery = `
+    roomId
+    stepId
+    question
+    roundNumber
+    reflections
+  `;
+
 export interface JoinClassroomResponse {
   classMembership: ClassMembership;
   classroom: Classroom;
@@ -76,6 +85,7 @@ export interface FetchEducationalDataHydrationResponse {
   rooms: Room[];
   students: Player[];
   classMemberships: ClassMembership[];
+  phaseReflections: GamePhaseReflections[];
   gameList: StaticGame[];
 }
 

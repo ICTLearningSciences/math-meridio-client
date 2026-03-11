@@ -132,7 +132,7 @@ export interface GamePhaseReflections {
   reflections: Record<string, string>; // keyed by player ID
 }
 
-export interface SkillsMetStatus {
+export interface SkillsMet {
   playersMet: Player[];
   players: Player[];
 }

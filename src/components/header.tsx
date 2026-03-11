@@ -75,7 +75,7 @@ export function Header(props: { useLogin: UseWithLogin }) {
   }
 
   return (
-    <header className="column header" style={{ height: 120 }}>
+    <header className="column header" style={{ height: 80 }}>
       <div
         className="row center-div"
         style={{ justifyContent: 'space-between' }}
@@ -162,7 +162,7 @@ export function Header(props: { useLogin: UseWithLogin }) {
           )}
         </div>
 
-        <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+        {/* <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
           {isInstructor && (
             <Button
               style={{ backgroundColor: 'white', color: 'black' }}
@@ -173,7 +173,7 @@ export function Header(props: { useLogin: UseWithLogin }) {
               Refresh
             </Button>
           )}
-        </div>
+        </div> */}
       </RowDiv>
     </header>
   );

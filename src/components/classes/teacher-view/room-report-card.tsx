@@ -5,64 +5,116 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import * as motion from 'motion/react-client';
 import {
-  Button,
+  Box,
   Card,
   CardContent,
+  CircularProgress,
   Collapse,
   Grid,
   Typography,
 } from '@mui/material';
-import { ArrowForward, ExpandLess, ExpandMore } from '@mui/icons-material';
+
 import { Classroom } from '../../../store/slices/educational-data/types';
 import ProgressBar from '../../progress-bar';
-import { PlayerActivitySprite, PlayerSprite } from '../../avatar-sprite';
-import SkillCard from './skill-card';
-import { Room, SenderType } from '../../../store/slices/game/types';
-import { getPercentString } from '../../../helpers';
+import {
+  Contribution,
+  SkillsPracticed,
+  TimeSpent,
+  TroubleSpots,
+} from './skill-card';
+import { PhaseProgression, Room } from '../../../store/slices/game/types';
+import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
+import { calculateMedian } from '../../../helpers';
 import { GAMES } from '../../../game/types';
-import { SkillsMetStatus } from '../../../types';
+import { GamesDropdown } from '../../button';
+import { PlayerSprite } from '../../avatar-sprite';
 
-export default function RoomReportCard(props: {
-  classroom: Classroom;
-  room: Room;
+function PhaseSelector(props: {
+  gameRooms: Room[];
+  phase: number;
+  setPhase: (num: number) => void;
 }): JSX.Element {
-  const { classroom, room } = props;
-  const navigate = useNavigate();
-  const [expanded, setExpanded] = React.useState<boolean>(false);
-  const [skills, setSkills] = React.useState<Record<string, SkillsMetStatus>>(
-    {}
+  const { gameRooms, phase, setPhase } = props;
+  const numPhases =
+    gameRooms.length === 0
+      ? 0
+      : gameRooms[0].gameData.phaseProgression.startingPhaseStepsOrdered.length;
+
+  return (
+    <div className="row spacing" style={{ width: '100%' }}>
+      {Array.from({ length: numPhases }, (_, index) => (
+        <motion.div
+          key={index}
+          whileHover={{ scale: 1.05, filter: 'brightness(0.8)' }}
+          className="column center-div spacing"
+          style={{ flexGrow: 1 }}
+          onClick={() => setPhase(index)}
+        >
+          <div
+            style={{
+              height: 30,
+              width: '100%',
+              borderRadius: 40,
+              backgroundColor: phase >= index ? 'orange' : 'rgb(217, 217, 217)',
+              borderTopRightRadius: 40,
+              borderBottomRightRadius: 40,
+            }}
+          />
+          <Typography
+            fontSize={14}
+            style={{
+              color: phase === index ? 'orange' : 'rgb(230, 230, 230)',
+            }}
+          >
+            PHASE {index + 1}
+          </Typography>
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
+export function SummaryReportCard(props: {
+  classroom: Classroom;
+}): JSX.Element {
+  const { classroom } = props;
+  const { educationalData } = useWithEducationalData();
+  const [game, setGame] = React.useState<string>();
+  const [phase, setPhase] = React.useState<PhaseProgression>();
+
+  const gameRooms = educationalData.rooms.filter(
+    (r) => r.classId === classroom._id && (!game || r.gameData.gameId === game)
+  );
+  const students = educationalData.students.filter((s) =>
+    gameRooms.find((r) => r.gameData.players.find((p) => p._id === s._id))
   );
 
   React.useEffect(() => {
-    const skills: Record<string, SkillsMetStatus> = {};
-    for (const student of room.gameData.players) {
-      for (const standard of Object.entries(
-        room.gameData.mathStandardsCompleted
-      )) {
-        if (!(standard[0] in skills)) {
-          skills[standard[0]] = { playersMet: [], players: [] };
-        }
-        if (standard[1]) {
-          skills[standard[0]].playersMet.push(student);
-        }
-        skills[standard[0]].players.push(student);
-      }
+    // get overall phase progress
+    const numPhases: number[] = [];
+    const phasesCompleted: number[] = [];
+    for (const room of gameRooms) {
+      numPhases.push(
+        room.gameData.phaseProgression.startingPhaseStepsOrdered.length
+      );
+      phasesCompleted.push(
+        room.gameData.phaseProgression.phasesCompleted.length
+      );
     }
-    setSkills(skills);
-  }, [room]);
-
-  const game = GAMES.find((g) => g.id === room?.gameData.gameId);
-  const totalWords = room.gameData.chat
-    .filter((c) => c.sender === SenderType.PLAYER)
-    .reduce((pre: number, cur) => {
-      return pre + cur.message.split(' ').length;
-    }, 0);
-
-  const enterRoom = (room: Room) => {
-    navigate(`/classes/${classroom._id}/room/${room._id}`);
-  };
+    const median = calculateMedian(phasesCompleted);
+    setPhase({
+      curPhaseTitle: '',
+      curPhaseStepId: '',
+      phasesStarted: Array.from({ length: median }),
+      phasesCompleted: Array.from({ length: median }),
+      startingPhaseStepsOrdered: Array.from({
+        length: calculateMedian(numPhases),
+      }),
+      learningObjectives: [],
+    });
+  }, [game]);
 
   return (
     <Card>
@@ -70,153 +122,306 @@ export default function RoomReportCard(props: {
         className="column spacing"
         style={{ position: 'relative', padding: 20 }}
       >
-        <div
-          className="row center-div spacing"
-          style={{ marginBottom: 20 }}
+        <GamesDropdown
+          game={game}
+          setGame={(id: string) => setGame(id)}
+          buttonStyle={{ borderColor: 'black' }}
+        />
+        {phase && <ProgressBar phases={phase} size="large" />}
+        <Grid container spacing={2} style={{ marginTop: 10 }}>
+          <Grid item xs={4}>
+            <Contribution students={students} gameRooms={gameRooms} />
+          </Grid>
+          <Grid item xs={3}>
+            <TimeSpent students={students} gameRooms={gameRooms} />
+          </Grid>
+          <Grid item xs={4}>
+            <Typography fontSize={14} fontWeight="bold">
+              Key Words
+            </Typography>
+            <div
+              className="row center-div"
+              style={{
+                border: '1px solid black',
+                borderRadius: 10,
+                padding: 10,
+                marginTop: 10,
+              }}
+            >
+              <Typography fontSize={14} fontWeight="bold">
+                Recently Used
+              </Typography>
+            </div>
+          </Grid>
+        </Grid>
+        <TroubleSpots students={students} gameRooms={gameRooms} />
+      </CardContent>
+    </Card>
+  );
+}
+
+export function PhaseReportCard(props: { classroom: Classroom }): JSX.Element {
+  const { classroom } = props;
+  const { educationalData } = useWithEducationalData();
+  const [game, setGame] = React.useState<string>();
+  const [phase, setPhase] = React.useState<number>(0);
+
+  const gameRooms = educationalData.rooms.filter(
+    (r) => r.classId === classroom._id && (!game || r.gameData.gameId === game)
+  );
+  const students = educationalData.students.filter((s) =>
+    gameRooms.find((r) => r.gameData.players.find((p) => p._id === s._id))
+  );
+  const avgRoomCompletion =
+    100 *
+    (gameRooms.filter(
+      (r) => r.gameData.phaseProgression.phasesCompleted.length > phase
+    ).length /
+      gameRooms.length);
+
+  return (
+    <Card>
+      <CardContent
+        className="column spacing"
+        style={{ position: 'relative', padding: 20 }}
+      >
+        <GamesDropdown
+          game={game}
+          setGame={(id: string) => setGame(id)}
+          buttonStyle={{ borderColor: 'black' }}
+        />
+        <PhaseSelector
+          gameRooms={gameRooms}
+          phase={phase}
+          setPhase={setPhase}
+        />
+        <Grid container spacing={2} style={{ marginTop: 10 }}>
+          <Grid item xs={3}>
+            <Typography fontSize={14} fontWeight="bold">
+              Avg Room Completion
+            </Typography>
+            <div
+              className="row center-div"
+              style={{
+                border: '1px solid black',
+                borderRadius: 10,
+                marginTop: 10,
+                height: 200,
+              }}
+            >
+              <Box sx={{ position: 'relative', display: 'inline-flex' }}>
+                <CircularProgress
+                  variant="determinate"
+                  value={100}
+                  thickness={6}
+                  style={{ width: 150, height: 150 }}
+                  sx={{
+                    position: 'absolute',
+                    color: '#e0e0e0', // Light gray color for uncompleted (remaining) portion
+                  }}
+                />
+                <CircularProgress
+                  variant="determinate"
+                  value={avgRoomCompletion}
+                  thickness={6}
+                  style={{ width: 150, height: 150 }}
+                />
+                <Box
+                  sx={{
+                    top: 0,
+                    left: 0,
+                    bottom: 0,
+                    right: 0,
+                    position: 'absolute',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Typography fontWeight="bold" fontSize={16}>
+                    {`${Math.round(avgRoomCompletion)}%`}
+                  </Typography>
+                </Box>
+              </Box>
+            </div>
+          </Grid>
+          <Grid item xs={3}>
+            <TimeSpent students={students} gameRooms={gameRooms} />
+          </Grid>
+          <Grid item xs={3}>
+            <Typography fontSize={14} fontWeight="bold">
+              Key Words
+            </Typography>
+            <div
+              className="row center-div"
+              style={{
+                border: '1px solid black',
+                borderRadius: 10,
+                padding: 10,
+                marginTop: 10,
+              }}
+            >
+              <Typography fontSize={14} fontWeight="bold">
+                Recently Used
+              </Typography>
+            </div>
+          </Grid>
+          <Grid item xs={3}>
+            <Contribution students={students} gameRooms={gameRooms} />
+          </Grid>
+        </Grid>
+        <SkillsPracticed students={students} gameRooms={gameRooms} />
+        <TroubleSpots students={students} gameRooms={gameRooms} />
+      </CardContent>
+    </Card>
+  );
+}
+
+export function IndividualReportCard(props: {
+  classroom: Classroom;
+  room: Room;
+}): JSX.Element {
+  const { room } = props;
+  const [expanded, setExpanded] = React.useState<boolean>(true);
+  const [phase, setPhase] = React.useState<number>(0);
+  const { educationalData } = useWithEducationalData();
+  const game = GAMES.find((g) => g.id === room?.gameData.gameId);
+
+  const phaseReflections = educationalData.phaseReflections.filter(
+    (p) => p.roomId === room._id
+  );
+
+  return (
+    <Card>
+      <CardContent
+        className="column spacing"
+        style={{ position: 'relative', padding: 20 }}
+      >
+        <Typography
+          fontSize={20}
+          fontWeight="bold"
           onClick={() => setExpanded(!expanded)}
         >
-          {expanded ? <ExpandLess /> : <ExpandMore />}
-          <Typography fontSize={20} fontWeight="bold" style={{ flexGrow: 1 }}>
-            {room.name}
-          </Typography>
-        </div>
-
-        <Collapse in={!expanded}>
-          <div className="row center-div spacing">
-            {room.gameData.players.map((player, pIdx) => {
-              return (
-                <PlayerActivitySprite
-                  key={`player-${pIdx}`}
-                  player={player}
-                  room={room}
-                />
-              );
-            })}
-          </div>
-        </Collapse>
-        <Typography> {game?.name}</Typography>
-        <ProgressBar phases={room.gameData.phaseProgression} size="large" />
-
-        <Collapse className="column spacing" in={expanded}>
-          <Grid container spacing={2}>
+          {room.name} - {game?.name}
+        </Typography>
+        <PhaseSelector gameRooms={[room]} phase={phase} setPhase={setPhase} />
+        <Collapse in={expanded}>
+          <Grid container spacing={2} style={{ marginTop: 10 }}>
             <Grid item xs={4}>
-              <div className="column spacing">
-                <Typography>Student Contributions</Typography>
-                <div
-                  className="row center-div"
-                  style={{
-                    border: '1px solid black',
-                    borderRadius: 10,
-                    justifyContent: 'space-evenly',
-                    overflowX: 'scroll',
-                    scrollbarWidth: 'none',
-                    padding: 10,
-                  }}
-                >
-                  {room.gameData.players.map((player, pIdx) => {
-                    const studentWords = room.gameData.chat
-                      .filter((c) => c.senderId === player._id)
-                      .reduce((pre: number, cur) => {
-                        return pre + cur.message.split(' ').length;
-                      }, 0);
-                    return (
-                      <PlayerSprite key={`player-${pIdx}`} player={player}>
-                        <Typography
-                          variant="body2"
-                          fontWeight="bold"
-                          style={{ marginTop: 5 }}
-                        >
-                          {getPercentString(studentWords / totalWords)}
+              <Contribution
+                students={room.gameData.players}
+                gameRooms={[room]}
+              />
+            </Grid>
+            <Grid item xs={3}>
+              <TimeSpent students={room.gameData.players} gameRooms={[room]} />
+            </Grid>
+            <Grid item xs={4}>
+              <Typography fontSize={14} fontWeight="bold">
+                Key Words
+              </Typography>
+              <div
+                className="row center-div"
+                style={{
+                  border: '1px solid black',
+                  borderRadius: 10,
+                  padding: 10,
+                  marginTop: 10,
+                }}
+              >
+                <Typography fontSize={14} fontWeight="bold">
+                  Recently Used
+                </Typography>
+              </div>
+            </Grid>
+
+            <Grid item xs={12}>
+              <Typography fontSize={14} fontWeight="bold" flexGrow={1}>
+                Class Reflections
+              </Typography>
+              {phaseReflections
+                .filter((pr) => pr.roundNumber === phase + 1)
+                .map((pr, idx) => {
+                  return (
+                    <Card
+                      key={`reflection-${idx}`}
+                      style={{ backgroundColor: 'rgb(231, 231, 231)' }}
+                    >
+                      <CardContent className="column spacing">
+                        <Typography fontSize={14} fontWeight="bold">
+                          {pr.roundNumber}. {pr.question}
                         </Typography>
-                      </PlayerSprite>
-                    );
-                  })}
-                </div>
-              </div>
-            </Grid>
-
-            <Grid item xs={4}>
-              <div className="column spacing">
-                <Typography>Time Spent</Typography>
-                <div
-                  className="row center-div"
-                  style={{
-                    border: '1px solid black',
-                    borderRadius: 10,
-                    overflowX: 'scroll',
-                    scrollbarWidth: 'none',
-                    padding: 10,
-                    paddingLeft: 20,
-                    paddingRight: 20,
-                  }}
-                >
-                  <div className="column center-div">
-                    <Typography fontSize={14} fontWeight="light">
-                      Total Time
-                    </Typography>
-                    <Typography variant="h3" fontWeight="bold">
-                      24
-                    </Typography>
-                    <Typography>Minutes</Typography>
-                  </div>
-                  <div
-                    className="row center-div spacing"
-                    style={{ flexGrow: 1 }}
-                  >
-                    {room.gameData.players.map((player, pIdx) => {
-                      return (
-                        <PlayerActivitySprite
-                          key={`player-${pIdx}`}
-                          player={player}
-                          room={room}
-                        />
+                        {Object.entries(pr.reflections).map((r) => {
+                          const player = room.gameData.players.find(
+                            (p) => p._id === r[0]
+                          );
+                          if (!player) return <div key={r[0]} />;
+                          return (
+                            <div key={r[0]} className="row spacing">
+                              <PlayerSprite player={player} />
+                              <Card
+                                style={{ borderRadius: 10, width: '100%' }}
+                                elevation={0}
+                              >
+                                <CardContent className="column spacing">
+                                  <Typography>&quot;{r[1]}&quot;</Typography>
+                                </CardContent>
+                              </Card>
+                            </div>
+                          );
+                        })}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              <Card
+                style={{ backgroundColor: 'rgb(231, 231, 231)', marginTop: 10 }}
+              >
+                <CardContent className="column spacing">
+                  {Object.entries(room.gameData.playersGameStateData).map(
+                    (r) => {
+                      const player = room.gameData.players.find(
+                        (p) => p._id === r[0]
                       );
-                    })}
-                  </div>
-                </div>
-              </div>
+                      if (!player) return <div key={r[0]} />;
+                      return (
+                        <div key={r[0]} className="row spacing">
+                          <PlayerSprite player={player} />
+                          <Card
+                            style={{ borderRadius: 10, width: '100%' }}
+                            elevation={0}
+                          >
+                            <CardContent className="column spacing">
+                              {Object.entries(r[1]).map((p) => {
+                                return (
+                                  <div key={p[0]} className="row spacing">
+                                    <Typography>{p[0]}: </Typography>
+                                    <Typography>&quot;{p[1]}&quot;</Typography>
+                                  </div>
+                                );
+                              })}
+                            </CardContent>
+                          </Card>
+                        </div>
+                      );
+                    }
+                  )}
+                </CardContent>
+              </Card>
             </Grid>
-
-            <Grid item xs={4}>
-              <div className="column spacing">
-                <Typography>Key Words</Typography>
-              </div>
+            <Grid item xs={12}>
+              <TroubleSpots
+                students={room.gameData.players}
+                gameRooms={[room]}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <SkillsPracticed
+                students={room.gameData.players}
+                gameRooms={[room]}
+              />
             </Grid>
           </Grid>
-
-          <div className="column spacing" style={{ marginTop: 20 }}>
-            <Typography>Skills Practiced</Typography>
-            <Card style={{ backgroundColor: 'rgb(231, 231, 231)' }}>
-              <CardContent className="column spacing">
-                {Object.entries(skills)
-                  .sort((a, b) => {
-                    return b[1].playersMet.length - a[1].playersMet.length;
-                  })
-                  .map((skill) => {
-                    return (
-                      <SkillCard
-                        key={skill[0]}
-                        name={skill[0]}
-                        players={skill[1].players}
-                        playersMet={skill[1].playersMet}
-                      />
-                    );
-                  })}
-              </CardContent>
-            </Card>
-          </div>
-          <div
-            className="row"
-            style={{ width: '100%', justifyContent: 'flex-end' }}
-          >
-            <Button
-              color="inherit"
-              endIcon={<ArrowForward />}
-              onClick={() => enterRoom(room)}
-            >
-              Enter Room
-            </Button>
-          </div>
         </Collapse>
       </CardContent>
     </Card>

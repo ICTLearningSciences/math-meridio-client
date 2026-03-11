@@ -418,8 +418,8 @@ function GamePage(): JSX.Element {
 
   return (
     <div className="root" style={{ backgroundColor: '#cfdaf8' }}>
-      <div style={{ position: 'absolute', top: 55, width: '50%' }}>
-        <ProgressBar phases={room.gameData.phaseProgression} size="large" />
+      <div style={{ position: 'absolute', top: 55, width: 500 }}>
+        <ProgressBar phases={room.gameData.phaseProgression} />
       </div>
       <EndOfPhaseReflectionModal
         room={room}
