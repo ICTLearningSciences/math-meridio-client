@@ -58,11 +58,21 @@ export interface ReportedAwayStatus {
   reportedBy?: 'STUDENT' | 'FRONTEND_SYSTEM';
 }
 
+export type PhaseStepId = string;
+
+export interface UserPhaseMetrics {
+  phaseTitle: string;
+  timeSpentInPhase: number;
+  numWordsSentInPhase: number;
+}
+
+
 export interface PlayerStatusData {
   lastHeartbeatAt?: Date;
   reportedAwayStatus: ReportedAwayStatus;
   pausedByAdmin: boolean;
   computedState: PlayerComputedState;
+  phaseMetrics: Record<PhaseStepId, UserPhaseMetrics>;
 }
 
 export type UserId = string;
