@@ -146,10 +146,15 @@ export const fullDiscussionStageQueryData = `
             processPromptAs
             promptText
             responseFormat
-            includeChatLogContext
             outputDataType
             jsonResponseData
             customSystemRole
+                                              analyzeLearningObjectives
+                                  includeMessageContext{
+                                    type
+                                    stepIds
+                                    includeMessagesFromOtherUsers
+                                  }
           }
       }
 

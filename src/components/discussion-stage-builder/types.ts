@@ -189,14 +189,26 @@ export enum ProcessPromptAs {
   INDIVIDUALLY = 'INDIVIDUALLY',
 }
 
+export enum IncludeMessagesContextTypeEnum {
+  NONE = 'NONE',
+  ALL_MESSAGES = 'ALL_MESSAGES',
+  FROM_INPUT_STEPS = 'FROM_INPUT_STEPS',
+}
+
+export interface IncludeMessageContext {
+  type: IncludeMessagesContextTypeEnum;
+  stepIds: string[];
+  includeMessagesFromOtherUsers: boolean;
+}
 export interface PromptConfiguration {
   processPromptAs: ProcessPromptAs;
   promptText: string;
   responseFormat: string;
-  includeChatLogContext: boolean;
   outputDataType: PromptOutputTypes;
   jsonResponseData?: string;
   customSystemRole: string;
+  analyzeLearningObjectives: boolean;
+  includeMessageContext: IncludeMessageContext;
 }
 
 export interface PromptStageStepGql extends StageBuilderStep {
@@ -209,10 +221,11 @@ export interface PromptStageStep extends Omit<PromptStageStepGql, 'prompts'> {
     processPromptAs: ProcessPromptAs;
     promptText: string;
     responseFormat: string;
-    includeChatLogContext: boolean;
     outputDataType: PromptOutputTypes;
     jsonResponseData: JsonResponseData[];
     customSystemRole: string;
+    analyzeLearningObjectives: boolean;
+    includeMessageContext: IncludeMessageContext;
   }[];
 }
 

@@ -16,9 +16,6 @@ import {
   RowDiv,
 } from '../../../../styled-components';
 import { InputField } from '../../shared/input-components';
-import Collapse from '@mui/material/Collapse';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import {
   DiscussionStage,
   DiscussionStageStepType,
