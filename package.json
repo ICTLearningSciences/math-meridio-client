@@ -30,7 +30,6 @@
     "react-router-dom": "^6.24.1",
     "react-scripts": "^5.0.1",
     "react-speech-recognition": "^3.10.0",
-    "react-step-progress-bar": "^1.0.3",
     "react-zoom-pan-pinch": "^3.7.0",
     "redux-logger": "^3.0.6",
     "regenerator-runtime": "^0.14.1",
