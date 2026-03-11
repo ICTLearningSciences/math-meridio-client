@@ -31,7 +31,10 @@ export function freshRoomData(attendingRoomOwner: Player): Room {
             "phaseProgression": {
                 "phasesStarted": [],
                 "phasesCompleted": [],
-                "totalPhases": 0
+                "curPhaseTitle": "",
+                "curPhaseStepId": "",
+                "startingPhaseStepsOrdered": [],
+                "learningObjectives": []
             },
             "gameId": "concert-ticket-sales",
             "playersStatusRecord": {},

@@ -100,8 +100,6 @@ export default function EndOfPhaseReflectionModal({
   const hasSubmittedReflection =
     Boolean(currentPlayerReflection) || hasLocallySubmitted;
 
-  const isWaitingForReady = isInWaitingState || hasSubmittedReflection;
-
   const handleReflectionChange = (text: string) => {
     setReflectionText(text);
     // Reset local submission state if user edits after submitting
@@ -170,7 +168,7 @@ export default function EndOfPhaseReflectionModal({
     );
 
     // Ready to Continue button - only shown in WAITING_FOR_STUDENT_READY_TO_CONTINUE state
-    if (isWaitingForReady) {
+    if (isInWaitingState) {
       const isReadyDisabled =
         !hasSubmittedReflection ||
         isSubmittingReady ||

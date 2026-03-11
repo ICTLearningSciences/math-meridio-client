@@ -13,54 +13,65 @@ export default function ProgressBar(props: {
   size?: 'large';
 }): JSX.Element {
   const { phases } = props;
-  const phase = phases.phasesCompleted.length;
-  const value = !phases.totalPhases ? 0 : (phase / phases.totalPhases) * 100;
+  const large = props.size === 'large';
+  const phasesCompleted = phases.phasesCompleted.length;
+  const value = !phases.startingPhaseStepsOrdered.length
+    ? 0
+    : (phasesCompleted / phases.startingPhaseStepsOrdered.length) * 100;
 
-  if (props.size === 'large') {
-    return (
-      <div>
-        <LinearProgress
-          variant="determinate"
-          value={value}
-          style={{ height: 30, borderRadius: 40 }}
-          sx={{
-            backgroundColor: 'rgb(217, 217, 217)',
-            '& .MuiLinearProgress-bar': {
-              backgroundImage: 'linear-gradient(to right, yellow, orange)',
-              borderTopRightRadius: 40,
-              borderBottomRightRadius: 40,
-            },
+  return (
+    <div style={{ position: 'relative' }}>
+      <LinearProgress
+        variant="determinate"
+        value={value}
+        style={{ height: large ? 30 : 15, borderRadius: 40 }}
+        sx={{
+          backgroundColor: 'rgb(217, 217, 217)',
+          '& .MuiLinearProgress-bar': {
+            backgroundImage: 'linear-gradient(to right, yellow, orange)',
+            borderTopRightRadius: 40,
+            borderBottomRightRadius: 40,
+          },
+        }}
+      />
+      {large && (
+        <Typography
+          fontSize={12}
+          style={{
+            color: 'white',
+            position: 'absolute',
+            left: 10,
+            top: '20%',
           }}
-        />
-        <div
-          className="row"
-          style={{ justifyContent: 'space-evenly', marginTop: 10 }}
         >
-          {Array.from({ length: phases.totalPhases }, (_, index) => (
+          OVERALL PROGRESS:
+        </Typography>
+      )}
+      <div
+        className="row"
+        style={{
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          top: '15%',
+          justifyContent: 'space-evenly',
+        }}
+      >
+        {Array.from(
+          { length: phases.startingPhaseStepsOrdered.length },
+          (_, index) => (
             <Typography
               key={index}
-              style={{ color: phase > index ? 'orange' : 'gray' }}
+              fontSize={large ? 14 : 8}
+              style={{
+                color: phasesCompleted > index ? 'white' : 'rgb(180, 180, 180)',
+              }}
             >
               PHASE {index + 1}
             </Typography>
-          ))}
-        </div>
+          )
+        )}
       </div>
-    );
-  }
-  return (
-    <LinearProgress
-      variant="determinate"
-      value={value}
-      style={{ height: 15, borderRadius: 40 }}
-      sx={{
-        backgroundColor: 'rgb(217, 217, 217)',
-        '& .MuiLinearProgress-bar': {
-          backgroundImage: 'linear-gradient(to right, yellow, orange)',
-          borderTopRightRadius: 40,
-          borderBottomRightRadius: 40,
-        },
-      }}
-    />
+    </div>
   );
 }

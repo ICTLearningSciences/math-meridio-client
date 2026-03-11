@@ -26,6 +26,7 @@ import {
   DiscussionStageStepType,
   EndOfPhaseReflectionStep,
   FlowItem,
+  StartOfPhaseStep,
   SystemMessageStageStep,
 } from '../types';
 import { ColumnDiv } from '../../../styled-components';
@@ -37,6 +38,10 @@ import {
   EndOfPhaseReflectionStepBuilder,
   getDefaultEndOfPhaseReflection,
 } from './step-builder/end-of-phase-step-builder';
+import {
+  getDefaultStartOfPhase,
+  StartOfPhaseStepBuilder,
+} from './step-builder/start-of-phase-builder';
 export function FlowStepsBuilderTab(props: {
   flow: FlowItem;
   flowsList: FlowItem[];
@@ -44,8 +49,15 @@ export function FlowStepsBuilderTab(props: {
   updateStep: (step: DiscussionStageStep, flowClientId: string) => void;
   deleteStep: (stepId: string, flowClientId: string) => void;
   setPreviewPromptId: (id: string) => void;
+  startOfPhaseSteps: StartOfPhaseStep[];
 }) {
-  const { flow, flowsList, updateLocalStage, setPreviewPromptId } = props;
+  const {
+    flow,
+    flowsList,
+    updateLocalStage,
+    setPreviewPromptId,
+    startOfPhaseSteps,
+  } = props;
 
   function renderActivityStep(step: DiscussionStageStep, i: number) {
     switch (step.stepType) {
@@ -55,6 +67,18 @@ export function FlowStepsBuilderTab(props: {
             key={i}
             stepIndex={i}
             step={step as SystemMessageStageStep}
+            updateLocalStage={updateLocalStage}
+            updateStep={(step) => props.updateStep(step, flow.clientId)}
+            deleteStep={() => props.deleteStep(step.stepId, flow.clientId)}
+            flowsList={flowsList}
+          />
+        );
+      case DiscussionStageStepType.START_OF_PHASE:
+        return (
+          <StartOfPhaseStepBuilder
+            key={i}
+            stepIndex={i}
+            step={step as StartOfPhaseStep}
             updateLocalStage={updateLocalStage}
             updateStep={(step) => props.updateStep(step, flow.clientId)}
             deleteStep={() => props.deleteStep(step.stepId, flow.clientId)}
@@ -71,6 +95,7 @@ export function FlowStepsBuilderTab(props: {
             updateStep={(step) => props.updateStep(step, flow.clientId)}
             deleteStep={() => props.deleteStep(step.stepId, flow.clientId)}
             flowsList={flowsList}
+            startOfPhaseSteps={startOfPhaseSteps}
           />
         );
       case DiscussionStageStepType.REQUEST_USER_INPUT:
@@ -133,6 +158,8 @@ export function FlowStepsBuilderTab(props: {
         ? getDefaultRequestUserInputBuilder()
         : stepType === DiscussionStageStepType.CONDITIONAL
         ? getDefaultConditionalStep()
+        : stepType === DiscussionStageStepType.START_OF_PHASE
+        ? getDefaultStartOfPhase()
         : stepType === DiscussionStageStepType.END_OF_PHASE_REFLECTION
         ? getDefaultEndOfPhaseReflection()
         : defaultPromptBuilder();

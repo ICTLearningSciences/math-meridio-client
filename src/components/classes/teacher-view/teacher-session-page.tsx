@@ -7,23 +7,14 @@ The full terms of this copyright and license should always be found in the root 
 import React from 'react';
 import { makeStyles } from 'tss-react/mui';
 import { ChevronRight, Search } from '@mui/icons-material';
-import {
-  Button,
-  Card,
-  CardContent,
-  Grid,
-  TextField,
-  Typography,
-} from '@mui/material';
+import { Button, Grid, TextField, Typography } from '@mui/material';
 
 import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
 import ProgressBar from '../../progress-bar';
 import RoomCard from './teacher-room-card';
-import SkillCard from './skill-card';
+import { SkillsPracticed, TroubleSpots } from './skill-card';
 import { Classroom } from '../../../store/slices/educational-data/types';
-import { GAMES } from '../../../game/types';
-import { Player } from '../../../store/slices/player/types';
-import { DropdownButton } from '../../button';
+import { GamesDropdown } from '../../button';
 import { useSearchParams } from 'react-router-dom';
 import { PhaseProgression } from '../../../store/slices/game/types';
 import { calculateMedian } from '../../../helpers';
@@ -43,11 +34,6 @@ const styles = makeStyles()(() => ({
   },
 }));
 
-interface SkillsMet {
-  playersMet: Player[];
-  players: Player[];
-}
-
 export default function ActiveSessionView(props: {
   classroom: Classroom;
 }): JSX.Element {
@@ -55,7 +41,6 @@ export default function ActiveSessionView(props: {
   const { classes } = styles();
   const { educationalData } = useWithEducationalData();
   const [studentSearch, setStudentSearch] = React.useState<string>();
-  const [skills, setSkills] = React.useState<Record<string, SkillsMet>>({});
   const [phase, setPhase] = React.useState<PhaseProgression>();
   const [game, setGame] = React.useState<string>();
   const [_searchParams, setSearchParams] = useSearchParams();
@@ -68,102 +53,48 @@ export default function ActiveSessionView(props: {
   );
 
   React.useEffect(() => {
-    const skills: Record<string, SkillsMet> = {};
-    for (const student of students) {
-      const room = gameRooms.find((r) =>
-        r.gameData.players.find((p) => p._id === student._id)
+    const numPhases: number[] = [];
+    const phasesCompleted: number[] = [];
+    for (const room of gameRooms) {
+      numPhases.push(
+        room.gameData.phaseProgression.startingPhaseStepsOrdered.length
       );
-      if (room) {
-        for (const standard of Object.entries(
-          room.gameData.mathStandardsCompleted
-        )) {
-          if (!(standard[0] in skills)) {
-            skills[standard[0]] = { playersMet: [], players: [] };
-          }
-          if (standard[1]) {
-            skills[standard[0]].playersMet.push(student);
-          }
-          skills[standard[0]].players.push(student);
-        }
-      }
+      phasesCompleted.push(
+        room.gameData.phaseProgression.phasesCompleted.length
+      );
     }
-    setSkills(skills);
-  }, []);
-
-  React.useEffect(() => {
-    if (game) {
-      let totalPhases = 0;
-      const phasesCompleted: number[] = [];
-      for (const room of gameRooms) {
-        totalPhases = room.gameData.phaseProgression.totalPhases;
-        phasesCompleted.push(
-          room.gameData.phaseProgression.phasesCompleted.length
-        );
-      }
-      const median = calculateMedian(phasesCompleted);
-      setPhase({
-        phasesStarted: Array.from({ length: median }),
-        phasesCompleted: Array.from({ length: median }),
-        totalPhases,
-      });
-    } else {
-      setPhase(undefined);
-    }
+    const median = calculateMedian(phasesCompleted);
+    setPhase({
+      curPhaseTitle: '',
+      curPhaseStepId: '',
+      phasesStarted: Array.from({ length: median }),
+      phasesCompleted: Array.from({ length: median }),
+      startingPhaseStepsOrdered: Array.from({
+        length: calculateMedian(numPhases),
+      }),
+      learningObjectives: [],
+    });
   }, [game]);
 
   return (
     <div className="dashboard">
-      <Typography variant="h5" fontWeight="bold">
-        ACTIVE SESSION
-      </Typography>
+      <div className="row" style={{ justifyContent: 'space-between' }}>
+        <Typography variant="h5" fontWeight="bold">
+          ACTIVE SESSION
+        </Typography>
+        <GamesDropdown
+          game={game}
+          setGame={(id: string) => setGame(id)}
+          buttonStyle={{
+            color: 'white',
+            borderColor: 'white',
+            marginLeft: '10px',
+          }}
+        />
+      </div>
 
       <div className="column spacing" style={{ marginTop: 10 }}>
-        <div
-          className="row center-div"
-          style={{ justifyContent: 'space-between' }}
-        >
-          <div className="row center-div">
-            <Typography className={classes.header}>
-              Overall Progress:
-            </Typography>
-            <DropdownButton
-              label={GAMES.find((g) => g.id === game)?.name || 'All Games'}
-              value={game}
-              items={['', ...GAMES.map((g) => g.id)]}
-              onSelect={(id: string) => setGame(id)}
-              renderItem={(id) => {
-                return (
-                  <Typography>
-                    {GAMES.find((g) => g.id === id)?.name || 'Show All'}
-                  </Typography>
-                );
-              }}
-              buttonStyle={{
-                color: 'white',
-                borderColor: 'white',
-                marginLeft: '10px',
-              }}
-            />
-          </div>
-          <Button
-            color="inherit"
-            endIcon={<ChevronRight />}
-            onClick={() => setSearchParams({ tab: '1' })}
-          >
-            Class Report
-          </Button>
-        </div>
-        <Card className={classes.card}>
-          <CardContent style={{ padding: 30 }}>
-            {phase ? (
-              <ProgressBar phases={phase} size="large" />
-            ) : (
-              <Typography variant="body2" color="error">
-                Please select a game first to view progress
-              </Typography>
-            )}
-          </CardContent>
-        </Card>
+        {phase && <ProgressBar phases={phase} size="large" />}
       </div>
 
       <div className="column spacing" style={{ marginTop: 10 }}>
@@ -217,28 +148,24 @@ export default function ActiveSessionView(props: {
       <div className="column spacing" style={{ marginTop: 10 }}>
         <Grid container spacing={2}>
           <Grid item xs={6}>
-            <Typography className={classes.header}>Skills Practiced</Typography>
-            <Card
-              className={classes.card}
-              style={{ backgroundColor: 'rgb(231, 231, 231)' }}
-            >
-              <CardContent className="column spacing">
-                {Object.entries(skills)
-                  .sort((a, b) => {
-                    return b[1].playersMet.length - a[1].playersMet.length;
-                  })
-                  .map((skill) => {
-                    return (
-                      <SkillCard
-                        key={skill[0]}
-                        name={skill[0]}
-                        players={skill[1].players}
-                        playersMet={skill[1].playersMet}
-                      />
-                    );
-                  })}
-              </CardContent>
-            </Card>
+            <div className="row" style={{ justifyContent: 'space-between' }}>
+              <Typography className={classes.header}>
+                Skills Practiced
+              </Typography>
+              <Button
+                color="inherit"
+                style={{ alignSelf: 'end' }}
+                endIcon={<ChevronRight />}
+                onClick={() => setSearchParams({ tab: '1', report: '1' })}
+              >
+                View Report
+              </Button>
+            </div>
+            <SkillsPracticed
+              students={students}
+              gameRooms={gameRooms}
+              noHeader
+            />
           </Grid>
           <Grid item xs={6}>
             <div className="row" style={{ justifyContent: 'space-between' }}>
@@ -247,21 +174,17 @@ export default function ActiveSessionView(props: {
                 color="inherit"
                 style={{ alignSelf: 'end' }}
                 endIcon={<ChevronRight />}
-                onClick={() => setSearchParams({ tab: '1' })}
+                onClick={() => setSearchParams({ tab: '1', report: '2' })}
               >
                 Monitor Students
               </Button>
             </div>
-            <Card
-              className={classes.card}
-              style={{ backgroundColor: 'rgb(231, 231, 231)' }}
-            >
-              <CardContent className="column spacing">
-                <Typography className={classes.headerText}>
-                  Challenge Section
-                </Typography>
-              </CardContent>
-            </Card>
+            <TroubleSpots
+              students={students}
+              gameRooms={gameRooms}
+              noHeader
+              hidePlayers
+            />
           </Grid>
         </Grid>
       </div>

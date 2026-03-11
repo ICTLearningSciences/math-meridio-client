@@ -96,15 +96,23 @@ export const fullDiscussionStageQueryData = `
           message
       }
 
-      ... on EndOfPhaseReflectionStepType {
+      ... on StartOfPhaseStepType {
           lastStep
           stepId
           stepType
           phaseTitle
+      }
+
+      ... on EndOfPhaseReflectionStepType {
+          lastStep
+          stepId
+          stepType
+          parentStartOfPhaseStepId
           skipReflectionCollection
           message
           questions
       }
+
 
       ... on RequestUserInputStageStepType {
           lastStep
@@ -129,12 +137,15 @@ export const fullDiscussionStageQueryData = `
           stepId
           stepType
           jumpToStepId
-          promptText
-          responseFormat
-          includeChatLogContext
-          outputDataType
-          jsonResponseData
-          customSystemRole
+          prompts{
+            processPromptAs
+            promptText
+            responseFormat
+            includeChatLogContext
+            outputDataType
+            jsonResponseData
+            customSystemRole
+          }
       }
 
       ... on ConditionalActivityStepType {
@@ -142,12 +153,12 @@ export const fullDiscussionStageQueryData = `
           stepType
           lastStep
           jumpToStepId
-          conditionals{
+          targetStepId
+          conditionalsToMeet{
               stateDataKey
               checking
               operation
               expectedValue
-              targetStepId
           }
       }
     }
@@ -195,7 +206,9 @@ export const fullRoomQueryData = `
     phaseProgression {
       phasesStarted
       phasesCompleted
-      totalPhases
+      curPhaseTitle
+      curPhaseStepId
+      startingPhaseStepsOrdered
     }
     playersStatusRecord
   }
@@ -209,8 +222,10 @@ export function convertDiscussionStageToGQl(
     flow.steps.forEach((step) => {
       if (step.stepType === DiscussionStageStepType.PROMPT) {
         const _step = step as PromptStageStepGql;
-        if (_step.jsonResponseData) {
-          _step.jsonResponseData = JSON.stringify(_step.jsonResponseData);
+        for (const prompt of _step.prompts) {
+          if (prompt.jsonResponseData) {
+            prompt.jsonResponseData = JSON.stringify(prompt.jsonResponseData);
+          }
         }
       }
     });
@@ -225,9 +240,13 @@ export function convertGqlToDiscussionStage(
   copy.flowsList.forEach((flow) => {
     flow.steps.forEach((step) => {
       if (step.stepType === DiscussionStageStepType.PROMPT) {
-        const _step = step as PromptStageStepGql;
-        if (typeof _step.jsonResponseData === 'string') {
-          _step.jsonResponseData = JSON.parse(_step.jsonResponseData as string);
+        const _step = step as unknown as PromptStageStepGql;
+        for (const prompt of _step.prompts) {
+          if (typeof prompt.jsonResponseData === 'string') {
+            prompt.jsonResponseData = JSON.parse(
+              prompt.jsonResponseData as string
+            );
+          }
         }
       }
     });
