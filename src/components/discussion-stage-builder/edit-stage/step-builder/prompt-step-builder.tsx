@@ -32,6 +32,10 @@ import {
   Tab,
   Box,
   Tooltip,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import { Delete, Add } from '@mui/icons-material';
 import { v4 as uuid } from 'uuid';
@@ -46,19 +50,29 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import { TextDialog } from '../../../dialog';
 import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+} from '@mui/material';
+import {
   DiscussionStage,
   DiscussionStageStepType,
   FlowItem,
+  IncludeMessagesContextTypeEnum,
+  IncludeMessageContext,
   JsonResponseData,
   JsonResponseDataType,
   ProcessPromptAs,
   PromptConfiguration,
   PromptStageStep,
+  RequestUserInputStageStep,
 } from '../../types';
 import {
   RoundedBorderDiv,
   RowDiv,
   TopLeftText,
+  ColumnDiv,
 } from '../../../../styled-components';
 import { syncLlmRequest } from '../../../../hooks/use-with-synchronous-polling';
 import { useWithConfig } from '../../../../store/slices/config/use-with-config';
@@ -84,8 +98,13 @@ export function defaultPromptBuilder(): PromptStageStep {
         responseFormat: '',
         outputDataType: PromptOutputTypes.TEXT,
         jsonResponseData: [] as JsonResponseData[],
-        includeChatLogContext: false,
         customSystemRole: '',
+        analyzeLearningObjectives: false,
+        includeMessageContext: {
+          type: IncludeMessagesContextTypeEnum.NONE,
+          stepIds: [],
+          includeMessagesFromOtherUsers: false,
+        },
       },
     ],
     jumpToStepId: '',
@@ -108,9 +127,353 @@ function getEmptyPromptConfiguration(): Omit<
     responseFormat: '',
     outputDataType: PromptOutputTypes.TEXT,
     jsonResponseData: [] as JsonResponseData[],
-    includeChatLogContext: false,
     customSystemRole: '',
+    analyzeLearningObjectives: false,
+    includeMessageContext: {
+      type: IncludeMessagesContextTypeEnum.NONE,
+      stepIds: [],
+      includeMessagesFromOtherUsers: false,
+    },
   };
+}
+
+interface ConversionConfirmationDialogProps {
+  open: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+  convertingTo: 'analyze' | 'normal';
+}
+
+function ConversionConfirmationDialog(
+  props: ConversionConfirmationDialogProps
+): JSX.Element {
+  const { open, onConfirm, onCancel, convertingTo } = props;
+
+  const message =
+    convertingTo === 'analyze'
+      ? 'Converting this prompt will cause you to lose the current prompt configuration. Are you sure you want to continue?'
+      : 'Converting back to a normal prompt will cause you to lose the Analyze Math Standards configuration. Are you sure you want to continue?';
+
+  return (
+    <Dialog open={open} onClose={onCancel}>
+      <DialogTitle>Confirm Conversion</DialogTitle>
+      <DialogContent>{message}</DialogContent>
+      <DialogActions>
+        <Button onClick={onCancel} color="primary">
+          No
+        </Button>
+        <Button onClick={onConfirm} color="primary" variant="contained">
+          Yes
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
+interface IncludeMessageContextUpdaterProps {
+  includeMessageContext: IncludeMessageContext;
+  updateIncludeMessageContext: (context: IncludeMessageContext) => void;
+  flowsList: FlowItem[];
+  currentStepId: string;
+  isIndividualMode: boolean;
+}
+
+function IncludeMessageContextUpdater(
+  props: IncludeMessageContextUpdaterProps
+): JSX.Element {
+  const {
+    includeMessageContext,
+    updateIncludeMessageContext,
+    flowsList,
+    currentStepId,
+    isIndividualMode,
+  } = props;
+  const [selectedFlowId, setSelectedFlowId] = React.useState<string>('');
+  const [selectedStepId, setSelectedStepId] = React.useState<string>('');
+
+  function updateContextField<K extends keyof IncludeMessageContext>(
+    field: K,
+    value: IncludeMessageContext[K]
+  ) {
+    updateIncludeMessageContext({
+      ...includeMessageContext,
+      [field]: value,
+    });
+  }
+
+  function addStepId(stepId: string) {
+    if (stepId && !includeMessageContext.stepIds.includes(stepId)) {
+      updateContextField('stepIds', [...includeMessageContext.stepIds, stepId]);
+      // Reset selection
+      setSelectedFlowId('');
+      setSelectedStepId('');
+    }
+  }
+
+  function removeStepId(stepId: string) {
+    updateContextField(
+      'stepIds',
+      includeMessageContext.stepIds.filter((id) => id !== stepId)
+    );
+  }
+
+  // Create a list of input steps with their original indices
+  const inputStepsByFlow = flowsList.map((flow) => ({
+    ...flow,
+    inputSteps: flow.steps
+      .map((step, originalIndex) => ({
+        step,
+        originalIndex,
+      }))
+      .filter(
+        ({ step }) =>
+          step.stepType === DiscussionStageStepType.REQUEST_USER_INPUT &&
+          step.stepId !== currentStepId &&
+          !includeMessageContext.stepIds.includes(step.stepId)
+      ),
+  }));
+
+  return (
+    <ColumnDiv
+      style={{
+        border: '1px solid #ccc',
+        borderRadius: 4,
+        padding: 10,
+        marginTop: 10,
+      }}
+    >
+      <span style={{ fontWeight: 'bold', marginBottom: 10 }}>
+        Include Message Context
+      </span>
+
+      <SelectInputField
+        label="Context Type"
+        value={includeMessageContext.type}
+        options={[...Object.values(IncludeMessagesContextTypeEnum)]}
+        onChange={(e) => {
+          updateContextField('type', e as IncludeMessagesContextTypeEnum);
+        }}
+      />
+
+      {includeMessageContext.type ===
+        IncludeMessagesContextTypeEnum.FROM_INPUT_STEPS && (
+        <ColumnDiv style={{ marginTop: 10 }}>
+          <span style={{ fontWeight: 'bold', marginBottom: 5 }}>
+            Selected Input Steps:
+          </span>
+          {includeMessageContext.stepIds.map((stepId) => {
+            // Find the step in the ORIGINAL (unfiltered) flowsList to get correct step number
+            const originalFlow = flowsList.find((f) =>
+              f.steps.some((s) => s.stepId === stepId)
+            );
+            const step = originalFlow?.steps.find((s) => s.stepId === stepId);
+            const stepIndex = originalFlow?.steps.findIndex(
+              (s) => s.stepId === stepId
+            );
+            return (
+              <RowDiv
+                key={stepId}
+                style={{
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: 5,
+                  borderBottom: '1px dotted #ccc',
+                }}
+              >
+                <span>
+                  {originalFlow?.name} - Step{' '}
+                  {stepIndex !== undefined ? stepIndex + 1 : '?'}
+                  {step &&
+                  (step as RequestUserInputStageStep).saveResponseVariableName
+                    ? ` (${
+                        (step as RequestUserInputStageStep)
+                          .saveResponseVariableName
+                      })`
+                    : ''}
+                </span>
+                <IconButton
+                  size="small"
+                  onClick={() => removeStepId(stepId)}
+                  color="error"
+                >
+                  <Delete />
+                </IconButton>
+              </RowDiv>
+            );
+          })}
+
+          <div style={{ marginTop: 10 }}>
+            <span style={{ alignSelf: 'center', marginBottom: 5 }}>
+              Add Input Step
+            </span>
+            {inputStepsByFlow.some((flow) => flow.inputSteps.length > 0) ? (
+              <RowDiv>
+                <FormControl variant="standard" sx={{ minWidth: 120, mr: 1 }}>
+                  <InputLabel id="select-flow-label">Select flow</InputLabel>
+                  <Select
+                    labelId="select-flow-label"
+                    value={selectedFlowId}
+                    onChange={(e) => {
+                      setSelectedFlowId(e.target.value);
+                      setSelectedStepId('');
+                    }}
+                    label="Select flow"
+                  >
+                    {inputStepsByFlow
+                      .filter((flow) => flow.inputSteps.length > 0)
+                      .map((flow) => (
+                        <MenuItem key={flow.clientId} value={flow.clientId}>
+                          {flow.name}
+                        </MenuItem>
+                      ))}
+                  </Select>
+                </FormControl>
+
+                <FormControl variant="standard" sx={{ minWidth: 120, mr: 1 }}>
+                  <InputLabel id="select-step-label">
+                    Select flow step
+                  </InputLabel>
+                  <Select
+                    disabled={!selectedFlowId}
+                    labelId="select-step-label"
+                    value={selectedStepId}
+                    onChange={(e) => {
+                      setSelectedStepId(e.target.value);
+                      addStepId(e.target.value);
+                    }}
+                    label="Select flow step"
+                  >
+                    {inputStepsByFlow
+                      .find((flow) => flow.clientId === selectedFlowId)
+                      ?.inputSteps.map(({ step, originalIndex }) => (
+                        <MenuItem key={step.stepId} value={step.stepId}>
+                          Step {originalIndex + 1}
+                          {(step as RequestUserInputStageStep)
+                            .saveResponseVariableName
+                            ? ` (${
+                                (step as RequestUserInputStageStep)
+                                  .saveResponseVariableName
+                              })`
+                            : ''}
+                        </MenuItem>
+                      ))}
+                  </Select>
+                </FormControl>
+
+                <Button
+                  disabled={!selectedFlowId && !selectedStepId}
+                  onClick={() => {
+                    setSelectedFlowId('');
+                    setSelectedStepId('');
+                  }}
+                >
+                  Clear
+                </Button>
+              </RowDiv>
+            ) : (
+              <span
+                style={{ fontStyle: 'italic', color: '#666', marginTop: 5 }}
+              >
+                (no more request user input steps to select)
+              </span>
+            )}
+          </div>
+        </ColumnDiv>
+      )}
+
+      {/* only show if mode is set to individually */}
+      {isIndividualMode && (
+        <CheckBoxInput
+          label="Include Messages from Other Users"
+          value={includeMessageContext.includeMessagesFromOtherUsers}
+          onChange={(e) => {
+            updateContextField('includeMessagesFromOtherUsers', e);
+          }}
+        />
+      )}
+    </ColumnDiv>
+  );
+}
+
+interface AnalyzeLearningObjectivesPromptEditorProps {
+  promptIndex: number;
+  promptConfig: PromptStageStep['prompts'][0];
+  updatePromptField: (
+    promptIndex: number,
+    field: string,
+    value: string | boolean | JsonResponseData[] | IncludeMessageContext
+  ) => void;
+  flowsList: FlowItem[];
+  stepId: string;
+  onConvertToNormal: () => void;
+}
+
+function AnalyzeLearningObjectivesPromptEditor(
+  props: AnalyzeLearningObjectivesPromptEditorProps
+): JSX.Element {
+  const {
+    promptIndex,
+    promptConfig,
+    updatePromptField,
+    flowsList,
+    stepId,
+    onConvertToNormal,
+  } = props;
+
+  return (
+    <Box sx={{ p: 2 }}>
+      {/* Info Message */}
+      <Box
+        sx={{
+          p: 2,
+          mb: 2,
+          backgroundColor: '#e3f2fd',
+          border: '1px solid #2196f3',
+          borderRadius: 1,
+        }}
+      >
+        <InfoIcon sx={{ verticalAlign: 'middle', mr: 1, color: '#2196f3' }} />
+        <span>
+          This is a special prompt that will include the learning objectives and
+          the learning objective analysis prompt for you. Be sure to add any
+          user data to analyze to the Include Prompt Data section and/or include
+          portions of the chat log as needed.
+        </span>
+      </Box>
+
+      {/* Convert Back Button */}
+      <Button
+        variant="outlined"
+        color="secondary"
+        onClick={onConvertToNormal}
+        sx={{ mb: 2 }}
+      >
+        Convert to Normal Prompt
+      </Button>
+
+      {/* Include Prompt Data (was Prompt Text) */}
+      <InputField
+        label="Include Prompt Data"
+        value={promptConfig.promptText}
+        onChange={(e) => {
+          updatePromptField(promptIndex, 'promptText', e);
+        }}
+        width="100%"
+        maxRows={20}
+      />
+
+      {/* Include Message Context */}
+      <IncludeMessageContextUpdater
+        isIndividualMode={true}
+        includeMessageContext={promptConfig.includeMessageContext}
+        updateIncludeMessageContext={(context) => {
+          updatePromptField(promptIndex, 'includeMessageContext', context);
+        }}
+        flowsList={flowsList}
+        currentStepId={stepId}
+      />
+    </Box>
+  );
 }
 
 interface PromptConfigurationEditorProps {
@@ -119,11 +482,12 @@ interface PromptConfigurationEditorProps {
   updatePromptField: (
     promptIndex: number,
     field: string,
-    value: string | boolean | JsonResponseData[]
+    value: string | boolean | JsonResponseData[] | IncludeMessageContext
   ) => void;
   deletePrompt: (promptIndex: number) => void;
   canDelete: boolean;
   stepId: string;
+  flowsList: FlowItem[];
 }
 
 function PromptConfigurationEditor(
@@ -135,6 +499,8 @@ function PromptConfigurationEditor(
     updatePromptField,
     deletePrompt,
     canDelete,
+    flowsList,
+    stepId,
   } = props;
   const { firstAvailableAzureServiceModel } = useWithConfig();
 
@@ -150,6 +516,11 @@ function PromptConfigurationEditor(
     React.useState<boolean>(false);
   const [viewingInputType, setViewingInputType] =
     React.useState<ViewingInputType>(ViewingInputType.PROMPT_TEXT);
+  const [showConversionDialog, setShowConversionDialog] =
+    React.useState<boolean>(false);
+  const [conversionTarget, setConversionTarget] = React.useState<
+    'analyze' | 'normal'
+  >('analyze');
 
   function editJsonResponseData(
     clientId: string,
@@ -204,6 +575,42 @@ function PromptConfigurationEditor(
     }
   }
 
+  function handleConvertToAnalyze() {
+    setConversionTarget('analyze');
+    setShowConversionDialog(true);
+  }
+
+  function handleConvertToNormal() {
+    setConversionTarget('normal');
+    setShowConversionDialog(true);
+  }
+
+  function confirmConversion() {
+    if (conversionTarget === 'analyze') {
+      // Convert to Analyze Learning Objectives mode
+      updatePromptField(promptIndex, 'analyzeLearningObjectives', true);
+      updatePromptField(
+        promptIndex,
+        'processPromptAs',
+        ProcessPromptAs.INDIVIDUALLY
+      );
+      updatePromptField(promptIndex, 'outputDataType', PromptOutputTypes.JSON);
+      updatePromptField(promptIndex, 'promptText', '');
+      updatePromptField(promptIndex, 'responseFormat', '');
+      updatePromptField(promptIndex, 'customSystemRole', '');
+      updatePromptField(promptIndex, 'jsonResponseData', []);
+    } else {
+      // Convert to Normal mode
+      updatePromptField(promptIndex, 'analyzeLearningObjectives', false);
+      updatePromptField(promptIndex, 'promptText', '');
+    }
+    setShowConversionDialog(false);
+  }
+
+  function cancelConversion() {
+    setShowConversionDialog(false);
+  }
+
   async function executePromptTest() {
     setExecuteInProgress(true);
     const llmRequest: GenericLlmRequest = {
@@ -236,8 +643,48 @@ function PromptConfigurationEditor(
     }
   }
 
+  // If in Analyze Learning Objectives mode, render the special UI
+  if (promptConfig.analyzeLearningObjectives) {
+    return (
+      <>
+        <AnalyzeLearningObjectivesPromptEditor
+          promptIndex={promptIndex}
+          promptConfig={promptConfig}
+          updatePromptField={updatePromptField}
+          flowsList={flowsList}
+          stepId={stepId}
+          onConvertToNormal={handleConvertToNormal}
+        />
+        <ConversionConfirmationDialog
+          open={showConversionDialog}
+          onConfirm={confirmConversion}
+          onCancel={cancelConversion}
+          convertingTo={conversionTarget}
+        />
+      </>
+    );
+  }
+
+  // Normal prompt UI
   return (
     <Box sx={{ p: 2 }}>
+      <ConversionConfirmationDialog
+        open={showConversionDialog}
+        onConfirm={confirmConversion}
+        onCancel={cancelConversion}
+        convertingTo={conversionTarget}
+      />
+
+      {/* Convert to Analyze Math Standards Button */}
+      <Button
+        variant="outlined"
+        color="primary"
+        onClick={handleConvertToAnalyze}
+        sx={{ mb: 2 }}
+      >
+        Convert to Analyze Math Standards Prompt
+      </Button>
+
       <RowDiv
         data-cy="run-prompt-buttons"
         style={{
@@ -356,6 +803,15 @@ function PromptConfigurationEditor(
         width="100%"
       />
 
+      <InputField
+        label="Custom System Role"
+        value={promptConfig.customSystemRole}
+        onChange={(e) => {
+          updatePromptField(promptIndex, 'customSystemRole', e);
+        }}
+        width="100%"
+      />
+
       <SelectInputField
         label="Output Data Type"
         value={promptConfig.outputDataType}
@@ -375,21 +831,16 @@ function PromptConfigurationEditor(
         />
       )}
 
-      <CheckBoxInput
-        label="Include Chat History"
-        value={promptConfig.includeChatLogContext}
-        onChange={(e) => {
-          updatePromptField(promptIndex, 'includeChatLogContext', e);
+      <IncludeMessageContextUpdater
+        isIndividualMode={
+          promptConfig.processPromptAs === ProcessPromptAs.INDIVIDUALLY
+        }
+        includeMessageContext={promptConfig.includeMessageContext}
+        updateIncludeMessageContext={(context) => {
+          updatePromptField(promptIndex, 'includeMessageContext', context);
         }}
-      />
-
-      <InputField
-        label="Custom System Role"
-        value={promptConfig.customSystemRole}
-        onChange={(e) => {
-          updatePromptField(promptIndex, 'customSystemRole', e);
-        }}
-        width="100%"
+        flowsList={flowsList}
+        currentStepId={stepId}
       />
     </Box>
   );
@@ -523,7 +974,7 @@ export function PromptStepBuilder(props: {
   function updatePromptField(
     promptIndex: number,
     field: string,
-    value: string | boolean | JsonResponseData[]
+    value: string | boolean | JsonResponseData[] | IncludeMessageContext
   ) {
     updateLocalStage((prevValue) => {
       return {
@@ -647,26 +1098,6 @@ export function PromptStepBuilder(props: {
       </IconButton>
       <h4 style={{ alignSelf: 'center' }}>Prompt</h4>
       <Collapse in={!collapsed}>
-        {/* Global step fields */}
-        <Box sx={{ mb: 2, p: 2, border: '1px solid #ccc', borderRadius: 1 }}>
-          <h5>Step Settings</h5>
-          <CheckBoxInput
-            label="Is final step (discussion finished)?"
-            value={step.lastStep}
-            onChange={(e) => {
-              updateStepField('lastStep', e);
-            }}
-          />
-
-          <JumpToAlternateStep
-            step={step}
-            flowsList={props.flowsList}
-            onNewStepSelected={(stepId) => {
-              updateStepField('jumpToStepId', stepId);
-            }}
-          />
-        </Box>
-
         {/* Prompt configurations tabs */}
         <Box
           sx={{
@@ -701,10 +1132,30 @@ export function PromptStepBuilder(props: {
                 deletePrompt={deletePrompt}
                 canDelete={step.prompts.length > 1}
                 stepId={step.stepId}
+                flowsList={flowsList}
               />
             )}
           </Box>
         ))}
+        {/* Global step fields */}
+        <Box sx={{ mb: 2, p: 2, border: '1px solid #ccc', borderRadius: 1 }}>
+          <h5>Step Settings</h5>
+          <CheckBoxInput
+            label="Is final step (discussion finished)?"
+            value={step.lastStep}
+            onChange={(e) => {
+              updateStepField('lastStep', e);
+            }}
+          />
+
+          <JumpToAlternateStep
+            step={step}
+            flowsList={props.flowsList}
+            onNewStepSelected={(stepId) => {
+              updateStepField('jumpToStepId', stepId);
+            }}
+          />
+        </Box>
       </Collapse>
     </RoundedBorderDiv>
   );

@@ -7,32 +7,20 @@ The full terms of this copyright and license should always be found in the root 
 import React from 'react';
 import {
   CheckCircle,
+  ErrorOutline,
   ExpandLess,
   ExpandMore,
   Person,
+  WarningAmberOutlined,
 } from '@mui/icons-material';
 import { Card, CardContent, Collapse, Grid, Typography } from '@mui/material';
 import { BarChart, PieChart } from '@mui/x-charts';
-import { Player } from '../../../store/slices/player/types';
-import { PlayerSprite } from '../../avatar-sprite';
-import { SkillsMet } from '../../../types';
-import { Room, SenderType } from '../../../store/slices/game/types';
-import { calculateAverage, calculateSum } from '../../../helpers';
 
-interface PlayerContribution {
-  id: string;
-  name: string;
-  room: string;
-  words: number;
-  totalWords: number;
-  contribution: number;
-}
-interface PlayerTime {
-  id: string;
-  name: string;
-  room: string;
-  timeSpent: number;
-}
+import { PlayerSprite } from '../../avatar-sprite';
+import { Room } from '../../../store/slices/game/types';
+import { Player } from '../../../store/slices/player/types';
+import { calculateAverage, calculateSum } from '../../../helpers';
+import { SkillsMet } from '../../../types';
 
 export function SkillsPracticed(props: {
   students: Player[];
@@ -67,7 +55,10 @@ export function SkillsPracticed(props: {
   }, [students, gameRooms]);
 
   return (
-    <Card style={{ backgroundColor: 'rgb(231, 231, 231)' }}>
+    <Card
+      style={{ backgroundColor: 'rgb(231, 231, 231)', borderRadius: 10 }}
+      elevation={0}
+    >
       <CardContent className="column spacing">
         {!props.noHeader && (
           <div className="row center-div spacing">
@@ -88,6 +79,10 @@ export function SkillsPracticed(props: {
               .sort((a, b) => {
                 return b[1].playersMet.length - a[1].playersMet.length;
               })
+              .filter(
+                (skill) =>
+                  skill[1].playersMet.length === skill[1].players.length
+              )
               .map((skill) => {
                 return (
                   <SkillCard
@@ -114,6 +109,19 @@ export function TroubleSpots(props: {
   const { students, gameRooms } = props;
   const [expanded, setExpanded] = React.useState<boolean>(true);
   const [skills, setSkills] = React.useState<Record<string, SkillsMet>>({});
+
+  const studentsNeedHelp = students.filter((s) =>
+    gameRooms.find(
+      (r) => r.gameData.playersStatusRecord[s._id]?.needsHelpInRoom
+    )
+  );
+  const studentsIncomplete = students.filter((s) =>
+    gameRooms.find(
+      (r) =>
+        r.gameData.playersStatusRecord[s._id] &&
+        Object.values(r.gameData.mathStandardsCompleted).includes(false)
+    )
+  );
 
   React.useEffect(() => {
     const skills: Record<string, SkillsMet> = {};
@@ -145,111 +153,182 @@ export function TroubleSpots(props: {
           Trouble Spots
         </Typography>
       )}
-      <div
-        className="row center-div"
-        style={{
-          border: '1px solid black',
-          borderRadius: 10,
-          marginTop: 10,
-          padding: 20,
-        }}
-      >
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <Card style={{ backgroundColor: 'rgb(231, 231, 231)' }}>
-              <CardContent className="column spacing">
-                <div className="row center-div spacing">
-                  {expanded ? <ExpandLess /> : <ExpandMore />}
-                  <Typography
-                    fontSize={14}
-                    fontWeight="bold"
-                    flexGrow={1}
-                    onClick={() => setExpanded(!expanded)}
-                  >
-                    Challenge Sections
-                  </Typography>
+      <Grid container spacing={2}>
+        <Grid item xs={props.hidePlayers ? 12 : 7}>
+          <Card
+            style={{ backgroundColor: 'rgb(231, 231, 231)', borderRadius: 10 }}
+            elevation={0}
+          >
+            <CardContent className="column spacing">
+              <div className="row center-div spacing">
+                {expanded ? <ExpandLess /> : <ExpandMore />}
+                <Typography
+                  fontSize={14}
+                  fontWeight="bold"
+                  flexGrow={1}
+                  onClick={() => setExpanded(!expanded)}
+                >
+                  Challenge Sections
+                </Typography>
+              </div>
+              <Collapse in={expanded}>
+                <div className="column spacing">
+                  {Object.entries(skills)
+                    .sort((a, b) => {
+                      return b[1].playersMet.length - a[1].playersMet.length;
+                    })
+                    .filter(
+                      (skill) =>
+                        skill[1].playersMet.length < skill[1].players.length
+                    )
+                    .map((skill) => {
+                      return (
+                        <SkillCard
+                          key={skill[0]}
+                          name={skill[0]}
+                          players={skill[1].players}
+                          playersMet={skill[1].playersMet}
+                        />
+                      );
+                    })}
                 </div>
-                <Collapse in={expanded}>
-                  <div className="column spacing">
-                    {Object.entries(skills)
-                      .sort((a, b) => {
-                        return b[1].playersMet.length - a[1].playersMet.length;
-                      })
-                      .filter(
-                        (skill) =>
-                          skill[1].playersMet.length < skill[1].players.length
-                      )
-                      .map((skill) => {
-                        return (
-                          <SkillCard
-                            key={skill[0]}
-                            name={skill[0]}
-                            players={skill[1].players}
-                            playersMet={skill[1].playersMet}
-                          />
-                        );
-                      })}
-                  </div>
-                </Collapse>
+              </Collapse>
+            </CardContent>
+          </Card>
+        </Grid>
+        {!props.hidePlayers && (
+          <Grid item xs={5}>
+            <Card
+              style={{
+                backgroundColor: 'rgb(246, 246, 246)',
+                borderRadius: 10,
+              }}
+              elevation={0}
+            >
+              <CardContent className="column spacing">
+                <Typography fontSize={14} fontWeight="bold">
+                  Needs Help
+                </Typography>
+                <div className="row center-div spacing">
+                  {studentsNeedHelp.map((p) => {
+                    const room = gameRooms.find(
+                      (r) => r.gameData.playersStatusRecord[p._id]
+                    );
+                    return (
+                      <div key={p._id} className="column center-div">
+                        <ErrorOutline
+                          color="error"
+                          style={{ marginBottom: 10 }}
+                        />
+                        <PlayerSprite player={p} />
+                        {room && (
+                          <Typography fontSize={12}>
+                            Phase{' '}
+                            {room.gameData.phaseProgression.phasesCompleted
+                              .length + 1}
+                          </Typography>
+                        )}
+                      </div>
+                    );
+                  })}
+                  {studentsIncomplete.map((p) => {
+                    const room = gameRooms.find(
+                      (r) => r.gameData.playersStatusRecord[p._id]
+                    );
+                    return (
+                      <div key={p._id} className="column center-div">
+                        <WarningAmberOutlined
+                          color="warning"
+                          style={{ marginBottom: 10 }}
+                        />
+                        <PlayerSprite player={p} />
+                        {room && (
+                          <Typography fontSize={12}>
+                            Phase{' '}
+                            {room.gameData.phaseProgression.phasesCompleted
+                              .length + 1}
+                          </Typography>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </CardContent>
             </Card>
           </Grid>
-        </Grid>
-      </div>
+        )}
+      </Grid>
     </div>
   );
 }
 
+interface PlayerContribution {
+  id: string;
+  name: string;
+  room: string;
+  words: number;
+  totalWords: number;
+  contribution: number;
+}
 export function Contribution(props: {
-  title?: string;
   students: Player[];
   gameRooms: Room[];
+  phase?: number;
 }): JSX.Element {
-  const { students, gameRooms } = props;
+  const { students, gameRooms, phase } = props;
   const [contribution, setContribution] = React.useState<PlayerContribution[]>(
     []
   );
 
   React.useEffect(() => {
     const contribution: PlayerContribution[] = [];
-    for (const student of students) {
-      const room = gameRooms.find((r) =>
-        r.gameData.players.find((p) => p._id === student._id)
-      );
-      if (room) {
-        const totalWords = room.gameData.chat
-          .filter((c) => c.sender === SenderType.PLAYER)
-          .reduce((pre: number, cur) => {
-            return pre + cur.message.split(' ').length;
-          }, 0);
-        const studentWords = room.gameData.chat
-          .filter((c) => c.senderId === student._id)
-          .reduce((pre: number, cur) => {
-            return pre + cur.message.split(' ').length;
-          }, 0);
-        contribution.push({
-          id: student._id,
-          name: student.name,
-          room: room.name,
-          words: studentWords,
-          totalWords: totalWords,
-          contribution:
-            totalWords === 0
-              ? 0
-              : Math.round((studentWords / totalWords) * 100),
-        });
+    for (const room of gameRooms) {
+      for (const playerStatus of Object.entries(
+        room.gameData.playersStatusRecord
+      )) {
+        const student = students.find((s) => s._id === playerStatus[0]);
+        if (!student) continue;
+        const phases =
+          phase === undefined
+            ? room.gameData.phaseProgression.phasesCompleted
+            : [room.gameData.phaseProgression.phasesCompleted[phase]];
+        for (const phase of phases) {
+          const studentWords = !playerStatus[1].phaseMetrics
+            ? 0
+            : playerStatus[1].phaseMetrics[phase].numWordsSentInPhase;
+          contribution.push({
+            id: student._id,
+            name: student.name,
+            room: room.name,
+            words: studentWords,
+            totalWords: 0,
+            contribution: 0,
+          });
+        }
       }
     }
+    for (let i = 0; i < contribution.length; i++) {
+      contribution[i].totalWords = calculateSum(
+        contribution
+          .filter((c) => c.room === contribution[i].room)
+          .map((c) => c.words)
+      );
+      contribution[i].contribution =
+        contribution[i].totalWords === 0
+          ? 0
+          : Math.round(
+              100 * (contribution[i].words / contribution[i].totalWords)
+            );
+    }
     setContribution(contribution);
-  }, [gameRooms]);
+  }, [gameRooms, phase]);
 
   return (
     <div>
       <Typography fontSize={14} fontWeight="bold">
-        {props.title ||
-          (gameRooms.length === 1
-            ? 'Student Contribution (%)'
-            : 'Average Student Contribution (%)')}
+        {gameRooms.length === 1
+          ? 'Student Contribution (%)'
+          : 'Average Student Contribution (%)'}
       </Typography>
       <div
         className="row center-div"
@@ -274,39 +353,52 @@ export function Contribution(props: {
   );
 }
 
+interface PlayerTime {
+  id: string;
+  name: string;
+  room: string;
+  timeSpent: number;
+}
 export function TimeSpent(props: {
-  title?: string;
   students: Player[];
   gameRooms: Room[];
+  phase?: number;
 }): JSX.Element {
-  const { students, gameRooms } = props;
+  const { students, gameRooms, phase } = props;
   const [contribution, setContribution] = React.useState<PlayerTime[]>([]);
 
   React.useEffect(() => {
     const contribution: PlayerTime[] = [];
-    for (const student of students) {
-      const room = gameRooms.find((r) =>
-        r.gameData.players.find((p) => p._id === student._id)
-      );
-      if (room) {
-        contribution.push({
-          id: student._id,
-          name: student.name,
-          room: room.name,
-          timeSpent: Math.round(Math.random() * 24),
-        });
+    for (const room of gameRooms) {
+      for (const playerStatus of Object.entries(
+        room.gameData.playersStatusRecord
+      )) {
+        const student = students.find((s) => s._id === playerStatus[0]);
+        if (!student) continue;
+        const phases =
+          phase === undefined
+            ? room.gameData.phaseProgression.phasesCompleted
+            : [room.gameData.phaseProgression.phasesCompleted[phase]];
+        for (const phase of phases) {
+          const timeSpent = !playerStatus[1].phaseMetrics
+            ? 0
+            : playerStatus[1].phaseMetrics[phase].timeSpentInPhase;
+          contribution.push({
+            id: student._id,
+            name: student.name,
+            room: room.name,
+            timeSpent: timeSpent,
+          });
+        }
       }
     }
     setContribution(contribution);
-  }, [gameRooms]);
+  }, [gameRooms, phase]);
 
   return (
     <div>
       <Typography fontSize={14} fontWeight="bold">
-        {props.title ||
-          (gameRooms.length === 1
-            ? 'Time Spent in Game'
-            : 'Average Time Spent')}
+        {gameRooms.length === 1 ? 'Time Spent in Game' : 'Average Time Spent'}
       </Typography>
       <div
         className="row center-div spacing"

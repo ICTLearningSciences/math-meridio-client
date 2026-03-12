@@ -31,7 +31,7 @@ export default function TeacherHome(props: {
   }
 
   if (rooms.length === 0) {
-    return <RoomSetupView classId={classroom._id} />;
+    return <RoomSetupView classroom={classroom} />;
   }
   return <ActiveSessionView classroom={classroom} />;
 }
