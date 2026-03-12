@@ -5,8 +5,81 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import React from 'react';
+import * as motion from 'motion/react-client';
 import { LinearProgress, Typography } from '@mui/material';
-import { PhaseProgression } from '../store/slices/game/types';
+import { CheckCircleOutline } from '@mui/icons-material';
+import { PhaseProgression, Room } from '../store/slices/game/types';
+
+export function PhaseSelector(props: {
+  gameRooms: Room[];
+  phase: number | undefined;
+  setPhase: (num: number) => void;
+}): JSX.Element {
+  const { gameRooms, phase, setPhase } = props;
+  const [numPhases, setNumPhases] = React.useState<number>(0);
+  const [phasesCompleted, setPhasesCompleted] = React.useState<number>(0);
+
+  React.useEffect(() => {
+    const numPhases = Math.min(
+      ...gameRooms.map(
+        (r) => r.gameData.phaseProgression.startingPhaseStepsOrdered.length
+      )
+    );
+    const phasesCompleted = Math.min(
+      ...gameRooms.map(
+        (r) => r.gameData.phaseProgression.phasesCompleted.length
+      )
+    );
+    setNumPhases(numPhases);
+    setPhasesCompleted(phasesCompleted);
+  }, [gameRooms]);
+
+  function onTogglePhase(idx: number): void {
+    if (phase === undefined || idx > phasesCompleted) return;
+    setPhase(idx);
+  }
+
+  return (
+    <div className="row spacing" style={{ width: '100%' }}>
+      {Array.from({ length: numPhases }, (_, index) => (
+        <motion.div
+          key={index}
+          whileHover={{ scale: 1.05, filter: 'brightness(0.8)' }}
+          className="column center-div spacing"
+          style={{ flexGrow: 1 }}
+          onClick={() => onTogglePhase(index)}
+        >
+          <div
+            className="row center-div"
+            style={{
+              height: 30,
+              width: '100%',
+              borderRadius: 40,
+              backgroundColor:
+                (phase === undefined && phasesCompleted > index) ||
+                phase === index
+                  ? 'orange'
+                  : 'rgb(217, 217, 217)',
+              color: 'white',
+              borderTopRightRadius: 40,
+              borderBottomRightRadius: 40,
+            }}
+          >
+            {phasesCompleted > index && <CheckCircleOutline />}
+          </div>
+          <Typography
+            fontSize={14}
+            style={{
+              color: phase === index ? 'orange' : 'gray',
+            }}
+          >
+            PHASE {index + 1}
+          </Typography>
+        </motion.div>
+      ))}
+    </div>
+  );
+}
 
 export default function ProgressBar(props: {
   phases: PhaseProgression;

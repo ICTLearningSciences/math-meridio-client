@@ -6,13 +6,11 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Button, IconButton, TextField, Typography } from '@mui/material';
-import { Create, Save } from '@mui/icons-material';
+import { Button, IconButton, Typography } from '@mui/material';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { clearPlayer } from '../store/slices/player';
 import AvatarSprite from './avatar-sprite';
 import { UseWithLogin } from '../store/slices/player/use-with-login';
-import { ContainedButton } from './button';
 import { useWithEducationalData } from '../store/slices/educational-data/use-with-educational-data';
 import { getCurPhaseTitleFromRoom } from '../store/slices/educational-data/helpers';
 import { RowDiv } from '../styled-components';
@@ -22,7 +20,6 @@ export function Header(props: { useLogin: UseWithLogin }) {
   const dispatch = useAppDispatch();
   const { player } = useAppSelector((state) => state.playerData);
   const { roomId } = useParams<{ roomId: string }>();
-  const [isEditing, setIsEditing] = React.useState<boolean>(false);
   const { logout } = props.useLogin;
   const { pathname } = useLocation();
   const { renameGameRoom, educationalData, setPlayerNeedsHelpInRoom } =
@@ -39,7 +36,6 @@ export function Header(props: { useLogin: UseWithLogin }) {
     player?._id && room
       ? room?.gameData.playersStatusRecord[player?._id]
       : undefined;
-  // const completedPhases = room?.gameData.phaseProgression.phasesCompleted.length;
   const progressString =
     totalPhases !== undefined && curPhaseIndex !== undefined
       ? `${curPhaseIndex + 1}/${totalPhases}`
@@ -64,9 +60,6 @@ export function Header(props: { useLogin: UseWithLogin }) {
         }}
       >
         <img height={60} src="/logo.png" alt="image" />
-        <ContainedButton style={{ backgroundColor: 'white', color: 'black' }}>
-          HELP
-        </ContainedButton>
       </header>
     );
   }
@@ -77,37 +70,12 @@ export function Header(props: { useLogin: UseWithLogin }) {
         className="row center-div"
         style={{ justifyContent: 'space-between' }}
       >
-        <IconButton style={{ width: '26%' }} onClick={homeButtonClick}>
+        <IconButton onClick={homeButtonClick}>
           <img height={60} src="/logo.png" alt="image" />
         </IconButton>
         {/* Empty div for spacing */}
         <div className="row center-div" style={{ width: '48%' }}>
-          {isEditing ? (
-            <TextField
-              style={{ width: 300 }}
-              sx={{ input: { color: 'white' } }}
-              value={name}
-              variant="standard"
-              onChange={(e) => setName(e.target.value)}
-            />
-          ) : (
-            <Typography variant="h5">{room ? room.name : ''}</Typography>
-          )}
-          {pathname.startsWith('/game/') ? (
-            <IconButton
-              style={{ color: 'white' }}
-              onClick={() => {
-                if (isEditing) {
-                  renameGameRoom(room?._id || '', name);
-                  setIsEditing(false);
-                } else {
-                  setIsEditing(true);
-                }
-              }}
-            >
-              {isEditing ? <Save /> : <Create />}
-            </IconButton>
-          ) : undefined}
+          <Typography variant="h5">{room ? room.name : ''}</Typography>
         </div>
         <div style={{ width: '13%' }}>
           <HelpRequestButton
@@ -153,13 +121,13 @@ export function Header(props: { useLogin: UseWithLogin }) {
           )}
         </div>
       </div>
+
       <RowDiv
         style={{
           justifyContent: 'space-between',
         }}
       >
         <div style={{ flex: 1 }} />
-
         <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
           {curPhaseTitle && (
             <Typography variant="h6" style={{ flex: 1 }} textAlign="center">
@@ -167,19 +135,6 @@ export function Header(props: { useLogin: UseWithLogin }) {
             </Typography>
           )}
         </div>
-
-        {/* <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
-          {isInstructor && (
-            <Button
-              style={{ backgroundColor: 'white', color: 'black' }}
-              onClick={() => {
-                fetchInstructorDataHydration();
-              }}
-            >
-              Refresh
-            </Button>
-          )}
-        </div> */}
       </RowDiv>
     </header>
   );

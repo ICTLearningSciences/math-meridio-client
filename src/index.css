@@ -49,13 +49,13 @@ body {
   display: flex;
   flex-direction: column;
   color: white;
+  background-image: linear-gradient(to bottom, rgb(114, 20, 201), rgb(59, 7, 105));
   margin-left: -20px;
   margin-right: -20px;
+  margin-top: 20px;
   margin-bottom: -20px;
-  background-image: linear-gradient(to bottom, rgb(114, 20, 201), rgb(59, 7, 105));
   padding: 40px;
   padding-top: 40px;
-  margin-top: 20px;
   border-top-right-radius: 40px;
   border-top-left-radius: 40px;
 }

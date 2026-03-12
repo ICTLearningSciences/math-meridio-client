@@ -16,7 +16,7 @@ import {
   IndividualReportCard,
   PhaseReportCard,
   SummaryReportCard,
-} from './room-report-card';
+} from './report-card';
 import { Tabs } from '../../tab';
 
 function RoomReport(props: { classroom: Classroom }): JSX.Element {
@@ -85,7 +85,7 @@ export default function TeacherReports(props: {
   }
 
   if (rooms.length === 0) {
-    return <RoomSetupView classId={classroom._id} />;
+    return <RoomSetupView classroom={classroom} />;
   }
   return (
     <Tabs
