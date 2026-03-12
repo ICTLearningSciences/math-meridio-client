@@ -5,7 +5,6 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import React from 'react';
-import * as motion from 'motion/react-client';
 import {
   Box,
   Card,
@@ -17,64 +16,18 @@ import {
 } from '@mui/material';
 
 import { Classroom } from '../../../store/slices/educational-data/types';
-import ProgressBar from '../../progress-bar';
+import { PhaseSelector } from '../../phase-progress-bar';
 import {
   Contribution,
   SkillsPracticed,
   TimeSpent,
   TroubleSpots,
 } from './skill-card';
-import { PhaseProgression, Room } from '../../../store/slices/game/types';
+import { Room } from '../../../store/slices/game/types';
 import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
-import { calculateMedian } from '../../../helpers';
 import { GAMES } from '../../../game/types';
 import { GamesDropdown } from '../../button';
 import { PlayerSprite } from '../../avatar-sprite';
-
-function PhaseSelector(props: {
-  gameRooms: Room[];
-  phase: number;
-  setPhase: (num: number) => void;
-}): JSX.Element {
-  const { gameRooms, phase, setPhase } = props;
-  const numPhases =
-    gameRooms.length === 0
-      ? 0
-      : gameRooms[0].gameData.phaseProgression.startingPhaseStepsOrdered.length;
-
-  return (
-    <div className="row spacing" style={{ width: '100%' }}>
-      {Array.from({ length: numPhases }, (_, index) => (
-        <motion.div
-          key={index}
-          whileHover={{ scale: 1.05, filter: 'brightness(0.8)' }}
-          className="column center-div spacing"
-          style={{ flexGrow: 1 }}
-          onClick={() => setPhase(index)}
-        >
-          <div
-            style={{
-              height: 30,
-              width: '100%',
-              borderRadius: 40,
-              backgroundColor: phase >= index ? 'orange' : 'rgb(217, 217, 217)',
-              borderTopRightRadius: 40,
-              borderBottomRightRadius: 40,
-            }}
-          />
-          <Typography
-            fontSize={14}
-            style={{
-              color: phase === index ? 'orange' : 'rgb(230, 230, 230)',
-            }}
-          >
-            PHASE {index + 1}
-          </Typography>
-        </motion.div>
-      ))}
-    </div>
-  );
-}
 
 export function SummaryReportCard(props: {
   classroom: Classroom;
@@ -82,7 +35,7 @@ export function SummaryReportCard(props: {
   const { classroom } = props;
   const { educationalData } = useWithEducationalData();
   const [game, setGame] = React.useState<string>();
-  const [phase, setPhase] = React.useState<PhaseProgression>();
+  const [phase, setPhase] = React.useState<number>();
 
   const gameRooms = educationalData.rooms.filter(
     (r) => r.classId === classroom._id && (!game || r.gameData.gameId === game)
@@ -90,31 +43,6 @@ export function SummaryReportCard(props: {
   const students = educationalData.students.filter((s) =>
     gameRooms.find((r) => r.gameData.players.find((p) => p._id === s._id))
   );
-
-  React.useEffect(() => {
-    // get overall phase progress
-    const numPhases: number[] = [];
-    const phasesCompleted: number[] = [];
-    for (const room of gameRooms) {
-      numPhases.push(
-        room.gameData.phaseProgression.startingPhaseStepsOrdered.length
-      );
-      phasesCompleted.push(
-        room.gameData.phaseProgression.phasesCompleted.length
-      );
-    }
-    const median = calculateMedian(phasesCompleted);
-    setPhase({
-      curPhaseTitle: '',
-      curPhaseStepId: '',
-      phasesStarted: Array.from({ length: median }),
-      phasesCompleted: Array.from({ length: median }),
-      startingPhaseStepsOrdered: Array.from({
-        length: calculateMedian(numPhases),
-      }),
-      learningObjectives: [],
-    });
-  }, [game]);
 
   return (
     <Card>
@@ -127,7 +55,11 @@ export function SummaryReportCard(props: {
           setGame={(id: string) => setGame(id)}
           buttonStyle={{ borderColor: 'black' }}
         />
-        {phase && <ProgressBar phases={phase} size="large" />}
+        <PhaseSelector
+          gameRooms={gameRooms}
+          phase={phase}
+          setPhase={setPhase}
+        />
         <Grid container spacing={2} style={{ marginTop: 10 }}>
           <Grid item xs={4}>
             <Contribution students={students} gameRooms={gameRooms} />
@@ -346,6 +278,7 @@ export function IndividualReportCard(props: {
                     <Card
                       key={`reflection-${idx}`}
                       style={{ backgroundColor: 'rgb(231, 231, 231)' }}
+                      elevation={0}
                     >
                       <CardContent className="column spacing">
                         <Typography fontSize={14} fontWeight="bold">
@@ -374,40 +307,6 @@ export function IndividualReportCard(props: {
                     </Card>
                   );
                 })}
-              <Card
-                style={{ backgroundColor: 'rgb(231, 231, 231)', marginTop: 10 }}
-              >
-                <CardContent className="column spacing">
-                  {Object.entries(room.gameData.playersGameStateData).map(
-                    (r) => {
-                      const player = room.gameData.players.find(
-                        (p) => p._id === r[0]
-                      );
-                      if (!player) return <div key={r[0]} />;
-                      return (
-                        <div key={r[0]} className="row spacing">
-                          <PlayerSprite player={player} />
-                          <Card
-                            style={{ borderRadius: 10, width: '100%' }}
-                            elevation={0}
-                          >
-                            <CardContent className="column spacing">
-                              {Object.entries(r[1]).map((p) => {
-                                return (
-                                  <div key={p[0]} className="row spacing">
-                                    <Typography>{p[0]}: </Typography>
-                                    <Typography>&quot;{p[1]}&quot;</Typography>
-                                  </div>
-                                );
-                              })}
-                            </CardContent>
-                          </Card>
-                        </div>
-                      );
-                    }
-                  )}
-                </CardContent>
-              </Card>
             </Grid>
             <Grid item xs={12}>
               <TroubleSpots
