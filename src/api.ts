@@ -101,6 +101,11 @@ export const fullDiscussionStageQueryData = `
           stepId
           stepType
           phaseTitle
+                                        learningObjectives{
+                                variableName
+                                title
+                                criteria
+                              }
       }
 
       ... on EndOfPhaseReflectionStepType {
@@ -141,10 +146,15 @@ export const fullDiscussionStageQueryData = `
             processPromptAs
             promptText
             responseFormat
-            includeChatLogContext
             outputDataType
             jsonResponseData
             customSystemRole
+                                              analyzeLearningObjectives
+                                  includeMessageContext{
+                                    type
+                                    stepIds
+                                    includeMessagesFromOtherUsers
+                                  }
           }
       }
 

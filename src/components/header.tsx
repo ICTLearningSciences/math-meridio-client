@@ -6,32 +6,24 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Button, IconButton, TextField, Typography } from '@mui/material';
-import { Create, Save } from '@mui/icons-material';
+import { Button, IconButton, Typography } from '@mui/material';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { clearPlayer } from '../store/slices/player';
 import AvatarSprite from './avatar-sprite';
 import { UseWithLogin } from '../store/slices/player/use-with-login';
-import { ContainedButton } from './button';
 import { useWithEducationalData } from '../store/slices/educational-data/use-with-educational-data';
 import { getCurPhaseTitleFromRoom } from '../store/slices/educational-data/helpers';
 import { RowDiv } from '../styled-components';
-import { EducationalRole } from '../store/slices/player/types';
+import { HelpRequestButton } from './help-request-button';
 
 export function Header(props: { useLogin: UseWithLogin }) {
   const dispatch = useAppDispatch();
   const { player } = useAppSelector((state) => state.playerData);
   const { roomId } = useParams<{ roomId: string }>();
-  const [isEditing, setIsEditing] = React.useState<boolean>(false);
   const { logout } = props.useLogin;
   const { pathname } = useLocation();
-  const {
-    leaveGameRoom,
-    renameGameRoom,
-    educationalData,
-    fetchInstructorDataHydration,
-  } = useWithEducationalData();
-  const isInstructor = player?.educationalRole === EducationalRole.INSTRUCTOR;
+  const { renameGameRoom, educationalData, setPlayerNeedsHelpInRoom } =
+    useWithEducationalData();
   const room = educationalData.rooms.find((r) => r._id === roomId);
   const totalPhases =
     room?.gameData.phaseProgression.startingPhaseStepsOrdered.length;
@@ -39,7 +31,11 @@ export function Header(props: { useLogin: UseWithLogin }) {
     room?.gameData.phaseProgression.startingPhaseStepsOrdered.indexOf(
       room?.gameData.phaseProgression.curPhaseStepId || ''
     );
-  // const completedPhases = room?.gameData.phaseProgression.phasesCompleted.length;
+
+  const myStatusInRoom =
+    player?._id && room
+      ? room?.gameData.playersStatusRecord[player?._id]
+      : undefined;
   const progressString =
     totalPhases !== undefined && curPhaseIndex !== undefined
       ? `${curPhaseIndex + 1}/${totalPhases}`
@@ -49,9 +45,6 @@ export function Header(props: { useLogin: UseWithLogin }) {
   const navigate = useNavigate();
 
   function homeButtonClick() {
-    // if (roomId) {
-    //   leaveGameRoom(roomId);
-    // }
     navigate('/classes');
   }
 
@@ -67,9 +60,6 @@ export function Header(props: { useLogin: UseWithLogin }) {
         }}
       >
         <img height={60} src="/logo.png" alt="image" />
-        <ContainedButton style={{ backgroundColor: 'white', color: 'black' }}>
-          HELP
-        </ContainedButton>
       </header>
     );
   }
@@ -80,39 +70,22 @@ export function Header(props: { useLogin: UseWithLogin }) {
         className="row center-div"
         style={{ justifyContent: 'space-between' }}
       >
-        <IconButton style={{ width: 150 }} onClick={homeButtonClick}>
+        <IconButton onClick={homeButtonClick}>
           <img height={60} src="/logo.png" alt="image" />
         </IconButton>
-        <div className="row center-div">
-          {isEditing ? (
-            <TextField
-              style={{ width: 300 }}
-              sx={{ input: { color: 'white' } }}
-              value={name}
-              variant="standard"
-              onChange={(e) => setName(e.target.value)}
-            />
-          ) : (
-            <Typography variant="h5">{room ? room.name : ''}</Typography>
-          )}
-          {pathname.startsWith('/game/') ? (
-            <IconButton
-              style={{ color: 'white' }}
-              onClick={() => {
-                if (isEditing) {
-                  renameGameRoom(room?._id || '', name);
-                  setIsEditing(false);
-                } else {
-                  setIsEditing(true);
-                }
-              }}
-            >
-              {isEditing ? <Save /> : <Create />}
-            </IconButton>
-          ) : undefined}
+        {/* Empty div for spacing */}
+        <div className="row center-div" style={{ width: '48%' }}>
+          <Typography variant="h5">{room ? room.name : ''}</Typography>
         </div>
-        <div style={{ display: 'flex', width: 150, alignItems: 'center' }}>
-          {pathname.startsWith('/game/') ? (
+        <div style={{ width: '13%' }}>
+          <HelpRequestButton
+            myStatusInRoom={myStatusInRoom}
+            setPlayerNeedsHelpInRoom={setPlayerNeedsHelpInRoom}
+          />
+        </div>
+        {/* Profile Section */}
+        <div style={{ display: 'flex', width: '13%', alignItems: 'center' }}>
+          {pathname.includes('/room/') ? (
             <Button
               variant="text"
               disabled={!player || !room}
@@ -121,8 +94,9 @@ export function Header(props: { useLogin: UseWithLogin }) {
                 color: 'white',
                 marginRight: 5,
                 padding: 0,
+                textTransform: 'none',
               }}
-              onClick={() => leaveGameRoom(room?._id || '')}
+              onClick={() => navigate('/classes')}
             >
               Leave Room
             </Button>
@@ -147,13 +121,13 @@ export function Header(props: { useLogin: UseWithLogin }) {
           )}
         </div>
       </div>
+
       <RowDiv
         style={{
           justifyContent: 'space-between',
         }}
       >
         <div style={{ flex: 1 }} />
-
         <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
           {curPhaseTitle && (
             <Typography variant="h6" style={{ flex: 1 }} textAlign="center">
@@ -161,19 +135,6 @@ export function Header(props: { useLogin: UseWithLogin }) {
             </Typography>
           )}
         </div>
-
-        {/* <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
-          {isInstructor && (
-            <Button
-              style={{ backgroundColor: 'white', color: 'black' }}
-              onClick={() => {
-                fetchInstructorDataHydration();
-              }}
-            >
-              Refresh
-            </Button>
-          )}
-        </div> */}
       </RowDiv>
     </header>
   );

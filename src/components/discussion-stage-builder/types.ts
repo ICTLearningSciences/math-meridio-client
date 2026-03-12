@@ -5,6 +5,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import { v4 as uuidv4 } from 'uuid';
+import { LearningObjective } from '../../store/slices/game/types';
 
 export enum PromptOutputTypes {
   TEXT = 'TEXT',
@@ -108,6 +109,7 @@ export interface SystemMessageStageStep extends StageBuilderStep {
 export interface StartOfPhaseStep extends StageBuilderStep {
   stepType: DiscussionStageStepType.START_OF_PHASE;
   phaseTitle: string;
+  learningObjectives: LearningObjective[];
 }
 
 export interface EndOfPhaseReflectionStep extends StageBuilderStep {
@@ -187,14 +189,26 @@ export enum ProcessPromptAs {
   INDIVIDUALLY = 'INDIVIDUALLY',
 }
 
+export enum IncludeMessagesContextTypeEnum {
+  NONE = 'NONE',
+  ALL_MESSAGES = 'ALL_MESSAGES',
+  FROM_INPUT_STEPS = 'FROM_INPUT_STEPS',
+}
+
+export interface IncludeMessageContext {
+  type: IncludeMessagesContextTypeEnum;
+  stepIds: string[];
+  includeMessagesFromOtherUsers: boolean;
+}
 export interface PromptConfiguration {
   processPromptAs: ProcessPromptAs;
   promptText: string;
   responseFormat: string;
-  includeChatLogContext: boolean;
   outputDataType: PromptOutputTypes;
   jsonResponseData?: string;
   customSystemRole: string;
+  analyzeLearningObjectives: boolean;
+  includeMessageContext: IncludeMessageContext;
 }
 
 export interface PromptStageStepGql extends StageBuilderStep {
@@ -207,10 +221,11 @@ export interface PromptStageStep extends Omit<PromptStageStepGql, 'prompts'> {
     processPromptAs: ProcessPromptAs;
     promptText: string;
     responseFormat: string;
-    includeChatLogContext: boolean;
     outputDataType: PromptOutputTypes;
     jsonResponseData: JsonResponseData[];
     customSystemRole: string;
+    analyzeLearningObjectives: boolean;
+    includeMessageContext: IncludeMessageContext;
   }[];
 }
 

@@ -47,7 +47,7 @@ import { UseWithEducationalData } from '../../store/slices/educational-data/use-
 import { useAppSelector } from '../../store/hooks';
 import { RequireInputType } from '../discussion-stage-builder/types';
 import { viewGameRoomSimulation } from '../../hooks/game-rooms/game-room-api';
-import ProgressBar from '../progress-bar';
+import ProgressBar from '../phase-progress-bar';
 
 const COLS = 6;
 const ROWS = 4;

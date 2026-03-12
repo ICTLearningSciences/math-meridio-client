@@ -23,7 +23,7 @@ import {
 import { Room } from '../../../store/slices/game/types';
 import { GAMES } from '../../../game/types';
 import { PlayerActivitySprite } from '../../avatar-sprite';
-import ProgressBar from '../../progress-bar';
+import ProgressBar from '../../phase-progress-bar';
 import { Classroom } from '../../../store/slices/educational-data/types';
 
 export default function RoomCard(props: {
@@ -35,14 +35,17 @@ export default function RoomCard(props: {
   const navigate = useNavigate();
 
   const game = GAMES.find((g) => g.id === room?.gameData.gameId);
-  const numPlayersPaused = room.gameData.players
+  const playersPaused = room.gameData.players
     .map((p) => room.gameData.playersStatusRecord[p._id])
     .filter(
       (s) =>
         s.pausedByAdmin ||
         s.reportedAwayStatus.isAway ||
         s.computedState !== 'ACTIVE'
-    ).length;
+    );
+  const needsHelp = room.gameData.players.filter(
+    (p) => room.gameData.playersStatusRecord[p._id]?.needsHelpInRoom
+  );
 
   const enterRoom = () => {
     navigate(`/classes/${classroom._id}/room/${room._id}`);
@@ -66,15 +69,20 @@ export default function RoomCard(props: {
             >
               {room.name}
             </Typography>
-            {!numPlayersPaused ? (
-              <CheckCircleOutline color="success" />
-            ) : numPlayersPaused === room.gameData.players.length ? (
-              <ErrorOutline color="error" />
+            {needsHelp.length > 0 ? (
+              <Tooltip
+                title={`${needsHelp.map((p) => p.name).join(', ')} needs help`}
+              >
+                <ErrorOutline color="error" />
+              </Tooltip>
+            ) : playersPaused.length === room.gameData.players.length ? (
+              <Tooltip title="Players are inactive">
+                <WarningAmberOutlined color="warning" />
+              </Tooltip>
             ) : (
-              <WarningAmberOutlined color="warning" />
+              <CheckCircleOutline color="success" />
             )}
           </div>
-
           <div
             className="row center-div"
             style={{
@@ -91,7 +99,6 @@ export default function RoomCard(props: {
               />
             ))}
           </div>
-
           <ProgressBar phases={room.gameData.phaseProgression} />
           <Typography variant="body2">
             {game?.name || room?.gameData.gameId}

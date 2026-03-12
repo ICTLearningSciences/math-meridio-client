@@ -5,8 +5,11 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import React from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Button,
+  Card,
+  CardContent,
   Dialog,
   DialogActions,
   DialogContent,
@@ -20,16 +23,17 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+
 import {
   ClassMembershipStatus,
   Classroom,
 } from '../../../store/slices/educational-data/types';
 import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
 import { Player } from '../../../store/slices/player/types';
+import { Tabs } from '../../tab';
+import { RoomOrganizationView, RoomSetupView } from './teacher-room-setup';
 
-export default function TeacherManageClass(props: {
-  classroom?: Classroom;
-}): JSX.Element {
+function TeacherEditClass(props: { classroom?: Classroom }): JSX.Element {
   const { classroom } = props;
   const {
     educationalData,
@@ -54,6 +58,9 @@ export default function TeacherManageClass(props: {
   );
   const students = educationalData.students.filter((s) =>
     studentMemberships.some((sm) => sm.userId === s._id)
+  );
+  const rooms = educationalData.rooms.filter(
+    (r) => r.classId === classroom?._id
   );
 
   React.useEffect(() => {
@@ -129,155 +136,169 @@ export default function TeacherManageClass(props: {
 
   return (
     <div className="column spacing">
-      <Typography fontSize={16} fontWeight="bold" style={{ marginTop: 40 }}>
-        EDIT CLASS
-      </Typography>
-      <TextField
-        fullWidth
-        label="Class Name"
-        value={className}
-        onChange={(e) => setClassName(e.target.value)}
-        style={{ marginTop: 10, marginBottom: 20 }}
-      />
-      <TextField
-        fullWidth
-        label="Description"
-        value={classDescription}
-        onChange={(e) => setClassDescription(e.target.value)}
-        multiline
-        rows={3}
-      />
-      <Button
-        variant="contained"
-        color="secondary"
-        fullWidth
-        disabled={
-          creating ||
-          !className ||
-          (classroom.name === className &&
-            classroom.description === classDescription)
-        }
-        onClick={handleUpdateClass}
-      >
-        {creating ? 'Saving...' : 'Save Changes'}
-      </Button>
-
-      <Typography fontSize={16} fontWeight="bold" style={{ marginTop: 40 }}>
-        INVITE CODES
-      </Typography>
-
-      {classroom.inviteCodes.length === 0 ? (
-        <Typography variant="body2" color="error">
-          No active invite codes.
-        </Typography>
-      ) : (
-        <TableContainer
-          sx={{
-            borderRadius: 3,
-            border: 1,
-          }}
-        >
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Code</TableCell>
-                <TableCell>Uses</TableCell>
-                <TableCell>Max Uses</TableCell>
-                <TableCell>Valid Until</TableCell>
-                <TableCell>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {classroom.inviteCodes.map((inviteCode) => (
-                <TableRow key={inviteCode.code}>
-                  <TableCell>{inviteCode.code}</TableCell>
-                  <TableCell>{inviteCode.uses}</TableCell>
-                  <TableCell>{inviteCode.maxUses || 'Unlimited'}</TableCell>
-                  <TableCell>
-                    {inviteCode.validUntil
-                      ? new Date(inviteCode.validUntil).toLocaleDateString()
-                      : 'No expiration'}
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      size="small"
-                      color="error"
-                      onClick={() => handleRevokeInviteCode(inviteCode.code)}
-                    >
-                      Revoke
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
-
-      <Button
-        variant="contained"
-        fullWidth
-        onClick={() => setInviteDialogOpen(true)}
-      >
-        Create Invite Code
-      </Button>
-
-      <Typography fontSize={16} fontWeight="bold" style={{ marginTop: 40 }}>
+      <Typography fontSize={16} fontWeight="bold">
         STUDENTS
       </Typography>
-
-      {students.length === 0 ? (
-        <Typography variant="body2" color="error">
-          No students have joined yet
-        </Typography>
-      ) : (
-        <TableContainer
-          sx={{
-            borderRadius: 3,
-            border: 1,
-          }}
+      <Card style={{ borderRadius: 10 }}>
+        <CardContent
+          className="column spacing"
+          style={{ position: 'relative', padding: 20 }}
         >
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell>Email</TableCell>
-                <TableCell>Assigned Group</TableCell>
-                <TableCell>Last Login</TableCell>
-                <TableCell>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {students.map((student) => {
-                const groupId = studentMemberships.find(
-                  (s) => s.userId === student._id
-                )?.groupId;
-                return (
-                  <TableRow key={student._id}>
-                    <TableCell>{student.name}</TableCell>
-                    <TableCell>{student.email}</TableCell>
-                    <TableCell>
-                      {groupId === undefined ? 'None' : groupId}
-                    </TableCell>
-                    <TableCell>
-                      {new Date(student.lastLoginAt).toLocaleString()}
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        size="small"
-                        color="error"
-                        onClick={() => handleRemoveStudent(student)}
-                      >
-                        Kick
-                      </Button>
-                    </TableCell>
+          {students.length === 0 ? (
+            <Typography variant="body2" color="error">
+              No students have joined yet
+            </Typography>
+          ) : (
+            <TableContainer
+              sx={{
+                borderRadius: 3,
+                border: 1,
+              }}
+            >
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Student Name</TableCell>
+                    <TableCell>Student ID</TableCell>
+                    <TableCell>Last Activity</TableCell>
+                    <TableCell>Current Room #</TableCell>
                   </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
+                </TableHead>
+                <TableBody>
+                  {students.map((student) => {
+                    const room = rooms.find((r) =>
+                      r.gameData.players.find((s) => s._id === student._id)
+                    );
+                    const groupId = studentMemberships.find(
+                      (s) => s.userId === student._id
+                    )?.groupId;
+                    return (
+                      <TableRow key={student._id}>
+                        <TableCell>{student.name}</TableCell>
+                        <TableCell>{student._id}</TableCell>
+                        <TableCell>
+                          {new Date(student.lastLoginAt).toLocaleString()}
+                        </TableCell>
+                        <TableCell>
+                          {room && groupId !== undefined ? groupId + 1 : 'none'}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+        </CardContent>
+      </Card>
+
+      <Typography fontSize={16} fontWeight="bold" style={{ marginTop: 20 }}>
+        INVITE CODES
+      </Typography>
+      <Card style={{ borderRadius: 10 }}>
+        <CardContent
+          className="column spacing"
+          style={{ position: 'relative', padding: 20 }}
+        >
+          {classroom.inviteCodes.length === 0 ? (
+            <Typography variant="body2" color="error">
+              No active invite codes.
+            </Typography>
+          ) : (
+            <TableContainer
+              sx={{
+                borderRadius: 3,
+                border: 1,
+              }}
+            >
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Code</TableCell>
+                    <TableCell>Uses</TableCell>
+                    <TableCell>Max Uses</TableCell>
+                    <TableCell>Valid Until</TableCell>
+                    <TableCell>Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {classroom.inviteCodes.map((inviteCode) => (
+                    <TableRow key={inviteCode.code}>
+                      <TableCell>{inviteCode.code}</TableCell>
+                      <TableCell>{inviteCode.uses}</TableCell>
+                      <TableCell>{inviteCode.maxUses || 'Unlimited'}</TableCell>
+                      <TableCell>
+                        {inviteCode.validUntil
+                          ? new Date(inviteCode.validUntil).toLocaleDateString()
+                          : 'No expiration'}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          size="small"
+                          color="error"
+                          onClick={() =>
+                            handleRevokeInviteCode(inviteCode.code)
+                          }
+                        >
+                          Revoke
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+          <Button
+            variant="contained"
+            color="secondary"
+            fullWidth
+            onClick={() => setInviteDialogOpen(true)}
+          >
+            Create Invite Code
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Typography fontSize={16} fontWeight="bold" style={{ marginTop: 20 }}>
+        EDIT CLASS
+      </Typography>
+      <Card style={{ borderRadius: 10 }}>
+        <CardContent
+          className="column spacing"
+          style={{ position: 'relative', padding: 20 }}
+        >
+          <TextField
+            fullWidth
+            label="Class Name"
+            value={className}
+            onChange={(e) => setClassName(e.target.value)}
+            style={{ marginTop: 10, marginBottom: 20 }}
+          />
+          <TextField
+            fullWidth
+            label="Description"
+            value={classDescription}
+            onChange={(e) => setClassDescription(e.target.value)}
+            multiline
+            rows={3}
+          />
+          <Button
+            variant="contained"
+            color="secondary"
+            fullWidth
+            disabled={
+              creating ||
+              !className ||
+              (classroom.name === className &&
+                classroom.description === classDescription)
+            }
+            onClick={handleUpdateClass}
+          >
+            {creating ? 'Saving...' : 'Save Changes'}
+          </Button>
+        </CardContent>
+      </Card>
 
       {/* Create Invite Code Dialog */}
       <Dialog
@@ -320,5 +341,49 @@ export default function TeacherManageClass(props: {
         </DialogActions>
       </Dialog>
     </div>
+  );
+}
+
+export default function TeacherManageClass(props: {
+  classroom?: Classroom;
+}): JSX.Element {
+  const { classroom } = props;
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  if (!classroom) {
+    return (
+      <div className="root center-div">
+        <Typography variant="h6" color="error">
+          Classroom not found
+        </Typography>
+      </div>
+    );
+  }
+  return (
+    <Tabs
+      selectedTab={Number.parseInt(searchParams.get('manage') || '0')}
+      onSelectTab={(t) => setSearchParams({ tab: '2', manage: `${t}` })}
+      tabsStyle={{
+        marginTop: '10px',
+      }}
+      tabs={[
+        {
+          name: 'SUMMARY',
+          element: (
+            <div className="dashboard">
+              <TeacherEditClass classroom={classroom} />
+            </div>
+          ),
+        },
+        {
+          name: 'GROUP FORMATION',
+          element: classroom.startedAt ? (
+            <RoomOrganizationView classroom={classroom} />
+          ) : (
+            <RoomSetupView classroom={classroom} />
+          ),
+        },
+      ]}
+    />
   );
 }

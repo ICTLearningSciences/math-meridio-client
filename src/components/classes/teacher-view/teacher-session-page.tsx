@@ -10,7 +10,7 @@ import { ChevronRight, Search } from '@mui/icons-material';
 import { Button, Grid, TextField, Typography } from '@mui/material';
 
 import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
-import ProgressBar from '../../progress-bar';
+import ProgressBar from '../../phase-progress-bar';
 import RoomCard from './teacher-room-card';
 import { SkillsPracticed, TroubleSpots } from './skill-card';
 import { Classroom } from '../../../store/slices/educational-data/types';
