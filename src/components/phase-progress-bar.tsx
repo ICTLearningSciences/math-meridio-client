@@ -20,6 +20,7 @@ export function PhaseSelector(props: {
   const [phasesCompleted, setPhasesCompleted] = React.useState<number>(0);
 
   React.useEffect(() => {
+    if (gameRooms.length === 0) return;
     const numPhases = Math.min(
       ...gameRooms.map(
         (r) => r.gameData.phaseProgression.startingPhaseStepsOrdered.length
@@ -41,42 +42,43 @@ export function PhaseSelector(props: {
 
   return (
     <div className="row spacing" style={{ width: '100%' }}>
-      {Array.from({ length: numPhases }, (_, index) => (
-        <motion.div
-          key={index}
-          whileHover={{ scale: 1.05, filter: 'brightness(0.8)' }}
-          className="column center-div spacing"
-          style={{ flexGrow: 1 }}
-          onClick={() => onTogglePhase(index)}
-        >
-          <div
-            className="row center-div"
-            style={{
-              height: 30,
-              width: '100%',
-              borderRadius: 40,
-              backgroundColor:
-                (phase === undefined && phasesCompleted > index) ||
-                phase === index
-                  ? 'orange'
-                  : 'rgb(217, 217, 217)',
-              color: 'white',
-              borderTopRightRadius: 40,
-              borderBottomRightRadius: 40,
-            }}
+      {numPhases > 0 &&
+        Array.from({ length: numPhases }, (_, index) => (
+          <motion.div
+            key={index}
+            whileHover={{ scale: 1.05, filter: 'brightness(0.8)' }}
+            className="column center-div spacing"
+            style={{ flexGrow: 1 }}
+            onClick={() => onTogglePhase(index)}
           >
-            {phasesCompleted > index && <CheckCircleOutline />}
-          </div>
-          <Typography
-            fontSize={14}
-            style={{
-              color: phase === index ? 'orange' : 'gray',
-            }}
-          >
-            PHASE {index + 1}
-          </Typography>
-        </motion.div>
-      ))}
+            <div
+              className="row center-div"
+              style={{
+                height: 30,
+                width: '100%',
+                borderRadius: 40,
+                backgroundColor:
+                  (phase === undefined && phasesCompleted > index) ||
+                  phase === index
+                    ? 'orange'
+                    : 'rgb(217, 217, 217)',
+                color: 'white',
+                borderTopRightRadius: 40,
+                borderBottomRightRadius: 40,
+              }}
+            >
+              {phasesCompleted > index && <CheckCircleOutline />}
+            </div>
+            <Typography
+              fontSize={14}
+              style={{
+                color: phase === index ? 'orange' : 'gray',
+              }}
+            >
+              PHASE {index + 1}
+            </Typography>
+          </motion.div>
+        ))}
     </div>
   );
 }
