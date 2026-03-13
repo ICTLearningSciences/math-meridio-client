@@ -283,43 +283,44 @@ export function Contribution(props: {
   React.useEffect(() => {
     const contribution: PlayerContribution[] = [];
     for (const room of gameRooms) {
-      for (const playerStatus of Object.entries(
-        room.gameData.playersStatusRecord
-      )) {
-        const student = students.find((s) => s._id === playerStatus[0]);
-        if (!student) continue;
-        const phases =
-          phase === undefined
-            ? room.gameData.phaseProgression.phasesCompleted
-            : [room.gameData.phaseProgression.phasesCompleted[phase]];
-        for (const phase of phases) {
-          const studentWords = !playerStatus[1].phaseMetrics
-            ? 0
-            : playerStatus[1].phaseMetrics[phase].numWordsSentInPhase;
-          contribution.push({
-            id: student._id,
-            name: student.name,
-            room: room.name,
-            words: studentWords,
-            totalWords: 0,
-            contribution: 0,
-          });
-        }
-      }
+      console.warn(``, room);
+      // for (const playerStatus of Object.entries(
+      //   room.gameData.playersStatusRecord
+      // )) {
+      //   const student = students.find((s) => s._id === playerStatus[0]);
+      //   if (!student) continue;
+      //   const phases =
+      //     phase === undefined
+      //       ? room.gameData.phaseProgression.phasesCompleted
+      //       : [room.gameData.phaseProgression.phasesCompleted[phase]];
+      //   for (const phase of phases) {
+      //     const studentWords = !playerStatus[1].phaseMetrics
+      //       ? 0
+      //       : playerStatus[1].phaseMetrics[phase]?.numWordsSentInPhase;
+      //     contribution.push({
+      //       id: student._id,
+      //       name: student.name,
+      //       room: room.name,
+      //       words: studentWords,
+      //       totalWords: 0,
+      //       contribution: 0,
+      //     });
+      //   }
+      // }
     }
-    for (let i = 0; i < contribution.length; i++) {
-      contribution[i].totalWords = calculateSum(
-        contribution
-          .filter((c) => c.room === contribution[i].room)
-          .map((c) => c.words)
-      );
-      contribution[i].contribution =
-        contribution[i].totalWords === 0
-          ? 0
-          : Math.round(
-              100 * (contribution[i].words / contribution[i].totalWords)
-            );
-    }
+    // for (let i = 0; i < contribution.length; i++) {
+    //   contribution[i].totalWords = calculateSum(
+    //     contribution
+    //       .filter((c) => c.room === contribution[i].room)
+    //       .map((c) => c.words)
+    //   );
+    //   contribution[i].contribution =
+    //     contribution[i].totalWords === 0
+    //       ? 0
+    //       : Math.round(
+    //         100 * (contribution[i].words / contribution[i].totalWords)
+    //       );
+    // }
     setContribution(contribution);
   }, [gameRooms, phase]);
 
@@ -339,6 +340,7 @@ export function Contribution(props: {
         }}
       >
         <BarChart
+          height={200}
           yAxis={[{ label: 'Frequency' }]}
           series={contribution.map((c) => ({
             data: [c.contribution],
@@ -346,7 +348,7 @@ export function Contribution(props: {
             stack: c.room,
             valueFormatter: (v) => `${v}%`,
           }))}
-          height={200}
+          slotProps={{ legend: { hidden: true } }}
         />
       </div>
     </div>
@@ -382,7 +384,7 @@ export function TimeSpent(props: {
         for (const phase of phases) {
           const timeSpent = !playerStatus[1].phaseMetrics
             ? 0
-            : playerStatus[1].phaseMetrics[phase].timeSpentInPhase;
+            : playerStatus[1].phaseMetrics[phase]?.timeSpentInPhase || 0;
           contribution.push({
             id: student._id,
             name: student.name,

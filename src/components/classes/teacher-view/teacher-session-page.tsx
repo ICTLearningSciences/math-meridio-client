@@ -16,8 +16,6 @@ import { SkillsPracticed, TroubleSpots } from './skill-card';
 import { Classroom } from '../../../store/slices/educational-data/types';
 import { GamesDropdown } from '../../button';
 import { useSearchParams } from 'react-router-dom';
-import { PhaseProgression } from '../../../store/slices/game/types';
-import { calculateMedian } from '../../../helpers';
 
 const styles = makeStyles()(() => ({
   card: {
@@ -41,7 +39,6 @@ export default function ActiveSessionView(props: {
   const { classes } = styles();
   const { educationalData } = useWithEducationalData();
   const [studentSearch, setStudentSearch] = React.useState<string>();
-  const [phase, setPhase] = React.useState<PhaseProgression>();
   const [game, setGame] = React.useState<string>();
   const [_searchParams, setSearchParams] = useSearchParams();
 
@@ -51,30 +48,6 @@ export default function ActiveSessionView(props: {
   const students = educationalData.students.filter((s) =>
     gameRooms.find((r) => r.gameData.players.find((p) => p._id === s._id))
   );
-
-  React.useEffect(() => {
-    const numPhases: number[] = [];
-    const phasesCompleted: number[] = [];
-    for (const room of gameRooms) {
-      numPhases.push(
-        room.gameData.phaseProgression.startingPhaseStepsOrdered.length
-      );
-      phasesCompleted.push(
-        room.gameData.phaseProgression.phasesCompleted.length
-      );
-    }
-    const median = calculateMedian(phasesCompleted);
-    setPhase({
-      curPhaseTitle: '',
-      curPhaseStepId: '',
-      phasesStarted: Array.from({ length: median }),
-      phasesCompleted: Array.from({ length: median }),
-      startingPhaseStepsOrdered: Array.from({
-        length: calculateMedian(numPhases),
-      }),
-      learningObjectives: [],
-    });
-  }, [game]);
 
   return (
     <div className="dashboard">
@@ -94,7 +67,7 @@ export default function ActiveSessionView(props: {
       </div>
 
       <div className="column spacing" style={{ marginTop: 10 }}>
-        {phase && <ProgressBar phases={phase} size="large" />}
+        <ProgressBar gameRooms={gameRooms} size="large" />
       </div>
 
       <div className="column spacing" style={{ marginTop: 10 }}>

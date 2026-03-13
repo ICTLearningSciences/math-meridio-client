@@ -62,7 +62,11 @@ interface MyButtonProps extends ButtonBaseProps {
 export function ContainedButton(props: MyButtonProps): JSX.Element {
   const { classes } = buttonStyles();
   return (
-    <motion.div whileHover={{ scale: 1.05, filter: 'brightness(0.8)' }}>
+    <motion.div
+      whileHover={
+        props.disabled ? {} : { scale: 1.05, filter: 'brightness(0.8)' }
+      }
+    >
       <Button
         size="medium"
         variant="contained"
@@ -90,7 +94,11 @@ export function ContainedButton(props: MyButtonProps): JSX.Element {
 export function OutlinedButton(props: MyButtonProps): JSX.Element {
   const { classes } = buttonStyles();
   return (
-    <motion.div whileHover={{ scale: 1.05, filter: 'brightness(0.8)' }}>
+    <motion.div
+      whileHover={
+        props.disabled ? {} : { scale: 1.05, filter: 'brightness(0.8)' }
+      }
+    >
       <Button
         size="medium"
         variant="outlined"

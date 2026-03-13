@@ -31,6 +31,9 @@ export default function TeacherLandingPage(): JSX.Element {
     (c) => c.teacherId === player?._id
   );
   const myClass = myClasses.find((c) => c._id === classId);
+  const myRooms = educationalData.rooms.filter(
+    (r) => r.classId === myClass?._id
+  );
 
   React.useEffect(() => {
     if (!classId && myClasses.length > 0) {
@@ -146,6 +149,7 @@ export default function TeacherLandingPage(): JSX.Element {
             {
               name: 'REPORTS',
               element: <TeacherReports classroom={myClass} />,
+              disabled: myRooms.length === 0,
             },
             {
               name: 'MANAGE CLASS',

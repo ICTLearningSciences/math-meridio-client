@@ -99,7 +99,7 @@ export default function RoomCard(props: {
               />
             ))}
           </div>
-          <ProgressBar phases={room.gameData.phaseProgression} />
+          <ProgressBar gameRooms={[room]} />
           <Typography variant="body2">
             {game?.name || room?.gameData.gameId}
           </Typography>

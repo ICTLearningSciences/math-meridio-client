@@ -7,7 +7,7 @@ The full terms of this copyright and license should always be found in the root 
 import React from 'react';
 
 import { useWithPhaserGame } from '../../hooks/use-with-phaser-game';
-import { PlayerStateData } from '../../store/slices/game/types';
+import { GameStateData, PlayerStateData } from '../../store/slices/game/types';
 import EventSystem from '../event-system';
 import { Typography } from '@mui/material';
 import { ConcertTicketSalesSimulationData } from './SimulationScene';
@@ -27,10 +27,10 @@ import { Player } from '../../store/slices/player/types';
 import { Game } from '../types';
 
 export function PlayerStrategy(props: {
-  playersGameStateData: PlayerStateData;
+  playersGameStateData: GameStateData;
   player: Player;
 }): JSX.Element {
-  const psd = props.playersGameStateData[props.player._id];
+  const psd = props.playersGameStateData;
   const vipTicketsUpForSale = psd[VIP_TICKET_PERCENT_KEY] || 0;
   const reservedTicketsUpForSale = psd[RESERVED_TICKET_PERCENT_KEY] || 0;
   const generalAdmissionTicketsUpForSale =
