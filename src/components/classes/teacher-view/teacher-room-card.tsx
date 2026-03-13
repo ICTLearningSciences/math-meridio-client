@@ -37,6 +37,7 @@ export default function RoomCard(props: {
   const game = GAMES.find((g) => g.id === room?.gameData.gameId);
   const playersPaused = room.gameData.players
     .map((p) => room.gameData.playersStatusRecord[p._id])
+    .filter((s) => s !== undefined)
     .filter(
       (s) =>
         s.pausedByAdmin ||

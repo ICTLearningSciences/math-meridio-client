@@ -24,8 +24,8 @@ export function PlayerActivitySprite(props: {
   const [updating, setUpdating] = React.useState<boolean>(false);
 
   const isActive =
-    room.gameData.playersStatusRecord[player._id].computedState === 'ACTIVE';
-  const isPaused = room.gameData.playersStatusRecord[player._id].pausedByAdmin;
+    room.gameData.playersStatusRecord[player._id]?.computedState === 'ACTIVE';
+  const isPaused = room.gameData.playersStatusRecord[player._id]?.pausedByAdmin;
 
   const onTogglePause = async () => {
     if (!pausePlayer) return;
@@ -78,7 +78,7 @@ export function PlayerActivitySprite(props: {
       <PlayerSprite key={player._id} player={player}>
         <Typography fontSize={10} fontWeight="lighter">
           {isActive
-            ? room.gameData.playersStatusRecord[player._id].computedState
+            ? room.gameData.playersStatusRecord[player._id]?.computedState
             : getLastActivityString(player.lastLoginAt)}
         </Typography>
         <Tooltip title="Pause player">

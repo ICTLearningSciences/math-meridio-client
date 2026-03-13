@@ -20,9 +20,10 @@ import {
   CircularProgress,
   Box,
   Typography,
-  Stack,
+  IconButton,
+  InputAdornment,
 } from '@mui/material';
-import { Check } from '@mui/icons-material';
+import { Check, Send } from '@mui/icons-material';
 import { Room } from '../../store/slices/game/types';
 import { Player } from '../../store/slices/player/types';
 import AvatarSprite from '../avatar-sprite';
@@ -30,6 +31,7 @@ import {
   submitGamePhaseReflection,
   submitReadyToContinue,
 } from '../../hooks/game-rooms/game-room-api';
+import { ColumnDiv } from '../../styled-components';
 
 interface PlayerReflectionDisplayItemProps {
   player: Player;
@@ -47,17 +49,32 @@ function PlayerReflectionDisplayItem({
         alignItems: 'center',
         gap: 2,
         padding: 2,
-        border: '1px solid #e0e0e0',
+        border: '1px solid',
         borderRadius: 2,
-        backgroundColor: '#f5f5f5',
+        width: '25%',
+        height: '125px',
       }}
     >
-      <AvatarSprite player={player} />
-      <Box sx={{ flex: 1 }}>
-        <Typography variant="subtitle1" fontWeight="bold">
-          {player.name}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
+      <ColumnDiv
+        style={{
+          alignItems: 'center',
+        }}
+      >
+        <AvatarSprite player={player} />
+        <Typography fontWeight="bold">{player.name}</Typography>
+      </ColumnDiv>
+      <Box sx={{ flex: 1, minWidth: 0 }}>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            display: '-webkit-box',
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: 'vertical',
+          }}
+        >
           {reflection || '…'}
         </Typography>
       </Box>
@@ -87,6 +104,7 @@ export default function EndOfPhaseReflectionModal({
 
   const curState = room.gameData.curGameState.curState;
   const selectedQuestion = room.gameData.curGameState.selectedQuestion || '';
+  const phaseTitle = room.gameData.phaseProgression.curPhaseTitle;
   const studentReflections =
     room.gameData.curGameState.studentReflections || {};
   const players = room.gameData.players;
@@ -144,132 +162,57 @@ export default function EndOfPhaseReflectionModal({
     }
   };
 
-  const renderButtons = () => {
-    // Submit Reflection button - always shown
-    const isSubmitDisabled =
-      !reflectionText.trim() || isSubmittingReflection || hasLocallySubmitted;
+  const isSubmitDisabled =
+    !reflectionText.trim() || isSubmittingReflection || hasLocallySubmitted;
 
-    const submitButton = (
-      <Button
-        variant="contained"
-        onClick={handleSubmitReflection}
-        disabled={isSubmitDisabled}
-        fullWidth
-      >
-        {isSubmittingReflection ? (
-          <>
-            <CircularProgress size={24} color="inherit" sx={{ mr: 1 }} />
-            Submitting...
-          </>
-        ) : (
-          'Submit Reflection'
-        )}
-      </Button>
-    );
-
-    // Ready to Continue button - only shown in WAITING_FOR_STUDENT_READY_TO_CONTINUE state
-    if (isInWaitingState) {
-      const isReadyDisabled =
-        !hasSubmittedReflection ||
-        isSubmittingReady ||
-        hasSubmittedReady ||
-        !isInWaitingState;
-      const readyButton = (
-        <Button
-          variant="contained"
-          onClick={handleReadyToContinue}
-          disabled={isReadyDisabled}
-          fullWidth
-          sx={{
-            backgroundColor: hasSubmittedReady ? 'success.main' : undefined,
-            '&:hover': {
-              backgroundColor: hasSubmittedReady ? 'success.dark' : undefined,
-            },
-          }}
-        >
-          {!isInWaitingState ? (
-            'Waiting for other players...'
-          ) : isSubmittingReady ? (
-            <CircularProgress size={24} color="inherit" />
-          ) : hasSubmittedReady ? (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Check />
-              <span>Ready!</span>
-            </Box>
-          ) : (
-            'Ready to continue!'
-          )}
-        </Button>
-      );
-
-      return (
-        <Stack spacing={2}>
-          {submitButton}
-          {readyButton}
-        </Stack>
-      );
-    }
-
-    // In END_OF_PHASE_REFLECTION state, only show submit button
-    return submitButton;
-  };
+  const isReadyDisabled =
+    !hasSubmittedReflection ||
+    isSubmittingReady ||
+    hasSubmittedReady ||
+    !isInWaitingState;
 
   if (!isOpen) return <></>;
 
   return (
     <Dialog open={isOpen} maxWidth="lg" fullWidth disableEscapeKeyDown>
-      <DialogTitle style={{ textAlign: 'center' }}>
-        Phase Reflection
-      </DialogTitle>
       <DialogContent>
+        <DialogTitle style={{ textAlign: 'center' }}>
+          Reflection {phaseTitle ? `- ${phaseTitle}` : ''}
+        </DialogTitle>
         <Box
           sx={{
             display: 'flex',
-            flexDirection: isMultiplayer ? 'row' : 'column',
+            flexDirection: 'column',
+            justifyContent: 'center',
             gap: 3,
             minHeight: 400,
             paddingTop: 2,
           }}
         >
-          {/* Left side: Question and Input */}
-          <Box sx={{ flex: isMultiplayer ? 1 : undefined, width: '100%' }}>
-            <Typography
-              variant="h6"
-              gutterBottom
-              style={{ textAlign: 'center' }}
-            >
-              {selectedQuestion}
-            </Typography>
-            <TextField
-              multiline
-              rows={8}
-              fullWidth
-              value={reflectionText}
-              onChange={(e) => handleReflectionChange(e.target.value)}
-              placeholder="Write your reflection here..."
-              variant="outlined"
-              sx={{ marginBottom: 2 }}
-            />
-            {renderButtons()}
-          </Box>
+          {/* Question at top */}
+          <Typography variant="h6" gutterBottom style={{ textAlign: 'left' }}>
+            {selectedQuestion}
+          </Typography>
 
-          {/* Right side: Player Reflections (only in multiplayer) */}
+          {/* Player Reflections (horizontal scroll in multiplayer) */}
           {isMultiplayer && (
-            <Box
-              sx={{
-                flex: 1,
-                borderLeft: '2px solid #e0e0e0',
-                paddingLeft: 3,
-              }}
-            >
+            <Box>
               <Typography
                 variant="h6"
                 gutterBottom
-                style={{ textAlign: 'center' }}
+                style={{ textAlign: 'left' }}
               >
                 Player Reflections
               </Typography>
-              <Stack spacing={2} sx={{ maxHeight: 500, overflowY: 'auto' }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  gap: 2,
+                  overflowX: 'auto',
+                  paddingBottom: 1,
+                }}
+              >
                 {players.map((p) => {
                   // Show optimistic reflection for current player
                   const reflection =
@@ -284,9 +227,76 @@ export default function EndOfPhaseReflectionModal({
                     />
                   );
                 })}
-              </Stack>
+              </Box>
             </Box>
           )}
+
+          {/* Input section */}
+          <Box
+            sx={{ display: 'flex', gap: 2, width: '100%', borderRadius: 10 }}
+          >
+            <TextField
+              multiline
+              minRows={2}
+              maxRows={8}
+              value={reflectionText}
+              onChange={(e) => handleReflectionChange(e.target.value)}
+              placeholder="Write your reflection here..."
+              variant="outlined"
+              style={{ borderRadius: 10 }}
+              sx={{ flex: 1, borderRadius: 10 }}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={handleSubmitReflection}
+                      disabled={isSubmitDisabled}
+                      edge="end"
+                      style={{
+                        height: '100%',
+                        color: 'black',
+                      }}
+                    >
+                      {isSubmittingReflection ? (
+                        <CircularProgress size={24} />
+                      ) : (
+                        <Send />
+                      )}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+            {isInWaitingState && (
+              <Button
+                variant="contained"
+                onClick={handleReadyToContinue}
+                disabled={isReadyDisabled}
+                sx={{
+                  width: '20%',
+                  backgroundColor: hasSubmittedReady
+                    ? 'success.main'
+                    : undefined,
+                  '&:hover': {
+                    backgroundColor: hasSubmittedReady
+                      ? 'success.dark'
+                      : undefined,
+                  },
+                }}
+              >
+                {isSubmittingReady ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : hasSubmittedReady ? (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Check />
+                    <span>Ready!</span>
+                  </Box>
+                ) : (
+                  'Ready to continue!'
+                )}
+              </Button>
+            )}
+          </Box>
         </Box>
       </DialogContent>
     </Dialog>
