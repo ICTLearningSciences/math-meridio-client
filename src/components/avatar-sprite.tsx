@@ -19,8 +19,7 @@ export function PlayerActivitySprite(props: {
   room: Room;
 }): JSX.Element {
   const { player, room } = props;
-  const { togglePlayerPausedInRoomStatus, reportPlayerAway } =
-    useWithEducationalData(room._id);
+  const { togglePlayerPausedInRoomStatus } = useWithEducationalData(room._id);
   const [pausePlayer, setPausePlayer] = React.useState<Player>();
   const [updating, setUpdating] = React.useState<boolean>(false);
 
@@ -33,19 +32,6 @@ export function PlayerActivitySprite(props: {
     setUpdating(true);
     try {
       await togglePlayerPausedInRoomStatus(room._id, pausePlayer._id);
-      setUpdating(false);
-      setPausePlayer(undefined);
-    } catch {
-      setUpdating(false);
-      setPausePlayer(undefined);
-    }
-  };
-
-  const onReportPlayer = async () => {
-    if (!pausePlayer) return;
-    setUpdating(true);
-    try {
-      await reportPlayerAway(pausePlayer._id);
       setUpdating(false);
       setPausePlayer(undefined);
     } catch {

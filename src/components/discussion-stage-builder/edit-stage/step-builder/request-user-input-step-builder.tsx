@@ -18,10 +18,19 @@ import {
   SelectInputField,
 } from '../../shared/input-components';
 import { FlowStepSelector } from '../../shared/flow-step-selector';
-import { Button, IconButton } from '@mui/material';
+import {
+  Button,
+  IconButton,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Chip,
+  Box,
+} from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { v4 as uuid } from 'uuid';
-import { Delete } from '@mui/icons-material';
+import { Delete, Add } from '@mui/icons-material';
 import { JumpToAlternateStep } from '../../shared/jump-to-alternate-step';
 import Collapse from '@mui/material/Collapse';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -34,6 +43,7 @@ import {
   RequestUserInputStageStep,
   RequireInputType,
 } from '../../types';
+import { useWithEducationalData } from '../../../../store/slices/educational-data/use-with-educational-data';
 export function getDefaultRequestUserInputBuilder(): RequestUserInputStageStep {
   return {
     stepId: uuid(),
@@ -44,6 +54,7 @@ export function getDefaultRequestUserInputBuilder(): RequestUserInputStageStep {
     disableFreeInput: false,
     predefinedResponses: [],
     requireInputType: RequireInputType.SINGLE_RESPONSE_REQUIRED,
+    learningObjectives: [],
   };
 }
 
@@ -199,9 +210,12 @@ export function RequestUserInputStepBuilder(props: {
 }): JSX.Element {
   const { step, stepIndex, updateLocalStage } = props;
   const [collapsed, setCollapsed] = React.useState<boolean>(false);
+  const { educationalData } = useWithEducationalData();
+  const [selectedLoId, setSelectedLoId] = React.useState<string>('');
+
   function updateField(
     field: string,
-    value: string | boolean | PredefinedResponse[]
+    value: string | boolean | PredefinedResponse[] | string[]
   ) {
     updateLocalStage((prevValue) => {
       return {
@@ -277,6 +291,31 @@ export function RequestUserInputStepBuilder(props: {
     );
   }
 
+  const availableLearningObjectives = educationalData.learningObjectives.filter(
+    (lo) => !step.learningObjectives?.includes(lo._id)
+  );
+
+  const selectedLearningObjectives = educationalData.learningObjectives.filter(
+    (lo) => step.learningObjectives?.includes(lo._id)
+  );
+
+  const handleAddLearningObjective = () => {
+    if (selectedLoId && !step.learningObjectives?.includes(selectedLoId)) {
+      updateField('learningObjectives', [
+        ...(step.learningObjectives || []),
+        selectedLoId,
+      ]);
+      setSelectedLoId('');
+    }
+  };
+
+  const handleRemoveLearningObjective = (loId: string) => {
+    updateField(
+      'learningObjectives',
+      (step.learningObjectives || []).filter((id) => id !== loId)
+    );
+  };
+
   return (
     <RoundedBorderDiv
       style={{
@@ -349,6 +388,49 @@ export function RequestUserInputStepBuilder(props: {
           deletePredefinedResponse={deletePredefinedResponse}
           flowsList={props.flowsList}
         />
+
+        <Box sx={{ mt: 2, width: '90%', alignSelf: 'center' }}>
+          <h5 style={{ marginBottom: 10 }}>Learning Objectives</h5>
+
+          {selectedLearningObjectives.length > 0 && (
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+              {selectedLearningObjectives.map((lo) => (
+                <Chip
+                  key={lo._id}
+                  label={lo.title}
+                  onDelete={() => handleRemoveLearningObjective(lo._id)}
+                  color="primary"
+                />
+              ))}
+            </Box>
+          )}
+
+          {availableLearningObjectives.length > 0 && (
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Add Learning Objective</InputLabel>
+                <Select
+                  value={selectedLoId}
+                  onChange={(e) => setSelectedLoId(e.target.value)}
+                  label="Add Learning Objective"
+                >
+                  {availableLearningObjectives.map((lo) => (
+                    <MenuItem key={lo._id} value={lo._id}>
+                      {lo.title}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <IconButton
+                onClick={handleAddLearningObjective}
+                disabled={!selectedLoId}
+                color="primary"
+              >
+                <Add />
+              </IconButton>
+            </Box>
+          )}
+        </Box>
 
         <CheckBoxInput
           label="Is final step (discussion finished)?"

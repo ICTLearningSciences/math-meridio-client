@@ -5,7 +5,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import { useAppDispatch, useAppSelector } from '../../hooks';
-import { GameStateData, Room } from '../game/types';
+import { GameStateData, LearningObjective, Room } from '../game/types';
 import * as educationalDataActions from './index';
 import {
   ClassMembership,
@@ -97,6 +97,14 @@ export interface UseWithEducationalData {
   ) => Promise<Classroom>;
   assignGameToGameRoom: (roomId: string, gameId: string) => Promise<Room>;
   setPlayerNeedsHelpInRoom: (needsHelp: boolean) => Promise<Room>;
+  fetchLearningObjectives: () => Promise<LearningObjective[]>;
+  createLearningObjective: (
+    learningObjective: Omit<LearningObjective, '_id'>
+  ) => Promise<LearningObjective>;
+  updateLearningObjective: (
+    learningObjectiveId: string,
+    learningObjective: Omit<LearningObjective, '_id'>
+  ) => Promise<LearningObjective>;
 }
 
 export function useWithEducationalData(rId?: string): UseWithEducationalData {
@@ -387,6 +395,32 @@ export function useWithEducationalData(rId?: string): UseWithEducationalData {
     ).unwrap();
   }
 
+  async function fetchLearningObjectives(): Promise<LearningObjective[]> {
+    return await dispatch(
+      educationalDataActions.fetchLearningObjectives()
+    ).unwrap();
+  }
+
+  async function createLearningObjective(
+    learningObjective: Omit<LearningObjective, '_id'>
+  ): Promise<LearningObjective> {
+    return await dispatch(
+      educationalDataActions.createLearningObjective({ learningObjective })
+    ).unwrap();
+  }
+
+  async function updateLearningObjective(
+    learningObjectiveId: string,
+    learningObjective: Omit<LearningObjective, '_id'>
+  ): Promise<LearningObjective> {
+    return await dispatch(
+      educationalDataActions.updateLearningObjective({
+        learningObjectiveId,
+        learningObjective,
+      })
+    ).unwrap();
+  }
+
   return {
     fetchInstructorDataHydration,
     fetchStudentDataHydration,
@@ -422,5 +456,8 @@ export function useWithEducationalData(rId?: string): UseWithEducationalData {
     shareClassroomWithInstructor,
     assignGameToGameRoom,
     setPlayerNeedsHelpInRoom,
+    fetchLearningObjectives,
+    createLearningObjective,
+    updateLearningObjective,
   };
 }

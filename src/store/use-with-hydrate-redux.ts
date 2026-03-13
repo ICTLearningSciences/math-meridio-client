@@ -15,12 +15,16 @@ import { useAppSelector } from './hooks';
 export function useWithHydrateRedux() {
   const { loadDiscussionStages } = useWithStages();
   const { loadAbeConfig } = useWithConfig();
-  const { fetchInstructorDataHydration, fetchStudentDataHydration } =
-    useWithEducationalData();
+  const {
+    fetchInstructorDataHydration,
+    fetchStudentDataHydration,
+    fetchLearningObjectives,
+  } = useWithEducationalData();
   const playerState = useAppSelector((state) => state.playerData);
   useEffect(() => {
     loadDiscussionStages();
     loadAbeConfig();
+    fetchLearningObjectives();
   }, []);
 
   useEffect(() => {

@@ -22,7 +22,7 @@ export function Header(props: { useLogin: UseWithLogin }) {
   const { roomId } = useParams<{ roomId: string }>();
   const { logout } = props.useLogin;
   const { pathname } = useLocation();
-  const { renameGameRoom, educationalData, setPlayerNeedsHelpInRoom } =
+  const { educationalData, setPlayerNeedsHelpInRoom } =
     useWithEducationalData();
   const room = educationalData.rooms.find((r) => r._id === roomId);
   const totalPhases =
@@ -41,7 +41,6 @@ export function Header(props: { useLogin: UseWithLogin }) {
       ? `${curPhaseIndex + 1}/${totalPhases}`
       : '';
   const curPhaseTitle = room ? getCurPhaseTitleFromRoom(room) : '';
-  const [name, setName] = React.useState<string>(room?.name || '');
   const navigate = useNavigate();
 
   function homeButtonClick() {

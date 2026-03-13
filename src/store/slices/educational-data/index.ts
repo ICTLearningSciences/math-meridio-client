@@ -10,11 +10,12 @@ import * as mainApi from '../../../api';
 import { GamePhaseReflections, LoadStatus, LoadingState } from '../../../types';
 import { ClassMembership, Classroom } from './types';
 import { Player } from '../player/types';
-import { GameStateData, Room } from '../game/types';
+import { GameStateData, LearningObjective, Room } from '../game/types';
 import {
   addOrUpdateClass,
   addOrUpdateClassMembership,
   addOrUpdateGameRoom,
+  addOrUpdateLearningObjective,
   removeGameRoom,
 } from './helpers';
 import * as gameRoomApi from '../../../hooks/game-rooms/game-room-api';
@@ -32,6 +33,7 @@ export interface EducationalDataStateData {
   phaseReflections: GamePhaseReflections[];
   hydrationLoadStatus: LoadingState;
   gameList: StaticGame[];
+  learningObjectives: LearningObjective[];
 }
 
 const initialState: EducationalDataStateData = {
@@ -40,6 +42,7 @@ const initialState: EducationalDataStateData = {
   students: [],
   classMemberships: [],
   phaseReflections: [],
+  learningObjectives: [],
   hydrationLoadStatus: { status: LoadStatus.NONE },
   gameList: [],
 };
@@ -279,12 +282,51 @@ export const setPlayerNeedsHelpInRoom = createAsyncThunk(
   }
 );
 
+export const fetchLearningObjectives = createAsyncThunk(
+  'educationalData/fetchLearningObjectives',
+  async () => {
+    return await api.fetchLearningObjectives();
+  }
+);
+
+export const createLearningObjective = createAsyncThunk(
+  'educationalData/createLearningObjective',
+  async (args: { learningObjective: Omit<LearningObjective, '_id'> }) => {
+    return await api.createLearningObjective(args.learningObjective);
+  }
+);
+
+export const updateLearningObjective = createAsyncThunk(
+  'educationalData/updateLearningObjective',
+  async (args: {
+    learningObjectiveId: string;
+    learningObjective: Omit<LearningObjective, '_id'>;
+  }) => {
+    return await api.updateLearningObjective(
+      args.learningObjectiveId,
+      args.learningObjective
+    );
+  }
+);
+
 export const educationalDataSlice = createSlice({
   name: 'educationalData',
   initialState,
   reducers: {},
   extraReducers: (builder) => {
     builder
+
+      .addCase(fetchLearningObjectives.fulfilled, (state, action) => {
+        state.learningObjectives = action.payload;
+      })
+
+      .addCase(createLearningObjective.fulfilled, (state, action) => {
+        addOrUpdateLearningObjective(state, action.payload);
+      })
+
+      .addCase(updateLearningObjective.fulfilled, (state, action) => {
+        addOrUpdateLearningObjective(state, action.payload);
+      })
 
       .addCase(setPlayerPauseStatus.fulfilled, (state, action) => {
         addOrUpdateGameRoom(state, action.payload);

@@ -6,15 +6,17 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React from 'react';
 import { v4 as uuid } from 'uuid';
-import { IconButton, Button } from '@mui/material';
-import { Delete } from '@mui/icons-material';
 import {
-  RoundedBorderDiv,
-  TopLeftText,
-  ColumnCenterDiv,
-  ColumnDiv,
-  RowDiv,
-} from '../../../../styled-components';
+  IconButton,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Chip,
+  Box,
+} from '@mui/material';
+import { Delete, Add } from '@mui/icons-material';
+import { RoundedBorderDiv, TopLeftText } from '../../../../styled-components';
 import { InputField } from '../../shared/input-components';
 import {
   DiscussionStage,
@@ -23,6 +25,7 @@ import {
   StartOfPhaseStep,
 } from '../../types';
 import { LearningObjective } from '../../../../store/slices/game/types';
+import { useWithEducationalData } from '../../../../store/slices/educational-data/use-with-educational-data';
 export function getDefaultStartOfPhase(): StartOfPhaseStep {
   return {
     stepId: uuid(),
@@ -34,158 +37,6 @@ export function getDefaultStartOfPhase(): StartOfPhaseStep {
   };
 }
 
-function LearningObjectiveUpdater(props: {
-  learningObjective: LearningObjective;
-  updateLearningObjective: (
-    updatedObjective: Partial<LearningObjective>,
-    index: number
-  ) => void;
-  deleteLearningObjective: () => void;
-  index: number;
-}): JSX.Element {
-  const {
-    learningObjective,
-    updateLearningObjective,
-    deleteLearningObjective,
-    index,
-  } = props;
-  return (
-    <RowDiv
-      style={{
-        borderTop: '1px dotted black',
-        width: '90%',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-      }}
-    >
-      <ColumnDiv
-        style={{
-          width: '90%',
-        }}
-      >
-        <InputField
-          label="Title"
-          width="100%"
-          value={learningObjective.title}
-          onChange={(e) => {
-            updateLearningObjective(
-              {
-                title: e,
-              },
-              index
-            );
-          }}
-        />
-        <InputField
-          label="Criteria"
-          width="100%"
-          value={learningObjective.criteria}
-          onChange={(e) => {
-            updateLearningObjective(
-              {
-                criteria: e,
-              },
-              index
-            );
-          }}
-        />
-        <InputField
-          label="Variable Name (e.g. 'numCorrect', 'numIncorrect', 'numQuestions')"
-          width="100%"
-          value={learningObjective.variableName}
-          onChange={(e) => {
-            updateLearningObjective(
-              {
-                variableName: e,
-              },
-              index
-            );
-          }}
-        />
-      </ColumnDiv>
-      <IconButton onClick={deleteLearningObjective} color="primary">
-        <Delete />
-      </IconButton>
-    </RowDiv>
-  );
-}
-
-function LearningObjectivesUpdater(props: {
-  learningObjectives: LearningObjective[];
-  updateLearningObjectives: (
-    learningObjectives:
-      | LearningObjective[]
-      | ((prev: LearningObjective[]) => LearningObjective[])
-  ) => void;
-  width?: string;
-}): JSX.Element {
-  const { learningObjectives, updateLearningObjectives } = props;
-
-  function updateLearningObjective(
-    updatedObjective: Partial<LearningObjective>,
-    index: number
-  ) {
-    updateLearningObjectives((prevObjectives) => {
-      return prevObjectives.map((obj, i) => {
-        if (i === index) {
-          return {
-            ...obj,
-            ...updatedObjective,
-          };
-        }
-        return obj;
-      });
-    });
-  }
-
-  function addNewLearningObjective() {
-    updateLearningObjectives((prevObjectives) => [
-      ...(prevObjectives || []),
-      {
-        title: '',
-        criteria: '',
-        variableName: '',
-      },
-    ]);
-  }
-
-  function deleteLearningObjective(index: number) {
-    updateLearningObjectives((prevObjectives) =>
-      prevObjectives.filter((_, i) => i !== index)
-    );
-  }
-
-  return (
-    <ColumnCenterDiv
-      style={{
-        width: props.width || '100%',
-        border: '1px solid black',
-        alignSelf: 'center',
-        justifyContent: 'center',
-        padding: 10,
-        marginTop: 10,
-      }}
-    >
-      <span style={{ fontWeight: 'bold' }}>Learning Objectives</span>
-
-      {learningObjectives?.length > 0 &&
-        learningObjectives.map((objective, index) => (
-          <LearningObjectiveUpdater
-            key={index}
-            learningObjective={objective}
-            index={index}
-            updateLearningObjective={updateLearningObjective}
-            deleteLearningObjective={() => {
-              deleteLearningObjective(index);
-            }}
-          />
-        ))}
-      <Button onClick={addNewLearningObjective}>
-        + Add Learning Objective
-      </Button>
-    </ColumnCenterDiv>
-  );
-}
 export function StartOfPhaseStepBuilder(props: {
   step: StartOfPhaseStep;
   updateLocalStage: React.Dispatch<React.SetStateAction<DiscussionStage>>;
@@ -197,6 +48,8 @@ export function StartOfPhaseStepBuilder(props: {
   height?: string;
 }): JSX.Element {
   const { step, stepIndex, updateLocalStage } = props;
+  const { educationalData } = useWithEducationalData();
+  const [selectedLoId, setSelectedLoId] = React.useState<string>('');
 
   function updateField(
     field: string,
@@ -223,38 +76,30 @@ export function StartOfPhaseStepBuilder(props: {
     });
   }
 
-  function updateLearningObjectives(
-    learningObjectives:
-      | LearningObjective[]
-      | ((prev: LearningObjective[]) => LearningObjective[])
-  ) {
-    if (typeof learningObjectives === 'function') {
-      updateLocalStage((prevValue) => {
-        return {
-          ...prevValue,
-          flowsList: prevValue.flowsList.map((f) => {
-            return {
-              ...f,
-              steps: f.steps.map((s) => {
-                if (s.stepId === step.stepId) {
-                  const currentStep = s as StartOfPhaseStep;
-                  return {
-                    ...s,
-                    learningObjectives: learningObjectives(
-                      currentStep.learningObjectives || []
-                    ),
-                  };
-                }
-                return s;
-              }),
-            };
-          }),
-        };
-      });
-    } else {
-      updateField('learningObjectives', learningObjectives);
+  const availableLearningObjectives = educationalData.learningObjectives.filter(
+    (lo) => !step.learningObjectives.includes(lo._id)
+  );
+
+  const selectedLearningObjectives = educationalData.learningObjectives.filter(
+    (lo) => step.learningObjectives.includes(lo._id)
+  );
+
+  const handleAddLearningObjective = () => {
+    if (selectedLoId && !step.learningObjectives.includes(selectedLoId)) {
+      updateField('learningObjectives', [
+        ...step.learningObjectives,
+        selectedLoId,
+      ]);
+      setSelectedLoId('');
     }
-  }
+  };
+
+  const handleRemoveLearningObjective = (loId: string) => {
+    updateField(
+      'learningObjectives',
+      step.learningObjectives.filter((id) => id !== loId)
+    );
+  };
 
   return (
     <RoundedBorderDiv
@@ -286,10 +131,49 @@ export function StartOfPhaseStepBuilder(props: {
           updateField('phaseTitle', e);
         }}
       />
-      <LearningObjectivesUpdater
-        learningObjectives={step.learningObjectives}
-        updateLearningObjectives={updateLearningObjectives}
-      />
+
+      <Box sx={{ mt: 2 }}>
+        <h5 style={{ marginBottom: 10 }}>Learning Objectives</h5>
+
+        {selectedLearningObjectives.length > 0 && (
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+            {selectedLearningObjectives.map((lo) => (
+              <Chip
+                key={lo._id}
+                label={lo.title}
+                onDelete={() => handleRemoveLearningObjective(lo._id)}
+                color="primary"
+              />
+            ))}
+          </Box>
+        )}
+
+        {availableLearningObjectives.length > 0 && (
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Add Learning Objective</InputLabel>
+              <Select
+                value={selectedLoId}
+                onChange={(e) => setSelectedLoId(e.target.value)}
+                label="Add Learning Objective"
+              >
+                {availableLearningObjectives.map((lo) => (
+                  <MenuItem key={lo._id} value={lo._id}>
+                    {lo.title}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <IconButton
+              onClick={handleAddLearningObjective}
+              disabled={!selectedLoId}
+              color="primary"
+            >
+              <Add />
+            </IconButton>
+          </Box>
+        )}
+      </Box>
     </RoundedBorderDiv>
   );
 }

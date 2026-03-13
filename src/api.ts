@@ -101,11 +101,7 @@ export const fullDiscussionStageQueryData = `
           stepId
           stepType
           phaseTitle
-                                        learningObjectives{
-                                variableName
-                                title
-                                criteria
-                              }
+          learningObjectives
       }
 
       ... on EndOfPhaseReflectionStepType {
@@ -128,6 +124,7 @@ export const fullDiscussionStageQueryData = `
           saveResponseVariableName
           disableFreeInput
           requireInputType
+          learningObjectives
           predefinedResponses{
               clientId
               message
