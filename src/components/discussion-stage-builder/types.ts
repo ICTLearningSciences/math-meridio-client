@@ -109,7 +109,7 @@ export interface SystemMessageStageStep extends StageBuilderStep {
 export interface StartOfPhaseStep extends StageBuilderStep {
   stepType: DiscussionStageStepType.START_OF_PHASE;
   phaseTitle: string;
-  learningObjectives: LearningObjective[];
+  learningObjectives: string[];
 }
 
 export interface EndOfPhaseReflectionStep extends StageBuilderStep {

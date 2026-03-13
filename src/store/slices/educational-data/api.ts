@@ -18,7 +18,8 @@ import { userDataQuery } from '../player/api';
 import { fullRoomQueryData } from '../../../api';
 import { requireLocalStorageGet as localStorageGet } from '../../local-storage';
 import { ACCESS_TOKEN_KEY } from '../../local-storage';
-import { Room } from '../game/types';
+import { LearningObjective, Room } from '../game/types';
+import { Connection } from '../../../types';
 
 export async function createClassroom(): Promise<Classroom> {
   const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
@@ -494,4 +495,84 @@ export async function setPlayerNeedsHelpInRoom(
       accessToken: accessToken,
     }
   );
+}
+
+export const fullLearningObjectiveData = `
+  _id
+  variableName
+  title
+  criteria
+`;
+
+export const createLearningObjectiveMutation = `
+        mutation CreateNewLearningObjective($learningObjective: LearningObjectiveTypeInput!) {
+          createNewLearningObjective(learningObjective: $learningObjective) {
+      ${fullLearningObjectiveData}
+    }
+  }
+`;
+
+
+export async function createLearningObjective(
+  learningObjective: Omit<LearningObjective, '_id'>
+): Promise<LearningObjective> {
+  return await execGql<LearningObjective>(
+    {
+      query: createLearningObjectiveMutation,
+      variables: { learningObjective },
+    },
+    {
+      dataPath: 'createNewLearningObjective',
+    }
+  );
+}
+
+export const updateLearningObjectiveMutation = `
+        mutation UpdateLearningObjective($learningObjectiveId: String!, $learningObjective: LearningObjectiveTypeInput!) {
+          updateLearningObjective(learningObjectiveId: $learningObjectiveId, learningObjective: $learningObjective) {
+      ${fullLearningObjectiveData}
+    }
+  }
+`;
+
+export async function updateLearningObjective(
+  learningObjectiveId: string,
+  learningObjective: Omit<LearningObjective, '_id'>
+): Promise<LearningObjective> {
+  return await execGql<LearningObjective>(
+    {
+      query: updateLearningObjectiveMutation,
+      variables: { learningObjectiveId, learningObjective },
+    },
+    {
+      dataPath: 'updateLearningObjective',
+    }
+  );
+}
+
+export const fetchLearningObjectivesQuery = `
+  query FetchLearningObjectives($filter: String!, $limit: Int) {
+    fetchLearningObjectives(filter: $filter, limit: $limit) {
+        edges {
+          node {
+            ${fullLearningObjectiveData}
+          }
+        }
+    }
+  }
+`;
+
+export async function fetchLearningObjectives(
+  limit = 9999
+): Promise<LearningObjective[]> {
+  const res = await execGql<Connection<LearningObjective>>(
+    {
+      query: fetchLearningObjectivesQuery,
+      variables: { filter: JSON.stringify({}), limit },
+    },
+    {
+      dataPath: 'fetchLearningObjectives',
+    }
+  );
+  return res.edges.map((edge) => edge.node);
 }

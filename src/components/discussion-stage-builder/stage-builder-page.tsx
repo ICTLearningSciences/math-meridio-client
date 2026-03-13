@@ -9,8 +9,10 @@ import { SelectCreateStage } from './select-create-stage';
 import { EditDiscussionStage } from './edit-stage/edit-stage';
 import { DiscussionStage } from './types';
 import { useWithStages } from '../../store/slices/stages/use-with-stages';
-import { Button, TextField } from '@mui/material';
+import { Button, TextField, Tabs, Tab, Box } from '@mui/material';
 import { getAllStartOfPhaseSteps } from '../../helpers';
+import { LearningObjectivesBuilder } from './learning-objectives-builder';
+import { localStorageGet } from '../../store/local-storage';
 
 export function StageBuilderPage(props: {
   goToStage: (stage: DiscussionStage) => void;
@@ -27,8 +29,10 @@ export function StageBuilderPage(props: {
     getAllStartOfPhaseSteps(existingStages);
   const [selectedStageClientId, setSelectedStageClientId] =
     React.useState<string>('');
-  const [password, setPassword] = React.useState<string>('');
-  const [authorized, setAuthorized] = React.useState<boolean>(false);
+    const localStorageGqlSecret = localStorageGet<string>("gqlSecret");
+  const [password, setPassword] = React.useState<string>(localStorageGqlSecret || '');
+  const [authorized, setAuthorized] = React.useState<boolean>(localStorageGqlSecret === process.env.REACT_APP_GQL_SECRET || false);
+  const [selectedTab, setSelectedTab] = React.useState<number>(0);
 
   const selectedStage = existingStages.find(
     (stage) => stage.clientId === selectedStageClientId
@@ -53,33 +57,52 @@ export function StageBuilderPage(props: {
       </>
     );
   }
-  if (!selectedStage) {
-    return (
-      <SelectCreateStage
-        goToStage={goToStage}
-        existingStages={existingStages}
-        onEditStage={(stage) => {
-          setSelectedStageClientId(stage.clientId);
-        }}
-        onCreateStage={() => {
-          const newStage = addNewLocalDiscussionStage();
-          setSelectedStageClientId(newStage.clientId);
-        }}
-      />
-    );
-  } else {
-    return (
-      <EditDiscussionStage
-        returnTo={() => {
-          setSelectedStageClientId('');
-        }}
-        goToStage={goToStage}
-        stage={selectedStage}
-        saveStage={async (stage) => {
-          return await addOrUpdateDiscussionStage(stage, password);
-        }}
-        gameIdentifierToStartOfPhaseSteps={gameIdentifierToStartOfPhaseSteps}
-      />
-    );
-  }
+
+  const renderDiscussionStagesTab = () => {
+    if (!selectedStage) {
+      return (
+        <SelectCreateStage
+          goToStage={goToStage}
+          existingStages={existingStages}
+          onEditStage={(stage) => {
+            setSelectedStageClientId(stage.clientId);
+          }}
+          onCreateStage={() => {
+            const newStage = addNewLocalDiscussionStage();
+            setSelectedStageClientId(newStage.clientId);
+          }}
+        />
+      );
+    } else {
+      return (
+        <EditDiscussionStage
+          returnTo={() => {
+            setSelectedStageClientId('');
+          }}
+          goToStage={goToStage}
+          stage={selectedStage}
+          saveStage={async (stage) => {
+            return await addOrUpdateDiscussionStage(stage, password);
+          }}
+          gameIdentifierToStartOfPhaseSteps={gameIdentifierToStartOfPhaseSteps}
+        />
+      );
+    }
+  };
+
+  return (
+    <Box sx={{ width: '100%' }}>
+      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+        <Tabs
+          value={selectedTab}
+          onChange={(_, newValue) => setSelectedTab(newValue)}
+        >
+          <Tab label="Discussion Stages" />
+          <Tab label="Learning Objectives" />
+        </Tabs>
+      </Box>
+      {selectedTab === 0 && renderDiscussionStagesTab()}
+      {selectedTab === 1 && <LearningObjectivesBuilder />}
+    </Box>
+  );
 }
