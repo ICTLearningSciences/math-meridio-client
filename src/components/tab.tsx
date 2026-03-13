@@ -29,6 +29,7 @@ export function TabButton(props: {
       <OutlinedButton
         style={{
           backgroundColor: value === index ? 'white' : 'rgb(218, 183, 250)',
+          opacity: props.disabled ? 0.5 : 1,
           border: '1px solid black',
           color: 'black',
         }}
@@ -43,6 +44,7 @@ export function TabButton(props: {
     <ContainedButton
       style={{
         backgroundColor: value === index ? 'white' : 'rgb(218, 183, 250)',
+        opacity: props.disabled ? 0.5 : 1,
         color: 'black',
       }}
       disabled={props.disabled}
@@ -107,10 +109,10 @@ export function Tabs(props: {
       <AnimatePresence mode="wait">
         <motion.div
           key={tab ? tab.name : 'empty'}
-          initial={{ y: 10, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: -10, opacity: 0 }}
-          transition={{ duration: 0.2 }}
+          initial={tab.disabled ? {} : { y: 10, opacity: 0 }}
+          animate={tab.disabled ? {} : { y: 0, opacity: 1 }}
+          exit={tab.disabled ? {} : { y: -10, opacity: 0 }}
+          transition={tab.disabled ? {} : { duration: 0.2 }}
           style={props.tabViewStyle}
         >
           {tab.element}

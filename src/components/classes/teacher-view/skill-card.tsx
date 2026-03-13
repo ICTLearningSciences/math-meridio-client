@@ -295,7 +295,7 @@ export function Contribution(props: {
         for (const phase of phases) {
           const studentWords = !playerStatus[1].phaseMetrics
             ? 0
-            : playerStatus[1].phaseMetrics[phase].numWordsSentInPhase;
+            : playerStatus[1].phaseMetrics[phase]?.numWordsSentInPhase;
           contribution.push({
             id: student._id,
             name: student.name,
@@ -339,6 +339,7 @@ export function Contribution(props: {
         }}
       >
         <BarChart
+          height={200}
           yAxis={[{ label: 'Frequency' }]}
           series={contribution.map((c) => ({
             data: [c.contribution],
@@ -346,7 +347,7 @@ export function Contribution(props: {
             stack: c.room,
             valueFormatter: (v) => `${v}%`,
           }))}
-          height={200}
+          slotProps={{ legend: { hidden: true } }}
         />
       </div>
     </div>
@@ -382,7 +383,7 @@ export function TimeSpent(props: {
         for (const phase of phases) {
           const timeSpent = !playerStatus[1].phaseMetrics
             ? 0
-            : playerStatus[1].phaseMetrics[phase].timeSpentInPhase;
+            : playerStatus[1].phaseMetrics[phase]?.timeSpentInPhase || 0;
           contribution.push({
             id: student._id,
             name: student.name,

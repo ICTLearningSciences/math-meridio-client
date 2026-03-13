@@ -130,26 +130,20 @@ function SimulationSpace(props: {
           value={curSimulation?.player}
           label="Strategy"
         >
-          {Object.entries(gameStateData.playersGameStateData).map(
-            ([playerId, psd]) => {
-              const player = gameStateData.players.find(
-                (p) => p._id === playerId
-              );
-              if (!player) return null;
-              return (
-                <MenuItem
-                  key={playerId}
-                  value={playerId}
-                  style={{ width: '100%', padding: 0, margin: 0 }}
-                >
-                  {game.showPlayerStrategy(player, {
-                    ...gameStateData.globalStateData.gameStateData,
-                    ...psd,
-                  })}
-                </MenuItem>
-              );
-            }
-          )}
+          {gameStateData.players.map((player) => {
+            return (
+              <MenuItem
+                key={player._id}
+                value={player._id}
+                style={{ width: '100%', padding: 0, margin: 0 }}
+              >
+                {game.showPlayerStrategy(
+                  player,
+                  gameStateData.playersGameStateData[player._id]
+                )}
+              </MenuItem>
+            );
+          })}
         </TextField>
         <Tooltip title="Mute game audio">
           <IconButton onClick={toggleMuted}>
@@ -419,7 +413,7 @@ function GamePage(): JSX.Element {
   return (
     <div className="root" style={{ backgroundColor: '#cfdaf8' }}>
       <div style={{ position: 'absolute', top: 55, width: 500 }}>
-        <ProgressBar phases={room.gameData.phaseProgression} />
+        <ProgressBar gameRooms={[room]} />
       </div>
       <EndOfPhaseReflectionModal
         room={room}

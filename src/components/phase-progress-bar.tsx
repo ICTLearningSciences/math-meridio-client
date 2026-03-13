@@ -82,15 +82,42 @@ export function PhaseSelector(props: {
 }
 
 export default function ProgressBar(props: {
-  phases: PhaseProgression;
+  gameRooms: Room[];
   size?: 'large';
 }): JSX.Element {
-  const { phases } = props;
+  const { gameRooms } = props;
+  const [phase, setPhase] = React.useState<PhaseProgression>();
   const large = props.size === 'large';
-  const phasesCompleted = phases.phasesCompleted.length;
-  const value = !phases.startingPhaseStepsOrdered.length
+  const phasesCompleted = phase?.phasesCompleted.length || 0;
+  const value = !phase?.startingPhaseStepsOrdered.length
     ? 0
-    : (phasesCompleted / phases.startingPhaseStepsOrdered.length) * 100;
+    : (phasesCompleted / phase.startingPhaseStepsOrdered.length) * 100;
+
+  React.useEffect(() => {
+    if (gameRooms.length === 0) return;
+    const numPhases: number[] = [];
+    const phasesStarted: number[] = [];
+    const phasesCompleted: number[] = [];
+    for (const room of gameRooms) {
+      numPhases.push(
+        room.gameData.phaseProgression.startingPhaseStepsOrdered.length
+      );
+      phasesStarted.push(room.gameData.phaseProgression.phasesStarted.length);
+      phasesCompleted.push(
+        room.gameData.phaseProgression.phasesCompleted.length
+      );
+    }
+    setPhase({
+      curPhaseTitle: '',
+      curPhaseStepId: '',
+      phasesStarted: Array.from({ length: Math.min(...phasesStarted) }),
+      phasesCompleted: Array.from({ length: Math.min(...phasesCompleted) }),
+      startingPhaseStepsOrdered: Array.from({
+        length: Math.min(...numPhases),
+      }),
+      learningObjectives: [],
+    });
+  }, [gameRooms]);
 
   return (
     <div style={{ position: 'relative' }}>
@@ -130,20 +157,23 @@ export default function ProgressBar(props: {
           justifyContent: 'space-evenly',
         }}
       >
-        {Array.from(
-          { length: phases.startingPhaseStepsOrdered.length },
-          (_, index) => (
-            <Typography
-              key={index}
-              fontSize={large ? 14 : 8}
-              style={{
-                color: phasesCompleted > index ? 'white' : 'rgb(180, 180, 180)',
-              }}
-            >
-              PHASE {index + 1}
-            </Typography>
-          )
-        )}
+        {phase &&
+          phase.startingPhaseStepsOrdered.length > 0 &&
+          Array.from(
+            { length: phase.startingPhaseStepsOrdered.length },
+            (_, index) => (
+              <Typography
+                key={index}
+                fontSize={large ? 14 : 8}
+                style={{
+                  color:
+                    phasesCompleted > index ? 'white' : 'rgb(180, 180, 180)',
+                }}
+              >
+                PHASE {index + 1}
+              </Typography>
+            )
+          )}
       </div>
     </div>
   );
