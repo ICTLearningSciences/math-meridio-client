@@ -98,8 +98,13 @@ export interface UseWithEducationalData {
   assignGameToGameRoom: (roomId: string, gameId: string) => Promise<Room>;
   setPlayerNeedsHelpInRoom: (needsHelp: boolean) => Promise<Room>;
   fetchLearningObjectives: () => Promise<LearningObjective[]>;
-  createLearningObjective: (learningObjective: Omit<LearningObjective, '_id'>) => Promise<LearningObjective>;
-  updateLearningObjective: (learningObjectiveId: string, learningObjective: Omit<LearningObjective, '_id'>) => Promise<LearningObjective>;
+  createLearningObjective: (
+    learningObjective: Omit<LearningObjective, '_id'>
+  ) => Promise<LearningObjective>;
+  updateLearningObjective: (
+    learningObjectiveId: string,
+    learningObjective: Omit<LearningObjective, '_id'>
+  ) => Promise<LearningObjective>;
 }
 
 export function useWithEducationalData(rId?: string): UseWithEducationalData {
@@ -391,15 +396,29 @@ export function useWithEducationalData(rId?: string): UseWithEducationalData {
   }
 
   async function fetchLearningObjectives(): Promise<LearningObjective[]> {
-    return await dispatch(educationalDataActions.fetchLearningObjectives()).unwrap();
+    return await dispatch(
+      educationalDataActions.fetchLearningObjectives()
+    ).unwrap();
   }
 
-  async function createLearningObjective(learningObjective: Omit<LearningObjective, '_id'>): Promise<LearningObjective> {
-    return await dispatch(educationalDataActions.createLearningObjective({ learningObjective })).unwrap();
+  async function createLearningObjective(
+    learningObjective: Omit<LearningObjective, '_id'>
+  ): Promise<LearningObjective> {
+    return await dispatch(
+      educationalDataActions.createLearningObjective({ learningObjective })
+    ).unwrap();
   }
 
-  async function updateLearningObjective(learningObjectiveId: string, learningObjective: Omit<LearningObjective, '_id'>): Promise<LearningObjective> {
-    return await dispatch(educationalDataActions.updateLearningObjective({ learningObjectiveId, learningObjective })).unwrap();
+  async function updateLearningObjective(
+    learningObjectiveId: string,
+    learningObjective: Omit<LearningObjective, '_id'>
+  ): Promise<LearningObjective> {
+    return await dispatch(
+      educationalDataActions.updateLearningObjective({
+        learningObjectiveId,
+        learningObjective,
+      })
+    ).unwrap();
   }
 
   return {

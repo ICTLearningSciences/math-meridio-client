@@ -8,7 +8,6 @@ import React from 'react';
 import { v4 as uuid } from 'uuid';
 import {
   IconButton,
-  Button,
   Select,
   MenuItem,
   FormControl,
@@ -17,13 +16,7 @@ import {
   Box,
 } from '@mui/material';
 import { Delete, Add } from '@mui/icons-material';
-import {
-  RoundedBorderDiv,
-  TopLeftText,
-  ColumnCenterDiv,
-  ColumnDiv,
-  RowDiv,
-} from '../../../../styled-components';
+import { RoundedBorderDiv, TopLeftText } from '../../../../styled-components';
 import { InputField } from '../../shared/input-components';
 import {
   DiscussionStage,
@@ -57,7 +50,6 @@ export function StartOfPhaseStepBuilder(props: {
   const { step, stepIndex, updateLocalStage } = props;
   const { educationalData } = useWithEducationalData();
   const [selectedLoId, setSelectedLoId] = React.useState<string>('');
-
 
   function updateField(
     field: string,
@@ -94,7 +86,10 @@ export function StartOfPhaseStepBuilder(props: {
 
   const handleAddLearningObjective = () => {
     if (selectedLoId && !step.learningObjectives.includes(selectedLoId)) {
-      updateField('learningObjectives', [...step.learningObjectives, selectedLoId]);
+      updateField('learningObjectives', [
+        ...step.learningObjectives,
+        selectedLoId,
+      ]);
       setSelectedLoId('');
     }
   };
@@ -105,7 +100,6 @@ export function StartOfPhaseStepBuilder(props: {
       step.learningObjectives.filter((id) => id !== loId)
     );
   };
-
 
   return (
     <RoundedBorderDiv

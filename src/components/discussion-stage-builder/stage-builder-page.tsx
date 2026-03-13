@@ -29,9 +29,13 @@ export function StageBuilderPage(props: {
     getAllStartOfPhaseSteps(existingStages);
   const [selectedStageClientId, setSelectedStageClientId] =
     React.useState<string>('');
-    const localStorageGqlSecret = localStorageGet<string>("gqlSecret");
-  const [password, setPassword] = React.useState<string>(localStorageGqlSecret || '');
-  const [authorized, setAuthorized] = React.useState<boolean>(localStorageGqlSecret === process.env.REACT_APP_GQL_SECRET || false);
+  const localStorageGqlSecret = localStorageGet<string>('gqlSecret');
+  const [password, setPassword] = React.useState<string>(
+    localStorageGqlSecret || ''
+  );
+  const [authorized, setAuthorized] = React.useState<boolean>(
+    localStorageGqlSecret === process.env.REACT_APP_GQL_SECRET || false
+  );
   const [selectedTab, setSelectedTab] = React.useState<number>(0);
 
   const selectedStage = existingStages.find(

@@ -61,7 +61,8 @@ export function addOrUpdateLearningObjective(
     (lo) => lo._id === updatedLearningObjective._id
   );
   if (existingLearningObjectiveIdx !== -1) {
-    state.learningObjectives[existingLearningObjectiveIdx] = updatedLearningObjective;
+    state.learningObjectives[existingLearningObjectiveIdx] =
+      updatedLearningObjective;
   } else {
     state.learningObjectives.push(updatedLearningObjective);
   }

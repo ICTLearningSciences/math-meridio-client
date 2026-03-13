@@ -5,7 +5,6 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import { v4 as uuidv4 } from 'uuid';
-import { LearningObjective } from '../../store/slices/game/types';
 
 export enum PromptOutputTypes {
   TEXT = 'TEXT',
@@ -136,6 +135,7 @@ export interface RequestUserInputStageStep extends StageBuilderStep {
   disableFreeInput: boolean;
   predefinedResponses: PredefinedResponse[];
   requireInputType: RequireInputType;
+  learningObjectives: string[];
 }
 
 export enum RequireInputType {

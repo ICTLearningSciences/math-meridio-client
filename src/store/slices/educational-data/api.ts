@@ -512,7 +512,6 @@ export const createLearningObjectiveMutation = `
   }
 `;
 
-
 export async function createLearningObjective(
   learningObjective: Omit<LearningObjective, '_id'>
 ): Promise<LearningObjective> {

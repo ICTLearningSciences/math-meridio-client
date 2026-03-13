@@ -298,8 +298,14 @@ export const createLearningObjective = createAsyncThunk(
 
 export const updateLearningObjective = createAsyncThunk(
   'educationalData/updateLearningObjective',
-  async (args: { learningObjectiveId: string; learningObjective: Omit<LearningObjective, '_id'> }) => {
-    return await api.updateLearningObjective(args.learningObjectiveId, args.learningObjective);
+  async (args: {
+    learningObjectiveId: string;
+    learningObjective: Omit<LearningObjective, '_id'>;
+  }) => {
+    return await api.updateLearningObjective(
+      args.learningObjectiveId,
+      args.learningObjective
+    );
   }
 );
 

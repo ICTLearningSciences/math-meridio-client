@@ -124,6 +124,7 @@ export const fullDiscussionStageQueryData = `
           saveResponseVariableName
           disableFreeInput
           requireInputType
+          learningObjectives
           predefinedResponses{
               clientId
               message
