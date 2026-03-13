@@ -110,6 +110,7 @@ export function PhaseReportCard(props: { classroom: Classroom }): JSX.Element {
       (r) => r.gameData.phaseProgression.phasesCompleted.length > phase
     ).length /
       gameRooms.length);
+  const completion = Number.isNaN(avgRoomCompletion) ? 0 : avgRoomCompletion;
 
   return (
     <Card>
@@ -154,7 +155,7 @@ export function PhaseReportCard(props: { classroom: Classroom }): JSX.Element {
                 />
                 <CircularProgress
                   variant="determinate"
-                  value={avgRoomCompletion}
+                  value={completion}
                   thickness={6}
                   style={{ width: 150, height: 150 }}
                 />
@@ -171,7 +172,7 @@ export function PhaseReportCard(props: { classroom: Classroom }): JSX.Element {
                   }}
                 >
                   <Typography fontWeight="bold" fontSize={16}>
-                    {`${Math.round(avgRoomCompletion)}%`}
+                    {`${Math.round(completion)}%`}
                   </Typography>
                 </Box>
               </Box>
