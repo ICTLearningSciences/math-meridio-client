@@ -21,6 +21,7 @@ import { useWithEducationalData } from '../../../store/slices/educational-data/u
 import { Player } from '../../../store/slices/player/types';
 import AvatarSprite, { PlayerSprite } from '../../avatar-sprite';
 import { ContainedButton } from '../../button';
+import TeacherInviteCode from './teacher-invite-code';
 
 function DraggablePlayer(props: {
   player?: Player;
@@ -207,16 +208,10 @@ export function RoomSetupView(props: { classroom: Classroom }): JSX.Element {
   };
 
   return (
-    <div className="column spacing" style={{ marginTop: 40 }}>
-      <Typography
-        variant="body2"
-        color="error"
-        align="center"
-        style={{ marginBottom: 40 }}
-      >
-        You have not yet started a game.
-      </Typography>
-      <Typography fontSize={16} fontWeight="bold">
+    <div className="column spacing">
+      <TeacherInviteCode classroom={classroom} />
+
+      <Typography fontSize={16} fontWeight="bold" style={{ marginTop: 20 }}>
         GROUP STUDENTS
       </Typography>
       <Typography variant="body1" fontWeight="lighter">

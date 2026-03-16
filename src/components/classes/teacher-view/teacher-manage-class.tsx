@@ -10,10 +10,6 @@ import {
   Button,
   Card,
   CardContent,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   Table,
   TableBody,
   TableCell,
@@ -29,27 +25,13 @@ import {
   Classroom,
 } from '../../../store/slices/educational-data/types';
 import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
-import { Player } from '../../../store/slices/player/types';
 import { Tabs } from '../../tab';
 import { RoomOrganizationView, RoomSetupView } from './teacher-room-setup';
+import TeacherInviteCode from './teacher-invite-code';
 
-function TeacherEditClass(props: { classroom?: Classroom }): JSX.Element {
+function TeacherSummary(props: { classroom?: Classroom }): JSX.Element {
   const { classroom } = props;
-  const {
-    educationalData,
-    fetchInstructorDataHydration,
-    revokeClassInviteCode,
-    createNewClassInviteCode,
-    updateClassNameDescription,
-    removeStudentFromClass,
-  } = useWithEducationalData();
-
-  const [inviteDialogOpen, setInviteDialogOpen] = React.useState(false);
-  const [validUntil, setValidUntil] = React.useState('');
-  const [numUses, setNumUses] = React.useState('10');
-  const [className, setClassName] = React.useState('');
-  const [classDescription, setClassDescription] = React.useState('');
-  const [creating, setCreating] = React.useState(false);
+  const { educationalData } = useWithEducationalData();
 
   const studentMemberships = educationalData.classMemberships.filter(
     (cm) =>
@@ -62,67 +44,6 @@ function TeacherEditClass(props: { classroom?: Classroom }): JSX.Element {
   const rooms = educationalData.rooms.filter(
     (r) => r.classId === classroom?._id
   );
-
-  React.useEffect(() => {
-    if (classroom) {
-      setClassName(classroom.name);
-      setClassDescription(classroom.description || '');
-    }
-  }, [classroom]);
-
-  const handleCreateInviteCode = async () => {
-    if (!classroom || !validUntil || !numUses) return;
-    setCreating(true);
-    try {
-      await createNewClassInviteCode(
-        classroom._id,
-        new Date(validUntil),
-        parseInt(numUses)
-      );
-      setInviteDialogOpen(false);
-      setValidUntil('');
-      setNumUses('10');
-    } catch (err) {
-      console.error('Failed to create invite code', err);
-    } finally {
-      setCreating(false);
-    }
-  };
-
-  const handleRevokeInviteCode = async (code: string) => {
-    if (!classroom) return;
-    try {
-      await revokeClassInviteCode(classroom._id, code);
-    } catch (err) {
-      console.error('Failed to revoke invite code', err);
-    }
-  };
-
-  const handleRemoveStudent = async (student: Player) => {
-    if (!classroom) return;
-    try {
-      await removeStudentFromClass(student._id, classroom._id);
-      await fetchInstructorDataHydration();
-    } catch (err) {
-      console.error('Failed to remove student', err);
-    }
-  };
-
-  const handleUpdateClass = async () => {
-    if (!classroom) return;
-    setCreating(true);
-    try {
-      await updateClassNameDescription(
-        classroom._id,
-        className,
-        classDescription
-      );
-    } catch (err) {
-      console.error('Failed to update class', err);
-    } finally {
-      setCreating(false);
-    }
-  };
 
   if (!classroom) {
     return (
@@ -191,74 +112,54 @@ function TeacherEditClass(props: { classroom?: Classroom }): JSX.Element {
           )}
         </CardContent>
       </Card>
+    </div>
+  );
+}
 
-      <Typography fontSize={16} fontWeight="bold" style={{ marginTop: 20 }}>
-        INVITE CODES
-      </Typography>
-      <Card style={{ borderRadius: 10 }}>
-        <CardContent
-          className="column spacing"
-          style={{ position: 'relative', padding: 20 }}
-        >
-          {classroom.inviteCodes.length === 0 ? (
-            <Typography variant="body2" color="error">
-              No active invite codes.
-            </Typography>
-          ) : (
-            <TableContainer
-              sx={{
-                borderRadius: 3,
-                border: 1,
-              }}
-            >
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Code</TableCell>
-                    <TableCell>Uses</TableCell>
-                    <TableCell>Max Uses</TableCell>
-                    <TableCell>Valid Until</TableCell>
-                    <TableCell>Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {classroom.inviteCodes.map((inviteCode) => (
-                    <TableRow key={inviteCode.code}>
-                      <TableCell>{inviteCode.code}</TableCell>
-                      <TableCell>{inviteCode.uses}</TableCell>
-                      <TableCell>{inviteCode.maxUses || 'Unlimited'}</TableCell>
-                      <TableCell>
-                        {inviteCode.validUntil
-                          ? new Date(inviteCode.validUntil).toLocaleDateString()
-                          : 'No expiration'}
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          size="small"
-                          color="error"
-                          onClick={() =>
-                            handleRevokeInviteCode(inviteCode.code)
-                          }
-                        >
-                          Revoke
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          )}
-          <Button
-            variant="contained"
-            color="secondary"
-            fullWidth
-            onClick={() => setInviteDialogOpen(true)}
-          >
-            Create Invite Code
-          </Button>
-        </CardContent>
-      </Card>
+function TeacherEditClass(props: { classroom?: Classroom }): JSX.Element {
+  const { classroom } = props;
+  const { updateClassNameDescription } = useWithEducationalData();
+
+  const [className, setClassName] = React.useState('');
+  const [classDescription, setClassDescription] = React.useState('');
+  const [creating, setCreating] = React.useState(false);
+
+  React.useEffect(() => {
+    if (classroom) {
+      setClassName(classroom.name);
+      setClassDescription(classroom.description || '');
+    }
+  }, [classroom]);
+
+  const handleUpdateClass = async () => {
+    if (!classroom) return;
+    setCreating(true);
+    try {
+      await updateClassNameDescription(
+        classroom._id,
+        className,
+        classDescription
+      );
+    } catch (err) {
+      console.error('Failed to update class', err);
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  if (!classroom) {
+    return (
+      <div className="root center-div">
+        <Typography variant="h6" color="error">
+          Classroom not found
+        </Typography>
+      </div>
+    );
+  }
+
+  return (
+    <div className="column spacing">
+      <TeacherInviteCode classroom={classroom} />
 
       <Typography fontSize={16} fontWeight="bold" style={{ marginTop: 20 }}>
         EDIT CLASS
@@ -299,47 +200,6 @@ function TeacherEditClass(props: { classroom?: Classroom }): JSX.Element {
           </Button>
         </CardContent>
       </Card>
-
-      {/* Create Invite Code Dialog */}
-      <Dialog
-        open={inviteDialogOpen}
-        onClose={() => !creating && setInviteDialogOpen(false)}
-      >
-        <DialogTitle>Create Invite Code</DialogTitle>
-        <DialogContent>
-          <TextField
-            fullWidth
-            label="Valid Until"
-            type="date"
-            value={validUntil}
-            onChange={(e) => setValidUntil(e.target.value)}
-            InputLabelProps={{ shrink: true }}
-            style={{ marginTop: 10, marginBottom: 20 }}
-          />
-          <TextField
-            fullWidth
-            label="Max Uses"
-            type="number"
-            value={numUses}
-            onChange={(e) => setNumUses(e.target.value)}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => setInviteDialogOpen(false)}
-            disabled={creating}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleCreateInviteCode}
-            variant="contained"
-            disabled={creating || !validUntil || !numUses}
-          >
-            {creating ? 'Creating...' : 'Create'}
-          </Button>
-        </DialogActions>
-      </Dialog>
     </div>
   );
 }
@@ -369,6 +229,14 @@ export default function TeacherManageClass(props: {
       tabs={[
         {
           name: 'SUMMARY',
+          element: (
+            <div className="dashboard">
+              <TeacherSummary classroom={classroom} />
+            </div>
+          ),
+        },
+        {
+          name: 'DETAILS',
           element: (
             <div className="dashboard">
               <TeacherEditClass classroom={classroom} />
