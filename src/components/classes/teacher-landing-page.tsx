@@ -25,6 +25,7 @@ export default function TeacherLandingPage(): JSX.Element {
   const [classId, setClassId] = React.useState<string>();
   const [creating, setCreating] = React.useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
+  const [loaded, setLoaded] = React.useState<boolean>(false);
 
   const tab = Number.parseInt(searchParams.get('tab') || '0');
   const myClasses = educationalData.classes.filter(
@@ -34,6 +35,13 @@ export default function TeacherLandingPage(): JSX.Element {
   const myRooms = educationalData.rooms.filter(
     (r) => r.classId === myClass?._id
   );
+
+  React.useEffect(() => {
+    if (loaded) return;
+    if (educationalData.hydrationLoadStatus.status === LoadStatus.DONE) {
+      setLoaded(true);
+    }
+  }, [educationalData.hydrationLoadStatus.status]);
 
   React.useEffect(() => {
     if (!classId && myClasses.length > 0) {
@@ -53,10 +61,7 @@ export default function TeacherLandingPage(): JSX.Element {
     }
   };
 
-  if (
-    educationalData.hydrationLoadStatus.status === LoadStatus.IN_PROGRESS ||
-    myClasses.length === 0
-  ) {
+  if (!loaded || myClasses.length === 0) {
     return <TeacherLoading />;
   }
 

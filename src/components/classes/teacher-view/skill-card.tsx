@@ -488,6 +488,12 @@ export function SkillsPracticed(props: {
   const [skills, setSkills] = React.useState<Record<string, SkillsMet>>({});
   const [expanded, setExpanded] = React.useState<boolean>(true);
 
+  const skillsMet = Object.entries(skills)
+    .sort((a, b) => {
+      return b[1].playersMet.length - a[1].playersMet.length;
+    })
+    .filter((skill) => skill[1].playersMet.length === skill[1].players.length);
+
   React.useEffect(() => {
     const skills: Record<string, SkillsMet> = {};
     for (const student of students) {
@@ -530,26 +536,23 @@ export function SkillsPracticed(props: {
             </Typography>
           </div>
         )}
+        {skillsMet.length === 0 && (
+          <Typography textAlign="center">
+            No skills have been mastered yet.
+          </Typography>
+        )}
         <Collapse in={expanded}>
           <div className="column spacing">
-            {Object.entries(skills)
-              .sort((a, b) => {
-                return b[1].playersMet.length - a[1].playersMet.length;
-              })
-              .filter(
-                (skill) =>
-                  skill[1].playersMet.length === skill[1].players.length
-              )
-              .map((skill) => {
-                return (
-                  <SkillCard
-                    key={skill[0]}
-                    name={skill[0]}
-                    players={skill[1].players}
-                    playersMet={skill[1].playersMet}
-                  />
-                );
-              })}
+            {skillsMet.map((skill) => {
+              return (
+                <SkillCard
+                  key={skill[0]}
+                  name={skill[0]}
+                  players={skill[1].players}
+                  playersMet={skill[1].playersMet}
+                />
+              );
+            })}
           </div>
         </Collapse>
       </CardContent>
