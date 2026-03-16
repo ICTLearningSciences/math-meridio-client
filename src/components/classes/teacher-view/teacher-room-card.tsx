@@ -23,7 +23,7 @@ import {
 import { Room } from '../../../store/slices/game/types';
 import { GAMES } from '../../../game/types';
 import { PlayerActivitySprite } from '../../avatar-sprite';
-import ProgressBar from '../../phase-progress-bar';
+import PhaseProgressBar from '../../phase-progress-bar';
 import { Classroom } from '../../../store/slices/educational-data/types';
 
 export default function RoomCard(props: {
@@ -100,7 +100,7 @@ export default function RoomCard(props: {
               />
             ))}
           </div>
-          <ProgressBar gameRooms={[room]} />
+          <PhaseProgressBar gameRooms={[room]} />
           <Typography variant="body2">
             {game?.name || room?.gameData.gameId}
           </Typography>

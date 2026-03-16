@@ -120,11 +120,8 @@ function NewDroppableGroup(): JSX.Element {
 
 export function RoomSetupView(props: { classroom: Classroom }): JSX.Element {
   const { classroom } = props;
-  const {
-    educationalData,
-    assignClassGroupsAndStart,
-    fetchInstructorDataHydration,
-  } = useWithEducationalData();
+  const { educationalData, assignClassGroupsAndStart } =
+    useWithEducationalData();
   const [groupSize, setGroupSize] = React.useState<number>(3);
   const [studentMembers, setStudentMembers] = React.useState<ClassMembership[]>(
     []
@@ -306,8 +303,6 @@ export function RoomSetupView(props: { classroom: Classroom }): JSX.Element {
           </DragDropProvider>
         </ImageList>
       )}
-
-      <Button onClick={fetchInstructorDataHydration}>Refresh Students</Button>
       <Button
         variant="contained"
         color="primary"

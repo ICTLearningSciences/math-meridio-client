@@ -4,25 +4,20 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-/*
-This software is Copyright ©️ 2020 The University of Southern California. All Rights Reserved.
-Permission to use, copy, modify, and distribute this software and its documentation for educational, research and non-profit purposes, without fee, and without a written agreement is hereby granted, provided that the above copyright notice and subject to the full license file found in the root of this software deliverable. Permission to make commercial use of this software may be obtained by contacting:  USC Stevens Center for Innovation University of Southern California 1150 S. Olive Street, Suite 2300, Los Angeles, CA 90115, USA Email: accounting@stevens.usc.edu
-
-The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
-*/
 import React from 'react';
 import { Button, CircularProgress, TextField, Typography } from '@mui/material';
 import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
-import { LoadStatus } from '../../../types';
 import { ClassMembershipStatus } from '../../../store/slices/educational-data/types';
 import { extractErrorMessageFromError } from '../../../helpers';
 import { StudentClassroomCard } from './student-classroom-card';
+import { LoadStatus } from '../../../types';
 
 export default function StudentLandingPage(): JSX.Element {
   const { joinClassroom, educationalData } = useWithEducationalData();
   const [inviteCode, setInviteCode] = React.useState('');
   const [joining, setJoining] = React.useState(false);
   const [error, setError] = React.useState<string>();
+  const [loaded, setLoaded] = React.useState<boolean>(false);
 
   const myClassMemberships = educationalData.classMemberships.filter(
     (cm) => cm.status === ClassMembershipStatus.MEMBER
@@ -30,6 +25,13 @@ export default function StudentLandingPage(): JSX.Element {
   const myClasses = educationalData.classes.filter((c) =>
     myClassMemberships.some((cm) => cm.classId === c._id)
   );
+
+  React.useEffect(() => {
+    if (loaded) return;
+    if (educationalData.hydrationLoadStatus.status === LoadStatus.DONE) {
+      setLoaded(true);
+    }
+  }, [educationalData.hydrationLoadStatus.status]);
 
   const handleJoinClass = async () => {
     if (!inviteCode.trim()) {
@@ -48,7 +50,7 @@ export default function StudentLandingPage(): JSX.Element {
     }
   };
 
-  if (educationalData.hydrationLoadStatus.status === LoadStatus.IN_PROGRESS) {
+  if (!loaded) {
     return (
       <div className="root center-div">
         <CircularProgress />
@@ -69,7 +71,6 @@ export default function StudentLandingPage(): JSX.Element {
       <Typography variant="h4" style={{ marginBottom: 20 }}>
         My Classes
       </Typography>
-
       <div
         className="column"
         style={{ width: '90%', maxWidth: 600, marginBottom: 40 }}

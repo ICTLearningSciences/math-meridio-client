@@ -172,6 +172,54 @@ export const fullDiscussionStageQueryData = `
   }
 `;
 
+export const fullRoomQueryDataWithoutMathStandardsCompleted = `
+  _id
+  name
+  classId
+  phase
+  gameData {
+    persistTruthGlobalStateData
+
+    curGameState {
+          curState
+          playersLeftToRespond
+          curRoundNumber
+          selectedQuestion
+          studentReflections
+    }
+    gameId
+    players {
+      ${userDataQuery}
+    }
+    chat {
+      messageId
+      message
+      sender
+      senderId
+      senderName
+      displayType
+      disableUserInput
+      mcqChoices
+      sessionId
+    }
+    globalStateData {
+      curStageId
+      curStepId
+      roomOwnerId
+      gameStateData
+    }
+    playersGameStateData
+    phaseProgression {
+      phasesStarted
+      phasesCompleted
+      curPhaseTitle
+      curPhaseStepId
+      startingPhaseStepsOrdered
+    }
+    playersStatusRecord
+  }
+`;
+
 export const fullRoomQueryData = `
   _id
   name
@@ -391,7 +439,7 @@ export async function fetchRoom(roomId: string): Promise<Room> {
       query: `
         query FetchRoom($roomId: ID!) {
           fetchRoom(roomId: $roomId) {
-            ${fullRoomQueryData}
+            ${fullRoomQueryDataWithoutMathStandardsCompleted}
           }
         }`,
       variables: {

@@ -28,19 +28,31 @@ export function useWithPollActiveRoom() {
       return;
     }
 
+    let isActive = true;
+
+    const poll = async () => {
+      if (!isActive) return;
+
+      try {
+        // Wait for both requests to complete (success or failure)
+        await Promise.all([pingRef.current(roomId), fetchRef.current(roomId)]);
+      } catch (error) {
+        // Continue polling even if there's an error
+        console.error('Polling error:', error);
+      }
+
+      // Schedule next poll after 1 second, only if still active
+      if (isActive) {
+        setTimeout(() => poll(), 1000);
+      }
+    };
+
     // Start polling immediately
-    pingRef.current(roomId);
-    fetchRef.current(roomId);
+    poll();
 
-    // Set up interval to poll every 2 seconds
-    const intervalId = setInterval(() => {
-      pingRef.current(roomId);
-      fetchRef.current(roomId);
-    }, 1000);
-
-    // Cleanup: clear interval when roomId changes or component unmounts
+    // Cleanup: stop polling when roomId changes or component unmounts
     return () => {
-      clearInterval(intervalId);
+      isActive = false;
     };
   }, [roomId]); // Only depend on roomId
 }

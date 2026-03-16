@@ -47,7 +47,14 @@ export function addOrUpdateGameRoom(
     (r) => r._id === updatedRoom._id
   );
   if (existingRoomIdx !== -1) {
-    state.rooms[existingRoomIdx] = updatedRoom;
+    if (updatedRoom.gameData.mathStandardsCompleted) {
+      state.rooms[existingRoomIdx] = updatedRoom;
+    } else {
+      // if we did not receive new math standards completed, persist the old ones
+      updatedRoom.gameData.mathStandardsCompleted =
+        state.rooms[existingRoomIdx].gameData.mathStandardsCompleted;
+      state.rooms[existingRoomIdx] = updatedRoom;
+    }
   } else {
     state.rooms.push(updatedRoom);
   }

@@ -16,9 +16,10 @@ import {
 } from '@mui/material';
 
 import { Classroom } from '../../../store/slices/educational-data/types';
-import { PhaseSelector } from '../../phase-progress-bar';
+import PhaseProgressBar, { PhaseSelector } from '../../phase-progress-bar';
 import {
   Contribution,
+  KeyWords,
   SkillsPracticed,
   TimeSpent,
   TroubleSpots,
@@ -35,7 +36,6 @@ export function SummaryReportCard(props: {
   const { classroom } = props;
   const { educationalData } = useWithEducationalData();
   const [game, setGame] = React.useState<string>();
-  const [phase, setPhase] = React.useState<number>();
 
   const gameRooms = educationalData.rooms.filter(
     (r) => r.classId === classroom._id && (!game || r.gameData.gameId === game)
@@ -55,35 +55,16 @@ export function SummaryReportCard(props: {
           setGame={(id: string) => setGame(id)}
           buttonStyle={{ borderColor: 'black' }}
         />
-        <PhaseSelector
-          gameRooms={gameRooms}
-          phase={phase}
-          setPhase={setPhase}
-        />
+        <PhaseProgressBar size="large" gameRooms={gameRooms} />
         <Grid container spacing={2} style={{ marginTop: 10 }}>
           <Grid item xs={4}>
             <Contribution students={students} gameRooms={gameRooms} />
           </Grid>
           <Grid item xs={3}>
-            <TimeSpent students={students} gameRooms={gameRooms} />
+            <TimeSpent gameRooms={gameRooms} />
           </Grid>
-          <Grid item xs={4}>
-            <Typography fontSize={14} fontWeight="bold">
-              Key Words
-            </Typography>
-            <div
-              className="row center-div"
-              style={{
-                border: '1px solid black',
-                borderRadius: 10,
-                padding: 10,
-                marginTop: 10,
-              }}
-            >
-              <Typography fontSize={14} fontWeight="bold">
-                Recently Used
-              </Typography>
-            </div>
+          <Grid item xs={5}>
+            <KeyWords gameRooms={gameRooms} />
           </Grid>
         </Grid>
         <TroubleSpots students={students} gameRooms={gameRooms} />
@@ -110,6 +91,7 @@ export function PhaseReportCard(props: { classroom: Classroom }): JSX.Element {
       (r) => r.gameData.phaseProgression.phasesCompleted.length > phase
     ).length /
       gameRooms.length);
+  const completion = Number.isNaN(avgRoomCompletion) ? 0 : avgRoomCompletion;
 
   return (
     <Card>
@@ -154,7 +136,7 @@ export function PhaseReportCard(props: { classroom: Classroom }): JSX.Element {
                 />
                 <CircularProgress
                   variant="determinate"
-                  value={avgRoomCompletion}
+                  value={completion}
                   thickness={6}
                   style={{ width: 150, height: 150 }}
                 />
@@ -171,35 +153,24 @@ export function PhaseReportCard(props: { classroom: Classroom }): JSX.Element {
                   }}
                 >
                   <Typography fontWeight="bold" fontSize={16}>
-                    {`${Math.round(avgRoomCompletion)}%`}
+                    {`${Math.round(completion)}%`}
                   </Typography>
                 </Box>
               </Box>
             </div>
           </Grid>
           <Grid item xs={3}>
-            <TimeSpent students={students} gameRooms={gameRooms} />
+            <TimeSpent phase={phase} gameRooms={gameRooms} />
           </Grid>
           <Grid item xs={3}>
-            <Typography fontSize={14} fontWeight="bold">
-              Key Words
-            </Typography>
-            <div
-              className="row center-div"
-              style={{
-                border: '1px solid black',
-                borderRadius: 10,
-                padding: 10,
-                marginTop: 10,
-              }}
-            >
-              <Typography fontSize={14} fontWeight="bold">
-                Recently Used
-              </Typography>
-            </div>
+            <KeyWords phase={phase} gameRooms={gameRooms} />
           </Grid>
           <Grid item xs={3}>
-            <Contribution students={students} gameRooms={gameRooms} />
+            <Contribution
+              phase={phase}
+              students={students}
+              gameRooms={gameRooms}
+            />
           </Grid>
         </Grid>
         <SkillsPracticed students={students} gameRooms={gameRooms} />
@@ -217,8 +188,8 @@ export function IndividualReportCard(props: {
   const [expanded, setExpanded] = React.useState<boolean>(true);
   const [phase, setPhase] = React.useState<number>(0);
   const { educationalData } = useWithEducationalData();
-  const game = GAMES.find((g) => g.id === room?.gameData.gameId);
 
+  const game = GAMES.find((g) => g.id === room?.gameData.gameId);
   const phaseReflections = educationalData.phaseReflections.filter(
     (p) => p.roomId === room._id
   );
@@ -241,38 +212,23 @@ export function IndividualReportCard(props: {
           <Grid container spacing={2} style={{ marginTop: 10 }}>
             <Grid item xs={4}>
               <Contribution
+                phase={phase}
                 students={room.gameData.players}
                 gameRooms={[room]}
               />
             </Grid>
             <Grid item xs={3}>
-              <TimeSpent students={room.gameData.players} gameRooms={[room]} />
+              <TimeSpent phase={phase} gameRooms={[room]} />
             </Grid>
             <Grid item xs={4}>
-              <Typography fontSize={14} fontWeight="bold">
-                Key Words
-              </Typography>
-              <div
-                className="row center-div"
-                style={{
-                  border: '1px solid black',
-                  borderRadius: 10,
-                  padding: 10,
-                  marginTop: 10,
-                }}
-              >
-                <Typography fontSize={14} fontWeight="bold">
-                  Recently Used
-                </Typography>
-              </div>
+              <KeyWords phase={phase} gameRooms={[room]} />
             </Grid>
-
             <Grid item xs={12}>
               <Typography fontSize={14} fontWeight="bold" flexGrow={1}>
                 Class Reflections
               </Typography>
               {phaseReflections
-                .filter((pr) => pr.roundNumber === phase + 1)
+                .filter((pr) => pr.roundNumber === phase)
                 .map((pr, idx) => {
                   return (
                     <Card
@@ -282,7 +238,7 @@ export function IndividualReportCard(props: {
                     >
                       <CardContent className="column spacing">
                         <Typography fontSize={14} fontWeight="bold">
-                          {pr.roundNumber}. {pr.question}
+                          {pr.question}
                         </Typography>
                         {Object.entries(pr.reflections).map((r) => {
                           const player = room.gameData.players.find(
