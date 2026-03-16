@@ -76,7 +76,7 @@ export interface UseWithEducationalData {
     gameName: string,
     classId?: string
   ) => Promise<Room>;
-  pingGameRoomProcess: (gameRoomId: string) => Promise<Room>;
+  pingGameRoomProcess: (gameRoomId: string) => Promise<void>;
   ownerIsPresent: boolean;
   room: Room | undefined;
   updateMyRoomGameStateData: (gameStateData: GameStateData) => Promise<Room>;
@@ -299,8 +299,8 @@ export function useWithEducationalData(rId?: string): UseWithEducationalData {
     ).unwrap();
   }
 
-  async function pingGameRoomProcess(gameRoomId: string): Promise<Room> {
-    return await gameRoomApi.pingGameRoomProcess(gameRoomId);
+  async function pingGameRoomProcess(gameRoomId: string): Promise<void> {
+    await gameRoomApi.pingGameRoomProcess(gameRoomId);
   }
 
   async function sendMessageToGameRoom(message: string): Promise<Room> {

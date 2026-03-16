@@ -16,17 +16,19 @@ import {
   InputLabel,
   OutlinedInput,
   Typography,
+  CircularProgress,
 } from '@mui/material';
 import { Mic, MicOutlined, Send } from '@mui/icons-material';
 
 export const MAX_MESSAGE_LENGTH = 200;
 
 export default function ChatForm(props: {
-  sendMessage: (msg: string) => void;
+  sendMessage: (msg: string) => Promise<any>;
   isMyTurn: boolean;
   isPaused?: boolean;
 }): JSX.Element {
   const [input, setInput] = React.useState<string>('');
+  const [isSending, setIsSending] = React.useState<boolean>(false);
   const {
     transcript,
     listening,
@@ -41,16 +43,19 @@ export default function ChatForm(props: {
     }
   }, [transcript]);
 
-  function onSend(): void {
-    if (input.trim() === '' || input.length > MAX_MESSAGE_LENGTH) {
+  async function onSend(): Promise<void> {
+    if (input.trim() === '' || input.length > MAX_MESSAGE_LENGTH || isSending) {
       return;
     }
-    if (props.sendMessage) {
-      props.sendMessage(input);
-    } else {
-      sendMessage(input);
+    try {
+      setIsSending(true);
+      await sendMessage(input);
+      setInput('');
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsSending(false);
     }
-    setInput('');
   }
 
   function onKeyPress(
@@ -87,14 +92,18 @@ export default function ChatForm(props: {
         </Typography>
       )}
       <div className="row" style={{ width: '100%' }}>
-        <FormControl variant="outlined" style={{ flex: 1 }}>
+        <FormControl
+          variant="outlined"
+          style={{ flex: 1 }}
+          disabled={isSending}
+        >
           <InputLabel>Chat:</InputLabel>
           <OutlinedInput
             data-cy="chat-input"
             label="Chat:"
             type="text"
             value={input}
-            disabled={listening || isPaused}
+            disabled={listening || isPaused || isSending}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => onKeyPress(e, isMyTurn)}
             style={{ backgroundColor: 'white' }}
@@ -115,20 +124,27 @@ export default function ChatForm(props: {
               )
             }
             endAdornment={
-              <InputAdornment position="end">
-                <IconButton
-                  data-cy="send-message-button"
-                  type="submit"
-                  color="primary"
-                  edge="end"
-                  onClick={onSend}
-                  disabled={
-                    input.length > MAX_MESSAGE_LENGTH || !isMyTurn || isPaused
-                  }
-                >
-                  <Send />
-                </IconButton>
-              </InputAdornment>
+              isSending ? (
+                <CircularProgress size={20} color="primary" />
+              ) : (
+                <InputAdornment position="end">
+                  <IconButton
+                    data-cy="send-message-button"
+                    type="submit"
+                    color="primary"
+                    edge="end"
+                    onClick={onSend}
+                    disabled={
+                      input.length > MAX_MESSAGE_LENGTH ||
+                      !isMyTurn ||
+                      isPaused ||
+                      isSending
+                    }
+                  >
+                    <Send />
+                  </IconButton>
+                </InputAdornment>
+              )
             }
           />
         </FormControl>
