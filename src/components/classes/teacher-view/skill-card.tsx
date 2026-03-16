@@ -5,6 +5,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import React from 'react';
+import { Word, WordCloud } from '@isoterik/react-word-cloud';
 import {
   CheckCircle,
   ErrorOutline,
@@ -20,83 +21,299 @@ import { PlayerSprite } from '../../avatar-sprite';
 import { Room } from '../../../store/slices/game/types';
 import { Player } from '../../../store/slices/player/types';
 import { calculateAverage, calculateSum } from '../../../helpers';
-import { SkillsMet } from '../../../types';
+import {
+  GenericLlmRequest,
+  PromptOutputTypes,
+  PromptRoles,
+  SkillsMet,
+} from '../../../types';
+import { jsonLlmRequest } from '../../../classes/api-helpers';
+import { useWithConfig } from '../../../store/slices/config/use-with-config';
+import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
 
-export function SkillsPracticed(props: {
+interface PlayerPhaseMetrics {
+  player: Player;
+  room: Room;
+  timeSpent: number;
+  numWordsSent: number;
+  totalWordsSent: number;
+  contribution: number;
+}
+
+export function Contribution(props: {
   students: Player[];
   gameRooms: Room[];
-  noHeader?: boolean;
+  phase?: number;
 }): JSX.Element {
-  const { students, gameRooms } = props;
-  const [skills, setSkills] = React.useState<Record<string, SkillsMet>>({});
-  const [expanded, setExpanded] = React.useState<boolean>(true);
+  const { gameRooms, phase } = props;
+  const [metrics, setMetrics] = React.useState<PlayerPhaseMetrics[]>([]);
 
   React.useEffect(() => {
-    const skills: Record<string, SkillsMet> = {};
-    for (const student of students) {
-      const room = gameRooms.find((r) =>
-        r.gameData.players.find((p) => p._id === student._id)
-      );
-      if (room) {
-        for (const standard of Object.entries(
-          room.gameData.mathStandardsCompleted
-        )) {
-          if (!(standard[0] in skills)) {
-            skills[standard[0]] = { playersMet: [], players: [] };
+    const metrics: PlayerPhaseMetrics[] = [];
+    for (const room of gameRooms) {
+      for (const student of room.gameData.players) {
+        const playerStatus = room.gameData.playersStatusRecord[student._id];
+        const playerMetrics: PlayerPhaseMetrics = {
+          player: student,
+          room: room,
+          timeSpent: 0,
+          numWordsSent: 0,
+          totalWordsSent: 0,
+          contribution: 0,
+        };
+        const phases =
+          phase === undefined
+            ? room.gameData.phaseProgression.phasesCompleted
+            : [room.gameData.phaseProgression.phasesCompleted[phase]];
+        for (const p of phases) {
+          if (!playerStatus.phaseMetrics || !playerStatus.phaseMetrics[p]) {
+            continue;
           }
-          if (standard[1]) {
-            skills[standard[0]].playersMet.push(student);
-          }
-          skills[standard[0]].players.push(student);
+          playerMetrics.timeSpent +=
+            playerStatus.phaseMetrics[p]?.timeSpentInPhase || 0;
+          playerMetrics.numWordsSent +=
+            playerStatus.phaseMetrics[p]?.numWordsSentInPhase || 0;
         }
+        playerMetrics.timeSpent = Math.round(playerMetrics.timeSpent / 60);
+        metrics.push(playerMetrics);
       }
     }
-    setSkills(skills);
-  }, [students, gameRooms]);
+    for (const metric of metrics) {
+      metric.totalWordsSent = calculateSum(
+        metrics
+          .filter((m) => m.room._id === metric.room._id)
+          .map((m) => m.numWordsSent)
+      );
+      if (metric.totalWordsSent > 0) {
+        metric.contribution = Math.round(
+          100 * (metric.numWordsSent / metric.totalWordsSent)
+        );
+      }
+    }
+    setMetrics(metrics);
+  }, [gameRooms, phase]);
 
   return (
-    <Card
-      style={{ backgroundColor: 'rgb(231, 231, 231)', borderRadius: 10 }}
-      elevation={0}
-    >
-      <CardContent className="column spacing">
-        {!props.noHeader && (
-          <div className="row center-div spacing">
-            {expanded ? <ExpandLess /> : <ExpandMore />}
-            <Typography
-              fontSize={14}
-              fontWeight="bold"
-              flexGrow={1}
-              onClick={() => setExpanded(!expanded)}
-            >
-              Skills Practiced
-            </Typography>
-          </div>
-        )}
-        <Collapse in={expanded}>
-          <div className="column spacing">
-            {Object.entries(skills)
-              .sort((a, b) => {
-                return b[1].playersMet.length - a[1].playersMet.length;
-              })
-              .filter(
-                (skill) =>
-                  skill[1].playersMet.length === skill[1].players.length
-              )
-              .map((skill) => {
-                return (
-                  <SkillCard
-                    key={skill[0]}
-                    name={skill[0]}
-                    players={skill[1].players}
-                    playersMet={skill[1].playersMet}
-                  />
-                );
-              })}
-          </div>
-        </Collapse>
-      </CardContent>
-    </Card>
+    <div>
+      <Typography fontSize={14} fontWeight="bold">
+        {gameRooms.length === 1
+          ? 'Student Contribution (%)'
+          : 'Average Student Contribution (%)'}
+      </Typography>
+      <div
+        className="row center-div"
+        style={{
+          border: '1px solid black',
+          borderRadius: 10,
+          marginTop: 10,
+        }}
+      >
+        <BarChart
+          height={200}
+          yAxis={[{ label: 'Frequency' }]}
+          series={metrics.map((c) => ({
+            data: [c.contribution],
+            label: c.player.name,
+            stack: c.room._id,
+            valueFormatter: (v) => `${v}%`,
+          }))}
+          slotProps={{ legend: { hidden: true } }}
+        />
+      </div>
+    </div>
+  );
+}
+
+export function TimeSpent(props: {
+  gameRooms: Room[];
+  phase?: number;
+}): JSX.Element {
+  const { gameRooms, phase } = props;
+  const [metrics, setMetrics] = React.useState<PlayerPhaseMetrics[]>([]);
+
+  React.useEffect(() => {
+    const metrics: PlayerPhaseMetrics[] = [];
+    for (const room of gameRooms) {
+      for (const student of room.gameData.players) {
+        const playerStatus = room.gameData.playersStatusRecord[student._id];
+        const playerMetrics: PlayerPhaseMetrics = {
+          player: student,
+          room: room,
+          timeSpent: 0,
+          numWordsSent: 0,
+          totalWordsSent: 0,
+          contribution: 0,
+        };
+        const phases =
+          phase === undefined
+            ? room.gameData.phaseProgression.phasesCompleted
+            : [room.gameData.phaseProgression.phasesCompleted[phase]];
+        for (const p of phases) {
+          if (!playerStatus.phaseMetrics || !playerStatus.phaseMetrics[p]) {
+            continue;
+          }
+          playerMetrics.timeSpent +=
+            playerStatus.phaseMetrics[p]?.timeSpentInPhase || 0;
+          playerMetrics.numWordsSent +=
+            playerStatus.phaseMetrics[p]?.numWordsSentInPhase || 0;
+        }
+        playerMetrics.timeSpent = Math.round(playerMetrics.timeSpent / 60);
+        metrics.push(playerMetrics);
+      }
+    }
+    setMetrics(metrics);
+  }, [gameRooms, phase]);
+
+  return (
+    <div>
+      <Typography fontSize={14} fontWeight="bold">
+        {gameRooms.length === 1 ? 'Time Spent in Game' : 'Average Time Spent'}
+      </Typography>
+      <div
+        className="row center-div spacing"
+        style={{
+          border: '1px solid black',
+          borderRadius: 10,
+          marginTop: 10,
+        }}
+      >
+        <div className="column center-div">
+          <Typography fontSize={12} fontWeight="light">
+            {gameRooms.length === 1 ? 'Total' : 'Avg'} Time
+          </Typography>
+          <Typography variant="h3" fontWeight="bold">
+            {gameRooms.length === 1
+              ? calculateSum(metrics.map((c) => c.timeSpent))
+              : Math.round(calculateAverage(metrics.map((c) => c.timeSpent)))}
+          </Typography>
+          <Typography>Minutes</Typography>
+        </div>
+        <div style={{ width: 110 }}>
+          <PieChart
+            series={[
+              {
+                data: metrics.map((p) => ({
+                  id: p.player._id,
+                  value: p.timeSpent,
+                  label: p.player.name,
+                })),
+              },
+            ]}
+            width={200}
+            height={200}
+            slotProps={{
+              legend: { hidden: true },
+            }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function KeyWords(props: {
+  gameRooms: Room[];
+  phase?: number;
+}): JSX.Element {
+  const { gameRooms, phase } = props;
+  const [keywords, setKeywords] = React.useState<Word[]>([]);
+  const { firstAvailableAzureServiceModel } = useWithConfig();
+  const { educationalData } = useWithEducationalData();
+
+  React.useEffect(() => {
+    const roomIds = gameRooms.map((r) => r._id);
+    const words: string[] = [];
+    const reflections: string[] = [];
+    const phaseReflections = educationalData.phaseReflections.filter(
+      (p) =>
+        roomIds.includes(p.roomId) &&
+        (phase === undefined || p.roundNumber === phase)
+    );
+    for (const pr of phaseReflections) {
+      for (const r of Object.values(pr.reflections)) {
+        reflections.push(r);
+        words.push(...r.split(' '));
+      }
+    }
+    if (reflections.length === 0) return;
+    requestKeyWords(reflections, 'Math Good').then((data) => {
+      const keywords: Word[] = [];
+      for (const word of data) {
+        const frequency = words.filter(
+          (w) => w.toLowerCase() === word.toLowerCase()
+        ).length;
+        if (frequency > 0) {
+          keywords.push({
+            text: word,
+            value: frequency * 200,
+          });
+        }
+      }
+      setKeywords(keywords);
+    });
+  }, [gameRooms, phase]);
+
+  async function requestKeyWords(
+    reflections: string[],
+    category: string
+  ): Promise<string[]> {
+    try {
+      const request: GenericLlmRequest = {
+        prompts: [
+          {
+            promptText: JSON.stringify(reflections),
+            promptRole: PromptRoles.USER,
+          },
+          {
+            promptText: `Based on the following category, pick frequently used words to add from the sentences above. The items you pick should be relevant to the category.`,
+            promptRole: PromptRoles.USER,
+          },
+          {
+            promptText: category,
+            promptRole: PromptRoles.USER,
+          },
+        ],
+        targetAiServiceModel: firstAvailableAzureServiceModel(),
+        outputDataType: PromptOutputTypes.JSON,
+        responseFormat: `
+              Please only respond in an array of strings in JSON.
+              Validate that your response is in valid JSON.
+              Respond in this format:
+                [
+                    "string"
+                ]
+            `,
+      };
+      const res = await jsonLlmRequest<string[]>(request, {
+        type: 'array',
+        items: {
+          type: 'string',
+        },
+        required: [],
+      });
+      return res;
+    } catch (err) {
+      return [];
+    }
+  }
+
+  return (
+    <div>
+      <Typography fontSize={14} fontWeight="bold">
+        Key Words
+      </Typography>
+      <div
+        style={{
+          height: 180,
+          border: '1px solid black',
+          borderRadius: 10,
+          padding: 10,
+          marginTop: 10,
+        }}
+      >
+        <WordCloud words={keywords} width={300} height={200} rotate={() => 0} />
+      </div>
+    </div>
   );
 }
 
@@ -262,185 +479,81 @@ export function TroubleSpots(props: {
   );
 }
 
-interface PlayerContribution {
-  id: string;
-  name: string;
-  room: string;
-  words: number;
-  totalWords: number;
-  contribution: number;
-}
-export function Contribution(props: {
+export function SkillsPracticed(props: {
   students: Player[];
   gameRooms: Room[];
-  phase?: number;
+  noHeader?: boolean;
 }): JSX.Element {
-  const { students, gameRooms, phase } = props;
-  const [contribution, setContribution] = React.useState<PlayerContribution[]>(
-    []
-  );
+  const { students, gameRooms } = props;
+  const [skills, setSkills] = React.useState<Record<string, SkillsMet>>({});
+  const [expanded, setExpanded] = React.useState<boolean>(true);
 
   React.useEffect(() => {
-    const contribution: PlayerContribution[] = [];
-    for (const room of gameRooms) {
-      let roomWords = 0;
-      const roomContribution: PlayerContribution[] = [];
-      for (const student of room.gameData.players) {
-        let studentWords = 0;
-        const playerStatus = room.gameData.playersStatusRecord[student._id];
-        const phases =
-          phase === undefined
-            ? room.gameData.phaseProgression.phasesCompleted
-            : [room.gameData.phaseProgression.phasesCompleted[phase]];
-        for (const phase of phases) {
-          if (!playerStatus.phaseMetrics) {
-            continue;
+    const skills: Record<string, SkillsMet> = {};
+    for (const student of students) {
+      const room = gameRooms.find((r) =>
+        r.gameData.players.find((p) => p._id === student._id)
+      );
+      if (room) {
+        for (const standard of Object.entries(
+          room.gameData.mathStandardsCompleted
+        )) {
+          if (!(standard[0] in skills)) {
+            skills[standard[0]] = { playersMet: [], players: [] };
           }
-          studentWords +=
-            playerStatus.phaseMetrics[phase]?.numWordsSentInPhase || 0;
-          roomWords +=
-            playerStatus.phaseMetrics[phase]?.numWordsSentInPhase || 0;
-        }
-        roomContribution.push({
-          id: student._id,
-          name: student.name,
-          room: room.name,
-          words: studentWords,
-          totalWords: 0,
-          contribution: 0,
-        });
-      }
-      for (let i = 0; i < roomContribution.length; i++) {
-        roomContribution[i].totalWords = roomWords;
-        roomContribution[i].contribution =
-          roomWords === 0
-            ? 0
-            : Math.round(100 * (roomContribution[i].words / roomWords));
-      }
-      contribution.push(...roomContribution);
-    }
-    setContribution(contribution);
-  }, [gameRooms, phase]);
-
-  return (
-    <div>
-      <Typography fontSize={14} fontWeight="bold">
-        {gameRooms.length === 1
-          ? 'Student Contribution (%)'
-          : 'Average Student Contribution (%)'}
-      </Typography>
-      <div
-        className="row center-div"
-        style={{
-          border: '1px solid black',
-          borderRadius: 10,
-          marginTop: 10,
-        }}
-      >
-        <BarChart
-          height={200}
-          yAxis={[{ label: 'Frequency' }]}
-          series={contribution.map((c) => ({
-            data: [c.contribution],
-            label: c.name,
-            stack: c.room,
-            valueFormatter: (v) => `${v}%`,
-          }))}
-          slotProps={{ legend: { hidden: true } }}
-        />
-      </div>
-    </div>
-  );
-}
-
-interface PlayerTime {
-  id: string;
-  name: string;
-  room: string;
-  timeSpent: number;
-}
-export function TimeSpent(props: {
-  students: Player[];
-  gameRooms: Room[];
-  phase?: number;
-}): JSX.Element {
-  const { students, gameRooms, phase } = props;
-  const [contribution, setContribution] = React.useState<PlayerTime[]>([]);
-
-  React.useEffect(() => {
-    const contribution: PlayerTime[] = [];
-    for (const room of gameRooms) {
-      for (const playerStatus of Object.entries(
-        room.gameData.playersStatusRecord
-      )) {
-        const student = students.find((s) => s._id === playerStatus[0]);
-        if (!student) continue;
-        const phases =
-          phase === undefined
-            ? room.gameData.phaseProgression.phasesCompleted
-            : [room.gameData.phaseProgression.phasesCompleted[phase]];
-        for (const phase of phases) {
-          const timeSpent = !playerStatus[1].phaseMetrics
-            ? 0
-            : playerStatus[1].phaseMetrics[phase]?.timeSpentInPhase || 0;
-          contribution.push({
-            id: student._id,
-            name: student.name,
-            room: room.name,
-            timeSpent: Math.round(timeSpent / 60),
-          });
+          if (standard[1]) {
+            skills[standard[0]].playersMet.push(student);
+          }
+          skills[standard[0]].players.push(student);
         }
       }
     }
-    setContribution(contribution);
-  }, [gameRooms, phase]);
+    setSkills(skills);
+  }, [students, gameRooms]);
 
   return (
-    <div>
-      <Typography fontSize={14} fontWeight="bold">
-        {gameRooms.length === 1 ? 'Time Spent in Game' : 'Average Time Spent'}
-      </Typography>
-      <div
-        className="row center-div spacing"
-        style={{
-          border: '1px solid black',
-          borderRadius: 10,
-          marginTop: 10,
-        }}
-      >
-        <div className="column center-div">
-          <Typography fontSize={12} fontWeight="light">
-            {gameRooms.length === 1 ? 'Total' : 'Avg'} Time
-          </Typography>
-          <Typography variant="h3" fontWeight="bold">
-            {gameRooms.length === 1
-              ? calculateSum(contribution.map((c) => c.timeSpent))
-              : Math.round(
-                  calculateAverage(contribution.map((c) => c.timeSpent))
-                )}
-          </Typography>
-          <Typography>Minutes</Typography>
-        </div>
-        <div style={{ width: 110 }}>
-          <PieChart
-            series={[
-              {
-                data: contribution.map((p) => ({
-                  id: p.id,
-                  value: p.timeSpent,
-                  label: p.name,
-                })),
-              },
-            ]}
-            width={200}
-            height={200}
-            slotProps={{
-              legend: { hidden: true },
-            }}
-          />
-        </div>
-      </div>
-    </div>
+    <Card
+      style={{ backgroundColor: 'rgb(231, 231, 231)', borderRadius: 10 }}
+      elevation={0}
+    >
+      <CardContent className="column spacing">
+        {!props.noHeader && (
+          <div className="row center-div spacing">
+            {expanded ? <ExpandLess /> : <ExpandMore />}
+            <Typography
+              fontSize={14}
+              fontWeight="bold"
+              flexGrow={1}
+              onClick={() => setExpanded(!expanded)}
+            >
+              Skills Practiced
+            </Typography>
+          </div>
+        )}
+        <Collapse in={expanded}>
+          <div className="column spacing">
+            {Object.entries(skills)
+              .sort((a, b) => {
+                return b[1].playersMet.length - a[1].playersMet.length;
+              })
+              .filter(
+                (skill) =>
+                  skill[1].playersMet.length === skill[1].players.length
+              )
+              .map((skill) => {
+                return (
+                  <SkillCard
+                    key={skill[0]}
+                    name={skill[0]}
+                    players={skill[1].players}
+                    playersMet={skill[1].playersMet}
+                  />
+                );
+              })}
+          </div>
+        </Collapse>
+      </CardContent>
+    </Card>
   );
 }
 

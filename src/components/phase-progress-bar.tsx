@@ -36,7 +36,7 @@ export function PhaseSelector(props: {
   }, [gameRooms]);
 
   function onTogglePhase(idx: number): void {
-    if (phase === undefined || idx > phasesCompleted) return;
+    if (phase === undefined) return;
     setPhase(idx);
   }
 
@@ -83,7 +83,7 @@ export function PhaseSelector(props: {
   );
 }
 
-export default function ProgressBar(props: {
+export default function PhaseProgressBar(props: {
   gameRooms: Room[];
   size?: 'large';
 }): JSX.Element {
