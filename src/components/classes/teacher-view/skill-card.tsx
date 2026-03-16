@@ -14,7 +14,14 @@ import {
   Person,
   WarningAmberOutlined,
 } from '@mui/icons-material';
-import { Card, CardContent, Collapse, Grid, Typography } from '@mui/material';
+import {
+  Card,
+  CardContent,
+  CircularProgress,
+  Collapse,
+  Grid,
+  Typography,
+} from '@mui/material';
 import { BarChart, PieChart } from '@mui/x-charts';
 
 import { PlayerSprite } from '../../avatar-sprite';
@@ -216,11 +223,12 @@ export function KeyWords(props: {
   phase?: number;
 }): JSX.Element {
   const { gameRooms, phase } = props;
-  const [keywords, setKeywords] = React.useState<Word[]>([]);
+  const [keywords, setKeywords] = React.useState<Word[]>();
   const { firstAvailableAzureServiceModel } = useWithConfig();
   const { educationalData } = useWithEducationalData();
 
   React.useEffect(() => {
+    setKeywords(undefined);
     const roomIds = gameRooms.map((r) => r._id);
     const words: string[] = [];
     const reflections: string[] = [];
@@ -235,7 +243,10 @@ export function KeyWords(props: {
         words.push(...r.split(' '));
       }
     }
-    if (reflections.length === 0) return;
+    if (reflections.length === 0) {
+      setKeywords([]);
+      return;
+    }
     requestKeyWords(reflections, 'Math Good').then((data) => {
       const keywords: Word[] = [];
       for (const word of data) {
@@ -303,6 +314,7 @@ export function KeyWords(props: {
         Key Words
       </Typography>
       <div
+        className="row center-div"
         style={{
           height: 180,
           border: '1px solid black',
@@ -311,7 +323,16 @@ export function KeyWords(props: {
           marginTop: 10,
         }}
       >
-        <WordCloud words={keywords} width={300} height={200} rotate={() => 0} />
+        {keywords ? (
+          <WordCloud
+            words={keywords}
+            width={300}
+            height={100}
+            rotate={() => 0}
+          />
+        ) : (
+          <CircularProgress />
+        )}
       </div>
     </div>
   );
