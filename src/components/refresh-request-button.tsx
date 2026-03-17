@@ -12,19 +12,19 @@ import { EducationalRole } from '../store/slices/player/types';
 import { useLocation } from 'react-router-dom';
 
 export function RefreshRequestButton(props: { autoRefreshTime?: number }) {
-  const { autoRefreshTime } = props;
   const { player } = useAppSelector((state) => state.playerData);
   const { fetchInstructorDataHydration, fetchStudentDataHydration } =
     useWithEducationalData();
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const { pathname } = useLocation();
+
+  const pingTime =
+    props.autoRefreshTime ||
+    (player?.educationalRole === EducationalRole.INSTRUCTOR ? 60 : 30);
   const pingRef = useRef(refreshButtonClick);
 
   React.useEffect(() => {
-    if (!player || !autoRefreshTime) {
-      return;
-    }
-    if (!pathname.includes('/classes')) {
+    if (!player || !pingTime || !pathname.includes('classes')) {
       return;
     }
     let isActive = true;
@@ -39,7 +39,7 @@ export function RefreshRequestButton(props: { autoRefreshTime?: number }) {
       }
       // Schedule next poll after 1 second, only if still active
       if (isActive) {
-        setTimeout(() => poll(), autoRefreshTime * 1000);
+        setTimeout(() => poll(), pingTime * 1000);
       }
     };
     // Start polling immediately
@@ -48,7 +48,7 @@ export function RefreshRequestButton(props: { autoRefreshTime?: number }) {
     return () => {
       isActive = false;
     };
-  }, [player?._id]); // Only depend on playerId
+  }, [player?._id, pathname]); // Only depend on playerId
 
   async function refreshButtonClick() {
     setIsLoading(true);

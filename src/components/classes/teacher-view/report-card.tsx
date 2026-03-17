@@ -67,6 +67,7 @@ export function SummaryReportCard(props: {
             <KeyWords gameRooms={gameRooms} />
           </Grid>
         </Grid>
+        <SkillsPracticed students={students} gameRooms={gameRooms} />
         <TroubleSpots students={students} gameRooms={gameRooms} />
       </CardContent>
     </Card>
@@ -191,7 +192,7 @@ export function IndividualReportCard(props: {
 
   const game = GAMES.find((g) => g.id === room?.gameData.gameId);
   const phaseReflections = educationalData.phaseReflections.filter(
-    (p) => p.roomId === room._id
+    (p) => p.roomId === room._id && p.roundNumber === phase
   );
 
   return (
@@ -220,58 +221,72 @@ export function IndividualReportCard(props: {
             <Grid item xs={3}>
               <TimeSpent phase={phase} gameRooms={[room]} />
             </Grid>
-            <Grid item xs={4}>
+            <Grid item xs={5}>
               <KeyWords phase={phase} gameRooms={[room]} />
             </Grid>
+            {phaseReflections.length > 0 && (
+              <Grid item xs={6}>
+                <Typography
+                  fontSize={14}
+                  fontWeight="bold"
+                  flexGrow={1}
+                  style={{ marginBottom: 10 }}
+                >
+                  Class Reflections
+                </Typography>
+                <div className="column spacing">
+                  {phaseReflections.map((pr, idx) => {
+                    return (
+                      <Card
+                        key={`reflection-${idx}`}
+                        style={{ backgroundColor: 'rgb(231, 231, 231)' }}
+                        elevation={0}
+                      >
+                        <CardContent className="column spacing">
+                          <Typography fontSize={14} fontWeight="bold">
+                            {pr.question}
+                          </Typography>
+                          {Object.entries(pr.reflections).map((r) => {
+                            const player = room.gameData.players.find(
+                              (p) => p._id === r[0]
+                            );
+                            if (!player) return <div key={r[0]} />;
+                            return (
+                              <div key={r[0]} className="row spacing">
+                                <div style={{ width: 150 }}>
+                                  <PlayerSprite player={player} />
+                                </div>
+                                <Card
+                                  style={{ borderRadius: 10, flexGrow: 1 }}
+                                  elevation={0}
+                                >
+                                  <CardContent className="column spacing">
+                                    <Typography>&quot;{r[1]}&quot;</Typography>
+                                  </CardContent>
+                                </Card>
+                              </div>
+                            );
+                          })}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </Grid>
+            )}
+            {phaseReflections.length > 0 && (
+              <Grid item xs={6}>
+                <KeyWords useReflections phase={phase} gameRooms={[room]} />
+              </Grid>
+            )}
             <Grid item xs={12}>
-              <Typography fontSize={14} fontWeight="bold" flexGrow={1}>
-                Class Reflections
-              </Typography>
-              {phaseReflections
-                .filter((pr) => pr.roundNumber === phase)
-                .map((pr, idx) => {
-                  return (
-                    <Card
-                      key={`reflection-${idx}`}
-                      style={{ backgroundColor: 'rgb(231, 231, 231)' }}
-                      elevation={0}
-                    >
-                      <CardContent className="column spacing">
-                        <Typography fontSize={14} fontWeight="bold">
-                          {pr.question}
-                        </Typography>
-                        {Object.entries(pr.reflections).map((r) => {
-                          const player = room.gameData.players.find(
-                            (p) => p._id === r[0]
-                          );
-                          if (!player) return <div key={r[0]} />;
-                          return (
-                            <div key={r[0]} className="row spacing">
-                              <PlayerSprite player={player} />
-                              <Card
-                                style={{ borderRadius: 10, width: '100%' }}
-                                elevation={0}
-                              >
-                                <CardContent className="column spacing">
-                                  <Typography>&quot;{r[1]}&quot;</Typography>
-                                </CardContent>
-                              </Card>
-                            </div>
-                          );
-                        })}
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-            </Grid>
-            <Grid item xs={12}>
-              <TroubleSpots
+              <SkillsPracticed
                 students={room.gameData.players}
                 gameRooms={[room]}
               />
             </Grid>
             <Grid item xs={12}>
-              <SkillsPracticed
+              <TroubleSpots
                 students={room.gameData.players}
                 gameRooms={[room]}
               />

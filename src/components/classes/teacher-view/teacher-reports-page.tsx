@@ -35,7 +35,7 @@ function RoomReport(props: { classroom: Classroom }): JSX.Element {
         style={{ justifyContent: 'space-between' }}
       >
         <Typography variant="h5" fontWeight="bold">
-          INDIVIDUAL REPORTS
+          ROOM REPORTS
         </Typography>
         <GamesDropdown
           game={game}
@@ -126,7 +126,7 @@ export default function TeacherReports(props: {
           ),
         },
         {
-          name: 'INDIVIDUAL REPORTS',
+          name: 'ROOM REPORTS',
           element: <RoomReport classroom={classroom} />,
         },
       ]}

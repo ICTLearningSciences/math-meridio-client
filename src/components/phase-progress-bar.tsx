@@ -136,19 +136,6 @@ export default function PhaseProgressBar(props: {
           },
         }}
       />
-      {large && (
-        <Typography
-          fontSize={12}
-          style={{
-            color: 'white',
-            position: 'absolute',
-            left: 10,
-            top: '20%',
-          }}
-        >
-          OVERALL PROGRESS:
-        </Typography>
-      )}
       <div
         className="row"
         style={{
@@ -159,6 +146,22 @@ export default function PhaseProgressBar(props: {
           justifyContent: 'space-evenly',
         }}
       >
+        {large && (
+          <Typography
+            fontSize={12}
+            style={{
+              position: 'absolute',
+              left: 10,
+              color: 'white',
+              backgroundColor: 'rgb(180, 180, 180)',
+              paddingLeft: 5,
+              paddingRight: 5,
+              borderRadius: 20,
+            }}
+          >
+            OVERALL PROGRESS:
+          </Typography>
+        )}
         {phase &&
           phase.startingPhaseStepsOrdered.length > 0 &&
           Array.from(
@@ -170,9 +173,16 @@ export default function PhaseProgressBar(props: {
                 style={{
                   color:
                     phasesCompleted > index ? 'white' : 'rgb(180, 180, 180)',
+                  backgroundColor:
+                    phasesCompleted > index
+                      ? 'rgba(255, 165, 0, 0.5)'
+                      : 'rgba(217, 217, 217, 0.5)',
+                  paddingLeft: 5,
+                  paddingRight: 5,
+                  borderRadius: 20,
                 }}
               >
-                PHASE {index + 1}
+                {large ? 'PHASE' : 'P'} {index + 1}
               </Typography>
             )
           )}

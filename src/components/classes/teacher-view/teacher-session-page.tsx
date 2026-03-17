@@ -129,7 +129,7 @@ export default function ActiveSessionView(props: {
                 color="inherit"
                 style={{ alignSelf: 'end' }}
                 endIcon={<ChevronRight />}
-                onClick={() => setSearchParams({ tab: '1', report: '1' })}
+                onClick={() => setSearchParams({ tab: '1', report: '0' })}
               >
                 View Report
               </Button>
