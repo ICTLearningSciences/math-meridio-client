@@ -23,6 +23,7 @@ import { Mic, MicOutlined, Send } from '@mui/icons-material';
 export const MAX_MESSAGE_LENGTH = 200;
 
 export default function ChatForm(props: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sendMessage: (msg: string) => Promise<any>;
   isMyTurn: boolean;
   isPaused?: boolean;

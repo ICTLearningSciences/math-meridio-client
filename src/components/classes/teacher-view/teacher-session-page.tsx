@@ -40,7 +40,7 @@ export default function ActiveSessionView(props: {
   const { educationalData } = useWithEducationalData();
   const [studentSearch, setStudentSearch] = React.useState<string>();
   const [game, setGame] = React.useState<string>();
-  const [_searchParams, setSearchParams] = useSearchParams();
+  const searchParams = useSearchParams();
 
   const gameRooms = educationalData.rooms.filter(
     (r) => r.classId === classroom._id && (!game || r.gameData.gameId === game)
@@ -129,7 +129,7 @@ export default function ActiveSessionView(props: {
                 color="inherit"
                 style={{ alignSelf: 'end' }}
                 endIcon={<ChevronRight />}
-                onClick={() => setSearchParams({ tab: '1', report: '0' })}
+                onClick={() => searchParams[1]({ tab: '1', report: '0' })}
               >
                 View Report
               </Button>
@@ -147,7 +147,7 @@ export default function ActiveSessionView(props: {
                 color="inherit"
                 style={{ alignSelf: 'end' }}
                 endIcon={<ChevronRight />}
-                onClick={() => setSearchParams({ tab: '1', report: '2' })}
+                onClick={() => searchParams[1]({ tab: '1', report: '2' })}
               >
                 Monitor Students
               </Button>
