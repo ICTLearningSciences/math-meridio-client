@@ -67,6 +67,7 @@ export function SummaryReportCard(props: {
             <KeyWords gameRooms={gameRooms} />
           </Grid>
         </Grid>
+        <SkillsPracticed students={students} gameRooms={gameRooms} />
         <TroubleSpots students={students} gameRooms={gameRooms} />
       </CardContent>
     </Card>
@@ -279,13 +280,13 @@ export function IndividualReportCard(props: {
               </Grid>
             )}
             <Grid item xs={12}>
-              <TroubleSpots
+              <SkillsPracticed
                 students={room.gameData.players}
                 gameRooms={[room]}
               />
             </Grid>
             <Grid item xs={12}>
-              <SkillsPracticed
+              <TroubleSpots
                 students={room.gameData.players}
                 gameRooms={[room]}
               />
