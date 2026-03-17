@@ -159,7 +159,6 @@ export default function TeacherLandingPage(): JSX.Element {
             {
               name: 'MANAGE CLASS',
               element: <TeacherManageClass classroom={myClass} />,
-              disabled: myRooms.length === 0,
             },
           ]}
         />

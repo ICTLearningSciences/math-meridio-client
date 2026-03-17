@@ -25,7 +25,7 @@ import {
 import { BarChart, PieChart } from '@mui/x-charts';
 
 import { PlayerSprite } from '../../avatar-sprite';
-import { Room } from '../../../store/slices/game/types';
+import { Room, SenderType } from '../../../store/slices/game/types';
 import { Player } from '../../../store/slices/player/types';
 import { calculateAverage, calculateSum } from '../../../helpers';
 import {
@@ -104,8 +104,8 @@ export function Contribution(props: {
     <div>
       <Typography fontSize={14} fontWeight="bold">
         {gameRooms.length === 1
-          ? 'Student Contribution (%)'
-          : 'Average Student Contribution (%)'}
+          ? 'Student Contribution'
+          : 'Average Student Contribution'}
       </Typography>
       <div
         className="row center-div"
@@ -119,10 +119,10 @@ export function Contribution(props: {
           height={200}
           yAxis={[{ label: 'Frequency' }]}
           series={metrics.map((c) => ({
-            data: [c.contribution],
+            data: [c.numWordsSent],
             label: c.player.name,
             stack: c.room._id,
-            valueFormatter: (v) => `${v}%`,
+            valueFormatter: (v) => `${v} words`,
           }))}
           slotProps={{ legend: { hidden: true } }}
         />
@@ -220,7 +220,9 @@ export function TimeSpent(props: {
 
 export function KeyWords(props: {
   gameRooms: Room[];
+  useReflections?: boolean;
   phase?: number;
+  category?: string;
 }): JSX.Element {
   const { gameRooms, phase } = props;
   const [keywords, setKeywords] = React.useState<Word[]>();
@@ -231,23 +233,34 @@ export function KeyWords(props: {
     setKeywords(undefined);
     const roomIds = gameRooms.map((r) => r._id);
     const words: string[] = [];
-    const reflections: string[] = [];
-    const phaseReflections = educationalData.phaseReflections.filter(
-      (p) =>
-        roomIds.includes(p.roomId) &&
-        (phase === undefined || p.roundNumber === phase)
-    );
-    for (const pr of phaseReflections) {
-      for (const r of Object.values(pr.reflections)) {
-        reflections.push(r);
-        words.push(...r.split(' '));
+    const messages: string[] = [];
+    if (props.useReflections) {
+      const phaseReflections = educationalData.phaseReflections.filter(
+        (p) =>
+          roomIds.includes(p.roomId) &&
+          (phase === undefined || p.roundNumber === phase)
+      );
+      for (const pr of phaseReflections) {
+        for (const r of Object.values(pr.reflections)) {
+          messages.push(r);
+          words.push(...r.split(' '));
+        }
+      }
+    } else {
+      for (const room of gameRooms) {
+        for (const chat of room.gameData.chat.filter(
+          (c) => c.sender === SenderType.PLAYER
+        )) {
+          messages.push(chat.message);
+          words.push(...chat.message.split(' '));
+        }
       }
     }
-    if (reflections.length === 0) {
+    if (messages.length === 0) {
       setKeywords([]);
       return;
     }
-    requestKeyWords(reflections, 'Math Good').then((data) => {
+    requestKeyWords(messages, props.category || 'Math Good').then((data) => {
       const keywords: Word[] = [];
       for (const word of data) {
         const frequency = words.filter(

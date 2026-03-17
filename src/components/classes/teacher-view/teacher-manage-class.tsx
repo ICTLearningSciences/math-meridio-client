@@ -228,18 +228,18 @@ export default function TeacherManageClass(props: {
       }}
       tabs={[
         {
-          name: 'SUMMARY',
-          element: (
-            <div className="dashboard">
-              <TeacherSummary classroom={classroom} />
-            </div>
-          ),
-        },
-        {
           name: 'DETAILS',
           element: (
             <div className="dashboard">
               <TeacherEditClass classroom={classroom} />
+            </div>
+          ),
+        },
+        {
+          name: 'SUMMARY',
+          element: (
+            <div className="dashboard">
+              <TeacherSummary classroom={classroom} />
             </div>
           ),
         },

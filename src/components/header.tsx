@@ -70,7 +70,7 @@ export function Header(props: { useLogin: UseWithLogin }) {
           className="row center-div spacing"
           style={{ width: 300, justifyContent: 'flex-end', marginRight: 10 }}
         >
-          <RefreshRequestButton autoRefreshTime={60} />
+          <RefreshRequestButton />
           <HelpRequestButton
             myStatusInRoom={myStatusInRoom}
             setPlayerNeedsHelpInRoom={setPlayerNeedsHelpInRoom}

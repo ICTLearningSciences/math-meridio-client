@@ -23,6 +23,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import { ContentCopy } from '@mui/icons-material';
 
 import { Classroom } from '../../../store/slices/educational-data/types';
 import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
@@ -35,7 +36,7 @@ export default function TeacherInviteCode(props: {
     useWithEducationalData();
   const [inviteDialogOpen, setInviteDialogOpen] = React.useState(false);
   const [validUntil, setValidUntil] = React.useState('');
-  const [numUses, setNumUses] = React.useState('10');
+  const [numUses, setNumUses] = React.useState('50');
   const [creating, setCreating] = React.useState(false);
 
   const handleCreateInviteCode = async () => {
@@ -49,7 +50,7 @@ export default function TeacherInviteCode(props: {
       );
       setInviteDialogOpen(false);
       setValidUntil('');
-      setNumUses('10');
+      setNumUses('50');
     } catch (err) {
       console.error('Failed to create invite code', err);
     } finally {
@@ -125,10 +126,11 @@ export default function TeacherInviteCode(props: {
                     <TableRow key={inviteCode.code}>
                       <TableCell>
                         <Button
+                          startIcon={<ContentCopy />}
                           size="small"
                           onClick={() => handleCopyInviteCode(inviteCode.code)}
                         >
-                          {inviteCode.code} (copy)
+                          {inviteCode.code}
                         </Button>
                       </TableCell>
                       <TableCell>{inviteCode.uses}</TableCell>
