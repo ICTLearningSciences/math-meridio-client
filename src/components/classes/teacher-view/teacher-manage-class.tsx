@@ -26,7 +26,7 @@ import {
 } from '../../../store/slices/educational-data/types';
 import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
 import { Tabs } from '../../tab';
-import { RoomOrganizationView, RoomSetupView } from './teacher-room-setup';
+import { RoomSetupView } from './teacher-room-setup';
 import TeacherInviteCode from './teacher-invite-code';
 
 function TeacherSummary(props: { classroom?: Classroom }): JSX.Element {
@@ -245,11 +245,7 @@ export default function TeacherManageClass(props: {
         },
         {
           name: 'GROUP FORMATION',
-          element: classroom.startedAt ? (
-            <RoomOrganizationView classroom={classroom} />
-          ) : (
-            <RoomSetupView classroom={classroom} />
-          ),
+          element: <RoomSetupView classroom={classroom} />,
         },
       ]}
     />

@@ -22,6 +22,8 @@ import { Player } from '../../../store/slices/player/types';
 import AvatarSprite, { PlayerSprite } from '../../avatar-sprite';
 import { ContainedButton } from '../../button';
 import TeacherInviteCode from './teacher-invite-code';
+import { useAppSelector } from '../../../store/hooks';
+import { LoadStatus } from '../../../types';
 
 function DraggablePlayer(props: {
   player?: Player;
@@ -121,6 +123,7 @@ function NewDroppableGroup(): JSX.Element {
 
 export function RoomSetupView(props: { classroom: Classroom }): JSX.Element {
   const { classroom } = props;
+  const { player } = useAppSelector((state) => state.playerData);
   const { educationalData, assignClassGroupsAndStart } =
     useWithEducationalData();
   const [groupSize, setGroupSize] = React.useState<number>(3);
@@ -132,74 +135,90 @@ export function RoomSetupView(props: { classroom: Classroom }): JSX.Element {
   );
   const [starting, setStarting] = React.useState<boolean>(false);
 
+  const studentMemberships = educationalData.classMemberships.filter(
+    (cm) =>
+      cm.classId === classroom._id &&
+      cm.status === ClassMembershipStatus.MEMBER &&
+      cm.userId !== player?._id // ensure teacher isn't accidentally added as a member of the room
+  );
+  const rooms = educationalData.rooms.filter(
+    (r) => r.classId === classroom._id
+  );
+
   React.useEffect(() => {
-    const members = educationalData.classMemberships
-      .filter(
-        (cm) =>
-          cm.classId === classroom._id &&
-          cm.status === ClassMembershipStatus.MEMBER
-      )
-      .sort((a, b) => {
-        if (a.groupId < b.groupId) return -1;
-        if (a.groupId > b.groupId) return 1;
-        return 0;
-      });
-    let groupId = 0;
-    for (let i = 0; i < members.length; i++) {
-      members[i] = {
-        ...members[i],
-        groupId: groupId,
-      };
-      if ((i + 1) % groupSize === 0) {
-        groupId++;
-      }
-    }
-    setStudentMembers(members);
-  }, [classroom, groupSize]);
+    setStudentMembers(getCurrentMembers());
+  }, [classroom]);
 
   React.useEffect(() => {
     const groups: Record<number, ClassMembership[]> = {};
-    for (let i = 0; i < studentMembers.length; i++) {
-      groups[studentMembers[i].groupId] = [
-        ...(groups[studentMembers[i].groupId] || []),
-        studentMembers[i],
-      ];
-    }
-    const max = Math.max(...Object.keys(groups).map((k) => Number.parseInt(k)));
-    for (let i = 0; i < max; i++) {
-      if (!groups[i]) groups[i] = [];
+    for (const member of studentMembers) {
+      if (member.groupId in groups) {
+        groups[member.groupId].push(member);
+      } else {
+        groups[member.groupId] = [member];
+      }
     }
     setGroups(groups);
   }, [studentMembers]);
 
-  const randomizeGroups = () => {
-    const shuffled = studentMembers
+  const getCurrentMembers = () => {
+    const members: ClassMembership[] = [];
+    for (const m of studentMemberships) {
+      const room = rooms.find((r) =>
+        r.gameData.players.find((p) => p.email === m.userEmail)
+      );
+      const groupId = Number.parseInt(
+        room?.name.replace('Group #', '').replace(' Solution Space', '') || '-1'
+      );
+      const member: ClassMembership = {
+        ...m,
+        groupId: groupId,
+        roomId: room?._id,
+      };
+      members.push(member);
+    }
+    return members;
+  };
+
+  const randomizeGroups = (groupSize: number) => {
+    const members: ClassMembership[] = getCurrentMembers();
+    const shuffled = members
       .map((value) => ({ value, sort: Math.random() }))
       .sort((a, b) => a.sort - b.sort)
       .map(({ value }) => value);
-    let group = 0;
     for (let i = 0; i < shuffled.length; i++) {
-      shuffled[i] = {
-        ...shuffled[i],
-        groupId: group,
-      };
-      if ((i + 1) % groupSize === 0) group++;
+      if (!shuffled[i].roomId) {
+        let groupId = 0;
+        let groupMembers = shuffled.filter((m) => m.groupId === groupId);
+        while (groupMembers && groupMembers.length >= groupSize) {
+          groupId++;
+          groupMembers = shuffled.filter((m) => m.groupId === groupId);
+        }
+        shuffled[i].groupId = groupId;
+      }
     }
     setStudentMembers(shuffled);
   };
 
   const decreaseGroupSize = () => {
-    setGroupSize(Math.max(groupSize - 1, 1));
+    const size = Math.max(groupSize - 1, 1);
+    setGroupSize(size);
+    randomizeGroups(size);
   };
 
   const increaseGroupSize = () => {
-    setGroupSize(Math.min(groupSize + 1, 10));
+    const size = Math.min(groupSize + 1, 10);
+    setGroupSize(size);
+    randomizeGroups(size);
   };
 
   const handleStartGame = async () => {
     setStarting(true);
     try {
-      await assignClassGroupsAndStart(classroom._id, studentMembers);
+      const validMembers = studentMembers.filter(
+        (m) => m.userId !== player?._id && m.groupId !== -1
+      );
+      await assignClassGroupsAndStart(classroom._id, validMembers);
     } catch (err) {
       console.error('Failed to start class', err);
     } finally {
@@ -221,7 +240,10 @@ export function RoomSetupView(props: { classroom: Classroom }): JSX.Element {
       </Typography>
 
       <div className="row spacing" style={{ alignItems: 'center' }}>
-        <ContainedButton color="secondary" onClick={randomizeGroups}>
+        <ContainedButton
+          color="secondary"
+          onClick={() => randomizeGroups(groupSize)}
+        >
           randomize
         </ContainedButton>
         <ContainedButton color="secondary">
@@ -283,189 +305,14 @@ export function RoomSetupView(props: { classroom: Classroom }): JSX.Element {
                     );
                     return (
                       <ImageListItem key={member.userId}>
-                        <DraggablePlayer
-                          player={p}
-                          group={member.groupId}
-                          index={gIdx * groupSize + mIdx}
-                        />
-                      </ImageListItem>
-                    );
-                  })}
-                </DroppableGroup>
-              );
-            })}
-            <NewDroppableGroup />
-          </DragDropProvider>
-        </ImageList>
-      )}
-      <Button
-        variant="contained"
-        color="primary"
-        fullWidth
-        disabled={starting || studentMembers.length === 0}
-        onClick={handleStartGame}
-      >
-        {starting ? 'Starting...' : 'Start Game'}
-      </Button>
-    </div>
-  );
-}
-
-export function RoomOrganizationView(props: {
-  classroom: Classroom;
-}): JSX.Element {
-  const { classroom } = props;
-  const { educationalData, assignClassGroupsAndStart } =
-    useWithEducationalData();
-  const [groupSize, setGroupSize] = React.useState<number>(3);
-  const [studentMembers, setStudentMembers] = React.useState<ClassMembership[]>(
-    []
-  );
-  const [groups, setGroups] = React.useState<Record<number, ClassMembership[]>>(
-    {}
-  );
-  const [saving, setStarting] = React.useState<boolean>(false);
-
-  const rooms = educationalData.rooms.filter(
-    (r) => r.classId === classroom?._id
-  );
-
-  React.useEffect(() => {
-    const members: ClassMembership[] = [];
-    for (const room of rooms) {
-      for (const student of room.gameData.players) {
-        const classMembership = educationalData.classMemberships.find(
-          (cm) => cm.classId === classroom._id && cm.userId === student._id
-        );
-        if (classMembership) {
-          members.push(classMembership);
-        }
-      }
-    }
-    for (const member of educationalData.classMemberships.filter(
-      (cm) =>
-        cm.classId === classroom._id &&
-        !members.find((m) => cm.userId === m.userId)
-    )) {
-      members.push({
-        ...member,
-        groupId: -1,
-      });
-    }
-    setStudentMembers(members);
-  }, [classroom, groupSize]);
-
-  React.useEffect(() => {
-    const groups: Record<number, ClassMembership[]> = {};
-    for (let i = 0; i < studentMembers.length; i++) {
-      groups[studentMembers[i].groupId] = [
-        ...(groups[studentMembers[i].groupId] || []),
-        studentMembers[i],
-      ];
-    }
-    setGroups(groups);
-  }, [studentMembers]);
-
-  const decreaseGroupSize = () => {
-    setGroupSize(Math.max(groupSize - 1, 1));
-  };
-
-  const increaseGroupSize = () => {
-    setGroupSize(Math.min(groupSize + 1, 10));
-  };
-
-  const handleStartGame = async () => {
-    setStarting(true);
-    try {
-      await assignClassGroupsAndStart(classroom._id, studentMembers);
-    } catch (err) {
-      console.error('Failed to start class', err);
-    } finally {
-      setStarting(false);
-    }
-  };
-
-  return (
-    <div className="column spacing" style={{ marginTop: 40 }}>
-      <Typography fontSize={16} fontWeight="bold">
-        GROUP STUDENTS
-      </Typography>
-      <Typography variant="body1" fontWeight="lighter">
-        Drag students around to create custom groups. Use the + and - buttons to
-        create larger or smaller groups
-      </Typography>
-      <div className="row spacing" style={{ alignItems: 'center' }}>
-        <ContainedButton color="secondary">
-          groups of
-          <motion.div
-            whileHover={{ scale: 1.5 }}
-            style={{ marginLeft: 5, marginRight: 5, marginTop: 5 }}
-            onClick={decreaseGroupSize}
-          >
-            <Remove style={{ fontSize: 12 }} />
-          </motion.div>
-          <Typography>{groupSize}</Typography>
-          <motion.div
-            whileHover={{ scale: 1.5 }}
-            style={{ marginLeft: 5, marginRight: 5, marginTop: 5 }}
-            onClick={increaseGroupSize}
-          >
-            <Add style={{ fontSize: 12 }} />
-          </motion.div>
-        </ContainedButton>
-      </div>
-
-      {studentMembers.length === 0 ? (
-        <Typography variant="body2" color="error" align="center">
-          No students have joined yet.
-        </Typography>
-      ) : (
-        <ImageList sx={{ width: '100%', height: '100%' }} cols={3}>
-          <DragDropProvider
-            onDragEnd={(event) => {
-              if (event.canceled) return;
-              const { source, target } = event.operation;
-              if (isSortable(source) && target?.isDropTarget) {
-                setStudentMembers((items) => {
-                  const idx = items.findIndex((s) => s.userId === source.id);
-                  if (target.id === 'new') {
-                    const max = Math.max(
-                      ...Object.keys(groups).map((k) => Number.parseInt(k))
-                    );
-                    items[idx].groupId = max + 1;
-                    return [...items];
-                  }
-                  const targetGroupIdx = Number.parseInt(`${target?.id}`);
-                  if (targetGroupIdx >= 0 && targetGroupIdx <= groupSize) {
-                    items[idx].groupId = targetGroupIdx;
-                  }
-                  return [...items];
-                });
-              }
-            }}
-          >
-            {Object.entries(groups).map(([groupId, group]) => {
-              const gIdx = Number.parseInt(groupId);
-              return (
-                <DroppableGroup key={`group-${groupId}`} groupId={gIdx}>
-                  {group.map((member, mIdx) => {
-                    const p = educationalData.students.find(
-                      (p) => p._id === member.userId
-                    );
-                    return (
-                      <ImageListItem key={member.userId}>
-                        {!rooms.find((r) =>
-                          r.gameData.players.find(
-                            (p) => p._id === member.userId
-                          )
-                        ) ? (
+                        {member.roomId ? (
+                          <PlayerSprite player={p} color="white" />
+                        ) : (
                           <DraggablePlayer
                             player={p}
                             group={member.groupId}
                             index={gIdx * groupSize + mIdx}
                           />
-                        ) : (
-                          <PlayerSprite player={p} color="white" />
                         )}
                       </ImageListItem>
                     );
@@ -477,15 +324,19 @@ export function RoomOrganizationView(props: {
           </DragDropProvider>
         </ImageList>
       )}
-
       <Button
         variant="contained"
         color="primary"
         fullWidth
-        disabled={saving || studentMembers.length === 0}
+        disabled={
+          starting ||
+          studentMembers.length === 0 ||
+          studentMembers.some((m) => m.groupId === -1) ||
+          educationalData.hydrationLoadStatus.status !== LoadStatus.DONE
+        }
         onClick={handleStartGame}
       >
-        {saving ? 'Saving...' : 'Save'}
+        {starting ? 'Starting...' : 'Start Game'}
       </Button>
     </div>
   );
