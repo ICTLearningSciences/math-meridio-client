@@ -41,7 +41,7 @@ export default function TeacherLoading(): JSX.Element {
         Welcome, {player?.name || 'Teacher Name'}
       </Typography>
 
-      {educationalData.hydrationLoadStatus.status === LoadStatus.IN_PROGRESS ? (
+      {educationalData.hydrationLoadStatus.status !== LoadStatus.DONE ? (
         <CircularProgress />
       ) : myClasses.length === 0 ? (
         <div>
