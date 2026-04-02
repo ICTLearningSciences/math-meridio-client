@@ -21,9 +21,9 @@ import { useWithEducationalData } from '../../../store/slices/educational-data/u
 import { Player } from '../../../store/slices/player/types';
 import AvatarSprite, { PlayerSprite } from '../../avatar-sprite';
 import { ContainedButton } from '../../button';
-import TeacherInviteCode from './teacher-invite-code';
 import { useAppSelector } from '../../../store/hooks';
 import { LoadStatus } from '../../../types';
+import { TeacherEditClass } from './teacher-manage-class';
 
 function DraggablePlayer(props: {
   player?: Player;
@@ -228,7 +228,7 @@ export function RoomSetupView(props: { classroom: Classroom }): JSX.Element {
 
   return (
     <div className="column spacing">
-      <TeacherInviteCode classroom={classroom} />
+      <TeacherEditClass classroom={classroom} />
 
       <Typography fontSize={16} fontWeight="bold" style={{ marginTop: 20 }}>
         GROUP STUDENTS

@@ -127,6 +127,7 @@ export function getSimulationViewedKey(stageId: string): string {
 export interface GamePhaseReflections {
   roomId: string;
   stepId: string;
+  phaseId: string;
   question: string;
   roundNumber: number;
   reflections: Record<string, string>; // keyed by player ID

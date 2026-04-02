@@ -116,7 +116,9 @@ function TeacherSummary(props: { classroom?: Classroom }): JSX.Element {
   );
 }
 
-function TeacherEditClass(props: { classroom?: Classroom }): JSX.Element {
+export function TeacherEditClass(props: {
+  classroom?: Classroom;
+}): JSX.Element {
   const { classroom } = props;
   const { updateClassNameDescription } = useWithEducationalData();
 
@@ -159,9 +161,7 @@ function TeacherEditClass(props: { classroom?: Classroom }): JSX.Element {
 
   return (
     <div className="column spacing">
-      <TeacherInviteCode classroom={classroom} />
-
-      <Typography fontSize={16} fontWeight="bold" style={{ marginTop: 20 }}>
+      <Typography fontSize={16} fontWeight="bold">
         EDIT CLASS
       </Typography>
       <Card style={{ borderRadius: 10 }}>
@@ -200,6 +200,8 @@ function TeacherEditClass(props: { classroom?: Classroom }): JSX.Element {
           </Button>
         </CardContent>
       </Card>
+
+      <TeacherInviteCode classroom={classroom} />
     </div>
   );
 }

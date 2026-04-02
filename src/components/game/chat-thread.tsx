@@ -87,6 +87,15 @@ const useStyles = makeStyles()(() => ({
   },
 }));
 
+export enum PlayerChatColors {
+  Blue = 'info.main',
+  Green = 'success.main',
+  Orange = 'warning.main',
+  Lavender = 'secondary.main',
+  Grey = 'text.secondary',
+  Red = 'error.main',
+}
+
 export default function ChatThread(props: {
   roomIsProcessing: boolean;
   requestUserInputPhaseData: CurGameState;
@@ -145,26 +154,17 @@ export default function ChatThread(props: {
     previousIsInRequestUserInputState.current = isInRequestUserInputState;
   }, [isInRequestUserInputState]);
 
-  enum PlayerColors {
-    Blue = 'info.main',
-    Green = 'success.main',
-    Orange = 'warning.main',
-    Lavender = 'secondary.main',
-    Grey = 'text.secondary',
-    Red = 'error.main',
-  }
-
   const playerColorMap: Map<string, string> = new Map([]);
 
   const usedColors: Map<string, boolean> = new Map([
-    [PlayerColors.Green, false],
-    [PlayerColors.Lavender, false],
-    [PlayerColors.Orange, false],
+    [PlayerChatColors.Green, false],
+    [PlayerChatColors.Lavender, false],
+    [PlayerChatColors.Orange, false],
   ]);
   //setting only 3 colors as we have 4 players max. Blue is reserved for Self and Grey is for System.
 
   const GetUnusedColor = (): string => {
-    let retColor = PlayerColors.Red.toString();
+    let retColor = PlayerChatColors.Red.toString();
     for (const myKey of usedColors.keys()) {
       if (usedColors.get(myKey) == false) {
         usedColors.set(myKey, true);
@@ -178,7 +178,7 @@ export default function ChatThread(props: {
     if (id != '') {
       if (!(id in playerColorMap)) {
         if (isPlayer) {
-          playerColorMap.set(id, PlayerColors.Blue);
+          playerColorMap.set(id, PlayerChatColors.Blue);
         } else {
           const unusedColor = GetUnusedColor();
           playerColorMap.set(id, unusedColor);
@@ -187,7 +187,7 @@ export default function ChatThread(props: {
       return playerColorMap.get(id) as string;
     }
 
-    return PlayerColors.Red;
+    return PlayerChatColors.Red;
   };
 
   const BorderedAvatar = styled(Avatar)`
@@ -245,7 +245,7 @@ export default function ChatThread(props: {
       id="chat-thread"
       className={classes.chatThread}
       style={{
-        backgroundColor: PlayerColors.Grey,
+        backgroundColor: PlayerChatColors.Grey,
         maxHeight: window.innerHeight - 100,
       }}
     >
@@ -268,7 +268,7 @@ export default function ChatThread(props: {
           const bubbleColor =
             msg.sender === SenderType.PLAYER
               ? playerColorMap.get(msg.senderId ?? '')
-              : PlayerColors.Grey;
+              : PlayerChatColors.Grey;
 
           return (
             <Stack key={`chat-msg-container-${idx}`} direction="column">

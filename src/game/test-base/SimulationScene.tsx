@@ -201,6 +201,7 @@ export class SimulationScene extends GameScene {
       sender: SenderType.SYSTEM,
       message: 'Select a strategy first to see simulation',
       sessionId: localStorageGet(SESSION_ID) as string,
+      phaseId: '',
     });
     super.createScene();
   }

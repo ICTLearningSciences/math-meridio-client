@@ -15,20 +15,26 @@ import {
   WarningAmberOutlined,
 } from '@mui/icons-material';
 import {
+  Avatar,
+  Box,
   Card,
   CardContent,
   CircularProgress,
   Collapse,
   Grid,
+  Paper,
+  Stack,
+  styled,
   Typography,
 } from '@mui/material';
 import { BarChart, PieChart } from '@mui/x-charts';
 
-import { PlayerSprite } from '../../avatar-sprite';
+import AvatarSprite, { PlayerSprite } from '../../avatar-sprite';
 import { Room, SenderType } from '../../../store/slices/game/types';
 import { Player } from '../../../store/slices/player/types';
 import { calculateAverage, calculateSum } from '../../../helpers';
 import {
+  GamePhaseReflections,
   GenericLlmRequest,
   PromptOutputTypes,
   PromptRoles,
@@ -37,6 +43,7 @@ import {
 import { jsonLlmRequest } from '../../../classes/api-helpers';
 import { useWithConfig } from '../../../store/slices/config/use-with-config';
 import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
+import { PlayerChatColors } from '../../game/chat-thread';
 
 interface PlayerPhaseMetrics {
   player: Player;
@@ -218,6 +225,149 @@ export function TimeSpent(props: {
   );
 }
 
+export function ChatLog(props: {
+  gameRoom: Room;
+  phase?: number;
+}): JSX.Element {
+  const { gameRoom, phase } = props;
+
+  const messages = gameRoom.gameData.chat.filter(
+    (c) =>
+      phase === undefined ||
+      c.phaseId === gameRoom.gameData.phaseProgression.phasesStarted[phase]
+  );
+  const playerColorMap: Map<string, string> = new Map([]);
+  const BorderedAvatar = styled(Avatar)`
+    border: 3px solid lightseagreen;
+  `;
+
+  return (
+    <div>
+      <Typography fontSize={14} fontWeight="bold" style={{ marginBottom: 10 }}>
+        Chat Log
+      </Typography>
+      {messages.length === 0 && (
+        <Card style={{ backgroundColor: 'rgb(231, 231, 231)' }} elevation={0}>
+          <CardContent className="column spacing">
+            <Typography fontSize={14}>No messages for this phase</Typography>
+          </CardContent>
+        </Card>
+      )}
+      <div
+        id="chat-thread"
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          flexGrow: 1,
+          overflowY: 'auto',
+          borderRadius: 5,
+          padding: 10,
+          backgroundColor: 'rgb(231, 231, 231)',
+          maxHeight: 200,
+        }}
+      >
+        <Stack direction="column">
+          {messages.map((msg, idx) => {
+            let currMessageOwner = '';
+            let prevMessageOwner = '';
+            let skipAvatar = false;
+            const myMessage = msg.sender === SenderType.SYSTEM;
+            if (msg.sender == SenderType.SYSTEM) {
+              currMessageOwner = 'System';
+            } else {
+              currMessageOwner = msg.senderId ?? '';
+            }
+            if (prevMessageOwner == currMessageOwner) {
+              skipAvatar = true;
+            } else {
+              skipAvatar = false;
+              prevMessageOwner = currMessageOwner;
+            }
+            const bubbleColor =
+              msg.sender === SenderType.PLAYER
+                ? playerColorMap.get(msg.senderId ?? '')
+                : PlayerChatColors.Grey;
+
+            return (
+              <Stack key={`chat-msg-container-${idx}`} direction="column">
+                {!skipAvatar && (
+                  <Typography
+                    color="teal"
+                    textAlign={myMessage ? 'left' : 'right'}
+                  >
+                    {msg.sender === SenderType.PLAYER
+                      ? msg.senderName
+                      : 'System'}
+                  </Typography>
+                )}
+                <Stack
+                  p={1}
+                  direction={myMessage ? 'row' : 'row-reverse'}
+                  justifyContent={myMessage ? 'left' : 'right'}
+                >
+                  {!skipAvatar &&
+                    (msg.sender === SenderType.PLAYER ? (
+                      <AvatarSprite
+                        player={gameRoom.gameData.players?.find(
+                          (p) => p._id === msg.senderId
+                        )}
+                        bgColor={bubbleColor}
+                      />
+                    ) : (
+                      <BorderedAvatar />
+                    ))}
+                  {skipAvatar && (
+                    <Box
+                      width={46}
+                      sx={{
+                        flexGrow: 0,
+                        flexShrink: 0,
+                      }}
+                    ></Box>
+                  )}
+                  <Paper
+                    square
+                    elevation={0}
+                    sx={{
+                      p: 3,
+                      whiteSpace: 'normal',
+                      wordWrap: 'break-word',
+                      backgroundColor: bubbleColor,
+                      paddingLeft: myMessage ? '10%' : '5%',
+                      paddingRight: myMessage ? '5%' : '10%',
+                      clipPath: myMessage
+                        ? 'polygon(0% 0%, 100% 0%, 100% 100%, calc(0% + 1em) 100%, calc(0% + 1em) calc(0% + 1em), 0% 0%)'
+                        : 'polygon(0% 0%, 100% 0%, calc(100% - 1em) calc(0% + 1em), calc(100% - 1em) 100%, 0% 100%, 0% 0%)',
+                      borderBottomLeftRadius: myMessage ? 0 : '1em',
+                      borderTopLeftRadius: myMessage ? 0 : '1em',
+                      borderBottomRightRadius: myMessage ? '1em' : 0,
+                      borderTopRightRadius: myMessage ? '1em' : 0,
+                    }}
+                  >
+                    <pre
+                      style={{
+                        whiteSpace: 'pre-wrap',
+                        wordWrap: 'break-word',
+                        overflowWrap: 'break-word',
+                        margin: 0,
+                        fontFamily: 'inherit',
+                      }}
+                    >
+                      <Typography color={myMessage ? 'white' : ''}>
+                        {msg.message}
+                      </Typography>
+                    </pre>
+                  </Paper>
+                </Stack>
+              </Stack>
+            );
+          })}
+        </Stack>
+      </div>
+    </div>
+  );
+}
+
 export function KeyWords(props: {
   gameRooms: Room[];
   useReflections?: boolean;
@@ -235,11 +385,18 @@ export function KeyWords(props: {
     const words: string[] = [];
     const messages: string[] = [];
     if (props.useReflections) {
-      const phaseReflections = educationalData.phaseReflections.filter(
-        (p) =>
-          roomIds.includes(p.roomId) &&
-          (phase === undefined || p.roundNumber === phase)
-      );
+      const phaseReflections: GamePhaseReflections[] = [];
+      for (const room of gameRooms) {
+        phaseReflections.push(
+          ...educationalData.phaseReflections.filter(
+            (p) =>
+              roomIds.includes(p.roomId) &&
+              (phase === undefined ||
+                p.phaseId ===
+                  room.gameData.phaseProgression.phasesStarted[phase])
+          )
+        );
+      }
       for (const pr of phaseReflections) {
         for (const r of Object.values(pr.reflections)) {
           messages.push(r);
@@ -249,7 +406,10 @@ export function KeyWords(props: {
     } else {
       for (const room of gameRooms) {
         for (const chat of room.gameData.chat.filter(
-          (c) => c.sender === SenderType.PLAYER
+          (c) =>
+            c.sender === SenderType.PLAYER &&
+            (phase === undefined ||
+              c.phaseId === room.gameData.phaseProgression.phasesStarted[phase])
         )) {
           messages.push(chat.message);
           words.push(...chat.message.split(' '));

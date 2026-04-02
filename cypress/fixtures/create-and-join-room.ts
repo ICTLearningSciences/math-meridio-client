@@ -21,11 +21,11 @@ export function defaultNbaStarterRoomData(classId: string, user: Player): Room {
         "classId": classId,
         "groupId": undefined,
         "phase": RoomPhase.PROCESSING,
-        "gameData": {   
+        "gameData": {
             "mathStandardsCompleted": {},
             "phaseProgression": {
                 "phasesStarted": [],
-                "phasesCompleted": [],  
+                "phasesCompleted": [],
                 "curPhaseTitle": "",
                 "curPhaseStepId": "",
                 "startingPhaseStepsOrdered": [],
@@ -46,7 +46,8 @@ export function defaultNbaStarterRoomData(classId: string, user: Player): Room {
                     messageId: uuidv4(),
                     sender: SenderType.SYSTEM,
                     message: `We're currently losing, and we can't change our players—but we can change our strategy. What combination of shot types will help us close the gap and come out on top?`,
-                    sessionId: "test-session-id", 
+                    sessionId: "test-session-id",
+                    phaseId: "",
                 }
             ],
             "globalStateData": {

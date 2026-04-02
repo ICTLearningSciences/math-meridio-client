@@ -18,6 +18,7 @@ import {
 import { Classroom } from '../../../store/slices/educational-data/types';
 import PhaseProgressBar, { PhaseSelector } from '../../phase-progress-bar';
 import {
+  ChatLog,
   Contribution,
   KeyWords,
   SkillsPracticed,
@@ -211,74 +212,79 @@ export function IndividualReportCard(props: {
         <PhaseSelector gameRooms={[room]} phase={phase} setPhase={setPhase} />
         <Collapse in={expanded}>
           <Grid container spacing={2} style={{ marginTop: 10 }}>
-            <Grid item xs={4}>
+            <Grid item xs={6}>
               <Contribution
                 phase={phase}
                 students={room.gameData.players}
                 gameRooms={[room]}
               />
             </Grid>
-            <Grid item xs={3}>
+            <Grid item xs={6}>
               <TimeSpent phase={phase} gameRooms={[room]} />
             </Grid>
-            <Grid item xs={5}>
-              <KeyWords phase={phase} gameRooms={[room]} />
-            </Grid>
-            {phaseReflections.length > 0 && (
-              <Grid item xs={6}>
-                <Typography
-                  fontSize={14}
-                  fontWeight="bold"
-                  flexGrow={1}
-                  style={{ marginBottom: 10 }}
-                >
-                  Class Reflections
-                </Typography>
-                <div className="column spacing">
-                  {phaseReflections.map((pr, idx) => {
-                    return (
-                      <Card
-                        key={`reflection-${idx}`}
-                        style={{ backgroundColor: 'rgb(231, 231, 231)' }}
-                        elevation={0}
-                      >
-                        <CardContent className="column spacing">
-                          <Typography fontSize={14} fontWeight="bold">
-                            {pr.question}
-                          </Typography>
-                          {Object.entries(pr.reflections).map((r) => {
-                            const player = room.gameData.players.find(
-                              (p) => p._id === r[0]
-                            );
-                            if (!player) return <div key={r[0]} />;
-                            return (
-                              <div key={r[0]} className="row spacing">
-                                <div style={{ width: 150 }}>
-                                  <PlayerSprite player={player} />
-                                </div>
-                                <Card
-                                  style={{ borderRadius: 10, flexGrow: 1 }}
-                                  elevation={0}
-                                >
-                                  <CardContent className="column spacing">
-                                    <Typography>&quot;{r[1]}&quot;</Typography>
-                                  </CardContent>
-                                </Card>
+            <Grid item xs={6}>
+              <Typography
+                fontSize={14}
+                fontWeight="bold"
+                flexGrow={1}
+                style={{ marginBottom: 10 }}
+              >
+                Class Reflections
+              </Typography>
+              <div className="column spacing">
+                {phaseReflections.length === 0 && (
+                  <Card
+                    style={{ backgroundColor: 'rgb(231, 231, 231)' }}
+                    elevation={0}
+                  >
+                    <CardContent className="column spacing">
+                      <Typography fontSize={14}>
+                        No class reflections for this phase
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                )}
+                {phaseReflections.map((pr, idx) => {
+                  return (
+                    <Card
+                      key={`reflection-${idx}`}
+                      style={{ backgroundColor: 'rgb(231, 231, 231)' }}
+                      elevation={0}
+                    >
+                      <CardContent className="column spacing">
+                        <Typography fontSize={14} fontWeight="bold">
+                          {pr.question}
+                        </Typography>
+                        {Object.entries(pr.reflections).map((r) => {
+                          const player = room.gameData.players.find(
+                            (p) => p._id === r[0]
+                          );
+                          if (!player) return <div key={r[0]} />;
+                          return (
+                            <div key={r[0]} className="row spacing">
+                              <div style={{ width: 150 }}>
+                                <PlayerSprite player={player} />
                               </div>
-                            );
-                          })}
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-              </Grid>
-            )}
-            {phaseReflections.length > 0 && (
-              <Grid item xs={6}>
-                <KeyWords useReflections phase={phase} gameRooms={[room]} />
-              </Grid>
-            )}
+                              <Card
+                                style={{ borderRadius: 10, flexGrow: 1 }}
+                                elevation={0}
+                              >
+                                <CardContent className="column spacing">
+                                  <Typography>&quot;{r[1]}&quot;</Typography>
+                                </CardContent>
+                              </Card>
+                            </div>
+                          );
+                        })}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </Grid>
+            <Grid item xs={6}>
+              <ChatLog phase={phase} gameRoom={room} />
+            </Grid>
             <Grid item xs={12}>
               <SkillsPracticed
                 students={room.gameData.players}
