@@ -201,6 +201,7 @@ export const fullRoomQueryDataWithoutMathStandardsCompleted = `
       disableUserInput
       mcqChoices
       sessionId
+      phaseId
     }
     globalStateData {
       curStageId
@@ -249,6 +250,7 @@ export const fullRoomQueryData = `
       disableUserInput
       mcqChoices
       sessionId
+      phaseId
     }
     globalStateData {
       curStageId

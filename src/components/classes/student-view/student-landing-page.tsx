@@ -110,7 +110,7 @@ export default function StudentLandingPage(): JSX.Element {
             to join your first class.
           </Typography>
         ) : (
-          myClasses.map((classroom) => {
+          myClasses.reverse().map((classroom) => {
             return (
               <StudentClassroomCard
                 key={classroom._id}

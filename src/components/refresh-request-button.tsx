@@ -24,7 +24,13 @@ export function RefreshRequestButton(props: { autoRefreshTime?: number }) {
   const pingRef = useRef(refreshButtonClick);
 
   React.useEffect(() => {
-    if (!player || !pingTime || !pathname.includes('classes')) {
+    if (!player || !pingTime || !pathname.includes('/classes')) {
+      return;
+    }
+    if (
+      player.educationalRole === EducationalRole.STUDENT &&
+      pathname.includes('/room')
+    ) {
       return;
     }
     let isActive = true;

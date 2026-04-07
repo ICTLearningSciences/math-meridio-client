@@ -137,6 +137,7 @@ export default function EndOfPhaseReflectionModal({
       setLastSubmittedReflection(reflectionText);
       setLocallySubmittedReflection(reflectionText);
       setHasLocallySubmitted(true);
+      setReflectionText('');
       await fetchRoom(room._id);
     } catch (error) {
       console.error('Failed to submit reflection:', error);

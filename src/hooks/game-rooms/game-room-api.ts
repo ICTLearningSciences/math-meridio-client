@@ -197,6 +197,7 @@ export async function updatePlayerGameStateData(
 export const gamePhaseReflectionDataQuery = `
   roomId
   stepId
+  phaseId
   roundNumber
   question
   reflections

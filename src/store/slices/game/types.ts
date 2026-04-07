@@ -23,6 +23,7 @@ export interface ChatMessage {
   message: string;
   senderId?: string;
   sessionId: string;
+  phaseId: string;
   senderName?: string;
   displayType?: MessageDisplayType;
   disableUserInput?: boolean;
