@@ -9,18 +9,20 @@ import { Typography } from '@mui/material';
 import BasketballGame from '.';
 import stadiumSeats from './stadium_seats.jpg';
 
-export function ProblemComponent(): JSX.Element {
+export function ProblemComponent(props: { minimize?: boolean }): JSX.Element {
   return (
     <div>
-      <img
-        style={{
-          width: '50%',
-          height: 'auto',
-          float: 'right',
-          marginLeft: '10px',
-        }}
-        src={stadiumSeats}
-      />
+      {props.minimize ? undefined : (
+        <img
+          style={{
+            width: '50%',
+            height: 'auto',
+            float: 'right',
+            marginLeft: '10px',
+          }}
+          src={stadiumSeats}
+        />
+      )}
       <Typography>{BasketballGame.problem}</Typography>
     </div>
   );

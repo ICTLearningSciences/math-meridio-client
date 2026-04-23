@@ -45,6 +45,8 @@ const ConcertTicketSalesGame: Game = {
   id: 'concert-ticket-sales',
   name: 'Concert Ticket Management',
   problem: `Our concert venue isn't meeting its profit goals, and we need your help to fix it. You and the sales team must figure out what's wrong with our current ticket strategy and how to adjust it to maximize revenue. For each show, we can sell 100 tickets. VIP tickets earn the most but are hardest to sell, while Reserved and General Admission earn less but sell more easily.`,
+  minProblem:
+    'Of 100 tickets, how many of each should be sold to maximize profits? VIP earn the most but are hardest to sell, while Reserved and General Admission earn less but sell more easily.',
   config: {
     type: Phaser.CANVAS,
     backgroundColor: '#282c34',
@@ -59,8 +61,8 @@ const ConcertTicketSalesGame: Game = {
 
     scene: [SimulationScene],
   },
-  showProblem: () => {
-    return <ProblemComponent />;
+  showProblem: (minimize?: boolean) => {
+    return <ProblemComponent minimize={minimize} />;
   },
   showSolution: (
     uiGameData: GameData,
@@ -68,13 +70,15 @@ const ConcertTicketSalesGame: Game = {
     updatePlayerStateData: (
       newPlayerStateData: GameStateData,
       playerId: string
-    ) => void
+    ) => void,
+    minimize?: boolean
   ) => {
     return (
       <SolutionComponent
         uiGameData={uiGameData}
         player={player}
         updatePlayerStateData={updatePlayerStateData}
+        minimize={minimize}
       />
     );
   },

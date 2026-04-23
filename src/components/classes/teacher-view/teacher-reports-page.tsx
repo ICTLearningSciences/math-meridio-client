@@ -92,7 +92,8 @@ export default function TeacherReports(props: {
       selectedTab={Number.parseInt(searchParams.get('report') || '0')}
       onSelectTab={(t) => setSearchParams({ tab: '1', report: `${t}` })}
       tabsStyle={{
-        marginTop: '10px',
+        marginLeft: '20px',
+        marginBottom: '20px',
       }}
       tabs={[
         {

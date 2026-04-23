@@ -13,15 +13,17 @@ export interface Game {
   id: 'basketball' | 'concert-ticket-sales' | 'test-base';
   name: string;
   problem: string;
+  minProblem?: string;
   config: Phaser.Types.Core.GameConfig;
-  showProblem: () => JSX.Element;
+  showProblem: (minimize?: boolean) => JSX.Element;
   showSolution: (
     uiGameData: GameData,
     player: Player,
     updatePlayerStateData: (
       newPlayerStateData: GameStateData,
       playerId: string
-    ) => void
+    ) => void,
+    minimize?: boolean
   ) => JSX.Element;
   showSimulation: (game: Game) => JSX.Element;
   showPlayerStrategy: (

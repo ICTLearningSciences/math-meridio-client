@@ -27,6 +27,7 @@ export default function ChatForm(props: {
   sendMessage: (msg: string) => Promise<any>;
   isMyTurn: boolean;
   isPaused?: boolean;
+  phasesCompleted?: boolean;
 }): JSX.Element {
   const [input, setInput] = React.useState<string>('');
   const [isSending, setIsSending] = React.useState<boolean>(false);
@@ -104,10 +105,18 @@ export default function ChatForm(props: {
             label="Chat:"
             type="text"
             value={input}
-            disabled={listening || isPaused || isSending}
+            disabled={
+              listening || isPaused || isSending || props.phasesCompleted
+            }
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => onKeyPress(e, isMyTurn)}
-            style={{ backgroundColor: 'white' }}
+            style={{
+              backgroundColor: 'white',
+              animation:
+                isMyTurn && !isPaused && !props.phasesCompleted && !isSending
+                  ? 'blink 1s ease-in-out 0s infinite reverse'
+                  : '',
+            }}
             multiline
             inputProps={{ maxLength: MAX_MESSAGE_LENGTH }}
             startAdornment={
@@ -139,7 +148,8 @@ export default function ChatForm(props: {
                       input.length > MAX_MESSAGE_LENGTH ||
                       !isMyTurn ||
                       isPaused ||
-                      isSending
+                      isSending ||
+                      props.phasesCompleted
                     }
                   >
                     <Send />
@@ -152,11 +162,21 @@ export default function ChatForm(props: {
         <Fab
           color={listening ? 'primary' : 'inherit'}
           onClick={onToggleSTT}
-          disabled={!browserSupportsSpeechRecognition || isPaused}
+          disabled={
+            !browserSupportsSpeechRecognition ||
+            isPaused ||
+            props.phasesCompleted
+          }
           style={{ marginLeft: 10 }}
         >
           {listening ? <Mic /> : <MicOutlined />}
         </Fab>
+        <style>{`
+            @keyframes blink {
+                 0% { background: white; }
+                 100% { background: lightyellow; }
+            }
+        `}</style>
       </div>
     </div>
   );

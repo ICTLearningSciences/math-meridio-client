@@ -17,6 +17,7 @@ import { UseWithEducationalData } from '../../store/slices/educational-data/use-
 import GamePage from '../game/game-page';
 import withAuthorizationOnly from '../../wrap-with-authorization-only';
 import { useWithPollActiveRoom } from '../../store/slices/educational-data/use-with-poll-active-room';
+
 function RoomViewPage(): JSX.Element {
   const { roomId } = useParams<{ roomId: string }>();
   useWithPollActiveRoom();

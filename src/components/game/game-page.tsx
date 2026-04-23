@@ -6,163 +6,24 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
-import GridLayout from 'react-grid-layout';
-import { TransformWrapper } from 'react-zoom-pan-pinch';
-import {
-  Card,
-  CircularProgress,
-  IconButton,
-  MenuItem,
-  Stack,
-  TextField,
-  Tooltip,
-  Typography,
-} from '@mui/material';
-import {
-  Fullscreen,
-  FullscreenExit,
-  VolumeOff,
-  VolumeUp,
-} from '@mui/icons-material';
-
+import { CircularProgress, Grid, Stack } from '@mui/material';
 import ChatThread from './chat-thread';
 import ChatForm from './chat-form';
 import withAuthorizationOnly from '../../wrap-with-authorization-only';
 import EndOfPhaseReflectionModal from './end-of-phase-reflection-modal';
 import AwayStatusModal from './away-status-modal';
 import PausedStatusModal from './paused-status-modal';
-import { useWithConfig } from '../../store/slices/config/use-with-config';
-import { useWithWindow } from '../../hooks/use-with-window';
-import EventSystem from '../../game/event-system';
-import {
-  GameData,
-  PlayerComputedState,
-  Room,
-  RoomPhase,
-} from '../../store/slices/game/types';
-import { Game } from '../../game/types';
-
-import '../../layout.css';
+import { PlayerComputedState, RoomPhase } from '../../store/slices/game/types';
+import GamePagePhaseDisplay from './game-page-phases';
 import { UseWithEducationalData } from '../../store/slices/educational-data/use-with-educational-data';
 import { useAppSelector } from '../../store/hooks';
 import { RequireInputType } from '../discussion-stage-builder/types';
-import { viewGameRoomSimulation } from '../../hooks/game-rooms/game-room-api';
 import PhaseProgressBar from '../phase-progress-bar';
 
-const COLS = 6;
-const ROWS = 4;
+import '../../layout.css';
 
 // Type for the outlet context provided by GameLayout
 type EducationalDataContext = UseWithEducationalData;
-
-function Space(props: {
-  title: string;
-  children: JSX.Element;
-  expanded?: boolean;
-  onExpand: () => void;
-}): JSX.Element {
-  return (
-    <div style={{ padding: 10, height: '100%' }}>
-      <div
-        className="row"
-        style={{
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        <Typography fontWeight="bold">{props.title}</Typography>
-        <Tooltip
-          title={props.expanded ? 'Collapse to default' : 'Expand section'}
-        >
-          <IconButton
-            color={props.expanded ? 'primary' : 'default'}
-            onClick={props.onExpand}
-          >
-            {props.expanded ? <FullscreenExit /> : <Fullscreen />}
-          </IconButton>
-        </Tooltip>
-      </div>
-      <div style={{ height: 'calc(100% - 50px)', overflowY: 'auto' }}>
-        {props.children}
-      </div>
-    </div>
-  );
-}
-
-function SimulationSpace(props: {
-  game: Game;
-  gameStateData: GameData;
-  expanded?: boolean;
-  onExpand: () => void;
-  viewGameRoomSimulation: () => Promise<Room>;
-}): JSX.Element {
-  const { game, gameStateData, viewGameRoomSimulation } = props;
-  const { isMuted, toggleMuted } = useWithConfig();
-  const [curSimulation, setSimulation] = React.useState<{ player: string }>();
-
-  React.useEffect(() => {
-    EventSystem.on('simulate', (sim: { player: string }) => {
-      setSimulation(sim);
-      viewGameRoomSimulation()
-        .then((room) => {
-          console.log('room', room);
-        })
-        .catch((error) => {
-          console.error('error', error);
-        });
-    });
-  }, []);
-
-  return (
-    <div style={{ padding: 10, height: '100%' }}>
-      <div
-        className="row"
-        style={{
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        <Typography fontWeight="bold">Simulation</Typography>
-        <TextField
-          select
-          fullWidth
-          style={{ marginLeft: 10 }}
-          value={curSimulation?.player}
-          label="Strategy"
-        >
-          {gameStateData.players.map((player) => {
-            return (
-              <MenuItem
-                key={player._id}
-                value={player._id}
-                style={{ width: '100%', padding: 0, margin: 0 }}
-              >
-                {game.showPlayerStrategy(
-                  player,
-                  gameStateData.playersGameStateData[player._id]
-                )}
-              </MenuItem>
-            );
-          })}
-        </TextField>
-        <Tooltip title="Mute game audio">
-          <IconButton onClick={toggleMuted}>
-            {isMuted ? <VolumeOff /> : <VolumeUp />}
-          </IconButton>
-        </Tooltip>
-        <IconButton
-          color={props.expanded ? 'primary' : 'default'}
-          onClick={props.onExpand}
-        >
-          {props.expanded ? <FullscreenExit /> : <Fullscreen />}
-        </IconButton>
-      </div>
-      <div style={{ height: 'calc(100% - 50px)', overflowY: 'auto' }}>
-        {game.showSimulation(game)}
-      </div>
-    </div>
-  );
-}
 
 function GamePage(): JSX.Element {
   // Use prop if provided, otherwise try to get from outlet context
@@ -187,7 +48,8 @@ function GamePage(): JSX.Element {
       PlayerComputedState.REPORTED_AWAY_BY_FRONTEND_DETECTION;
   const iAmPaused =
     myStatusInRoom?.computedState === PlayerComputedState.PAUSED_BY_ADMIN;
-  const { windowHeight, windowWidth } = useWithWindow();
+  const phasesCompleted =
+    room?.gameData?.phaseProgression?.phasesCompleted?.length;
 
   const isSingleResponseRequired =
     room?.gameData.curGameState.curState ===
@@ -219,184 +81,12 @@ function GamePage(): JSX.Element {
     );
   }
 
-  const [layout, setLayout] = React.useState<GridLayout.Layout[]>([
-    getLayout('problem', { h: 1 }),
-    getLayout('approach', { h: 3, y: 2 }),
-    getLayout('simulation', { x: 2 }),
-    getLayout('results', { x: 2, y: 2 }),
-    getLayout('chat', {
-      x: 4,
-      h: 4,
-      minH: 4,
-      maxH: 4,
-      minW: 1,
-      maxW: 2,
-      resizeHandles: ['w'],
-    }),
-  ]);
-  const [expanded, setExpanded] = React.useState<number>();
-
   React.useEffect(() => {
     if (!room) {
       console.log('navigating to home');
       navigate('/classes');
     }
   }, [Boolean(room)]);
-
-  React.useEffect(() => {
-    EventSystem.on('simulate', () => setExpanded(2));
-    EventSystem.on('simulationEnded', () => setExpanded(3));
-  }, []);
-
-  React.useEffect(() => {
-    if (expanded === undefined) {
-      setLayout([
-        updateLayout(layout[0], { x: 0, y: 0, h: 1, w: 2 }),
-        updateLayout(layout[1], { x: 0, y: 1, h: 3, w: 2 }),
-        updateLayout(layout[2], {
-          x: 2,
-          y: 0,
-          h: 2,
-          w: COLS - layout[4].w - 2,
-        }),
-        updateLayout(layout[3], {
-          x: 2,
-          y: 2,
-          h: 2,
-          w: COLS - layout[4].w - 2,
-        }),
-        layout[4],
-      ]);
-    }
-    if (expanded === 0) {
-      setLayout([
-        updateLayout(layout[0], { x: 0, y: 0, h: 3, w: 3 }),
-        updateLayout(layout[1], { x: 0, y: 1, h: 1, w: 3 }),
-        updateLayout(layout[2], {
-          x: 3,
-          y: 0,
-          w: COLS - layout[4].w - 3,
-          h: 1,
-        }),
-        updateLayout(layout[3], {
-          x: 3,
-          y: 1,
-          w: COLS - layout[4].w - 3,
-          h: 3,
-        }),
-        layout[4],
-      ]);
-    }
-    if (expanded === 1) {
-      setLayout([
-        updateLayout(layout[0], { x: 0, y: 0, h: 1, w: 3 }),
-        updateLayout(layout[1], { x: 0, y: 1, h: 3, w: 3 }),
-        updateLayout(layout[2], {
-          x: 3,
-          y: 0,
-          w: COLS - layout[4].w - 3,
-          h: 1,
-        }),
-        updateLayout(layout[3], {
-          x: 3,
-          y: 1,
-          w: COLS - layout[4].w - 3,
-          h: 3,
-        }),
-        layout[4],
-      ]);
-    }
-    if (expanded === 2) {
-      setLayout([
-        updateLayout(layout[0], { x: 0, y: 0, w: 1 }),
-        updateLayout(layout[1], { x: 0, y: COLS - layout[0].h, w: 1 }),
-        updateLayout(layout[2], {
-          x: 1,
-          y: 0,
-          h: 3,
-          w: COLS - layout[4].w - 1,
-        }),
-        updateLayout(layout[3], {
-          x: 1,
-          y: 3,
-          h: 1,
-          w: COLS - layout[4].w - 1,
-        }),
-        layout[4],
-      ]);
-    }
-    if (expanded === 3) {
-      setLayout([
-        updateLayout(layout[0], { x: 0, y: 0, w: 1 }),
-        updateLayout(layout[1], { x: 0, y: COLS - layout[0].h, w: 1 }),
-        updateLayout(layout[2], {
-          x: 1,
-          y: 0,
-          h: 1,
-          w: COLS - layout[4].w - 1,
-        }),
-        updateLayout(layout[3], {
-          x: 1,
-          y: 1,
-          h: 3,
-          w: COLS - layout[4].w - 1,
-        }),
-        layout[4],
-      ]);
-    }
-  }, [expanded]);
-
-  function getLayout(
-    id: string,
-    props?: Partial<GridLayout.Layout>
-  ): GridLayout.Layout {
-    const layout: GridLayout.Layout = {
-      i: id,
-      x: 0,
-      y: 0,
-      w: 2,
-      h: 2,
-      minH: 1,
-      maxH: 3,
-      minW: 1,
-      maxW: 3,
-      resizeHandles: [],
-      isDraggable: false,
-      isResizable: true,
-      ...props,
-    };
-    return layout;
-  }
-
-  function updateLayout(
-    layout: GridLayout.Layout,
-    updates: Partial<GridLayout.Layout>
-  ): GridLayout.Layout {
-    return getLayout(layout.i, { ...layout, ...updates });
-  }
-
-  function onExpand(i: number): void {
-    if (expanded === i) {
-      setExpanded(undefined);
-    } else {
-      setExpanded(i);
-    }
-  }
-
-  const handleLayout = (newLayout: GridLayout.Layout[]) => {
-    // resize chat width
-    if (newLayout[4].w !== layout[4].w) {
-      newLayout[2] = updateLayout(newLayout[2], {
-        x: newLayout[1].w,
-        w: COLS - newLayout[1].w - newLayout[4].w,
-      });
-      newLayout[3] = updateLayout(newLayout[3], {
-        x: newLayout[1].w,
-        w: COLS - newLayout[1].w - newLayout[4].w,
-      });
-    }
-    setLayout(newLayout);
-  };
 
   if (!room) {
     return (
@@ -411,121 +101,57 @@ function GamePage(): JSX.Element {
   }
 
   return (
-    <div className="root" style={{ backgroundColor: '#cfdaf8' }}>
-      <div style={{ position: 'absolute', top: 55, width: 500 }}>
+    <div
+      className="root"
+      style={{
+        backgroundColor: '#cfdaf8',
+      }}
+    >
+      <div style={{ width: '80%', padding: 20 }}>
         <PhaseProgressBar gameRooms={[room]} />
       </div>
+      <Grid
+        container
+        spacing={2}
+        style={{ height: 0, width: '100%', padding: 20 }}
+      >
+        <Grid xs={6}>
+          <GamePagePhaseDisplay
+            room={room}
+            game={curGame}
+            player={player}
+            updateMyRoomGameStateData={updateMyRoomGameStateData}
+          />
+        </Grid>
+        <Grid xs={6}>
+          <Stack
+            key="chat"
+            spacing={2}
+            style={{
+              height: '100%',
+              boxSizing: 'border-box',
+              padding: 10,
+            }}
+          >
+            <ChatThread
+              roomIsProcessing={room.phase === RoomPhase.PROCESSING}
+              requestUserInputPhaseData={room.gameData.curGameState}
+              uiGameData={room.gameData}
+            />
+            <ChatForm
+              sendMessage={sendMessageToGameRoom}
+              isMyTurn={isMyTurn}
+              isPaused={iAmPaused}
+              phasesCompleted={phasesCompleted === 5}
+            />
+          </Stack>
+        </Grid>
+      </Grid>
       <EndOfPhaseReflectionModal
         room={room}
         player={player}
         fetchRoom={fetchRoom}
       />
-      <GridLayout
-        className="layout"
-        style={{ height: '100%', width: '100%' }}
-        layout={layout}
-        onLayoutChange={handleLayout}
-        isResizable
-        cols={COLS}
-        maxRows={ROWS}
-        rowHeight={(windowHeight - 120) / ROWS}
-        width={windowWidth}
-      >
-        <Card
-          key="problem"
-          style={{
-            borderTopRightRadius: 20,
-            borderBottomLeftRadius: 20,
-          }}
-        >
-          <Space
-            title="Problem"
-            expanded={expanded === 0}
-            onExpand={() => onExpand(0)}
-          >
-            {curGame.showProblem()}
-          </Space>
-        </Card>
-
-        <Card
-          key="approach"
-          style={{
-            borderTopRightRadius: 20,
-            borderBottomLeftRadius: 20,
-          }}
-        >
-          <Space
-            title="Approach"
-            expanded={expanded === 1}
-            onExpand={() => onExpand(1)}
-          >
-            <TransformWrapper
-              minScale={0.5}
-              maxScale={1}
-              panning={{ excluded: ['panningDisabled'] }}
-            >
-              {curGame.showSolution(
-                room.gameData,
-                player,
-                updateMyRoomGameStateData
-              )}
-            </TransformWrapper>
-          </Space>
-        </Card>
-
-        <Card
-          key="simulation"
-          style={{
-            borderTopLeftRadius: 20,
-            borderBottomRightRadius: 20,
-          }}
-        >
-          <SimulationSpace
-            viewGameRoomSimulation={() => viewGameRoomSimulation(room._id)}
-            game={curGame}
-            gameStateData={room.gameData}
-            expanded={expanded === 2}
-            onExpand={() => onExpand(2)}
-          />
-        </Card>
-
-        <Card
-          key="results"
-          style={{
-            borderTopLeftRadius: 20,
-            borderBottomRightRadius: 20,
-          }}
-        >
-          <Space
-            title="Results"
-            expanded={expanded === 3}
-            onExpand={() => onExpand(3)}
-          >
-            {curGame.showResult(room.gameData)}
-          </Space>
-        </Card>
-
-        <Stack
-          key="chat"
-          spacing={2}
-          style={{
-            height: '100%',
-            boxSizing: 'border-box',
-            padding: 10,
-          }}
-        >
-          <ChatThread
-            roomIsProcessing={room.phase === RoomPhase.PROCESSING}
-            requestUserInputPhaseData={room.gameData.curGameState}
-            uiGameData={room.gameData}
-          />
-          <ChatForm
-            sendMessage={sendMessageToGameRoom}
-            isMyTurn={isMyTurn}
-            isPaused={iAmPaused}
-          />
-        </Stack>
-      </GridLayout>
       <AwayStatusModal
         roomId={room._id}
         playerId={player._id}
