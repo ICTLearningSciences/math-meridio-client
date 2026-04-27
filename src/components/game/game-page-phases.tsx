@@ -99,6 +99,7 @@ export default function GamePagePhaseDisplay(props: {
   room?: Room;
   game?: Game;
   player?: Player;
+  selectedPhase?: number;
   updateMyRoomGameStateData: (gameStateData: GameStateData) => Promise<Room>;
 }): JSX.Element {
   const { room, game, player, updateMyRoomGameStateData } = props;
@@ -106,7 +107,10 @@ export default function GamePagePhaseDisplay(props: {
   const { windowHeight } = useWithWindow();
   const [curSimulation, setSimulation] = React.useState<{ player: string }>();
   const [expanded, setExpanded] = React.useState<boolean>(false);
-  const phasesStarted = room?.gameData?.phaseProgression?.phasesStarted?.length;
+  const phasesStarted =
+    props.selectedPhase !== undefined
+      ? props.selectedPhase
+      : room?.gameData?.phaseProgression?.phasesStarted?.length;
   const cardHeight = windowHeight - 210;
   const minHeight = Math.max(100, cardHeight * (expanded ? 0.5 : 0.1)) - 25;
   const maxHeight =
@@ -134,7 +138,7 @@ export default function GamePagePhaseDisplay(props: {
     return <div />;
   }
 
-  if (phasesStarted === 2) {
+  if (phasesStarted === 1 || phasesStarted === 2) {
     return (
       <MyCarousel>
         <div className="column spacing">
@@ -164,35 +168,9 @@ export default function GamePagePhaseDisplay(props: {
     );
   }
   if (phasesStarted === 3) {
-    return (
-      <MyCarousel>
-        <div className="column spacing">
-          <Space
-            title="Problem"
-            height={minHeight}
-            expanded={expanded}
-            onExpand={() => setExpanded(!expanded)}
-          >
-            {game.showProblem(!expanded)}
-          </Space>
-          <Space title="Approach" height={maxHeight}>
-            <TransformWrapper
-              minScale={0.5}
-              maxScale={1}
-              panning={{ excluded: ['panningDisabled'] }}
-            >
-              {game.showSolution(
-                room.gameData,
-                player,
-                updateMyRoomGameStateData
-              )}
-            </TransformWrapper>
-          </Space>
-        </div>
-      </MyCarousel>
-    );
-  }
-  if (phasesStarted === 4) {
+    const minHeight = Math.max(150, cardHeight * (expanded ? 0.5 : 0.1)) - 25;
+    const maxHeight =
+      Math.min(cardHeight - 150, cardHeight * (expanded ? 0.5 : 0.9)) - 25;
     return (
       <MyCarousel>
         <div className="column spacing">
@@ -256,51 +234,46 @@ export default function GamePagePhaseDisplay(props: {
       </MyCarousel>
     );
   }
-  if (phasesStarted === 5) {
+  if (phasesStarted === 4) {
     return (
       <MyCarousel>
-        <div className="column spacing">
-          <Space
-            title="Simulation"
-            height={cardHeight / 2 - 25}
-            header={
-              <div className="row" style={{ flexGrow: 1 }}>
-                <TextField
-                  select
-                  fullWidth
-                  style={{ marginLeft: 10 }}
-                  value={curSimulation?.player}
-                  label="Strategy"
-                >
-                  {room.gameData.players.map((player) => {
-                    return (
-                      <MenuItem
-                        key={player._id}
-                        value={player._id}
-                        style={{ width: '100%', padding: 0, margin: 0 }}
-                      >
-                        {game.showPlayerStrategy(
-                          player,
-                          room.gameData.playersGameStateData[player._id]
-                        )}
-                      </MenuItem>
-                    );
-                  })}
-                </TextField>
-                <Tooltip title="Mute game audio">
-                  <IconButton onClick={toggleMuted}>
-                    {isMuted ? <VolumeOff /> : <VolumeUp />}
-                  </IconButton>
-                </Tooltip>
-              </div>
-            }
-          >
-            {game.showSimulation(game)}
-          </Space>
-          <Space title="Results" height={cardHeight / 2 - 25}>
-            {game.showResult(room.gameData)}
-          </Space>
-        </div>
+        <Space title="Results">{game.showResult(room.gameData)}</Space>
+        <Space
+          title="Simulation"
+          header={
+            <div className="row" style={{ flexGrow: 1 }}>
+              <TextField
+                select
+                fullWidth
+                style={{ marginLeft: 10 }}
+                value={curSimulation?.player}
+                label="Strategy"
+              >
+                {room.gameData.players.map((player) => {
+                  return (
+                    <MenuItem
+                      key={player._id}
+                      value={player._id}
+                      style={{ width: '100%', padding: 0, margin: 0 }}
+                    >
+                      {game.showPlayerStrategy(
+                        player,
+                        room.gameData.playersGameStateData[player._id]
+                      )}
+                    </MenuItem>
+                  );
+                })}
+              </TextField>
+              <Tooltip title="Mute game audio">
+                <IconButton onClick={toggleMuted}>
+                  {isMuted ? <VolumeOff /> : <VolumeUp />}
+                </IconButton>
+              </Tooltip>
+            </div>
+          }
+        >
+          {game.showSimulation(game)}
+        </Space>
         <div className="column spacing">
           <Space
             title="Problem"
@@ -327,6 +300,7 @@ export default function GamePagePhaseDisplay(props: {
       </MyCarousel>
     );
   }
+  // phasesStarted === 0
   return (
     <MyCarousel>
       <Space title="Problem">{game.showProblem()}</Space>

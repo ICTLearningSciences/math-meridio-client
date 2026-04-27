@@ -14,6 +14,7 @@ import { UseWithLogin } from '../store/slices/player/use-with-login';
 import { useWithEducationalData } from '../store/slices/educational-data/use-with-educational-data';
 import { HelpRequestButton } from './help-request-button';
 import { RefreshRequestButton } from './refresh-request-button';
+import { EducationalRole } from '../store/slices/player/types';
 
 export function Header(props: { useLogin: UseWithLogin }) {
   const dispatch = useAppDispatch();
@@ -30,6 +31,7 @@ export function Header(props: { useLogin: UseWithLogin }) {
     player?._id && room
       ? room?.gameData.playersStatusRecord[player?._id]
       : undefined;
+  const isTeacher = player?.educationalRole === EducationalRole.INSTRUCTOR;
 
   function homeButtonClick() {
     navigate('/classes');
@@ -68,14 +70,16 @@ export function Header(props: { useLogin: UseWithLogin }) {
         </div>
         <div
           className="row center-div spacing"
-          style={{ width: 300, justifyContent: 'flex-end', marginRight: 10 }}
+          style={{ justifyContent: 'flex-end', marginRight: 10 }}
         >
           <RefreshRequestButton />
-          <HelpRequestButton
-            myStatusInRoom={myStatusInRoom}
-            setPlayerNeedsHelpInRoom={setPlayerNeedsHelpInRoom}
-          />
-          {pathname.includes('/room/') ? (
+          {!isTeacher && (
+            <HelpRequestButton
+              myStatusInRoom={myStatusInRoom}
+              setPlayerNeedsHelpInRoom={setPlayerNeedsHelpInRoom}
+            />
+          )}
+          {!isTeacher && pathname.includes('/room/') ? (
             <Button
               variant="text"
               disabled={!player || !room}

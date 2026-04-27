@@ -16,6 +16,7 @@ import {
   localStorageStore,
 } from '../../local-storage';
 import { Player } from './types';
+
 export interface PlayerStateData {
   player: Player | undefined;
   loginStatus: LoadingState;
@@ -23,6 +24,7 @@ export interface PlayerStateData {
   accessToken?: string;
   userRole?: UserRole;
   viewingAs: EducationalRole | undefined;
+  eventsViewedAt?: Date;
 }
 
 const initialState: PlayerStateData = {
@@ -32,6 +34,7 @@ const initialState: PlayerStateData = {
   accessToken: undefined,
   userRole: undefined,
   viewingAs: undefined,
+  eventsViewedAt: undefined,
 };
 
 /** Actions */
@@ -86,9 +89,13 @@ export const dataSlice = createSlice({
       state.player = undefined;
       state.loginStatus = { status: LoadStatus.NOT_LOGGED_IN };
       state.saveStatus = { status: LoadStatus.NONE };
+      state.eventsViewedAt = undefined;
     },
     setViewingAs: (state, action: PayloadAction<EducationalRole>) => {
       state.viewingAs = action.payload;
+    },
+    dismissEvents: (state) => {
+      state.eventsViewedAt = new Date();
     },
   },
   extraReducers: (builder) => {
@@ -100,6 +107,7 @@ export const dataSlice = createSlice({
         state.accessToken = undefined;
         state.userRole = undefined;
         state.viewingAs = undefined;
+        state.eventsViewedAt = undefined;
       })
 
       .addCase(login.pending, (state) => {
@@ -181,5 +189,5 @@ export const dataSlice = createSlice({
   },
 });
 
-export const { clearPlayer, setViewingAs } = dataSlice.actions;
+export const { clearPlayer, setViewingAs, dismissEvents } = dataSlice.actions;
 export default dataSlice.reducer;

@@ -6,7 +6,7 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Button, Typography } from '@mui/material';
+import { Badge, Button, Typography } from '@mui/material';
 
 import { useAppSelector } from '../../store/hooks';
 import { useWithEducationalData } from '../../store/slices/educational-data/use-with-educational-data';
@@ -18,10 +18,14 @@ import TeacherLoading from './teacher-view/teacher-loading-page';
 import TeacherHome from './teacher-view/teacher-home-page';
 import TeacherReports from './teacher-view/teacher-reports-page';
 import TeacherManageClass from './teacher-view/teacher-manage-class';
+import TeacherEvents from './teacher-view/teacher-events-page';
+import { Mail } from '@mui/icons-material';
 
 export default function TeacherLandingPage(): JSX.Element {
   const { educationalData, createClassroom } = useWithEducationalData();
-  const { player } = useAppSelector((state) => state.playerData);
+  const { player, eventsViewedAt } = useAppSelector(
+    (state) => state.playerData
+  );
   const [classId, setClassId] = React.useState<string>();
   const [creating, setCreating] = React.useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -34,6 +38,9 @@ export default function TeacherLandingPage(): JSX.Element {
   const myClass = myClasses.find((c) => c._id === classId);
   const myRooms = educationalData.rooms.filter(
     (r) => r.classId === myClass?._id
+  );
+  const myEvents = educationalData?.events?.filter(
+    (e) => new Date(e.eventAt).getTime() - (eventsViewedAt?.getTime() || 0) > 0
   );
 
   React.useEffect(() => {
@@ -153,6 +160,16 @@ export default function TeacherLandingPage(): JSX.Element {
           {
             name: 'MANAGE CLASS',
             element: <TeacherManageClass classroom={myClass} />,
+          },
+          {
+            name: 'EVENTS',
+            tabIcon:
+              myEvents.length > 0 ? (
+                <Badge badgeContent={myEvents.length} color="success">
+                  <Mail color="action" />
+                </Badge>
+              ) : undefined,
+            element: <TeacherEvents classroom={myClass} />,
           },
         ]}
       />

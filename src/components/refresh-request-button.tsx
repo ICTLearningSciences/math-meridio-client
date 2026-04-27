@@ -82,7 +82,11 @@ export function RefreshRequestButton(props: { autoRefreshTime?: number }) {
       ) : (
         <Button
           variant="text"
-          style={{ color: 'white', opacity: 0.9 }}
+          style={{
+            color: 'white',
+            opacity: 0.9,
+            textTransform: 'none',
+          }}
           onClick={refreshButtonClick}
         >
           Refresh

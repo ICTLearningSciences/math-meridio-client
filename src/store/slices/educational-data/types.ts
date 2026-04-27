@@ -61,20 +61,28 @@ export interface ClassMembership {
 }
 
 export const classMembershipDataQuery = `
-    classId
-    groupId
-    userId
-    userEmail
-    status
-  `;
+  classId
+  groupId
+  userId
+  userEmail
+  status
+`;
 
 export const phaseReflectionsDataQuery = `
-    roomId
-    stepId
-    question
-    roundNumber
-    reflections
-  `;
+  roomId
+  stepId
+  question
+  roundNumber
+  reflections
+`;
+
+export const eventDataQuery = `
+  classId
+  roomId
+  userId
+  event
+  eventAt
+`;
 
 export interface JoinClassroomResponse {
   classMembership: ClassMembership;
@@ -88,10 +96,19 @@ export interface FetchEducationalDataHydrationResponse {
   classMemberships: ClassMembership[];
   phaseReflections: GamePhaseReflections[];
   gameList: StaticGame[];
+  events: ClassEvent[];
 }
 
 export interface RoomHeartBeat {
   roomId: string;
   userId: string;
   lastHeartBeatAt: Date;
+}
+
+export interface ClassEvent {
+  classId: string;
+  roomId: string;
+  userId: string;
+  event: string;
+  eventAt: Date;
 }

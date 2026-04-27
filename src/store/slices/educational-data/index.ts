@@ -8,7 +8,7 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import * as api from './api';
 import * as mainApi from '../../../api';
 import { GamePhaseReflections, LoadStatus, LoadingState } from '../../../types';
-import { ClassMembership, Classroom } from './types';
+import { ClassEvent, ClassMembership, Classroom } from './types';
 import { Player } from '../player/types';
 import { GameStateData, LearningObjective, Room } from '../game/types';
 import {
@@ -33,6 +33,7 @@ export interface EducationalDataStateData {
   phaseReflections: GamePhaseReflections[];
   hydrationLoadStatus: LoadingState;
   gameList: StaticGame[];
+  events: ClassEvent[];
   learningObjectives: LearningObjective[];
 }
 
@@ -45,6 +46,7 @@ const initialState: EducationalDataStateData = {
   learningObjectives: [],
   hydrationLoadStatus: { status: LoadStatus.NONE },
   gameList: [],
+  events: [],
 };
 
 /** Actions */
@@ -387,6 +389,7 @@ export const educationalDataSlice = createSlice({
         state.classMemberships = [];
         state.phaseReflections = [];
         state.gameList = [];
+        state.events = [];
       })
       .addCase(fetchInstructorDataHydration.fulfilled, (state, action) => {
         state.classes = action.payload.classes;
@@ -395,6 +398,7 @@ export const educationalDataSlice = createSlice({
         state.classMemberships = action.payload.classMemberships;
         state.phaseReflections = action.payload.phaseReflections;
         state.gameList = action.payload.gameList;
+        state.events = action.payload.events;
         state.hydrationLoadStatus = {
           status: LoadStatus.DONE,
           endedAt: Date.now.toString(),
@@ -415,6 +419,7 @@ export const educationalDataSlice = createSlice({
         state.students = [];
         state.classMemberships = [];
         state.gameList = [];
+        state.events = [];
         state.hydrationLoadStatus = {
           status: LoadStatus.FAILED,
           failedAt: Date.now.toString(),
@@ -428,6 +433,7 @@ export const educationalDataSlice = createSlice({
         state.classMemberships = action.payload.classMemberships;
         state.phaseReflections = action.payload.phaseReflections;
         state.gameList = action.payload.gameList;
+        state.events = action.payload.events;
         state.hydrationLoadStatus = {
           status: LoadStatus.DONE,
           endedAt: Date.now.toString(),

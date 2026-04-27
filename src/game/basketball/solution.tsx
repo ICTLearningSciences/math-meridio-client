@@ -203,22 +203,40 @@ export function SolutionComponent(props: {
 
   if (props.minimize) {
     return (
-      <div className="column center-div">
-        <Typography>Total Profit =</Typography>
+      <div
+        className="row spacing"
+        style={{ alignItems: 'center', overflowX: 'auto' }}
+      >
+        <Typography style={{ whiteSpace: 'nowrap' }}>Points =</Typography>
         <div className="column center-div">
-          <Typography fontSize={10}>
+          <Typography
+            fontSize={10}
+            style={{ whiteSpace: 'nowrap', color: 'blue' }}
+          >
             {understandsPoints ? 'Inside points' : ''}
           </Typography>
           <div className="row center-div spacing">
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+            <Typography
+              style={{
+                whiteSpace: 'nowrap',
+                backgroundColor: 'lightblue',
+                padding: 5,
+              }}
+            >
               {understandsPoints
                 ? `${String(INSIDE_SHOT_POINTS_VALUE)} points`
                 : `?`}
             </Typography>
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+            <Typography style={{ backgroundColor: 'lightblue', padding: 5 }}>
               {understandsMultiplication ? 'X' : '?'}
             </Typography>
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+            <Typography
+              style={{
+                whiteSpace: 'nowrap',
+                backgroundColor: 'lightblue',
+                padding: 5,
+              }}
+            >
               {
                 {
                   ...globalGameStateDataRecord,
@@ -227,68 +245,104 @@ export function SolutionComponent(props: {
               }{' '}
               Inside Shots
             </Typography>
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+            <Typography style={{ backgroundColor: 'lightblue', padding: 5 }}>
               {understandsMultiplication ? 'X' : '?'}
             </Typography>
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+            <Typography
+              style={{
+                whiteSpace: 'nowrap',
+                backgroundColor: 'lightblue',
+                padding: 5,
+              }}
+            >
               {understandsSuccess
                 ? `${String(INSIDE_SHOT_SUCCESS_VALUE)}%`
                 : `?`}
             </Typography>
           </div>
         </div>
-        <Typography style={{ backgroundColor: '#ddd', margin: 5 }}>
+        <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
           {understandsAddition ? '+' : '?'}
         </Typography>
 
         <div className="column center-div">
-          <Typography fontSize={10}>
-            {understandsPoints ? 'Mid-lane points' : ''}
+          <Typography
+            fontSize={10}
+            style={{ whiteSpace: 'nowrap', color: 'red' }}
+          >
+            {understandsPoints ? 'Midlane points' : ''}
           </Typography>
           <div className="row center-div spacing">
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+            <Typography
+              style={{
+                whiteSpace: 'nowrap',
+                backgroundColor: 'pink',
+                padding: 5,
+              }}
+            >
               {understandsPoints
                 ? `${String(MID_SHOT_POINTS_VALUE)} points`
                 : `?`}
             </Typography>
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+            <Typography style={{ backgroundColor: 'pink', padding: 5 }}>
               {understandsMultiplication ? 'X' : '?'}
             </Typography>
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+            <Typography
+              style={{
+                whiteSpace: 'nowrap',
+                backgroundColor: 'pink',
+                padding: 5,
+              }}
+            >
               {
                 {
                   ...globalGameStateDataRecord,
                   ...playerGameStateDataRecord,
                 }[MID_SHOT_PERCENT]
               }{' '}
-              Mid-lane Shots
+              Midlane Shots
             </Typography>
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+            <Typography style={{ backgroundColor: 'pink', padding: 5 }}>
               {understandsMultiplication ? 'X' : '?'}
             </Typography>
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+            <Typography style={{ backgroundColor: 'pink', padding: 5 }}>
               {understandsSuccess ? `${String(MID_SHOT_SUCCESS_VALUE)}%` : `?`}
             </Typography>
           </div>
         </div>
-        <Typography style={{ backgroundColor: '#ddd', margin: 5 }}>
+        <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
           {understandsAddition ? '+' : '?'}
         </Typography>
 
         <div className="column center-div">
-          <Typography fontSize={10}>
+          <Typography
+            fontSize={10}
+            style={{ whiteSpace: 'nowrap', color: 'brown' }}
+          >
             {understandsPoints ? 'Outside points' : ''}
           </Typography>
           <div className="row center-div spacing">
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+            <Typography
+              style={{
+                whiteSpace: 'nowrap',
+                backgroundColor: 'tan',
+                padding: 5,
+              }}
+            >
               {understandsPoints
                 ? `${String(OUTSIDE_SHOT_POINTS_VALUE)} points`
                 : `?`}
             </Typography>
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+            <Typography style={{ backgroundColor: 'tan', padding: 5 }}>
               {understandsMultiplication ? 'X' : '?'}
             </Typography>
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+            <Typography
+              style={{
+                whiteSpace: 'nowrap',
+                backgroundColor: 'tan',
+                padding: 5,
+              }}
+            >
               {
                 {
                   ...globalGameStateDataRecord,
@@ -297,10 +351,10 @@ export function SolutionComponent(props: {
               }{' '}
               Outside Shots
             </Typography>
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+            <Typography style={{ backgroundColor: 'tan', padding: 5 }}>
               {understandsMultiplication ? 'X' : '?'}
             </Typography>
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+            <Typography style={{ backgroundColor: 'tan', padding: 5 }}>
               {understandsSuccess
                 ? `${String(OUTSIDE_SHOT_SUCCESS_VALUE)}%`
                 : `?`}

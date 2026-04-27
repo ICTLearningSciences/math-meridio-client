@@ -19,51 +19,6 @@ import {
 } from './report-card';
 import { Tabs } from '../../tab';
 
-function RoomReport(props: { classroom: Classroom }): JSX.Element {
-  const { classroom } = props;
-  const { educationalData } = useWithEducationalData();
-  const [game, setGame] = React.useState<string>();
-
-  const gameRooms = educationalData.rooms.filter(
-    (r) => r.classId === classroom._id
-  );
-
-  return (
-    <div className="dashboard">
-      <div
-        className="row center-div"
-        style={{ justifyContent: 'space-between' }}
-      >
-        <Typography variant="h5" fontWeight="bold">
-          ROOM REPORTS
-        </Typography>
-        <GamesDropdown
-          game={game}
-          setGame={(id: string) => setGame(id)}
-          buttonStyle={{
-            color: 'white',
-            borderColor: 'white',
-            marginLeft: '10px',
-          }}
-        />
-      </div>
-      <div className="column spacing" style={{ marginTop: 40 }}>
-        {gameRooms
-          .filter((room) => !game || room.gameData.gameId === game)
-          .map((room, rIdx) => {
-            return (
-              <IndividualReportCard
-                key={`room-${rIdx}`}
-                room={room}
-                classroom={classroom}
-              />
-            );
-          })}
-      </div>
-    </div>
-  );
-}
-
 export default function TeacherReports(props: {
   classroom?: Classroom;
 }): JSX.Element {
@@ -73,6 +28,7 @@ export default function TeacherReports(props: {
     (r) => r.classId === classroom?._id
   );
   const [searchParams, setSearchParams] = useSearchParams();
+  const [game, setGame] = React.useState<string>();
 
   if (!classroom) {
     return (
@@ -87,6 +43,10 @@ export default function TeacherReports(props: {
   if (rooms.length === 0) {
     return <RoomSetupView classroom={classroom} />;
   }
+
+  const gameRooms = educationalData.rooms.filter(
+    (r) => r.classId === classroom._id
+  );
   return (
     <Tabs
       selectedTab={Number.parseInt(searchParams.get('report') || '0')}
@@ -128,7 +88,40 @@ export default function TeacherReports(props: {
         },
         {
           name: 'ROOM REPORTS',
-          element: <RoomReport classroom={classroom} />,
+          element: (
+            <div className="dashboard">
+              <div
+                className="row center-div"
+                style={{ justifyContent: 'space-between' }}
+              >
+                <Typography variant="h5" fontWeight="bold">
+                  ROOM REPORTS
+                </Typography>
+                <GamesDropdown
+                  game={game}
+                  setGame={(id: string) => setGame(id)}
+                  buttonStyle={{
+                    color: 'white',
+                    borderColor: 'white',
+                    marginLeft: '10px',
+                  }}
+                />
+              </div>
+              <div className="column spacing" style={{ marginTop: 40 }}>
+                {gameRooms
+                  .filter((room) => !game || room.gameData.gameId === game)
+                  .map((room, rIdx) => {
+                    return (
+                      <IndividualReportCard
+                        key={`room-${rIdx}`}
+                        room={room}
+                        classroom={classroom}
+                      />
+                    );
+                  })}
+              </div>
+            </div>
+          ),
         },
       ]}
     />

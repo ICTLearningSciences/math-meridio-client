@@ -12,6 +12,12 @@ import {
   VIP_TICKET_PRICE,
   RESERVED_TICKET_PRICE,
   GENERAL_ADMISSION_TICKET_PRICE,
+  VIP_TICKET_PERCENT_KEY,
+  RESERVED_TICKET_PERCENT_KEY,
+  GENERAL_ADMISSION_TICKET_PERCENT_KEY,
+  GENERAL_ADMISSION_TICKET_CONVERSION_RATE,
+  RESERVED_TICKET_CONVERSION_RATE,
+  VIP_TICKET_CONVERSION_RATE,
 } from '.';
 import { Stack, Typography, Tabs, Tab, Box } from '@mui/material';
 import { GameData } from '../../store/slices/game/types';
@@ -204,6 +210,35 @@ export function ResultComponent(props: { uiGameData: GameData }): JSX.Element {
       </Stack>
     );
   }
+
+  React.useEffect(() => {
+    for (const player of props.uiGameData.players) {
+      const psd = props.uiGameData.playersGameStateData[player._id];
+      const vipTicketsUpForSale = psd[VIP_TICKET_PERCENT_KEY] || 0;
+      const reservedTicketsUpForSale = psd[RESERVED_TICKET_PERCENT_KEY] || 0;
+      const generalAdmissionTicketsUpForSale =
+        psd[GENERAL_ADMISSION_TICKET_PERCENT_KEY] || 0;
+      const simData: ConcertTicketSalesSimulationData = {
+        player: player._id,
+        playerAvatar: player,
+        generalAdmissionTicketsUpForSale: generalAdmissionTicketsUpForSale,
+        generalAdmissionTicketsSold: Math.round(
+          generalAdmissionTicketsUpForSale *
+            GENERAL_ADMISSION_TICKET_CONVERSION_RATE
+        ),
+        reservedTicketsUpForSale: reservedTicketsUpForSale,
+        reservedTicketsSold: Math.round(
+          reservedTicketsUpForSale * RESERVED_TICKET_CONVERSION_RATE
+        ),
+        vipTicketsUpForSale: vipTicketsUpForSale,
+        vipTicketsSold: Math.round(
+          vipTicketsUpForSale * VIP_TICKET_CONVERSION_RATE
+        ),
+        totalProfit: 0,
+      };
+      simulationEnded(simData);
+    }
+  }, [props.uiGameData.playersGameStateData, props.uiGameData.players]);
 
   return (
     <Stack

@@ -86,6 +86,7 @@ export function PhaseSelector(props: {
 export default function PhaseProgressBar(props: {
   gameRooms: Room[];
   size?: 'large';
+  onClickPhase?: (p: number) => void;
 }): JSX.Element {
   const { gameRooms } = props;
   const [phase, setPhase] = React.useState<PhaseProgression>();
@@ -142,7 +143,7 @@ export default function PhaseProgressBar(props: {
           position: 'absolute',
           left: 0,
           right: 0,
-          top: '15%',
+          top: large ? 0 : -4,
           justifyContent: 'space-evenly',
         }}
       >
@@ -151,6 +152,7 @@ export default function PhaseProgressBar(props: {
             fontSize={12}
             style={{
               position: 'absolute',
+              top: 5,
               left: 10,
               color: 'white',
               backgroundColor: 'rgb(180, 180, 180)',
@@ -159,7 +161,7 @@ export default function PhaseProgressBar(props: {
               borderRadius: 20,
             }}
           >
-            OVERALL PROGRESS:
+            PROGRESS:
           </Typography>
         )}
         {phase &&
@@ -167,23 +169,37 @@ export default function PhaseProgressBar(props: {
           Array.from(
             { length: phase.startingPhaseStepsOrdered.length },
             (_, index) => (
-              <Typography
+              <motion.div
                 key={index}
-                fontSize={large ? 14 : 8}
+                whileHover={
+                  props.onClickPhase
+                    ? { scale: 1.5, filter: 'brightness(1.2)' }
+                    : {}
+                }
                 style={{
-                  color:
-                    phasesCompleted > index ? 'white' : 'rgb(180, 180, 180)',
                   backgroundColor:
                     phasesCompleted > index
                       ? 'rgba(255, 165, 0, 0.5)'
                       : 'rgba(217, 217, 217, 0.5)',
-                  paddingLeft: 5,
-                  paddingRight: 5,
+                  padding: 5,
                   borderRadius: 20,
                 }}
+                onClick={() => {
+                  if (props.onClickPhase) {
+                    props.onClickPhase(index);
+                  }
+                }}
               >
-                {large ? 'PHASE' : 'P'} {index + 1}
-              </Typography>
+                <Typography
+                  fontSize={large ? 14 : 8}
+                  style={{
+                    color:
+                      phasesCompleted > index ? 'white' : 'rgb(180, 180, 180)',
+                  }}
+                >
+                  {large ? 'PHASE' : 'P'} {index + 1}
+                </Typography>
+              </motion.div>
             )
           )}
       </div>

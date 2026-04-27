@@ -10,6 +10,7 @@ import {
   classMembershipDataQuery,
   Classroom,
   classroomDataQuery,
+  eventDataQuery,
   FetchEducationalDataHydrationResponse,
   JoinClassroomResponse,
   phaseReflectionsDataQuery,
@@ -336,28 +337,31 @@ export async function fetchInstructorDataHydration(): Promise<FetchEducationalDa
   return await execGql<FetchEducationalDataHydrationResponse>(
     {
       query: `  query FetchInstructorDataHydration {
-    fetchInstructorDataHydration {
-        classes {
+        fetchInstructorDataHydration {
+          classes {
             ${classroomDataQuery}
-        }
-        rooms {
+          }
+          rooms {
             ${fullRoomQueryData}
-        }
-        students {
-           ${userDataQuery}
-        }
-        classMemberships {
+          }
+          students {
+            ${userDataQuery}
+          }
+          classMemberships {
             ${classMembershipDataQuery}
-        }
-        phaseReflections {
+          }
+          phaseReflections {
             ${phaseReflectionsDataQuery}
-        }
-        gameList {
+          }
+          gameList {
             id
             name
+          }
+          events {
+            ${eventDataQuery}
+          }
         }
-    }
-  }`,
+    }`,
     },
     {
       dataPath: 'fetchInstructorDataHydration',

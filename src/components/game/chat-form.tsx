@@ -27,6 +27,7 @@ export default function ChatForm(props: {
   sendMessage: (msg: string) => Promise<any>;
   isMyTurn: boolean;
   isPaused?: boolean;
+  isTeacher?: boolean;
   phasesCompleted?: boolean;
 }): JSX.Element {
   const [input, setInput] = React.useState<string>('');
@@ -99,10 +100,18 @@ export default function ChatForm(props: {
           style={{ flex: 1 }}
           disabled={isSending}
         >
-          <InputLabel>Chat:</InputLabel>
+          <InputLabel>
+            {props.phasesCompleted
+              ? 'You have completed the final phase of this activity.'
+              : 'Chat:'}
+          </InputLabel>
           <OutlinedInput
             data-cy="chat-input"
-            label="Chat:"
+            label={
+              props.phasesCompleted
+                ? 'You have completed the final phase of this activity.'
+                : 'Chat:'
+            }
             type="text"
             value={input}
             disabled={
@@ -113,7 +122,11 @@ export default function ChatForm(props: {
             style={{
               backgroundColor: 'white',
               animation:
-                isMyTurn && !isPaused && !props.phasesCompleted && !isSending
+                isMyTurn &&
+                !isPaused &&
+                !props.phasesCompleted &&
+                !isSending &&
+                !props.isTeacher
                   ? 'blink 1s ease-in-out 0s infinite reverse'
                   : '',
             }}
