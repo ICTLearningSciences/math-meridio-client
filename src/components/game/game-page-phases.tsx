@@ -33,9 +33,20 @@ import { useWithConfig } from '../../store/slices/config/use-with-config';
 
 import 'react-multi-carousel/lib/styles.css';
 
-function MyCarousel(props: { children: React.ReactNode }): JSX.Element {
+function MyCarousel(props: {
+  children: React.ReactNode;
+  phase: number;
+}): JSX.Element {
+  const ref = React.useRef<Carousel | null>(null);
+
+  React.useEffect(() => {
+    if (!ref.current) return;
+    ref.current.goToSlide(0, true);
+  }, [props.phase]);
+
   return (
     <Carousel
+      ref={ref}
       showDots
       autoPlay={false}
       infinite={false}
@@ -140,7 +151,7 @@ export default function GamePagePhaseDisplay(props: {
 
   if (phasesStarted === 1 || phasesStarted === 2) {
     return (
-      <MyCarousel>
+      <MyCarousel phase={phasesStarted}>
         <div className="column spacing">
           <Space
             title="Problem"
@@ -172,7 +183,7 @@ export default function GamePagePhaseDisplay(props: {
     const maxHeight =
       Math.min(cardHeight - 150, cardHeight * (expanded ? 0.5 : 0.9)) - 25;
     return (
-      <MyCarousel>
+      <MyCarousel phase={phasesStarted}>
         <div className="column spacing">
           <Space
             title="Approach"
@@ -236,7 +247,49 @@ export default function GamePagePhaseDisplay(props: {
   }
   if (phasesStarted === 4) {
     return (
-      <MyCarousel>
+      <MyCarousel phase={phasesStarted}>
+        <Space
+          title="Simulation"
+          header={
+            <div className="row" style={{ flexGrow: 1 }}>
+              <TextField
+                select
+                fullWidth
+                style={{ marginLeft: 10 }}
+                value={curSimulation?.player}
+                label="Strategy"
+              >
+                {room.gameData.players.map((player) => {
+                  return (
+                    <MenuItem
+                      key={player._id}
+                      value={player._id}
+                      style={{ width: '100%', padding: 0, margin: 0 }}
+                    >
+                      {game.showPlayerStrategy(
+                        player,
+                        room.gameData.playersGameStateData[player._id]
+                      )}
+                    </MenuItem>
+                  );
+                })}
+              </TextField>
+              <Tooltip title="Mute game audio">
+                <IconButton onClick={toggleMuted}>
+                  {isMuted ? <VolumeOff /> : <VolumeUp />}
+                </IconButton>
+              </Tooltip>
+            </div>
+          }
+        >
+          {game.showSimulation(game)}
+        </Space>
+      </MyCarousel>
+    );
+  }
+  if (phasesStarted === 5) {
+    return (
+      <MyCarousel phase={phasesStarted}>
         <Space title="Results">{game.showResult(room.gameData)}</Space>
         <Space
           title="Simulation"
@@ -302,7 +355,7 @@ export default function GamePagePhaseDisplay(props: {
   }
   // phasesStarted === 0
   return (
-    <MyCarousel>
+    <MyCarousel phase={phasesStarted || 0}>
       <Space title="Problem">{game.showProblem()}</Space>
       <Space title="Approach">
         <TransformWrapper

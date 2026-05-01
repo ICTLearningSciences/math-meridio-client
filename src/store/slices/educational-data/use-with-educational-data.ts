@@ -12,6 +12,7 @@ import {
   Classroom,
   FetchEducationalDataHydrationResponse,
   JoinClassroomResponse,
+  NotificationEvent,
 } from './types';
 import * as gameRoomApi from '../../../hooks/game-rooms/game-room-api';
 import { useParams } from 'react-router-dom';
@@ -105,6 +106,7 @@ export interface UseWithEducationalData {
     learningObjectiveId: string,
     learningObjective: Omit<LearningObjective, '_id'>
   ) => Promise<LearningObjective>;
+  dismissNotifications: () => Promise<NotificationEvent[]>;
 }
 
 export function useWithEducationalData(rId?: string): UseWithEducationalData {
@@ -421,6 +423,12 @@ export function useWithEducationalData(rId?: string): UseWithEducationalData {
     ).unwrap();
   }
 
+  async function dismissNotifications(): Promise<NotificationEvent[]> {
+    return await dispatch(
+      educationalDataActions.dismissNotifications()
+    ).unwrap();
+  }
+
   return {
     fetchInstructorDataHydration,
     fetchStudentDataHydration,
@@ -459,5 +467,6 @@ export function useWithEducationalData(rId?: string): UseWithEducationalData {
     fetchLearningObjectives,
     createLearningObjective,
     updateLearningObjective,
+    dismissNotifications,
   };
 }

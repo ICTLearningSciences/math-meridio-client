@@ -8,7 +8,7 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import * as api from './api';
 import * as mainApi from '../../../api';
 import { GamePhaseReflections, LoadStatus, LoadingState } from '../../../types';
-import { ClassEvent, ClassMembership, Classroom } from './types';
+import { NotificationEvent, ClassMembership, Classroom } from './types';
 import { Player } from '../player/types';
 import { GameStateData, LearningObjective, Room } from '../game/types';
 import {
@@ -33,7 +33,7 @@ export interface EducationalDataStateData {
   phaseReflections: GamePhaseReflections[];
   hydrationLoadStatus: LoadingState;
   gameList: StaticGame[];
-  events: ClassEvent[];
+  notifications: NotificationEvent[];
   learningObjectives: LearningObjective[];
 }
 
@@ -46,7 +46,7 @@ const initialState: EducationalDataStateData = {
   learningObjectives: [],
   hydrationLoadStatus: { status: LoadStatus.NONE },
   gameList: [],
-  events: [],
+  notifications: [],
 };
 
 /** Actions */
@@ -311,12 +311,22 @@ export const updateLearningObjective = createAsyncThunk(
   }
 );
 
+export const dismissNotifications = createAsyncThunk(
+  'educationalData/dismissNotifications',
+  async () => {
+    return await api.dismissNotifications();
+  }
+);
+
 export const educationalDataSlice = createSlice({
   name: 'educationalData',
   initialState,
   reducers: {},
   extraReducers: (builder) => {
     builder
+      .addCase(dismissNotifications.fulfilled, (state, action) => {
+        state.notifications = action.payload;
+      })
 
       .addCase(fetchLearningObjectives.fulfilled, (state, action) => {
         state.learningObjectives = action.payload;
@@ -389,7 +399,7 @@ export const educationalDataSlice = createSlice({
         state.classMemberships = [];
         state.phaseReflections = [];
         state.gameList = [];
-        state.events = [];
+        state.notifications = [];
       })
       .addCase(fetchInstructorDataHydration.fulfilled, (state, action) => {
         state.classes = action.payload.classes;
@@ -398,7 +408,7 @@ export const educationalDataSlice = createSlice({
         state.classMemberships = action.payload.classMemberships;
         state.phaseReflections = action.payload.phaseReflections;
         state.gameList = action.payload.gameList;
-        state.events = action.payload.events;
+        state.notifications = action.payload.notifications;
         state.hydrationLoadStatus = {
           status: LoadStatus.DONE,
           endedAt: Date.now.toString(),
@@ -419,7 +429,7 @@ export const educationalDataSlice = createSlice({
         state.students = [];
         state.classMemberships = [];
         state.gameList = [];
-        state.events = [];
+        state.notifications = [];
         state.hydrationLoadStatus = {
           status: LoadStatus.FAILED,
           failedAt: Date.now.toString(),
@@ -433,7 +443,7 @@ export const educationalDataSlice = createSlice({
         state.classMemberships = action.payload.classMemberships;
         state.phaseReflections = action.payload.phaseReflections;
         state.gameList = action.payload.gameList;
-        state.events = action.payload.events;
+        state.notifications = action.payload.notifications;
         state.hydrationLoadStatus = {
           status: LoadStatus.DONE,
           endedAt: Date.now.toString(),

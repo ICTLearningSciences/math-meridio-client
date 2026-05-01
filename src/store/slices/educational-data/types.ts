@@ -76,12 +76,14 @@ export const phaseReflectionsDataQuery = `
   reflections
 `;
 
-export const eventDataQuery = `
+export const notificationDataQuery = `
   classId
   roomId
   userId
   event
   eventAt
+  dismissedAt
+  eventType
 `;
 
 export interface JoinClassroomResponse {
@@ -96,7 +98,7 @@ export interface FetchEducationalDataHydrationResponse {
   classMemberships: ClassMembership[];
   phaseReflections: GamePhaseReflections[];
   gameList: StaticGame[];
-  events: ClassEvent[];
+  notifications: NotificationEvent[];
 }
 
 export interface RoomHeartBeat {
@@ -105,10 +107,19 @@ export interface RoomHeartBeat {
   lastHeartBeatAt: Date;
 }
 
-export interface ClassEvent {
+export enum NotificationType {
+  NONE = '',
+  JOIN = 'JOIN',
+  LEAVE = 'LEAVE',
+  REPORT = 'REPORT',
+  REQUEST_HELP = 'REQUEST_HELP',
+}
+export interface NotificationEvent {
   classId: string;
   roomId: string;
   userId: string;
   event: string;
   eventAt: Date;
+  dismissedAt: Date;
+  eventType: NotificationType;
 }

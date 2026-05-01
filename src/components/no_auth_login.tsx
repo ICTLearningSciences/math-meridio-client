@@ -10,6 +10,7 @@ import { Button, CircularProgress, TextField, Typography } from '@mui/material';
 import { useAppSelector } from '../store/hooks';
 import { useWithPlayer } from '../store/slices/player/use-with-player-state';
 import { LoadStatus } from '../types';
+import { EducationalRole } from '../store/slices/player/types';
 
 function LoginPage(): JSX.Element {
   const { player, loginStatus, saveStatus } = useAppSelector(
@@ -26,7 +27,10 @@ function LoginPage(): JSX.Element {
   React.useEffect(() => {
     if (loginStatus.status !== LoadStatus.DONE) return;
     if (player) {
-      if (player.description) {
+      if (
+        player.description ||
+        player.educationalRole === EducationalRole.INSTRUCTOR
+      ) {
         console.log('navigating to home');
         navigate('/classes');
       } else {

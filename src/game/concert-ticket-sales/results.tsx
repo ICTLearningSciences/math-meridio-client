@@ -5,9 +5,20 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import React, { useState } from 'react';
+import {
+  Stack,
+  Typography,
+  Tabs,
+  Tab,
+  Box,
+  Avatar,
+  List,
+  ListItem,
+  ListItemAvatar,
+  LinearProgress,
+} from '@mui/material';
 import { BarChart } from '@mui/x-charts/BarChart';
 import { ConcertTicketSalesSimulationData } from './SimulationScene';
-import EventSystem from '../event-system';
 import {
   VIP_TICKET_PRICE,
   RESERVED_TICKET_PRICE,
@@ -19,20 +30,78 @@ import {
   RESERVED_TICKET_CONVERSION_RATE,
   VIP_TICKET_CONVERSION_RATE,
 } from '.';
-import { Stack, Typography, Tabs, Tab, Box } from '@mui/material';
 import { GameData } from '../../store/slices/game/types';
+import AvatarSprite from '../../components/avatar-sprite';
+import { EmojiEvents } from '@mui/icons-material';
+import { useAppSelector } from '../../store/hooks';
+
+export function Leaderboard(props: {
+  gameData: GameData;
+  simData: Record<string, ConcertTicketSalesSimulationData>;
+}): JSX.Element {
+  const { gameData, simData } = props;
+  const me = useAppSelector((state) => state.playerData.player);
+
+  return (
+    <div className="column spacing">
+      <Typography fontWeight="bold">Leaderboard</Typography>
+      <List>
+        {Object.values(simData)
+          .sort((a, b) => b.totalProfit - a.totalProfit)
+          .map((data, i) => {
+            const player = gameData.players.find((p) => p._id === data.player);
+            const color = i === 0 ? 'gold' : i === 1 ? '#CD7F32' : '';
+            return (
+              <ListItem key={i} className="row">
+                <ListItemAvatar
+                  className="row center-div spacing"
+                  style={{ marginRight: 10 }}
+                >
+                  <Avatar
+                    sx={{ width: 24, height: 24, backgroundColor: color }}
+                  >
+                    <Typography fontSize={12}>{i + 1}</Typography>
+                  </Avatar>
+                  <AvatarSprite
+                    bgColor={'rgb(217, 217, 217)'}
+                    player={player}
+                  />
+                </ListItemAvatar>
+                <div style={{ flexGrow: 1, marginRight: 5 }}>
+                  <Typography fontWeight="bold">
+                    {player?.name} {me?._id === player?._id ? ' (Me) ' : ''}
+                  </Typography>
+                  <LinearProgress
+                    variant="determinate"
+                    value={(data?.totalProfit / 2700) * 100}
+                    style={{
+                      height: 10,
+                      borderRadius: 10,
+                      marginTop: 5,
+                      marginBottom: 5,
+                    }}
+                  />
+                  <Typography color="primary" variant="subtitle2">
+                    ${data?.totalProfit || 0}
+                  </Typography>
+                </div>
+                <EmojiEvents
+                  sx={{ color: color, visibility: i === 0 ? '' : 'hidden' }}
+                />
+              </ListItem>
+            );
+          })}
+      </List>
+    </div>
+  );
+}
 
 export function ResultComponent(props: { uiGameData: GameData }): JSX.Element {
   const { uiGameData } = props;
   const [simulationData, setSimulationData] = React.useState<
     Record<string, ConcertTicketSalesSimulationData>
   >({});
-  React.useEffect(() => {
-    EventSystem.on('simulate', simulationStarted);
-  }, []);
-  React.useEffect(() => {
-    EventSystem.on('simulationEnded', simulationEnded);
-  }, []);
+
   const chartHeight = 300;
   const resultsWidth = window.innerWidth / 2 - 300;
   const scoreChartWidth = resultsWidth;
@@ -82,16 +151,6 @@ export function ResultComponent(props: { uiGameData: GameData }): JSX.Element {
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
-
-  function simulationStarted(): void {
-    setMyChartData({
-      ...myChartData,
-      profitFromVipTickets: initialChartData.profitFromVipTickets,
-      profitFromReservedTickets: initialChartData.profitFromReservedTickets,
-      profitFromGeneralAdmissionTickets:
-        initialChartData.profitFromGeneralAdmissionTickets,
-    });
-  }
 
   function simulationEnded(data: ConcertTicketSalesSimulationData): void {
     simulationData[data.player] = data;
@@ -218,23 +277,30 @@ export function ResultComponent(props: { uiGameData: GameData }): JSX.Element {
       const reservedTicketsUpForSale = psd[RESERVED_TICKET_PERCENT_KEY] || 0;
       const generalAdmissionTicketsUpForSale =
         psd[GENERAL_ADMISSION_TICKET_PERCENT_KEY] || 0;
+      const generalAdmissionTicketsSold = Math.round(
+        generalAdmissionTicketsUpForSale *
+          GENERAL_ADMISSION_TICKET_CONVERSION_RATE
+      );
+      const reservedTicketsSold = Math.round(
+        reservedTicketsUpForSale * RESERVED_TICKET_CONVERSION_RATE
+      );
+      const vipTicketsSold = Math.round(
+        vipTicketsUpForSale * VIP_TICKET_CONVERSION_RATE
+      );
+      const total =
+        generalAdmissionTicketsSold * GENERAL_ADMISSION_TICKET_PRICE +
+        reservedTicketsSold * RESERVED_TICKET_PRICE +
+        vipTicketsSold * VIP_TICKET_PRICE;
       const simData: ConcertTicketSalesSimulationData = {
         player: player._id,
         playerAvatar: player,
         generalAdmissionTicketsUpForSale: generalAdmissionTicketsUpForSale,
-        generalAdmissionTicketsSold: Math.round(
-          generalAdmissionTicketsUpForSale *
-            GENERAL_ADMISSION_TICKET_CONVERSION_RATE
-        ),
+        generalAdmissionTicketsSold,
         reservedTicketsUpForSale: reservedTicketsUpForSale,
-        reservedTicketsSold: Math.round(
-          reservedTicketsUpForSale * RESERVED_TICKET_CONVERSION_RATE
-        ),
+        reservedTicketsSold,
         vipTicketsUpForSale: vipTicketsUpForSale,
-        vipTicketsSold: Math.round(
-          vipTicketsUpForSale * VIP_TICKET_CONVERSION_RATE
-        ),
-        totalProfit: 0,
+        vipTicketsSold,
+        totalProfit: total,
       };
       simulationEnded(simData);
     }
@@ -322,6 +388,9 @@ export function ResultComponent(props: { uiGameData: GameData }): JSX.Element {
             ))}
           </Stack>
         )}
+      </Box>
+      <Box sx={{ width: '100%', height: '100%', mt: 2 }}>
+        <Leaderboard gameData={uiGameData} simData={simulationData} />
       </Box>
     </Stack>
   );

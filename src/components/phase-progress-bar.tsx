@@ -13,7 +13,7 @@ import { PhaseProgression, Room } from '../store/slices/game/types';
 export function PhaseSelector(props: {
   gameRooms: Room[];
   phase: number | undefined;
-  setPhase: (num: number) => void;
+  setPhase: (num?: number) => void;
 }): JSX.Element {
   const { gameRooms, phase, setPhase } = props;
   const [numPhases, setNumPhases] = React.useState<number>(0);
@@ -36,8 +36,11 @@ export function PhaseSelector(props: {
   }, [gameRooms]);
 
   function onTogglePhase(idx: number): void {
-    if (phase === undefined) return;
-    setPhase(idx);
+    if (idx === phase) {
+      setPhase(undefined);
+    } else {
+      setPhase(idx);
+    }
   }
 
   return (
@@ -91,6 +94,7 @@ export default function PhaseProgressBar(props: {
   const { gameRooms } = props;
   const [phase, setPhase] = React.useState<PhaseProgression>();
   const large = props.size === 'large';
+  const phasesStarted = phase?.phasesStarted.length || 0;
   const phasesCompleted = phase?.phasesCompleted.length || 0;
   const value = !phase?.startingPhaseStepsOrdered.length
     ? 0
@@ -143,7 +147,7 @@ export default function PhaseProgressBar(props: {
           position: 'absolute',
           left: 0,
           right: 0,
-          top: large ? 0 : -4,
+          top: large ? -1 : -4,
           justifyContent: 'space-evenly',
         }}
       >
@@ -177,6 +181,11 @@ export default function PhaseProgressBar(props: {
                     : {}
                 }
                 style={{
+                  scale: !large && phasesStarted === index + 1 ? 1.5 : 1,
+                  border:
+                    !large && phasesStarted === index + 1
+                      ? '1px solid white'
+                      : '',
                   backgroundColor:
                     phasesCompleted > index
                       ? 'rgba(255, 165, 0, 0.5)'

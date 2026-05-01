@@ -4,10 +4,13 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
+
 import React from 'react';
+import { useNavigate } from 'react-router';
 import {
   Card,
   CardContent,
+  Link,
   Table,
   TableBody,
   TableCell,
@@ -16,10 +19,8 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
-import { Classroom } from '../../../store/slices/educational-data/types';
+import { NotificationType } from '../../../store/slices/educational-data/types';
 import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
-import { useAppDispatch } from '../../../store/hooks';
-import { dismissEvents } from '../../../store/slices/player';
 import {
   ErrorOutline,
   NewReleasesOutlined,
@@ -27,30 +28,28 @@ import {
 } from '@mui/icons-material';
 import { useWithWindow } from '../../../hooks/use-with-window';
 
-export default function TeacherEvents(props: {
-  classroom?: Classroom;
-}): JSX.Element {
-  const dispatch = useAppDispatch();
-  const { educationalData } = useWithEducationalData();
+export default function TeacherEvents(): JSX.Element {
+  const { educationalData, dismissNotifications } = useWithEducationalData();
   const { windowHeight } = useWithWindow();
-  const events = educationalData.events;
+  const navigate = useNavigate();
+  const notifications = educationalData.notifications;
 
   React.useEffect(() => {
-    dispatch(dismissEvents());
+    dismissNotifications();
   }, []);
 
   return (
     <div className="dashboard" style={{ minHeight: windowHeight - 250 }}>
       <div className="column spacing">
         <Typography fontSize={16} fontWeight="bold">
-          EVENTS
+          NOTIFICATIONS
         </Typography>
         <Card style={{ borderRadius: 10 }}>
           <CardContent
             className="column spacing"
             style={{ position: 'relative', padding: 20 }}
           >
-            {events.length === 0 ? (
+            {notifications.length === 0 ? (
               <Typography variant="body2" color="error">
                 No events have been recorded yet
               </Typography>
@@ -72,69 +71,71 @@ export default function TeacherEvents(props: {
                         Student
                       </TableCell>
                       <TableCell style={{ fontWeight: 'bold' }}>
-                        Class
+                        Classroom
                       </TableCell>
-                      <TableCell style={{ fontWeight: 'bold' }}>Room</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {[...events]
-                      ?.sort(
-                        (a, b) =>
-                          new Date(b.eventAt).getTime() -
-                          new Date(a.eventAt).getTime()
-                      )
-                      .map((event, idx) => {
-                        const player = educationalData.students.find(
-                          (p) => p._id === event.userId
-                        );
-                        const _room = educationalData.rooms.find(
-                          (r) => r._id === event.roomId
-                        );
-                        const _class = educationalData.classes.find(
-                          (p) =>
-                            p._id === event.classId || p._id === _room?.classId
-                        );
-                        return (
-                          <TableRow key={`event-${idx}`}>
-                            <TableCell>
-                              {new Date(event.eventAt).toLocaleString()}
-                            </TableCell>
-                            <TableCell>
-                              <div className="row">
-                                {event.event.includes(
-                                  'has reported another player'
-                                ) ? (
-                                  <ErrorOutline
-                                    fontSize="small"
-                                    color="error"
-                                    style={{ marginRight: 5 }}
-                                  />
-                                ) : event.event.endsWith(
-                                    'has requested help'
-                                  ) ? (
-                                  <WarningAmberOutlined
-                                    fontSize="small"
-                                    color="warning"
-                                    style={{ marginRight: 5 }}
-                                  />
-                                ) : event.event.includes('joined classroom') ||
-                                  event.event.includes('joined room') ? (
-                                  <NewReleasesOutlined
-                                    fontSize="small"
-                                    color="success"
-                                    style={{ marginRight: 5 }}
-                                  />
-                                ) : undefined}
-                                {event.event}
-                              </div>
-                            </TableCell>
-                            <TableCell>{player?.name}</TableCell>
-                            <TableCell>{_class?.name}</TableCell>
-                            <TableCell>{_room?.name}</TableCell>
-                          </TableRow>
-                        );
-                      })}
+                    {[...notifications].reverse().map((event, idx) => {
+                      const player = educationalData.students.find(
+                        (p) => p._id === event.userId
+                      );
+                      const room = educationalData.rooms.find(
+                        (r) => r._id === event.roomId
+                      );
+                      const classroom = educationalData.classes.find(
+                        (p) =>
+                          p._id === event.classId || p._id === room?.classId
+                      );
+                      return (
+                        <TableRow key={`event-${idx}`}>
+                          <TableCell>
+                            {new Date(event.eventAt).toLocaleString()}
+                          </TableCell>
+                          <TableCell>
+                            <div className="row">
+                              {event.eventType === NotificationType.REPORT ? (
+                                <ErrorOutline
+                                  fontSize="small"
+                                  color="error"
+                                  style={{ marginRight: 5 }}
+                                />
+                              ) : event.eventType ===
+                                NotificationType.REQUEST_HELP ? (
+                                <WarningAmberOutlined
+                                  fontSize="small"
+                                  color="warning"
+                                  style={{ marginRight: 5 }}
+                                />
+                              ) : event.eventType === NotificationType.JOIN ? (
+                                <NewReleasesOutlined
+                                  fontSize="small"
+                                  color="success"
+                                  style={{ marginRight: 5 }}
+                                />
+                              ) : undefined}
+                              {classroom && room ? (
+                                <Link
+                                  onClick={() =>
+                                    navigate(
+                                      `/classes/${classroom._id}/room/${room._id}`
+                                    )
+                                  }
+                                >
+                                  {event.event}
+                                </Link>
+                              ) : (
+                                event.event
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>{player?.name}</TableCell>
+                          <TableCell>
+                            {classroom?.name} - {room?.name}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </TableContainer>

@@ -22,9 +22,9 @@ export default function StudentLandingPage(): JSX.Element {
   const myClassMemberships = educationalData.classMemberships.filter(
     (cm) => cm.status === ClassMembershipStatus.MEMBER
   );
-  const myClasses = educationalData.classes.filter((c) =>
-    myClassMemberships.some((cm) => cm.classId === c._id)
-  );
+  const myClasses = educationalData.classes
+    .filter((c) => myClassMemberships.some((cm) => cm.classId === c._id))
+    .filter((c) => !c.archivedAt);
 
   React.useEffect(() => {
     if (loaded) return;

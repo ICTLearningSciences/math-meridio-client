@@ -7,23 +7,101 @@ The full terms of this copyright and license should always be found in the root 
 import React, { useState } from 'react';
 import { BarChart } from '@mui/x-charts/BarChart';
 import { BasketballSimulationData } from './SimulationScene';
-import EventSystem from '../event-system';
 import {
+  INSIDE_SHOT_PERCENT,
   INSIDE_SHOT_POINTS_VALUE,
+  INSIDE_SHOT_SUCCESS_VALUE,
+  MID_SHOT_PERCENT,
   MID_SHOT_POINTS_VALUE,
+  MID_SHOT_SUCCESS_VALUE,
+  OUTSIDE_SHOT_PERCENT,
   OUTSIDE_SHOT_POINTS_VALUE,
+  OUTSIDE_SHOT_SUCCESS_VALUE,
 } from './solution';
-import { Stack, Typography, Tabs, Tab, Box } from '@mui/material';
+import {
+  Stack,
+  Typography,
+  Tabs,
+  Tab,
+  Box,
+  Avatar,
+  LinearProgress,
+  List,
+  ListItem,
+  ListItemAvatar,
+} from '@mui/material';
 import { GameData } from '../../store/slices/game/types';
+import { EmojiEvents } from '@mui/icons-material';
+import AvatarSprite from '../../components/avatar-sprite';
+import { useAppSelector } from '../../store/hooks';
+
+export function Leaderboard(props: {
+  gameData: GameData;
+  simData: Record<string, BasketballSimulationData>;
+}): JSX.Element {
+  const { gameData, simData } = props;
+  const me = useAppSelector((state) => state.playerData.player);
+
+  return (
+    <div className="column spacing">
+      <Typography fontWeight="bold">Leaderboard</Typography>
+      <List>
+        {Object.values(simData)
+          .sort((a, b) => b.totalPoints - a.totalPoints)
+          .map((data, i) => {
+            const player = gameData.players.find((p) => p._id === data.player);
+            const color = i === 0 ? 'gold' : i === 1 ? '#CD7F32' : '';
+            return (
+              <ListItem key={i} className="row">
+                <ListItemAvatar
+                  className="row center-div spacing"
+                  style={{ marginRight: 10 }}
+                >
+                  <Avatar
+                    sx={{ width: 24, height: 24, backgroundColor: color }}
+                  >
+                    <Typography fontSize={12}>{i + 1}</Typography>
+                  </Avatar>
+                  <AvatarSprite
+                    bgColor={'rgb(217, 217, 217)'}
+                    player={player}
+                  />
+                </ListItemAvatar>
+                <div style={{ flexGrow: 1, marginRight: 5 }}>
+                  <Typography fontWeight="bold">
+                    {player?.name} {me?._id === player?._id ? ' (Me) ' : ''}
+                  </Typography>
+                  <LinearProgress
+                    variant="determinate"
+                    value={(data?.totalPoints / 108) * 100}
+                    style={{
+                      height: 10,
+                      borderRadius: 10,
+                      marginTop: 5,
+                      marginBottom: 5,
+                    }}
+                  />
+                  <Typography color="primary" variant="subtitle2">
+                    {data?.totalPoints || 0} points
+                  </Typography>
+                </div>
+                <EmojiEvents
+                  sx={{ color: color, visibility: i === 0 ? '' : 'hidden' }}
+                />
+              </ListItem>
+            );
+          })}
+      </List>
+    </div>
+  );
+}
 
 export function ResultComponent(props: { uiGameData: GameData }): JSX.Element {
   const { uiGameData } = props;
   const [simulationData, setSimulationData] = React.useState<
     Record<string, BasketballSimulationData>
   >({});
-  React.useEffect(() => {
-    EventSystem.on('simulationEnded', simulationEnded);
-  }, []);
+
   const chartHeight = 300;
   const resultsWidth = window.innerWidth / 2 - 300;
   const scoreChartWidth = resultsWidth / 2;
@@ -160,6 +238,7 @@ export function ResultComponent(props: { uiGameData: GameData }): JSX.Element {
       playerLabels: playerLabels,
     });
   }
+
   function GetShotChartFor(
     playerData: number[],
     playerMissedData: number[],
@@ -188,6 +267,39 @@ export function ResultComponent(props: { uiGameData: GameData }): JSX.Element {
       </Stack>
     );
   }
+
+  React.useEffect(() => {
+    for (const player of props.uiGameData.players) {
+      const psd = props.uiGameData.playersGameStateData[player._id];
+      const insideShots = psd[INSIDE_SHOT_PERCENT] || 0;
+      const outsideShots = psd[OUTSIDE_SHOT_PERCENT] || 0;
+      const midShots = psd[MID_SHOT_PERCENT] || 0;
+      const insideShotsMade = Math.round(
+        insideShots * INSIDE_SHOT_SUCCESS_VALUE
+      );
+      const outsideShotsMade = Math.round(
+        outsideShots * OUTSIDE_SHOT_SUCCESS_VALUE
+      );
+      const midShotsMade = Math.round(midShots * MID_SHOT_SUCCESS_VALUE);
+      const totalPoints =
+        insideShotsMade * INSIDE_SHOT_POINTS_VALUE +
+        outsideShotsMade * OUTSIDE_SHOT_POINTS_VALUE +
+        midShotsMade * MID_SHOT_POINTS_VALUE;
+      const simData: BasketballSimulationData = {
+        player: player._id,
+        playerAvatar: player,
+        outsideShots,
+        midShots,
+        insideShots,
+        outsideShotsMade,
+        midShotsMade,
+        insideShotsMade,
+        totalPoints,
+      };
+      simulationEnded(simData);
+    }
+  }, [props.uiGameData.playersGameStateData, props.uiGameData.players]);
+
   return (
     <Stack
       sx={{ width: resultsWidth }}
@@ -270,6 +382,9 @@ export function ResultComponent(props: { uiGameData: GameData }): JSX.Element {
             ))}
           </Stack>
         )}
+      </Box>
+      <Box sx={{ width: '100%', height: '100%', mt: 2 }}>
+        <Leaderboard gameData={uiGameData} simData={simulationData} />
       </Box>
     </Stack>
   );

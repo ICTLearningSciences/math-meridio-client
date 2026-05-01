@@ -45,7 +45,7 @@ import { useWithConfig } from '../../../store/slices/config/use-with-config';
 import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
 import { PlayerChatColors } from '../../game/chat-thread';
 
-interface PlayerPhaseMetrics {
+export interface PlayerPhaseMetrics {
   player: Player;
   room: Room;
   timeSpent: number;
@@ -378,14 +378,13 @@ export function KeyWords(props: {
 }): JSX.Element {
   const { gameRooms, phase } = props;
   const [keywords, setKeywords] = React.useState<Word[]>();
+  const [messages, setMessages] = React.useState<string[]>();
   const { firstAvailableAzureServiceModel } = useWithConfig();
   const { educationalData } = useWithEducationalData();
 
   React.useEffect(() => {
-    setKeywords(undefined);
     const roomIds = gameRooms.map((r) => r._id);
-    const words: string[] = [];
-    const messages: string[] = [];
+    const msgs: string[] = [];
     if (props.useReflections) {
       const phaseReflections: GamePhaseReflections[] = [];
       for (const room of gameRooms) {
@@ -401,8 +400,7 @@ export function KeyWords(props: {
       }
       for (const pr of phaseReflections) {
         for (const r of Object.values(pr.reflections)) {
-          messages.push(r);
-          words.push(...r.split(' '));
+          msgs.push(r);
         }
       }
     } else {
@@ -413,17 +411,20 @@ export function KeyWords(props: {
             (phase === undefined ||
               c.phaseId === room.gameData.phaseProgression.phasesStarted[phase])
         )) {
-          messages.push(chat.message);
-          words.push(...chat.message.split(' '));
+          msgs.push(chat.message);
         }
       }
     }
-    if (messages.length === 0) {
-      setKeywords([]);
-      return;
+    if (messages?.join('') !== msgs.join('')) {
+      setMessages(msgs);
     }
+  }, [gameRooms, phase]);
+
+  React.useEffect(() => {
+    if (!messages || messages.length === 0) return;
     requestKeyWords(messages, props.category || 'Math Good').then((data) => {
       const keywords: Word[] = [];
+      const words = messages.join(' ').split(' ');
       for (const word of data) {
         const frequency = words.filter(
           (w) => w.toLowerCase() === word.toLowerCase()
@@ -437,7 +438,7 @@ export function KeyWords(props: {
       }
       setKeywords(keywords);
     });
-  }, [gameRooms, phase]);
+  }, [messages]);
 
   async function requestKeyWords(
     reflections: string[],

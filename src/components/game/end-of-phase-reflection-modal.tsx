@@ -177,7 +177,7 @@ export default function EndOfPhaseReflectionModal({
   return (
     <Dialog open={isOpen} maxWidth="lg" fullWidth disableEscapeKeyDown>
       <DialogContent>
-        <DialogTitle style={{ textAlign: 'center' }}>
+        <DialogTitle style={{ textAlign: 'center', fontWeight: 'bold' }}>
           Reflection {phaseTitle ? `- ${phaseTitle}` : ''}
         </DialogTitle>
         <Box

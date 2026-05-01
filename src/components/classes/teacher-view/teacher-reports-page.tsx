@@ -12,18 +12,16 @@ import { Classroom } from '../../../store/slices/educational-data/types';
 import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
 import { RoomSetupView } from './teacher-room-setup';
 import { GamesDropdown } from '../../button';
-import {
-  IndividualReportCard,
-  PhaseReportCard,
-  SummaryReportCard,
-} from './report-card';
+import { IndividualReportCard, PhaseReportCard } from './report-card';
 import { Tabs } from '../../tab';
+import { useWithWindow } from '../../../hooks/use-with-window';
 
 export default function TeacherReports(props: {
   classroom?: Classroom;
 }): JSX.Element {
   const { classroom } = props;
   const { educationalData } = useWithEducationalData();
+  const { windowHeight } = useWithWindow();
   const rooms = educationalData.rooms.filter(
     (r) => r.classId === classroom?._id
   );
@@ -59,28 +57,16 @@ export default function TeacherReports(props: {
         {
           name: 'SUMMARY',
           element: (
-            <div className="dashboard">
+            <div
+              className="dashboard"
+              style={{ minHeight: windowHeight - 300 }}
+            >
               <Typography
                 variant="h5"
                 fontWeight="bold"
                 style={{ marginBottom: 20 }}
               >
                 SUMMARY REPORT
-              </Typography>
-              <SummaryReportCard classroom={classroom} />
-            </div>
-          ),
-        },
-        {
-          name: 'PHASE REPORT',
-          element: (
-            <div className="dashboard">
-              <Typography
-                variant="h5"
-                fontWeight="bold"
-                style={{ marginBottom: 20 }}
-              >
-                PHASE REPORT
               </Typography>
               <PhaseReportCard classroom={classroom} />
             </div>
@@ -89,7 +75,10 @@ export default function TeacherReports(props: {
         {
           name: 'ROOM REPORTS',
           element: (
-            <div className="dashboard">
+            <div
+              className="dashboard"
+              style={{ minHeight: windowHeight - 300 }}
+            >
               <div
                 className="row center-div"
                 style={{ justifyContent: 'space-between' }}

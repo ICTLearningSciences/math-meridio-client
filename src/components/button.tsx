@@ -16,8 +16,19 @@ import {
   MenuItem,
   Typography,
 } from '@mui/material';
-import { ArrowDropDown } from '@mui/icons-material';
+import {
+  Archive,
+  ArrowDropDown,
+  Visibility,
+  VisibilityOff,
+} from '@mui/icons-material';
 import { GAMES } from '../game/types';
+import {
+  ClassMembershipStatus,
+  Classroom,
+} from '../store/slices/educational-data/types';
+import { useWithEducationalData } from '../store/slices/educational-data/use-with-educational-data';
+import { useAppSelector } from '../store/hooks';
 
 const buttonStyles = makeStyles()(() => ({
   button: {
@@ -204,6 +215,115 @@ export function DropdownButton(props: {
         {props.children}
       </Menu>
     </div>
+  );
+}
+
+export function ClassDropdown(props: {
+  myClass?: Classroom;
+  classId?: string;
+  setClassId: (id: string) => void;
+}): JSX.Element {
+  const { myClass, classId, setClassId } = props;
+  const { player } = useAppSelector((state) => state.playerData);
+  const { educationalData, createClassroom } = useWithEducationalData();
+  const [creating, setCreating] = React.useState(false);
+  const [viewArchived, setViewArchived] = React.useState(false);
+
+  const myClasses = educationalData.classes.filter(
+    (c) => c.teacherId === player?._id
+  );
+
+  const handleCreateClass = async () => {
+    setCreating(true);
+    try {
+      const newClass = await createClassroom();
+      setClassId(newClass._id);
+    } catch (err) {
+      console.error('Failed to create classroom', err);
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  return (
+    <DropdownButton
+      label={myClass?.name || 'My Class'}
+      value={classId}
+      items={myClasses
+        .filter((c) => viewArchived || !c.archivedAt)
+        .sort((a, b) => {
+          if (a.archivedAt && b.archivedAt) return 0;
+          if (a.archivedAt) return 1;
+          if (b.archivedAt) return -1;
+          return 0;
+        })
+        .map((c) => c._id)}
+      onSelect={(id: string) => setClassId(id)}
+      renderItem={(id) => {
+        const classroom = myClasses.find((c) => c._id === id);
+        if (!classroom) return <></>;
+        const studentCount = educationalData.classMemberships.filter(
+          (cm) =>
+            cm.classId === classroom?._id &&
+            cm.status === ClassMembershipStatus.MEMBER
+        ).length;
+        return (
+          <div
+            className="row"
+            style={{
+              width: '100%',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
+            <div>
+              <div className="row center-div spacing">
+                {classroom.archivedAt && <Archive fontSize="small" />}
+                <Typography variant="h6">{classroom.name}</Typography>
+              </div>
+              {classroom.description && (
+                <Typography variant="body2" color="text.secondary">
+                  {classroom.description}
+                </Typography>
+              )}
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <Typography variant="body2" color="text.secondary">
+                {studentCount} {studentCount === 1 ? 'student' : 'students'}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {classroom.archivedAt
+                  ? `Archived: ${new Date(
+                      classroom.archivedAt
+                    ).toLocaleDateString()}`
+                  : `Created: ${new Date(
+                      classroom.createdAt
+                    ).toLocaleDateString()}`}
+              </Typography>
+            </div>
+          </div>
+        );
+      }}
+    >
+      <div className="row center-div spacing">
+        <Button
+          variant="contained"
+          color="primary"
+          disabled={creating}
+          onClick={handleCreateClass}
+        >
+          {creating ? 'Creating...' : 'Create New Class'}
+        </Button>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => setViewArchived(!viewArchived)}
+          startIcon={viewArchived ? <VisibilityOff /> : <Visibility />}
+        >
+          {viewArchived ? 'Hide' : 'View'} Archived
+        </Button>
+      </div>
+    </DropdownButton>
   );
 }
 

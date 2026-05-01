@@ -19,10 +19,13 @@ import {
   CircularProgress,
 } from '@mui/material';
 import { Mic, MicOutlined, Send } from '@mui/icons-material';
+import { GameData } from '../../store/slices/game/types';
+import { useAppSelector } from '../../store/hooks';
 
 export const MAX_MESSAGE_LENGTH = 200;
 
 export default function ChatForm(props: {
+  uiGameData?: GameData;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sendMessage: (msg: string) => Promise<any>;
   isMyTurn: boolean;
@@ -39,6 +42,7 @@ export default function ChatForm(props: {
     resetTranscript,
   } = useSpeechRecognition();
   const { sendMessage, isMyTurn, isPaused } = props;
+  const player = useAppSelector((state) => state.playerData.player);
 
   React.useEffect(() => {
     if (listening) {
@@ -122,7 +126,9 @@ export default function ChatForm(props: {
             style={{
               backgroundColor: 'white',
               animation:
-                isMyTurn &&
+                props.uiGameData?.curGameState?.playersLeftToRespond?.includes(
+                  player?._id || ''
+                ) &&
                 !isPaused &&
                 !props.phasesCompleted &&
                 !isSending &&

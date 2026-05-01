@@ -12,6 +12,7 @@ import { LoadStatus } from './types';
 import { useAppDispatch, useAppSelector } from './store/hooks';
 import { clearPlayer } from './store/slices/player';
 import { fetchDiscussionStages } from './store/slices/stages';
+import { EducationalRole } from './store/slices/player/types';
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -32,7 +33,11 @@ const withAuthorizationOnly = (Component: any) => (props: any) => {
       navigate('/');
       return;
     }
-    if (loginStatus.status === LoadStatus.DONE && !player?.description) {
+    if (
+      loginStatus.status === LoadStatus.DONE &&
+      player?.educationalRole !== EducationalRole.INSTRUCTOR &&
+      !player?.description
+    ) {
       console.log('navigating to avatar-creator');
       navigate('/avatar-creator');
     }

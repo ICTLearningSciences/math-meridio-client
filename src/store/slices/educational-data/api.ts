@@ -10,10 +10,11 @@ import {
   classMembershipDataQuery,
   Classroom,
   classroomDataQuery,
-  eventDataQuery,
+  notificationDataQuery,
   FetchEducationalDataHydrationResponse,
   JoinClassroomResponse,
   phaseReflectionsDataQuery,
+  NotificationEvent,
 } from './types';
 import { userDataQuery } from '../player/api';
 import { fullRoomQueryData } from '../../../api';
@@ -332,6 +333,27 @@ export async function adjustClassroomArchiveStatus(
   );
 }
 
+export const dismissNotificationsMutation = `
+  mutation DismissNotifications {
+    dismissNotifications {
+      ${notificationDataQuery}
+    }
+  }
+`;
+
+export async function dismissNotifications(): Promise<NotificationEvent[]> {
+  const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
+  return await execGql<NotificationEvent[]>(
+    {
+      query: dismissNotificationsMutation,
+    },
+    {
+      dataPath: 'dismissNotifications',
+      accessToken: accessToken,
+    }
+  );
+}
+
 export async function fetchInstructorDataHydration(): Promise<FetchEducationalDataHydrationResponse> {
   const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
   return await execGql<FetchEducationalDataHydrationResponse>(
@@ -357,8 +379,8 @@ export async function fetchInstructorDataHydration(): Promise<FetchEducationalDa
             id
             name
           }
-          events {
-            ${eventDataQuery}
+          notifications {
+            ${notificationDataQuery}
           }
         }
     }`,
