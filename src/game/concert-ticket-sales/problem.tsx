@@ -6,22 +6,24 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React from 'react';
 import { Typography } from '@mui/material';
-import BasketballGame from '.';
+import Game from '.';
 import stadiumSeats from './stadium_seats.jpg';
 
-export function ProblemComponent(): JSX.Element {
+export function ProblemComponent(props: { minimize?: boolean }): JSX.Element {
   return (
     <div>
-      <img
-        style={{
-          width: '50%',
-          height: 'auto',
-          float: 'right',
-          marginLeft: '10px',
-        }}
-        src={stadiumSeats}
-      />
-      <Typography>{BasketballGame.problem}</Typography>
+      {props.minimize ? undefined : (
+        <img
+          style={{
+            width: '50%',
+            height: 'auto',
+            float: 'right',
+            marginLeft: '10px',
+          }}
+          src={stadiumSeats}
+        />
+      )}
+      <Typography>{props.minimize ? Game.minProblem : Game.problem}</Typography>
     </div>
   );
 }

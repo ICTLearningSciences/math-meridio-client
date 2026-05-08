@@ -32,6 +32,7 @@ export const UNDERSTANDS_ADDITION = 'understands_addition';
 
 import courtBg from './court.png';
 import { EditableVariable } from '../../components/editable-variable';
+
 export function SolutionComponent(props: {
   uiGameData: GameData;
   player: Player;
@@ -39,6 +40,7 @@ export function SolutionComponent(props: {
     newPlayerStateData: GameStateData,
     playerId: string
   ) => void;
+  minimize?: boolean;
 }): JSX.Element {
   const { uiGameData, player, updatePlayerStateData } = props;
   const { classes } = useStyles();
@@ -196,6 +198,119 @@ export function SolutionComponent(props: {
       >
         <Typography className={classes.boxText}>{icon}</Typography>
       </Card>
+    );
+  }
+
+  if (props.minimize) {
+    return (
+      <div className="column center-div">
+        <Typography>Total Profit =</Typography>
+        <div className="column center-div">
+          <Typography fontSize={10}>
+            {understandsPoints ? 'Inside points' : ''}
+          </Typography>
+          <div className="row center-div spacing">
+            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+              {understandsPoints
+                ? `${String(INSIDE_SHOT_POINTS_VALUE)} points`
+                : `?`}
+            </Typography>
+            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+              {understandsMultiplication ? 'X' : '?'}
+            </Typography>
+            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+              {
+                {
+                  ...globalGameStateDataRecord,
+                  ...playerGameStateDataRecord,
+                }[INSIDE_SHOT_PERCENT]
+              }{' '}
+              Inside Shots
+            </Typography>
+            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+              {understandsMultiplication ? 'X' : '?'}
+            </Typography>
+            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+              {understandsSuccess
+                ? `${String(INSIDE_SHOT_SUCCESS_VALUE)}%`
+                : `?`}
+            </Typography>
+          </div>
+        </div>
+        <Typography style={{ backgroundColor: '#ddd', margin: 5 }}>
+          {understandsAddition ? '+' : '?'}
+        </Typography>
+
+        <div className="column center-div">
+          <Typography fontSize={10}>
+            {understandsPoints ? 'Mid-lane points' : ''}
+          </Typography>
+          <div className="row center-div spacing">
+            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+              {understandsPoints
+                ? `${String(MID_SHOT_POINTS_VALUE)} points`
+                : `?`}
+            </Typography>
+            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+              {understandsMultiplication ? 'X' : '?'}
+            </Typography>
+            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+              {
+                {
+                  ...globalGameStateDataRecord,
+                  ...playerGameStateDataRecord,
+                }[MID_SHOT_PERCENT]
+              }{' '}
+              Mid-lane Shots
+            </Typography>
+            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+              {understandsMultiplication ? 'X' : '?'}
+            </Typography>
+            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+              {understandsSuccess ? `${String(MID_SHOT_SUCCESS_VALUE)}%` : `?`}
+            </Typography>
+          </div>
+        </div>
+        <Typography style={{ backgroundColor: '#ddd', margin: 5 }}>
+          {understandsAddition ? '+' : '?'}
+        </Typography>
+
+        <div className="column center-div">
+          <Typography fontSize={10}>
+            {understandsPoints ? 'Outside points' : ''}
+          </Typography>
+          <div className="row center-div spacing">
+            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+              {understandsPoints
+                ? `${String(OUTSIDE_SHOT_POINTS_VALUE)} points`
+                : `?`}
+            </Typography>
+            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+              {understandsMultiplication ? 'X' : '?'}
+            </Typography>
+            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+              {
+                {
+                  ...globalGameStateDataRecord,
+                  ...playerGameStateDataRecord,
+                }[OUTSIDE_SHOT_PERCENT]
+              }{' '}
+              Outside Shots
+            </Typography>
+            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+              {understandsMultiplication ? 'X' : '?'}
+            </Typography>
+            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+              {understandsSuccess
+                ? `${String(OUTSIDE_SHOT_SUCCESS_VALUE)}%`
+                : `?`}
+            </Typography>
+          </div>
+        </div>
+        <TransformComponent>
+          <div />
+        </TransformComponent>
+      </div>
     );
   }
 

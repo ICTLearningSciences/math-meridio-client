@@ -174,6 +174,7 @@ export default function ChatThread(props: {
     }
     return retColor;
   };
+
   const GetMyColor = (id: string, isPlayer: boolean): string => {
     if (id != '') {
       if (!(id in playerColorMap)) {
@@ -227,6 +228,7 @@ export default function ChatThread(props: {
   players?.forEach((iterPlayer: { _id: string }) => {
     GetMyColor(iterPlayer._id, iterPlayer._id == player?._id);
   });
+
   React.useEffect(() => {
     const objDiv = document.getElementById('chat-thread');
     if (objDiv) {
@@ -240,13 +242,14 @@ export default function ChatThread(props: {
   let prevMessageOwner = '';
   let currMessageOwner = '';
   let skipAvatar = false;
+
   return (
     <div
       id="chat-thread"
       className={classes.chatThread}
       style={{
         backgroundColor: PlayerChatColors.Grey,
-        maxHeight: window.innerHeight - 100,
+        maxHeight: window.innerHeight - 250,
       }}
     >
       <Stack direction="column">
@@ -275,7 +278,7 @@ export default function ChatThread(props: {
               {!skipAvatar && (
                 <Typography
                   color="teal"
-                  textAlign={myMessage ? 'left' : 'right'}
+                  textAlign={!myMessage ? 'left' : 'right'}
                 >
                   {msg.sender === SenderType.PLAYER
                     ? msg.senderId === player?._id
@@ -287,8 +290,8 @@ export default function ChatThread(props: {
 
               <Stack
                 p={1}
-                direction={myMessage ? 'row' : 'row-reverse'}
-                justifyContent={myMessage ? 'left' : 'right'}
+                direction={!myMessage ? 'row' : 'row-reverse'}
+                justifyContent={!myMessage ? 'left' : 'right'}
               >
                 {!skipAvatar &&
                   (msg.sender === SenderType.PLAYER ? (
@@ -321,15 +324,15 @@ export default function ChatThread(props: {
                     whiteSpace: 'normal',
                     wordWrap: 'break-word',
                     backgroundColor: bubbleColor,
-                    paddingLeft: myMessage ? '10%' : '5%',
-                    paddingRight: myMessage ? '5%' : '10%',
-                    clipPath: myMessage
+                    paddingLeft: !myMessage ? '10%' : '5%',
+                    paddingRight: !myMessage ? '5%' : '10%',
+                    clipPath: !myMessage
                       ? 'polygon(0% 0%, 100% 0%, 100% 100%, calc(0% + 1em) 100%, calc(0% + 1em) calc(0% + 1em), 0% 0%)'
                       : 'polygon(0% 0%, 100% 0%, calc(100% - 1em) calc(0% + 1em), calc(100% - 1em) 100%, 0% 100%, 0% 0%)',
-                    borderBottomLeftRadius: myMessage ? 0 : '1em',
-                    borderTopLeftRadius: myMessage ? 0 : '1em',
-                    borderBottomRightRadius: myMessage ? '1em' : 0,
-                    borderTopRightRadius: myMessage ? '1em' : 0,
+                    borderBottomLeftRadius: !myMessage ? 0 : '1em',
+                    borderTopLeftRadius: !myMessage ? 0 : '1em',
+                    borderBottomRightRadius: !myMessage ? '1em' : 0,
+                    borderTopRightRadius: !myMessage ? '1em' : 0,
                   }}
                 >
                   <pre

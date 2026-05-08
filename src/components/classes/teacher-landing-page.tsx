@@ -73,96 +73,89 @@ export default function TeacherLandingPage(): JSX.Element {
         height: '100%',
       }}
     >
-      <div className="column spacing" style={{ padding: 20 }}>
-        <div className="row spacing" style={{ marginBottom: 5 }}>
-          <Typography fontSize={18} fontWeight="bold">
-            {tab === 0
-              ? 'Teacher Home'
-              : tab === 1
-              ? 'Reports'
-              : 'Manage Class'}
-          </Typography>
-          <DropdownButton
-            label={myClass?.name || 'My Class'}
-            value={classId}
-            items={myClasses.map((c) => c._id)}
-            onSelect={(id: string) => setClassId(id)}
-            renderItem={(id) => {
-              const classroom = myClasses.find((c) => c._id === id);
-              if (!classroom) return <></>;
-              const studentCount = educationalData.classMemberships.filter(
-                (cm) =>
-                  cm.classId === classroom?._id &&
-                  cm.status === ClassMembershipStatus.MEMBER
-              ).length;
-              return (
-                <div
-                  className="row"
-                  style={{
-                    width: '100%',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  }}
-                >
-                  <div>
-                    <Typography variant="h6">{classroom.name}</Typography>
-                    {classroom.description && (
-                      <Typography variant="body2" color="text.secondary">
-                        {classroom.description}
-                      </Typography>
-                    )}
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <Typography variant="body2" color="text.secondary">
-                      {studentCount}{' '}
-                      {studentCount === 1 ? 'student' : 'students'}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Created:{' '}
-                      {new Date(classroom.createdAt).toLocaleDateString()}
-                    </Typography>
-                  </div>
-                </div>
-              );
-            }}
-          >
-            <div className="row center-div">
-              <Button
-                variant="contained"
-                color="primary"
-                disabled={creating}
-                onClick={handleCreateClass}
+      <div className="row spacing" style={{ padding: 20 }}>
+        <Typography fontSize={18} fontWeight="bold">
+          {tab === 0 ? 'Teacher Home' : tab === 1 ? 'Reports' : 'Manage Class'}
+        </Typography>
+        <DropdownButton
+          label={myClass?.name || 'My Class'}
+          value={classId}
+          items={myClasses.map((c) => c._id)}
+          onSelect={(id: string) => setClassId(id)}
+          renderItem={(id) => {
+            const classroom = myClasses.find((c) => c._id === id);
+            if (!classroom) return <></>;
+            const studentCount = educationalData.classMemberships.filter(
+              (cm) =>
+                cm.classId === classroom?._id &&
+                cm.status === ClassMembershipStatus.MEMBER
+            ).length;
+            return (
+              <div
+                className="row"
+                style={{
+                  width: '100%',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
               >
-                {creating ? 'Creating...' : 'Create New Class'}
-              </Button>
-            </div>
-          </DropdownButton>
-        </div>
-        <Tabs
-          selectedTab={tab}
-          onSelectTab={(t) => setSearchParams({ ...searchParams, tab: `${t}` })}
-          tabsStyle={{
-            position: 'absolute',
-            top: '20px',
-            left: '150px',
+                <div>
+                  <Typography variant="h6">{classroom.name}</Typography>
+                  {classroom.description && (
+                    <Typography variant="body2" color="text.secondary">
+                      {classroom.description}
+                    </Typography>
+                  )}
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <Typography variant="body2" color="text.secondary">
+                    {studentCount} {studentCount === 1 ? 'student' : 'students'}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Created:{' '}
+                    {new Date(classroom.createdAt).toLocaleDateString()}
+                  </Typography>
+                </div>
+              </div>
+            );
           }}
-          tabs={[
-            {
-              name: 'HOME',
-              element: <TeacherHome classroom={myClass} />,
-            },
-            {
-              name: 'REPORTS',
-              element: <TeacherReports classroom={myClass} />,
-              disabled: myRooms.length === 0,
-            },
-            {
-              name: 'MANAGE CLASS',
-              element: <TeacherManageClass classroom={myClass} />,
-            },
-          ]}
-        />
+        >
+          <div className="row center-div">
+            <Button
+              variant="contained"
+              color="primary"
+              disabled={creating}
+              onClick={handleCreateClass}
+            >
+              {creating ? 'Creating...' : 'Create New Class'}
+            </Button>
+          </div>
+        </DropdownButton>
       </div>
+      <Tabs
+        selectedTab={tab}
+        onSelectTab={(t) => setSearchParams({ ...searchParams, tab: `${t}` })}
+        tabsStyle={{
+          position: 'absolute',
+          top: '20px',
+          left: '150px',
+        }}
+        tabs={[
+          {
+            name: 'HOME',
+            element: <TeacherHome classroom={myClass} />,
+          },
+          {
+            name: 'REPORTS',
+            element: <TeacherReports classroom={myClass} />,
+            disabled: myRooms.length === 0,
+          },
+          {
+            name: 'MANAGE CLASS',
+            element: <TeacherManageClass classroom={myClass} />,
+          },
+        ]}
+      />
     </div>
   );
 }

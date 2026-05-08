@@ -31,7 +31,11 @@ export default function TeacherHome(props: {
   }
 
   if (rooms.length === 0) {
-    return <RoomSetupView classroom={classroom} />;
+    return (
+      <div className="dashboard">
+        <RoomSetupView classroom={classroom} />
+      </div>
+    );
   }
   return <ActiveSessionView classroom={classroom} />;
 }

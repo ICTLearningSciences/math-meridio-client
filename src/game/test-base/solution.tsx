@@ -39,6 +39,7 @@ export function SolutionComponent(props: {
     newPlayerStateData: GameStateData,
     playerId: string
   ) => void;
+  minimize?: boolean;
 }): JSX.Element {
   const { uiGameData, player, updatePlayerStateData } = props;
   const { classes } = useStyles();
@@ -199,6 +200,10 @@ export function SolutionComponent(props: {
         <Typography className={classes.boxText}>{icon}</Typography>
       </Card>
     );
+  }
+
+  if (props.minimize) {
+    return <Typography></Typography>;
   }
 
   return (

@@ -59,8 +59,8 @@ const BaseTestGame: Game = {
 
     scene: [SimulationScene],
   },
-  showProblem: () => {
-    return <ProblemComponent />;
+  showProblem: (minimize?: boolean) => {
+    return <ProblemComponent minimize={minimize} />;
   },
   showSolution: (
     uiGameData: GameData,
@@ -68,13 +68,15 @@ const BaseTestGame: Game = {
     updatePlayerStateData: (
       newPlayerStateData: GameStateData,
       playerId: string
-    ) => void
+    ) => void,
+    minimize?: boolean
   ) => {
     return (
       <SolutionComponent
         uiGameData={uiGameData}
         player={player}
         updatePlayerStateData={updatePlayerStateData}
+        minimize={minimize}
       />
     );
   },

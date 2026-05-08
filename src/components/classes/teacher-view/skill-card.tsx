@@ -67,6 +67,7 @@ export function Contribution(props: {
     for (const room of gameRooms) {
       for (const student of room.gameData.players) {
         const playerStatus = room.gameData.playersStatusRecord[student._id];
+        if (!playerStatus) continue;
         const playerMetrics: PlayerPhaseMetrics = {
           player: student,
           room: room,
@@ -150,6 +151,7 @@ export function TimeSpent(props: {
     for (const room of gameRooms) {
       for (const student of room.gameData.players) {
         const playerStatus = room.gameData.playersStatusRecord[student._id];
+        if (!playerStatus) continue;
         const playerMetrics: PlayerPhaseMetrics = {
           player: student,
           room: room,

@@ -22,6 +22,8 @@ const BasketballGame: Game = {
   id: 'basketball',
   name: 'NBA Analyst',
   problem: `We need you and the analyst team to figure out why we're losing and what to change in our strategy to start winning. Based on what you see, what do you think we're doing wrong? Out of 100 shots, how many should be inside, outside, or mid lane? Inside and mid lane shots earn 2 points, and outside shots earn 3, but they're harder to make.`,
+  minProblem:
+    'To score the most points in 100 shots, how many should be inside (2p), outside (3p), or mid lane (2p) shots? Outside shots are harder to make.',
   config: {
     type: Phaser.CANVAS,
     backgroundColor: '#282c34',
@@ -36,8 +38,8 @@ const BasketballGame: Game = {
 
     scene: [SimulationScene],
   },
-  showProblem: () => {
-    return <ProblemComponent />;
+  showProblem: (minimize?: boolean) => {
+    return <ProblemComponent minimize={minimize} />;
   },
   showSolution: (
     uiGameData: GameData,
@@ -45,13 +47,15 @@ const BasketballGame: Game = {
     updatePlayerStateData: (
       newPlayerStateData: GameStateData,
       playerId: string
-    ) => void
+    ) => void,
+    minimize?: boolean
   ) => {
     return (
       <SolutionComponent
         uiGameData={uiGameData}
         player={player}
         updatePlayerStateData={updatePlayerStateData}
+        minimize={minimize}
       />
     );
   },

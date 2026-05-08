@@ -226,7 +226,8 @@ export default function TeacherManageClass(props: {
       selectedTab={Number.parseInt(searchParams.get('manage') || '0')}
       onSelectTab={(t) => setSearchParams({ tab: '2', manage: `${t}` })}
       tabsStyle={{
-        marginTop: '10px',
+        marginLeft: '20px',
+        marginBottom: '20px',
       }}
       tabs={[
         {
@@ -247,7 +248,11 @@ export default function TeacherManageClass(props: {
         },
         {
           name: 'GROUP FORMATION',
-          element: <RoomSetupView classroom={classroom} />,
+          element: (
+            <div className="dashboard">
+              <RoomSetupView classroom={classroom} />
+            </div>
+          ),
         },
       ]}
     />
