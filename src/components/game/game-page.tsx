@@ -132,7 +132,7 @@ function GamePage(): JSX.Element {
             room={room}
             game={curGame}
             player={player}
-            selectedPhase={(phase || 0) + 1}
+            selectedPhase={phase}
             updateMyRoomGameStateData={updateMyRoomGameStateData}
           />
         </Grid>

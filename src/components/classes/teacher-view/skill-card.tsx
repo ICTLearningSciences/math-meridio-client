@@ -524,11 +524,14 @@ export function TroubleSpots(props: {
   const [expanded, setExpanded] = React.useState<boolean>(true);
   const [skills, setSkills] = React.useState<Record<string, SkillsMet>>({});
 
-  const studentsNeedHelp = students.filter((s) =>
-    gameRooms.find(
-      (r) => r.gameData.playersStatusRecord[s._id]?.needsHelpInRoom
-    )
-  );
+  const studentsNeedHelp = gameRooms.reduce((students: Player[], room) => {
+    for (const student of room.gameData.players) {
+      if (room.gameData.playersStatusRecord[student._id].needsHelpInRoom) {
+        students.push(student);
+      }
+    }
+    return students;
+  }, []);
   const studentsIncomplete = students.filter((s) =>
     gameRooms.find(
       (r) =>

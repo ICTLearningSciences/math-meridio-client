@@ -41,6 +41,7 @@ import {
 } from '@mui/icons-material';
 import { SkillsMet } from '../../../types';
 import { calculateAverage } from '../../../helpers';
+import { Player } from '../../../store/slices/player/types';
 
 export function SummaryReportCard(props: {
   classroom: Classroom;
@@ -97,35 +98,35 @@ export function PhaseReportCard(props: { classroom: Classroom }): JSX.Element {
   const gameRooms = educationalData.rooms.filter(
     (r) => r.classId === classroom._id && (!game || r.gameData.gameId === game)
   );
-  const students = educationalData.students.filter((s) =>
-    gameRooms.find((r) => r.gameData.players.find((p) => p._id === s._id))
-  );
-  const pausedStudents = students.filter((s) =>
-    gameRooms.find(
-      (room) => room.gameData.playersStatusRecord[s._id]?.pausedByAdmin
-    )
-  );
-  const needsHelp = students.filter(() =>
-    gameRooms.find((room) =>
-      room.gameData.players.filter(
-        (p) => room.gameData.playersStatusRecord[p._id]?.needsHelpInRoom
-      )
-    )
-  );
+  const students = gameRooms.reduce((students: Player[], room) => {
+    students.push(...room.gameData.players);
+    return students;
+  }, []);
+  const pausedStudents = gameRooms.reduce((students: Player[], room) => {
+    for (const student of room.gameData.players) {
+      if (room.gameData.playersStatusRecord[student._id].pausedByAdmin) {
+        students.push(student);
+      }
+    }
+    return students;
+  }, []);
+  const needsHelp = gameRooms.reduce((students: Player[], room) => {
+    for (const student of room.gameData.players) {
+      if (room.gameData.playersStatusRecord[student._id].needsHelpInRoom) {
+        students.push(student);
+      }
+    }
+    return students;
+  }, []);
 
   React.useEffect(() => {
     const skills: Record<string, SkillsMet> = {};
-    for (const student of students) {
-      const room = gameRooms.find((r) =>
-        r.gameData.players.find((p) => p._id === student._id)
-      );
-      if (room) {
-        for (const standard of Object.entries(
-          room.gameData.mathStandardsCompleted
-        )) {
-          if (!(standard[0] in skills)) {
-            skills[standard[0]] = { playersMet: [], players: [] };
-          }
+    for (const room of gameRooms) {
+      for (const standard of Object.entries(
+        room.gameData.mathStandardsCompleted
+      )) {
+        skills[standard[0]] = { playersMet: [], players: [] };
+        for (const student of room.gameData.players) {
           if (standard[1]) {
             skills[standard[0]].playersMet.push(student);
           }
@@ -337,7 +338,7 @@ export function PhaseReportCard(props: { classroom: Classroom }): JSX.Element {
                 </Typography>
               </div>
               <Typography fontSize={12} fontWeight="light" color="orange">
-                SKILLS IN PRACTICE
+                SKILLS PRACTICED
               </Typography>
             </div>
           </Grid>
@@ -397,7 +398,11 @@ export function IndividualReportCard(props: {
 
   const game = GAMES.find((g) => g.id === room?.gameData.gameId);
   const phaseReflections = educationalData.phaseReflections.filter(
-    (p) => p.roomId === room._id && p.roundNumber === phase
+    (p) =>
+      p.roomId === room._id &&
+      (phase === undefined ||
+        p.phaseId ===
+          room.gameData.phaseProgression.startingPhaseStepsOrdered[phase])
   );
 
   return (

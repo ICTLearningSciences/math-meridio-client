@@ -120,7 +120,7 @@ export default function GamePagePhaseDisplay(props: {
   const [expanded, setExpanded] = React.useState<boolean>(false);
   const phasesStarted =
     props.selectedPhase !== undefined
-      ? props.selectedPhase
+      ? props.selectedPhase + 1
       : room?.gameData?.phaseProgression?.phasesStarted?.length;
   const cardHeight = windowHeight - 210;
   const minHeight = Math.max(100, cardHeight * (expanded ? 0.5 : 0.1)) - 25;
