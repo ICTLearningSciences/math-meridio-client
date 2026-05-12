@@ -184,7 +184,7 @@ export default function PhaseProgressBar(props: {
                   scale: !large && phasesStarted === index + 1 ? 1.5 : 1,
                   border:
                     !large && phasesStarted === index + 1
-                      ? '1px solid white'
+                      ? '1px solid #666'
                       : '',
                   backgroundColor:
                     phasesCompleted > index
@@ -202,8 +202,7 @@ export default function PhaseProgressBar(props: {
                 <Typography
                   fontSize={large ? 14 : 8}
                   style={{
-                    color:
-                      phasesCompleted > index ? 'white' : 'rgb(180, 180, 180)',
+                    color: phasesCompleted > index ? 'white' : '#666',
                   }}
                 >
                   {large ? 'PHASE' : 'P'} {index + 1}

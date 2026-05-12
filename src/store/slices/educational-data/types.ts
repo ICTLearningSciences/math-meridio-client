@@ -71,6 +71,7 @@ export const classMembershipDataQuery = `
 export const phaseReflectionsDataQuery = `
   roomId
   stepId
+  phaseId
   question
   roundNumber
   reflections

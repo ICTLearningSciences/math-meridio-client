@@ -127,7 +127,7 @@ export function Contribution(props: {
           height={200}
           yAxis={[{ label: 'Frequency' }]}
           series={metrics.map((c) => ({
-            data: [c.numWordsSent],
+            data: c.numWordsSent > 0 ? [c.numWordsSent] : [],
             label: c.player.name,
             stack: c.room._id,
             valueFormatter: (v) => `${v} words`,
@@ -248,124 +248,125 @@ export function ChatLog(props: {
       <Typography fontSize={14} fontWeight="bold" style={{ marginBottom: 10 }}>
         Chat Log
       </Typography>
-      {messages.length === 0 && (
+      {messages.length === 0 ? (
         <Card style={{ backgroundColor: 'rgb(231, 231, 231)' }} elevation={0}>
           <CardContent className="column spacing">
             <Typography fontSize={14}>No messages for this phase</Typography>
           </CardContent>
         </Card>
-      )}
-      <div
-        id="chat-thread"
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          flexGrow: 1,
-          overflowY: 'auto',
-          borderRadius: 5,
-          padding: 10,
-          backgroundColor: 'rgb(231, 231, 231)',
-          maxHeight: 200,
-        }}
-      >
-        <Stack direction="column">
-          {messages.map((msg, idx) => {
-            let currMessageOwner = '';
-            let prevMessageOwner = '';
-            let skipAvatar = false;
-            const myMessage = msg.sender === SenderType.SYSTEM;
-            if (msg.sender == SenderType.SYSTEM) {
-              currMessageOwner = 'System';
-            } else {
-              currMessageOwner = msg.senderId ?? '';
-            }
-            if (prevMessageOwner == currMessageOwner) {
-              skipAvatar = true;
-            } else {
-              skipAvatar = false;
-              prevMessageOwner = currMessageOwner;
-            }
-            const bubbleColor =
-              msg.sender === SenderType.PLAYER
-                ? playerColorMap.get(msg.senderId ?? '')
-                : PlayerChatColors.Grey;
+      ) : (
+        <div
+          id="chat-thread"
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            flexGrow: 1,
+            overflowY: 'auto',
+            borderRadius: 5,
+            padding: 10,
+            backgroundColor: 'rgb(231, 231, 231)',
+            maxHeight: 200,
+          }}
+        >
+          <Stack direction="column">
+            {messages.map((msg, idx) => {
+              let currMessageOwner = '';
+              let prevMessageOwner = '';
+              let skipAvatar = false;
+              const myMessage = msg.sender === SenderType.SYSTEM;
+              if (msg.sender == SenderType.SYSTEM) {
+                currMessageOwner = 'System';
+              } else {
+                currMessageOwner = msg.senderId ?? '';
+              }
+              if (prevMessageOwner == currMessageOwner) {
+                skipAvatar = true;
+              } else {
+                skipAvatar = false;
+                prevMessageOwner = currMessageOwner;
+              }
+              const bubbleColor =
+                msg.sender === SenderType.PLAYER
+                  ? playerColorMap.get(msg.senderId ?? '')
+                  : PlayerChatColors.Grey;
 
-            return (
-              <Stack key={`chat-msg-container-${idx}`} direction="column">
-                {!skipAvatar && (
-                  <Typography
-                    color="teal"
-                    textAlign={myMessage ? 'left' : 'right'}
-                  >
-                    {msg.sender === SenderType.PLAYER
-                      ? msg.senderName
-                      : 'System'}
-                  </Typography>
-                )}
-                <Stack
-                  p={1}
-                  direction={myMessage ? 'row' : 'row-reverse'}
-                  justifyContent={myMessage ? 'left' : 'right'}
-                >
-                  {!skipAvatar &&
-                    (msg.sender === SenderType.PLAYER ? (
-                      <AvatarSprite
-                        player={gameRoom.gameData.players?.find(
-                          (p) => p._id === msg.senderId
-                        )}
-                        bgColor={bubbleColor}
-                      />
-                    ) : (
-                      <BorderedAvatar />
-                    ))}
-                  {skipAvatar && (
-                    <Box
-                      width={46}
-                      sx={{
-                        flexGrow: 0,
-                        flexShrink: 0,
-                      }}
-                    ></Box>
+              return (
+                <Stack key={`chat-msg-container-${idx}`} direction="column">
+                  {!skipAvatar && (
+                    <Typography
+                      color="teal"
+                      textAlign={myMessage ? 'left' : 'right'}
+                    >
+                      {msg.sender === SenderType.PLAYER
+                        ? msg.senderName
+                        : 'System'}
+                    </Typography>
                   )}
-                  <Paper
-                    square
-                    elevation={0}
-                    sx={{
-                      p: 3,
-                      whiteSpace: 'normal',
-                      wordWrap: 'break-word',
-                      backgroundColor: bubbleColor,
-                      paddingLeft: myMessage ? '10%' : '5%',
-                      paddingRight: myMessage ? '5%' : '10%',
-                      clipPath: myMessage
-                        ? 'polygon(0% 0%, 100% 0%, 100% 100%, calc(0% + 1em) 100%, calc(0% + 1em) calc(0% + 1em), 0% 0%)'
-                        : 'polygon(0% 0%, 100% 0%, calc(100% - 1em) calc(0% + 1em), calc(100% - 1em) 100%, 0% 100%, 0% 0%)',
-                      borderBottomLeftRadius: myMessage ? 0 : '1em',
-                      borderTopLeftRadius: myMessage ? 0 : '1em',
-                      borderBottomRightRadius: myMessage ? '1em' : 0,
-                      borderTopRightRadius: myMessage ? '1em' : 0,
-                    }}
+                  <Stack
+                    p={1}
+                    direction={myMessage ? 'row' : 'row-reverse'}
+                    justifyContent={myMessage ? 'left' : 'right'}
                   >
-                    <pre
-                      style={{
-                        whiteSpace: 'pre-wrap',
+                    {!skipAvatar &&
+                      (msg.sender === SenderType.PLAYER ? (
+                        <AvatarSprite
+                          player={gameRoom.gameData.players?.find(
+                            (p) => p._id === msg.senderId
+                          )}
+                          bgColor={bubbleColor}
+                        />
+                      ) : (
+                        <BorderedAvatar />
+                      ))}
+                    {skipAvatar && (
+                      <Box
+                        width={46}
+                        sx={{
+                          flexGrow: 0,
+                          flexShrink: 0,
+                        }}
+                      ></Box>
+                    )}
+                    <Paper
+                      square
+                      elevation={0}
+                      sx={{
+                        p: 3,
+                        whiteSpace: 'normal',
                         wordWrap: 'break-word',
-                        overflowWrap: 'break-word',
-                        margin: 0,
-                        fontFamily: 'inherit',
+                        backgroundColor: bubbleColor,
+                        paddingLeft: myMessage ? '10%' : '5%',
+                        paddingRight: myMessage ? '5%' : '10%',
+                        clipPath: myMessage
+                          ? 'polygon(0% 0%, 100% 0%, 100% 100%, calc(0% + 1em) 100%, calc(0% + 1em) calc(0% + 1em), 0% 0%)'
+                          : 'polygon(0% 0%, 100% 0%, calc(100% - 1em) calc(0% + 1em), calc(100% - 1em) 100%, 0% 100%, 0% 0%)',
+                        borderBottomLeftRadius: myMessage ? 0 : '1em',
+                        borderTopLeftRadius: myMessage ? 0 : '1em',
+                        borderBottomRightRadius: myMessage ? '1em' : 0,
+                        borderTopRightRadius: myMessage ? '1em' : 0,
                       }}
                     >
-                      <Typography color={myMessage ? 'white' : ''}>
-                        {msg.message}
-                      </Typography>
-                    </pre>
-                  </Paper>
+                      <pre
+                        style={{
+                          whiteSpace: 'pre-wrap',
+                          wordWrap: 'break-word',
+                          overflowWrap: 'break-word',
+                          margin: 0,
+                          fontFamily: 'inherit',
+                        }}
+                      >
+                        <Typography color={myMessage ? 'white' : ''}>
+                          {msg.message}
+                        </Typography>
+                      </pre>
+                    </Paper>
+                  </Stack>
                 </Stack>
-              </Stack>
-            );
-          })}
-        </Stack>
-      </div>
+              );
+            })}
+          </Stack>
+        </div>
+      )}
     </div>
   );
 }

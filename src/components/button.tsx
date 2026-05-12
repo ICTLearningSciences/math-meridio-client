@@ -252,10 +252,11 @@ export function ClassDropdown(props: {
       items={myClasses
         .filter((c) => viewArchived || !c.archivedAt)
         .sort((a, b) => {
-          if (a.archivedAt && b.archivedAt) return 0;
-          if (a.archivedAt) return 1;
-          if (b.archivedAt) return -1;
-          return 0;
+          if (!b.archivedAt && a.archivedAt) return 1;
+          if (!a.archivedAt && b.archivedAt) return -1;
+          return (
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
         })
         .map((c) => c._id)}
       onSelect={(id: string) => setClassId(id)}

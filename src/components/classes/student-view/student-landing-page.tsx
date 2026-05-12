@@ -105,7 +105,7 @@ export default function StudentLandingPage(): JSX.Element {
 
       <div className="column" style={{ width: '90%', maxWidth: 800, gap: 15 }}>
         {myClasses.length === 0 ? (
-          <Typography variant="body1" color="text.secondary">
+          <Typography variant="body1" color="text.secondary" textAlign="center">
             You haven&apos;t joined any classes yet. Enter an invite code above
             to join your first class.
           </Typography>

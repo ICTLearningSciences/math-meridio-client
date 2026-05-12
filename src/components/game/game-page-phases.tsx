@@ -149,7 +149,8 @@ export default function GamePagePhaseDisplay(props: {
     return <div />;
   }
 
-  if (phasesStarted === 1 || phasesStarted === 2) {
+  // Small problem header (expandable to fuller size or 1/2). Big Equation.
+  if (phasesStarted === 2 || phasesStarted === 3) {
     return (
       <MyCarousel phase={phasesStarted}>
         <div className="column spacing">
@@ -178,7 +179,8 @@ export default function GamePagePhaseDisplay(props: {
       </MyCarousel>
     );
   }
-  if (phasesStarted === 3) {
+  // Small "Equation" (just the parameter names+values). Big Simulation.
+  if (phasesStarted === 4) {
     const minHeight = Math.max(150, cardHeight * (expanded ? 0.5 : 0.1)) - 25;
     const maxHeight =
       Math.min(cardHeight - 150, cardHeight * (expanded ? 0.5 : 0.9)) - 25;
@@ -192,7 +194,7 @@ export default function GamePagePhaseDisplay(props: {
             onExpand={() => setExpanded(!expanded)}
           >
             <TransformWrapper
-              minScale={1}
+              minScale={0.5}
               maxScale={1}
               panning={{ excluded: ['panningDisabled'] }}
             >
@@ -245,48 +247,7 @@ export default function GamePagePhaseDisplay(props: {
       </MyCarousel>
     );
   }
-  if (phasesStarted === 4) {
-    return (
-      <MyCarousel phase={phasesStarted}>
-        <Space
-          title="Simulation"
-          header={
-            <div className="row" style={{ flexGrow: 1 }}>
-              <TextField
-                select
-                fullWidth
-                style={{ marginLeft: 10 }}
-                value={curSimulation?.player}
-                label="Strategy"
-              >
-                {room.gameData.players.map((player) => {
-                  return (
-                    <MenuItem
-                      key={player._id}
-                      value={player._id}
-                      style={{ width: '100%', padding: 0, margin: 0 }}
-                    >
-                      {game.showPlayerStrategy(
-                        player,
-                        room.gameData.playersGameStateData[player._id]
-                      )}
-                    </MenuItem>
-                  );
-                })}
-              </TextField>
-              <Tooltip title="Mute game audio">
-                <IconButton onClick={toggleMuted}>
-                  {isMuted ? <VolumeOff /> : <VolumeUp />}
-                </IconButton>
-              </Tooltip>
-            </div>
-          }
-        >
-          {game.showSimulation(game)}
-        </Space>
-      </MyCarousel>
-    );
-  }
+  // Big Results
   if (phasesStarted === 5) {
     return (
       <MyCarousel phase={phasesStarted}>
@@ -353,7 +314,7 @@ export default function GamePagePhaseDisplay(props: {
       </MyCarousel>
     );
   }
-  // phasesStarted === 0
+  // Big Problem. Everything else hidden in tabs (and not very interesting
   return (
     <MyCarousel phase={phasesStarted || 0}>
       <Space title="Problem">{game.showProblem()}</Space>

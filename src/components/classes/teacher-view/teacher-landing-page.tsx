@@ -30,7 +30,12 @@ export default function TeacherLandingPage(): JSX.Element {
 
   const tab = Number.parseInt(searchParams.get('tab') || '0');
   const myClasses =
-    educationalData?.classes?.filter((c) => c.teacherId === player?._id) || [];
+    educationalData?.classes
+      ?.filter((c) => c.teacherId === player?._id)
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      ) || [];
   const myClass = myClasses.find((c) => c._id === classId);
   const myRooms =
     educationalData?.rooms?.filter((r) => r.classId === myClass?._id) || [];

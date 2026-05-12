@@ -6,7 +6,14 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Button, IconButton, Typography } from '@mui/material';
+import {
+  Button,
+  IconButton,
+  Menu,
+  MenuItem,
+  Tooltip,
+  Typography,
+} from '@mui/material';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { clearPlayer } from '../store/slices/player';
 import AvatarSprite from './avatar-sprite';
@@ -32,6 +39,12 @@ export function Header(props: { useLogin: UseWithLogin }) {
       ? room?.gameData.playersStatusRecord[player?._id]
       : undefined;
   const isTeacher = player?.educationalRole === EducationalRole.INSTRUCTOR;
+
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+
+  const handleButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
 
   function homeButtonClick() {
     navigate('/classes');
@@ -79,7 +92,7 @@ export function Header(props: { useLogin: UseWithLogin }) {
               setPlayerNeedsHelpInRoom={setPlayerNeedsHelpInRoom}
             />
           )}
-          {!isTeacher && pathname.includes('/room/') ? (
+          {pathname.includes('/room/') && (
             <Button
               variant="text"
               disabled={!player || !room}
@@ -94,24 +107,29 @@ export function Header(props: { useLogin: UseWithLogin }) {
             >
               Leave Room
             </Button>
-          ) : (
-            <Button
-              disabled={!player}
-              style={{
-                height: 'fit-content',
-                color: 'white',
-                textTransform: 'none',
-              }}
-              onClick={() => {
-                dispatch(clearPlayer());
-                logout();
-              }}
-            >
-              Logout
-            </Button>
           )}
           {player && (
-            <AvatarSprite bgColor="rgb(217, 217, 217)" player={player} />
+            <div>
+              <Tooltip title="Logout">
+                <Button onClick={handleButtonClick}>
+                  <AvatarSprite bgColor="rgb(217, 217, 217)" player={player} />
+                </Button>
+              </Tooltip>
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={() => setAnchorEl(null)}
+              >
+                <MenuItem
+                  onClick={() => {
+                    dispatch(clearPlayer());
+                    logout();
+                  }}
+                >
+                  Logout
+                </MenuItem>
+              </Menu>
+            </div>
           )}
         </div>
       </div>
