@@ -261,7 +261,6 @@ export function ResultComponent(props: { uiGameData: GameData }): JSX.Element {
           ]}
           slotProps={{ legend: { hidden: bHideLegend } }}
           xAxis={[{ data: scoreLabels, scaleType: 'band' }]}
-          yAxis={[{ disableLine: true, disableTicks: true, tickFontSize: 0 }]}
         />
         <Typography variant="subtitle1">{playerName}</Typography>
       </Stack>

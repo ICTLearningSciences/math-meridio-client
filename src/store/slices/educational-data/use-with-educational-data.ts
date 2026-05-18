@@ -82,10 +82,6 @@ export interface UseWithEducationalData {
   room: Room | undefined;
   updateMyRoomGameStateData: (gameStateData: GameStateData) => Promise<Room>;
   sendMessageToGameRoom: (message: string) => Promise<Room>;
-  createClassMembership: (
-    classId: string,
-    userEmail: string
-  ) => Promise<ClassMembership>;
   curGame: Game | undefined;
   togglePlayerPausedInRoomStatus: (
     roomId: string,
@@ -94,7 +90,7 @@ export interface UseWithEducationalData {
   reportPlayerAway: (userIdToReportAway: string) => Promise<Room>;
   shareClassroomWithInstructor: (
     classId: string,
-    instructorEmail: string
+    instructorId: string
   ) => Promise<Classroom>;
   assignGameToGameRoom: (roomId: string, gameId: string) => Promise<Room>;
   setPlayerNeedsHelpInRoom: (needsHelp: boolean) => Promise<Room>;
@@ -332,15 +328,6 @@ export function useWithEducationalData(rId?: string): UseWithEducationalData {
     ).unwrap();
   }
 
-  async function createClassMembership(
-    classId: string,
-    userEmail: string
-  ): Promise<ClassMembership> {
-    return await dispatch(
-      educationalDataActions.createClassMembership({ classId, userEmail })
-    ).unwrap();
-  }
-
   async function togglePlayerPausedInRoomStatus(
     roomId: string,
     userIdToPause: string
@@ -369,12 +356,12 @@ export function useWithEducationalData(rId?: string): UseWithEducationalData {
 
   async function shareClassroomWithInstructor(
     classId: string,
-    instructorEmail: string
+    instructorId: string
   ): Promise<Classroom> {
     return await dispatch(
       educationalDataActions.shareClassroomWithInstructor({
         classId,
-        instructorEmail,
+        instructorId,
       })
     ).unwrap();
   }
@@ -458,7 +445,6 @@ export function useWithEducationalData(rId?: string): UseWithEducationalData {
     ownerIsPresent: ownerIsPresent || false,
     room,
     curGame,
-    createClassMembership,
     togglePlayerPausedInRoomStatus,
     reportPlayerAway,
     shareClassroomWithInstructor,

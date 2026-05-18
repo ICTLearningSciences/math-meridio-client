@@ -103,7 +103,7 @@ export function ResultComponent(props: { uiGameData: GameData }): JSX.Element {
   >({});
 
   const chartHeight = 300;
-  const resultsWidth = window.innerWidth / 2 - 300;
+  const resultsWidth = window.innerWidth / 2 - 100;
   const scoreChartWidth = resultsWidth;
   const ticketsChartWidth = resultsWidth / uiGameData.players.length;
 
@@ -251,6 +251,7 @@ export function ResultComponent(props: { uiGameData: GameData }): JSX.Element {
     return (
       <Stack key={index} direction="column" alignItems="center">
         <BarChart
+          barLabel="value"
           width={ticketsChartWidth}
           height={chartHeight}
           series={[
@@ -263,7 +264,6 @@ export function ResultComponent(props: { uiGameData: GameData }): JSX.Element {
           ]}
           slotProps={{ legend: { hidden: bHideLegend } }}
           xAxis={[{ data: ticketLabels, scaleType: 'band' }]}
-          yAxis={[{ disableLine: true, disableTicks: true, tickFontSize: 0 }]}
         />
         <Typography variant="subtitle1">{playerName}</Typography>
       </Stack>
@@ -321,8 +321,8 @@ export function ResultComponent(props: { uiGameData: GameData }): JSX.Element {
         {tabValue === 0 && (
           <Stack direction="column" alignItems="center">
             <BarChart
-              width={scoreChartWidth}
               barLabel="value"
+              width={scoreChartWidth}
               height={chartHeight}
               series={[
                 {

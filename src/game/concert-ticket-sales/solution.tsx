@@ -124,6 +124,34 @@ export function SolutionComponent(props: {
     }
   }, [width, height]);
 
+  React.useEffect(() => {
+    if (!playerGameStateDataRecord) return;
+    let vip = playerGameStateDataRecord[VIP_TICKET_PERCENT_KEY];
+    let reserved = playerGameStateDataRecord[RESERVED_TICKET_PERCENT_KEY];
+    let general =
+      playerGameStateDataRecord[GENERAL_ADMISSION_TICKET_PERCENT_KEY];
+    if (vip === undefined || reserved === undefined || general === undefined)
+      return;
+    vip = Number.parseInt(vip);
+    reserved = Number.parseInt(reserved);
+    general = Number.parseInt(general);
+    const sum = vip + reserved + general;
+    if (sum > 100 || sum < 0) {
+      reserved = 100 - vip - general;
+      if (reserved < 0) reserved = 0;
+      general = 100 - vip - reserved;
+      if (general < 0) general = 0;
+      updatePlayerStateData(
+        {
+          [VIP_TICKET_PERCENT_KEY]: vip,
+          [RESERVED_TICKET_PERCENT_KEY]: reserved,
+          [GENERAL_ADMISSION_TICKET_PERCENT_KEY]: general,
+        },
+        player._id
+      );
+    }
+  }, [playerGameStateDataRecord]);
+
   function Variable(props: {
     dataKey: string;
     title: string;

@@ -55,7 +55,6 @@ export interface ClassMembership {
   classId: string;
   groupId: number;
   userId: string;
-  userEmail: string;
   status: ClassMembershipStatus;
   roomId?: string;
 }
@@ -64,7 +63,6 @@ export const classMembershipDataQuery = `
   classId
   groupId
   userId
-  userEmail
   status
 `;
 

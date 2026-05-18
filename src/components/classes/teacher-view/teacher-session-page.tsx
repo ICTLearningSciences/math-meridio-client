@@ -149,7 +149,7 @@ export default function ActiveSessionView(props: {
                 color="inherit"
                 style={{ alignSelf: 'end' }}
                 endIcon={<ChevronRight />}
-                onClick={() => searchParams[1]({ tab: '1', report: '2' })}
+                onClick={() => searchParams[1]({ tab: '1', report: '1' })}
               >
                 Monitor Students
               </Button>

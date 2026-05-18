@@ -19,6 +19,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import { Save } from '@mui/icons-material';
 
 import {
   ClassMembershipStatus,
@@ -29,7 +30,6 @@ import { Tabs } from '../../tab';
 import { RoomSetupView } from './teacher-room-setup';
 import TeacherInviteCode from './teacher-invite-code';
 import { useWithWindow } from '../../../hooks/use-with-window';
-import { Archive, Save, Unarchive } from '@mui/icons-material';
 
 function TeacherSummary(props: { classroom?: Classroom }): JSX.Element {
   const { classroom } = props;
@@ -122,8 +122,7 @@ export function TeacherEditClass(props: {
   classroom?: Classroom;
 }): JSX.Element {
   const { classroom } = props;
-  const { updateClassNameDescription, adjustClassroomArchiveStatus } =
-    useWithEducationalData();
+  const { updateClassNameDescription } = useWithEducationalData();
 
   const [className, setClassName] = React.useState('');
   const [classDescription, setClassDescription] = React.useState('');
@@ -145,18 +144,6 @@ export function TeacherEditClass(props: {
         className,
         classDescription
       );
-    } catch (err) {
-      console.error('Failed to update class', err);
-    } finally {
-      setCreating(false);
-    }
-  };
-
-  const handleUpdateArchive = async () => {
-    if (!classroom) return;
-    setCreating(true);
-    try {
-      await adjustClassroomArchiveStatus(classroom._id, !classroom.archivedAt);
     } catch (err) {
       console.error('Failed to update class', err);
     } finally {
@@ -200,20 +187,6 @@ export function TeacherEditClass(props: {
             rows={3}
           />
           <div className="row spacing">
-            <Button
-              variant="contained"
-              color="secondary"
-              fullWidth
-              disabled={creating}
-              onClick={handleUpdateArchive}
-              startIcon={classroom.archivedAt ? <Unarchive /> : <Archive />}
-            >
-              {creating
-                ? 'Archiving...'
-                : classroom.archivedAt
-                ? 'Unarchive Class'
-                : 'Archive Class'}
-            </Button>
             <Button
               variant="contained"
               color="primary"

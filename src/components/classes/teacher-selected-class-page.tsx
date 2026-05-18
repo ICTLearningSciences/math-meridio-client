@@ -337,7 +337,6 @@ export default function TeacherSelectedClassPage(): JSX.Element {
                   {students.map((student) => (
                     <TableRow key={student._id}>
                       <TableCell>{student.name}</TableCell>
-                      <TableCell>{student.email}</TableCell>
                       <TableCell>
                         {new Date(student.lastLoginAt).toLocaleString()}
                       </TableCell>

@@ -122,6 +122,33 @@ export function SolutionComponent(props: {
     uiGameData.playersGameStateData,
   ]);
 
+  React.useEffect(() => {
+    if (!playerGameStateDataRecord) return;
+    let vip = playerGameStateDataRecord[OUTSIDE_SHOT_PERCENT];
+    let reserved = playerGameStateDataRecord[MID_SHOT_PERCENT];
+    let general = playerGameStateDataRecord[INSIDE_SHOT_PERCENT];
+    if (vip === undefined || reserved === undefined || general === undefined)
+      return;
+    vip = Number.parseInt(vip);
+    reserved = Number.parseInt(reserved);
+    general = Number.parseInt(general);
+    const sum = vip + reserved + general;
+    if (sum > 100 || sum < 0) {
+      reserved = 100 - vip - general;
+      if (reserved < 0) reserved = 0;
+      general = 100 - vip - reserved;
+      if (general < 0) general = 0;
+      updatePlayerStateData(
+        {
+          [OUTSIDE_SHOT_PERCENT]: vip,
+          [MID_SHOT_PERCENT]: reserved,
+          [INSIDE_SHOT_PERCENT]: general,
+        },
+        player._id
+      );
+    }
+  }, [playerGameStateDataRecord]);
+
   function Variable(props: {
     dataKey: string;
     title: string;

@@ -32,6 +32,7 @@ export default function ChatForm(props: {
   isPaused?: boolean;
   isTeacher?: boolean;
   phasesCompleted?: boolean;
+  disabled?: boolean;
 }): JSX.Element {
   const [input, setInput] = React.useState<string>('');
   const [isSending, setIsSending] = React.useState<boolean>(false);
@@ -102,7 +103,7 @@ export default function ChatForm(props: {
         <FormControl
           variant="outlined"
           style={{ flex: 1 }}
-          disabled={isSending}
+          disabled={isSending || props.disabled}
         >
           <InputLabel>
             {props.phasesCompleted
@@ -119,7 +120,11 @@ export default function ChatForm(props: {
             type="text"
             value={input}
             disabled={
-              listening || isPaused || isSending || props.phasesCompleted
+              listening ||
+              isPaused ||
+              isSending ||
+              props.phasesCompleted ||
+              props.disabled
             }
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => onKeyPress(e, isMyTurn)}
@@ -168,7 +173,8 @@ export default function ChatForm(props: {
                       !isMyTurn ||
                       isPaused ||
                       isSending ||
-                      props.phasesCompleted
+                      props.phasesCompleted ||
+                      props.disabled
                     }
                   >
                     <Send />
@@ -184,7 +190,8 @@ export default function ChatForm(props: {
           disabled={
             !browserSupportsSpeechRecognition ||
             isPaused ||
-            props.phasesCompleted
+            props.phasesCompleted ||
+            props.disabled
           }
           style={{ marginLeft: 10 }}
         >

@@ -24,9 +24,7 @@ import {
 } from '@mui/icons-material';
 
 import { Game } from '../../game/types';
-import EventSystem from '../../game/event-system';
 import { useWithWindow } from '../../hooks/use-with-window';
-import { viewGameRoomSimulation } from '../../hooks/game-rooms/game-room-api';
 import { GameStateData, Room } from '../../store/slices/game/types';
 import { Player } from '../../store/slices/player/types';
 import { useWithConfig } from '../../store/slices/config/use-with-config';
@@ -116,7 +114,6 @@ export default function GamePagePhaseDisplay(props: {
   const { room, game, player, updateMyRoomGameStateData } = props;
   const { isMuted, toggleMuted } = useWithConfig();
   const { windowHeight } = useWithWindow();
-  const [curSimulation, setSimulation] = React.useState<{ player: string }>();
   const [expanded, setExpanded] = React.useState<boolean>(false);
   const phasesStarted =
     props.selectedPhase !== undefined
@@ -126,20 +123,6 @@ export default function GamePagePhaseDisplay(props: {
   const minHeight = Math.max(100, cardHeight * (expanded ? 0.5 : 0.1)) - 25;
   const maxHeight =
     Math.min(cardHeight - 100, cardHeight * (expanded ? 0.5 : 0.9)) - 25;
-
-  React.useEffect(() => {
-    EventSystem.on('simulate', (sim: { player: string }) => {
-      if (!room) return;
-      setSimulation(sim);
-      viewGameRoomSimulation(room._id)
-        .then((room) => {
-          console.log('room', room);
-        })
-        .catch((error) => {
-          console.error('error', error);
-        });
-    });
-  }, []);
 
   React.useEffect(() => {
     setExpanded(false);
@@ -215,7 +198,6 @@ export default function GamePagePhaseDisplay(props: {
                   select
                   fullWidth
                   style={{ marginLeft: 10 }}
-                  value={curSimulation?.player}
                   label="Strategy"
                 >
                   {room.gameData.players.map((player) => {
@@ -227,14 +209,15 @@ export default function GamePagePhaseDisplay(props: {
                       >
                         {game.showPlayerStrategy(
                           player,
-                          room.gameData.playersGameStateData[player._id]
+                          room.gameData.playersGameStateData[player._id],
+                          room
                         )}
                       </MenuItem>
                     );
                   })}
                 </TextField>
                 <Tooltip title="Mute game audio">
-                  <IconButton onClick={toggleMuted}>
+                  <IconButton onClick={toggleMuted} style={{ width: 55 }}>
                     {isMuted ? <VolumeOff /> : <VolumeUp />}
                   </IconButton>
                 </Tooltip>
@@ -260,7 +243,6 @@ export default function GamePagePhaseDisplay(props: {
                 select
                 fullWidth
                 style={{ marginLeft: 10 }}
-                value={curSimulation?.player}
                 label="Strategy"
               >
                 {room.gameData.players.map((player) => {
@@ -272,14 +254,15 @@ export default function GamePagePhaseDisplay(props: {
                     >
                       {game.showPlayerStrategy(
                         player,
-                        room.gameData.playersGameStateData[player._id]
+                        room.gameData.playersGameStateData[player._id],
+                        room
                       )}
                     </MenuItem>
                   );
                 })}
               </TextField>
               <Tooltip title="Mute game audio">
-                <IconButton onClick={toggleMuted}>
+                <IconButton onClick={toggleMuted} style={{ width: 55 }}>
                   {isMuted ? <VolumeOff /> : <VolumeUp />}
                 </IconButton>
               </Tooltip>
@@ -335,7 +318,6 @@ export default function GamePagePhaseDisplay(props: {
               select
               fullWidth
               style={{ marginLeft: 10 }}
-              value={curSimulation?.player}
               label="Strategy"
             >
               {room.gameData.players.map((player) => {
@@ -347,14 +329,15 @@ export default function GamePagePhaseDisplay(props: {
                   >
                     {game.showPlayerStrategy(
                       player,
-                      room.gameData.playersGameStateData[player._id]
+                      room.gameData.playersGameStateData[player._id],
+                      room
                     )}
                   </MenuItem>
                 );
               })}
             </TextField>
             <Tooltip title="Mute game audio">
-              <IconButton onClick={toggleMuted}>
+              <IconButton onClick={toggleMuted} style={{ width: 55 }}>
                 {isMuted ? <VolumeOff /> : <VolumeUp />}
               </IconButton>
             </Tooltip>

@@ -53,6 +53,11 @@ function GamePage(): JSX.Element {
     myStatusInRoom?.computedState === PlayerComputedState.PAUSED_BY_ADMIN;
   const phasesCompleted =
     room?.gameData?.phaseProgression?.phasesCompleted?.length;
+  const isInWaitingState =
+    room?.gameData.curGameState.curState ===
+    'WAITING_FOR_STUDENT_READY_TO_CONTINUE';
+  const isEndOfPhaseReflection =
+    room?.gameData.curGameState.curState === 'END_OF_PHASE_REFLECTION';
 
   const isSingleResponseRequired =
     room?.gameData.curGameState.curState ===
@@ -156,6 +161,7 @@ function GamePage(): JSX.Element {
               isMyTurn={isTeacher || isMyTurn}
               isTeacher={isTeacher}
               isPaused={!isTeacher && iAmPaused}
+              disabled={isEndOfPhaseReflection && isInWaitingState}
               phasesCompleted={!isTeacher && phasesCompleted === 5}
               uiGameData={room.gameData}
             />

@@ -146,7 +146,14 @@ export function RoomSetupView(props: { classroom: Classroom }): JSX.Element {
   );
 
   React.useEffect(() => {
-    setStudentMembers(getCurrentMembers());
+    if (
+      studentMembers.map((s) => s.userId).toString() !==
+      getCurrentMembers()
+        .map((s) => s.userId)
+        .toString()
+    ) {
+      setStudentMembers(getCurrentMembers());
+    }
   }, [classroom]);
 
   React.useEffect(() => {
@@ -165,7 +172,7 @@ export function RoomSetupView(props: { classroom: Classroom }): JSX.Element {
     const members: ClassMembership[] = [];
     for (const m of studentMemberships) {
       const room = rooms.find((r) =>
-        r.gameData.players.find((p) => p.email === m.userEmail)
+        r.gameData.players.find((p) => p._id === m.userId)
       );
       const groupId =
         Number.parseInt(

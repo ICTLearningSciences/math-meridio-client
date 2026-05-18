@@ -9,6 +9,7 @@ import { Player } from '../player/types';
 
 export enum SenderType {
   PLAYER = 'PLAYER',
+  INSTRUCTOR = 'INSTRUCTOR',
   SYSTEM = 'SYSTEM',
 }
 

@@ -15,7 +15,11 @@ import {
   styled,
   Typography,
 } from '@mui/material';
-import { GameData, SenderType } from '../../store/slices/game/types';
+import {
+  ChatMessage,
+  GameData,
+  SenderType,
+} from '../../store/slices/game/types';
 import React, { useState, useEffect, useRef } from 'react';
 import AvatarSprite from '../avatar-sprite';
 import {
@@ -100,6 +104,7 @@ export default function ChatThread(props: {
   roomIsProcessing: boolean;
   requestUserInputPhaseData: CurGameState;
   uiGameData: GameData;
+  messages?: ChatMessage[];
 }): JSX.Element {
   const { roomIsProcessing, requestUserInputPhaseData, uiGameData } = props;
   const { reportPlayerAway } = useOutletContext<UseWithEducationalData>();
@@ -107,7 +112,7 @@ export default function ChatThread(props: {
   const { classes } = useStyles();
   const { player } = useAppSelector((state) => state.playerData);
   const isTeacher = player?.educationalRole === EducationalRole.INSTRUCTOR;
-  const allMessages = uiGameData.chat || [];
+  const allMessages = props.messages || uiGameData.chat || [];
   const { displayedMessages, isAnimating } = useAnimatedMessages(allMessages);
   const messages = displayedMessages.filter((msg) => msg.message);
   const players = uiGameData.players;
@@ -255,9 +260,7 @@ export default function ChatThread(props: {
     >
       <Stack direction="column">
         {messages.map((msg, idx) => {
-          const teacherMessage =
-            msg.sender === SenderType.PLAYER &&
-            !players.find((p) => p._id === msg.senderId);
+          const teacherMessage = msg.sender === SenderType.INSTRUCTOR;
           const myMessage =
             msg.sender === SenderType.PLAYER && msg.senderId === player?._id;
 
@@ -286,7 +289,7 @@ export default function ChatThread(props: {
                   textAlign={!myMessage ? 'left' : 'right'}
                 >
                   {teacherMessage
-                    ? 'Teacher'
+                    ? 'Instructor'
                     : msg.sender === SenderType.PLAYER
                     ? msg.senderId === player?._id
                       ? 'You'

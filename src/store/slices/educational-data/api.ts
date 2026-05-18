@@ -420,37 +420,9 @@ export async function fetchStudentDataHydration(): Promise<FetchEducationalDataH
   );
 }
 
-export const createClassMembershipQuery = `
-  mutation CreateClassMembership($classId: String!, $userEmail: String!) {
-    createClassMembership(classId: $classId, userEmail: $userEmail) {
-      ${classMembershipDataQuery}
-    }
-  }
-`;
-
-export async function createClassMembership(
-  classId: string,
-  userEmail: string
-): Promise<ClassMembership> {
-  const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
-  return await execGql<ClassMembership>(
-    {
-      query: createClassMembershipQuery,
-      variables: {
-        classId,
-        userEmail,
-      },
-    },
-    {
-      dataPath: 'createClassMembership',
-      accessToken: accessToken,
-    }
-  );
-}
-
 export const shareClassroomWithInstructorMutation = `
-  mutation ShareClassroomWithInstructor($classId: String!, $instructorEmail: String!) {
-    shareClassroomWithInstructor(classId: $classId, instructorEmail: $instructorEmail) {
+  mutation ShareClassroomWithInstructor($classId: String!, $instructorId: ID!) {
+    shareClassroomWithInstructor(classId: $classId, instructorId: $instructorId) {
       ${classroomDataQuery}
     }
   }
@@ -458,13 +430,13 @@ export const shareClassroomWithInstructorMutation = `
 
 export async function shareClassroomWithInstructor(
   classId: string,
-  instructorEmail: string
+  instructorId: string
 ): Promise<Classroom> {
   const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
   return await execGql<Classroom>(
     {
       query: shareClassroomWithInstructorMutation,
-      variables: { classId, instructorEmail },
+      variables: { classId, instructorId },
     },
     {
       dataPath: 'shareClassroomWithInstructor',

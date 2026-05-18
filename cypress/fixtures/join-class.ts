@@ -21,7 +21,6 @@ export function joinClassroomResponse(user: Player, classId: string): JoinClassr
                 "classId": classId,
                 "groupId": -1,
                 "userId": user._id,
-                "userEmail": user.email,
                 "status": ClassMembershipStatus.MEMBER,
             },
             "classroom": defaultClassroomData(user._id, classId)
