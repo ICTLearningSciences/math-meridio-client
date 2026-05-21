@@ -19,6 +19,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import { Save } from '@mui/icons-material';
 
 import {
   ClassMembershipStatus,
@@ -28,6 +29,7 @@ import { useWithEducationalData } from '../../../store/slices/educational-data/u
 import { Tabs } from '../../tab';
 import { RoomSetupView } from './teacher-room-setup';
 import TeacherInviteCode from './teacher-invite-code';
+import { useWithWindow } from '../../../hooks/use-with-window';
 
 function TeacherSummary(props: { classroom?: Classroom }): JSX.Element {
   const { classroom } = props;
@@ -184,23 +186,25 @@ export function TeacherEditClass(props: {
             multiline
             rows={3}
           />
-          <Button
-            variant="contained"
-            color="secondary"
-            fullWidth
-            disabled={
-              creating ||
-              !className ||
-              (classroom.name === className &&
-                classroom.description === classDescription)
-            }
-            onClick={handleUpdateClass}
-          >
-            {creating ? 'Saving...' : 'Save Changes'}
-          </Button>
+          <div className="row spacing">
+            <Button
+              variant="contained"
+              color="primary"
+              fullWidth
+              disabled={
+                creating ||
+                !className ||
+                (classroom.name === className &&
+                  classroom.description === classDescription)
+              }
+              onClick={handleUpdateClass}
+              startIcon={<Save />}
+            >
+              {creating ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </div>
         </CardContent>
       </Card>
-
       <TeacherInviteCode classroom={classroom} />
     </div>
   );
@@ -211,6 +215,7 @@ export default function TeacherManageClass(props: {
 }): JSX.Element {
   const { classroom } = props;
   const [searchParams, setSearchParams] = useSearchParams();
+  const { windowHeight } = useWithWindow();
 
   if (!classroom) {
     return (
@@ -233,15 +238,21 @@ export default function TeacherManageClass(props: {
         {
           name: 'DETAILS',
           element: (
-            <div className="dashboard">
+            <div
+              className="dashboard"
+              style={{ minHeight: windowHeight - 300 }}
+            >
               <TeacherEditClass classroom={classroom} />
             </div>
           ),
         },
         {
-          name: 'SUMMARY',
+          name: 'STUDENTS',
           element: (
-            <div className="dashboard">
+            <div
+              className="dashboard"
+              style={{ minHeight: windowHeight - 300 }}
+            >
               <TeacherSummary classroom={classroom} />
             </div>
           ),
@@ -249,7 +260,10 @@ export default function TeacherManageClass(props: {
         {
           name: 'GROUP FORMATION',
           element: (
-            <div className="dashboard">
+            <div
+              className="dashboard"
+              style={{ minHeight: windowHeight - 300 }}
+            >
               <RoomSetupView classroom={classroom} />
             </div>
           ),

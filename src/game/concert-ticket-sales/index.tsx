@@ -16,6 +16,7 @@ import {
   GameData,
   GameStateData,
   PlayerStateData,
+  Room,
 } from '../../store/slices/game/types';
 import { Player } from '../../store/slices/player/types';
 
@@ -87,12 +88,14 @@ const ConcertTicketSalesGame: Game = {
   },
   showPlayerStrategy: (
     player: Player,
-    playersGameStateData: PlayerStateData
+    playersGameStateData: PlayerStateData,
+    room: Room
   ) => {
     return (
       <PlayerStrategy
         player={player}
         playersGameStateData={playersGameStateData}
+        room={room}
       />
     );
   },

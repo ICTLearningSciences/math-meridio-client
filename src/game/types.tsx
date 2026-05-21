@@ -6,7 +6,7 @@ The full terms of this copyright and license should always be found in the root 
 */
 import BasketballGame from './basketball';
 import ConcertTicketSalesGame from './concert-ticket-sales';
-import { GameData, GameStateData } from '../store/slices/game/types';
+import { GameData, GameStateData, Room } from '../store/slices/game/types';
 import { Player } from '../store/slices/player/types';
 
 export interface Game {
@@ -28,7 +28,8 @@ export interface Game {
   showSimulation: (game: Game) => JSX.Element;
   showPlayerStrategy: (
     player: Player,
-    playersGameStateData: GameStateData
+    playersGameStateData: GameStateData,
+    room: Room
   ) => JSX.Element;
   showResult: (uiGameData: GameData) => JSX.Element;
 }

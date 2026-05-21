@@ -91,7 +91,6 @@ export const defaultUser: Player = {
             "variants": []
         }
     ],
-    "email": "t7033080@gmail.com",
     "userRole": UserRole.USER,
     "loginService": LoginService.GOOGLE,
     "lastLoginAt": new Date("2026-02-03T03:02:35.422Z"),

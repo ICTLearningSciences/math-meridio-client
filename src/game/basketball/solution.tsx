@@ -122,6 +122,33 @@ export function SolutionComponent(props: {
     uiGameData.playersGameStateData,
   ]);
 
+  React.useEffect(() => {
+    if (!playerGameStateDataRecord) return;
+    let vip = playerGameStateDataRecord[OUTSIDE_SHOT_PERCENT];
+    let reserved = playerGameStateDataRecord[MID_SHOT_PERCENT];
+    let general = playerGameStateDataRecord[INSIDE_SHOT_PERCENT];
+    if (vip === undefined || reserved === undefined || general === undefined)
+      return;
+    vip = Number.parseInt(vip);
+    reserved = Number.parseInt(reserved);
+    general = Number.parseInt(general);
+    const sum = vip + reserved + general;
+    if (sum > 100 || sum < 0) {
+      reserved = 100 - vip - general;
+      if (reserved < 0) reserved = 0;
+      general = 100 - vip - reserved;
+      if (general < 0) general = 0;
+      updatePlayerStateData(
+        {
+          [OUTSIDE_SHOT_PERCENT]: vip,
+          [MID_SHOT_PERCENT]: reserved,
+          [INSIDE_SHOT_PERCENT]: general,
+        },
+        player._id
+      );
+    }
+  }, [playerGameStateDataRecord]);
+
   function Variable(props: {
     dataKey: string;
     title: string;
@@ -203,22 +230,40 @@ export function SolutionComponent(props: {
 
   if (props.minimize) {
     return (
-      <div className="column center-div">
-        <Typography>Total Profit =</Typography>
+      <div
+        className="row spacing"
+        style={{ alignItems: 'center', overflowX: 'auto' }}
+      >
+        <Typography style={{ whiteSpace: 'nowrap' }}>Points =</Typography>
         <div className="column center-div">
-          <Typography fontSize={10}>
+          <Typography
+            fontSize={10}
+            style={{ whiteSpace: 'nowrap', color: 'blue' }}
+          >
             {understandsPoints ? 'Inside points' : ''}
           </Typography>
           <div className="row center-div spacing">
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+            <Typography
+              style={{
+                whiteSpace: 'nowrap',
+                backgroundColor: 'lightblue',
+                padding: 5,
+              }}
+            >
               {understandsPoints
                 ? `${String(INSIDE_SHOT_POINTS_VALUE)} points`
                 : `?`}
             </Typography>
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+            <Typography style={{ backgroundColor: 'lightblue', padding: 5 }}>
               {understandsMultiplication ? 'X' : '?'}
             </Typography>
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+            <Typography
+              style={{
+                whiteSpace: 'nowrap',
+                backgroundColor: 'lightblue',
+                padding: 5,
+              }}
+            >
               {
                 {
                   ...globalGameStateDataRecord,
@@ -227,68 +272,104 @@ export function SolutionComponent(props: {
               }{' '}
               Inside Shots
             </Typography>
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+            <Typography style={{ backgroundColor: 'lightblue', padding: 5 }}>
               {understandsMultiplication ? 'X' : '?'}
             </Typography>
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+            <Typography
+              style={{
+                whiteSpace: 'nowrap',
+                backgroundColor: 'lightblue',
+                padding: 5,
+              }}
+            >
               {understandsSuccess
                 ? `${String(INSIDE_SHOT_SUCCESS_VALUE)}%`
                 : `?`}
             </Typography>
           </div>
         </div>
-        <Typography style={{ backgroundColor: '#ddd', margin: 5 }}>
+        <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
           {understandsAddition ? '+' : '?'}
         </Typography>
 
         <div className="column center-div">
-          <Typography fontSize={10}>
-            {understandsPoints ? 'Mid-lane points' : ''}
+          <Typography
+            fontSize={10}
+            style={{ whiteSpace: 'nowrap', color: 'red' }}
+          >
+            {understandsPoints ? 'Midlane points' : ''}
           </Typography>
           <div className="row center-div spacing">
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+            <Typography
+              style={{
+                whiteSpace: 'nowrap',
+                backgroundColor: 'pink',
+                padding: 5,
+              }}
+            >
               {understandsPoints
                 ? `${String(MID_SHOT_POINTS_VALUE)} points`
                 : `?`}
             </Typography>
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+            <Typography style={{ backgroundColor: 'pink', padding: 5 }}>
               {understandsMultiplication ? 'X' : '?'}
             </Typography>
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+            <Typography
+              style={{
+                whiteSpace: 'nowrap',
+                backgroundColor: 'pink',
+                padding: 5,
+              }}
+            >
               {
                 {
                   ...globalGameStateDataRecord,
                   ...playerGameStateDataRecord,
                 }[MID_SHOT_PERCENT]
               }{' '}
-              Mid-lane Shots
+              Midlane Shots
             </Typography>
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+            <Typography style={{ backgroundColor: 'pink', padding: 5 }}>
               {understandsMultiplication ? 'X' : '?'}
             </Typography>
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+            <Typography style={{ backgroundColor: 'pink', padding: 5 }}>
               {understandsSuccess ? `${String(MID_SHOT_SUCCESS_VALUE)}%` : `?`}
             </Typography>
           </div>
         </div>
-        <Typography style={{ backgroundColor: '#ddd', margin: 5 }}>
+        <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
           {understandsAddition ? '+' : '?'}
         </Typography>
 
         <div className="column center-div">
-          <Typography fontSize={10}>
+          <Typography
+            fontSize={10}
+            style={{ whiteSpace: 'nowrap', color: 'brown' }}
+          >
             {understandsPoints ? 'Outside points' : ''}
           </Typography>
           <div className="row center-div spacing">
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+            <Typography
+              style={{
+                whiteSpace: 'nowrap',
+                backgroundColor: 'tan',
+                padding: 5,
+              }}
+            >
               {understandsPoints
                 ? `${String(OUTSIDE_SHOT_POINTS_VALUE)} points`
                 : `?`}
             </Typography>
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+            <Typography style={{ backgroundColor: 'tan', padding: 5 }}>
               {understandsMultiplication ? 'X' : '?'}
             </Typography>
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+            <Typography
+              style={{
+                whiteSpace: 'nowrap',
+                backgroundColor: 'tan',
+                padding: 5,
+              }}
+            >
               {
                 {
                   ...globalGameStateDataRecord,
@@ -297,10 +378,10 @@ export function SolutionComponent(props: {
               }{' '}
               Outside Shots
             </Typography>
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+            <Typography style={{ backgroundColor: 'tan', padding: 5 }}>
               {understandsMultiplication ? 'X' : '?'}
             </Typography>
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+            <Typography style={{ backgroundColor: 'tan', padding: 5 }}>
               {understandsSuccess
                 ? `${String(OUTSIDE_SHOT_SUCCESS_VALUE)}%`
                 : `?`}

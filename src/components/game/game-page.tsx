@@ -21,6 +21,7 @@ import { RequireInputType } from '../discussion-stage-builder/types';
 import PhaseProgressBar from '../phase-progress-bar';
 
 import '../../layout.css';
+import { EducationalRole } from '../../store/slices/player/types';
 
 // Type for the outlet context provided by GameLayout
 type EducationalDataContext = UseWithEducationalData;
@@ -37,6 +38,8 @@ function GamePage(): JSX.Element {
     fetchRoom,
   } = outletContext;
   const navigate = useNavigate();
+
+  const isTeacher = player?.educationalRole === EducationalRole.INSTRUCTOR;
   const myStatusInRoom =
     player?._id && room
       ? room?.gameData.playersStatusRecord[player?._id]
@@ -50,6 +53,11 @@ function GamePage(): JSX.Element {
     myStatusInRoom?.computedState === PlayerComputedState.PAUSED_BY_ADMIN;
   const phasesCompleted =
     room?.gameData?.phaseProgression?.phasesCompleted?.length;
+  const isInWaitingState =
+    room?.gameData.curGameState.curState ===
+    'WAITING_FOR_STUDENT_READY_TO_CONTINUE';
+  const isEndOfPhaseReflection =
+    room?.gameData.curGameState.curState === 'END_OF_PHASE_REFLECTION';
 
   const isSingleResponseRequired =
     room?.gameData.curGameState.curState ===
@@ -72,6 +80,8 @@ function GamePage(): JSX.Element {
     !moreThanOnePlayerInRoom ||
     (isInOrder && isAtFrontOfList);
 
+  const [phase, setPhase] = React.useState<number>();
+
   // Handle case where context is not yet available
   if (!outletContext) {
     return (
@@ -87,6 +97,10 @@ function GamePage(): JSX.Element {
       navigate('/classes');
     }
   }, [Boolean(room)]);
+
+  React.useEffect(() => {
+    setPhase(undefined);
+  }, [phasesCompleted]);
 
   if (!room) {
     return (
@@ -108,7 +122,10 @@ function GamePage(): JSX.Element {
       }}
     >
       <div style={{ width: '80%', padding: 20 }}>
-        <PhaseProgressBar gameRooms={[room]} />
+        <PhaseProgressBar
+          gameRooms={[room]}
+          onClickPhase={(p) => setPhase(p)}
+        />
       </div>
       <Grid
         container
@@ -120,6 +137,7 @@ function GamePage(): JSX.Element {
             room={room}
             game={curGame}
             player={player}
+            selectedPhase={phase}
             updateMyRoomGameStateData={updateMyRoomGameStateData}
           />
         </Grid>
@@ -140,24 +158,31 @@ function GamePage(): JSX.Element {
             />
             <ChatForm
               sendMessage={sendMessageToGameRoom}
-              isMyTurn={isMyTurn}
-              isPaused={iAmPaused}
-              phasesCompleted={phasesCompleted === 5}
+              isMyTurn={isTeacher || isMyTurn}
+              isTeacher={isTeacher}
+              isPaused={!isTeacher && iAmPaused}
+              disabled={isEndOfPhaseReflection && isInWaitingState}
+              phasesCompleted={!isTeacher && phasesCompleted === 5}
+              uiGameData={room.gameData}
             />
           </Stack>
         </Grid>
       </Grid>
-      <EndOfPhaseReflectionModal
-        room={room}
-        player={player}
-        fetchRoom={fetchRoom}
-      />
-      <AwayStatusModal
-        roomId={room._id}
-        playerId={player._id}
-        iAmAway={iAmAway}
-      />
-      <PausedStatusModal iAmPaused={iAmPaused} />
+      {!isTeacher && (
+        <EndOfPhaseReflectionModal
+          room={room}
+          player={player}
+          fetchRoom={fetchRoom}
+        />
+      )}
+      {!isTeacher && (
+        <AwayStatusModal
+          roomId={room._id}
+          playerId={player._id}
+          iAmAway={iAmAway}
+        />
+      )}
+      {!isTeacher && <PausedStatusModal iAmPaused={iAmPaused} />}
     </div>
   );
 }

@@ -8,7 +8,7 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import * as api from './api';
 import * as mainApi from '../../../api';
 import { GamePhaseReflections, LoadStatus, LoadingState } from '../../../types';
-import { ClassMembership, Classroom } from './types';
+import { NotificationEvent, ClassMembership, Classroom } from './types';
 import { Player } from '../player/types';
 import { GameStateData, LearningObjective, Room } from '../game/types';
 import {
@@ -33,6 +33,7 @@ export interface EducationalDataStateData {
   phaseReflections: GamePhaseReflections[];
   hydrationLoadStatus: LoadingState;
   gameList: StaticGame[];
+  notifications: NotificationEvent[];
   learningObjectives: LearningObjective[];
 }
 
@@ -45,6 +46,7 @@ const initialState: EducationalDataStateData = {
   learningObjectives: [],
   hydrationLoadStatus: { status: LoadStatus.NONE },
   gameList: [],
+  notifications: [],
 };
 
 /** Actions */
@@ -77,13 +79,6 @@ export const createNewClassInviteCode = createAsyncThunk(
       args.validUntil,
       args.numUses
     );
-  }
-);
-
-export const createClassMembership = createAsyncThunk(
-  'educationalData/createClassMembership',
-  async (args: { classId: string; userEmail: string }) => {
-    return await api.createClassMembership(args.classId, args.userEmail);
   }
 );
 
@@ -260,10 +255,10 @@ export const setPlayerPauseStatus = createAsyncThunk(
 
 export const shareClassroomWithInstructor = createAsyncThunk(
   'educationalData/shareClassroomWithInstructor',
-  async (args: { classId: string; instructorEmail: string }) => {
+  async (args: { classId: string; instructorId: string }) => {
     return await api.shareClassroomWithInstructor(
       args.classId,
-      args.instructorEmail
+      args.instructorId
     );
   }
 );
@@ -309,12 +304,22 @@ export const updateLearningObjective = createAsyncThunk(
   }
 );
 
+export const dismissNotifications = createAsyncThunk(
+  'educationalData/dismissNotifications',
+  async () => {
+    return await api.dismissNotifications();
+  }
+);
+
 export const educationalDataSlice = createSlice({
   name: 'educationalData',
   initialState,
   reducers: {},
   extraReducers: (builder) => {
     builder
+      .addCase(dismissNotifications.fulfilled, (state, action) => {
+        state.notifications = action.payload;
+      })
 
       .addCase(fetchLearningObjectives.fulfilled, (state, action) => {
         state.learningObjectives = action.payload;
@@ -364,10 +369,6 @@ export const educationalDataSlice = createSlice({
         addOrUpdateGameRoom(state, action.payload);
       })
 
-      .addCase(createClassMembership.fulfilled, (state, action) => {
-        addOrUpdateClassMembership(state, action.payload);
-      })
-
       .addCase(fetchInstructorDataHydration.pending, (state) => {
         state.hydrationLoadStatus = {
           status: LoadStatus.IN_PROGRESS,
@@ -387,6 +388,7 @@ export const educationalDataSlice = createSlice({
         state.classMemberships = [];
         state.phaseReflections = [];
         state.gameList = [];
+        state.notifications = [];
       })
       .addCase(fetchInstructorDataHydration.fulfilled, (state, action) => {
         state.classes = action.payload.classes;
@@ -395,6 +397,7 @@ export const educationalDataSlice = createSlice({
         state.classMemberships = action.payload.classMemberships;
         state.phaseReflections = action.payload.phaseReflections;
         state.gameList = action.payload.gameList;
+        state.notifications = action.payload.notifications;
         state.hydrationLoadStatus = {
           status: LoadStatus.DONE,
           endedAt: Date.now.toString(),
@@ -415,6 +418,7 @@ export const educationalDataSlice = createSlice({
         state.students = [];
         state.classMemberships = [];
         state.gameList = [];
+        state.notifications = [];
         state.hydrationLoadStatus = {
           status: LoadStatus.FAILED,
           failedAt: Date.now.toString(),
@@ -428,6 +432,7 @@ export const educationalDataSlice = createSlice({
         state.classMemberships = action.payload.classMemberships;
         state.phaseReflections = action.payload.phaseReflections;
         state.gameList = action.payload.gameList;
+        state.notifications = action.payload.notifications;
         state.hydrationLoadStatus = {
           status: LoadStatus.DONE,
           endedAt: Date.now.toString(),

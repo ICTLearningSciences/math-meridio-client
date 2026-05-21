@@ -12,67 +12,21 @@ import { Classroom } from '../../../store/slices/educational-data/types';
 import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
 import { RoomSetupView } from './teacher-room-setup';
 import { GamesDropdown } from '../../button';
-import {
-  IndividualReportCard,
-  PhaseReportCard,
-  SummaryReportCard,
-} from './report-card';
+import { IndividualReportCard, PhaseReportCard } from './report-card';
 import { Tabs } from '../../tab';
-
-function RoomReport(props: { classroom: Classroom }): JSX.Element {
-  const { classroom } = props;
-  const { educationalData } = useWithEducationalData();
-  const [game, setGame] = React.useState<string>();
-
-  const gameRooms = educationalData.rooms.filter(
-    (r) => r.classId === classroom._id
-  );
-
-  return (
-    <div className="dashboard">
-      <div
-        className="row center-div"
-        style={{ justifyContent: 'space-between' }}
-      >
-        <Typography variant="h5" fontWeight="bold">
-          ROOM REPORTS
-        </Typography>
-        <GamesDropdown
-          game={game}
-          setGame={(id: string) => setGame(id)}
-          buttonStyle={{
-            color: 'white',
-            borderColor: 'white',
-            marginLeft: '10px',
-          }}
-        />
-      </div>
-      <div className="column spacing" style={{ marginTop: 40 }}>
-        {gameRooms
-          .filter((room) => !game || room.gameData.gameId === game)
-          .map((room, rIdx) => {
-            return (
-              <IndividualReportCard
-                key={`room-${rIdx}`}
-                room={room}
-                classroom={classroom}
-              />
-            );
-          })}
-      </div>
-    </div>
-  );
-}
+import { useWithWindow } from '../../../hooks/use-with-window';
 
 export default function TeacherReports(props: {
   classroom?: Classroom;
 }): JSX.Element {
   const { classroom } = props;
   const { educationalData } = useWithEducationalData();
+  const { windowHeight } = useWithWindow();
   const rooms = educationalData.rooms.filter(
     (r) => r.classId === classroom?._id
   );
   const [searchParams, setSearchParams] = useSearchParams();
+  const [game, setGame] = React.useState<string>();
 
   if (!classroom) {
     return (
@@ -87,6 +41,10 @@ export default function TeacherReports(props: {
   if (rooms.length === 0) {
     return <RoomSetupView classroom={classroom} />;
   }
+
+  const gameRooms = educationalData.rooms.filter(
+    (r) => r.classId === classroom._id
+  );
   return (
     <Tabs
       selectedTab={Number.parseInt(searchParams.get('report') || '0')}
@@ -99,7 +57,10 @@ export default function TeacherReports(props: {
         {
           name: 'SUMMARY',
           element: (
-            <div className="dashboard">
+            <div
+              className="dashboard"
+              style={{ minHeight: windowHeight - 300 }}
+            >
               <Typography
                 variant="h5"
                 fontWeight="bold"
@@ -107,28 +68,49 @@ export default function TeacherReports(props: {
               >
                 SUMMARY REPORT
               </Typography>
-              <SummaryReportCard classroom={classroom} />
-            </div>
-          ),
-        },
-        {
-          name: 'PHASE REPORT',
-          element: (
-            <div className="dashboard">
-              <Typography
-                variant="h5"
-                fontWeight="bold"
-                style={{ marginBottom: 20 }}
-              >
-                PHASE REPORT
-              </Typography>
               <PhaseReportCard classroom={classroom} />
             </div>
           ),
         },
         {
           name: 'ROOM REPORTS',
-          element: <RoomReport classroom={classroom} />,
+          element: (
+            <div
+              className="dashboard"
+              style={{ minHeight: windowHeight - 300 }}
+            >
+              <div
+                className="row center-div"
+                style={{ justifyContent: 'space-between' }}
+              >
+                <Typography variant="h5" fontWeight="bold">
+                  ROOM REPORTS
+                </Typography>
+                <GamesDropdown
+                  game={game}
+                  setGame={(id: string) => setGame(id)}
+                  buttonStyle={{
+                    color: 'white',
+                    borderColor: 'white',
+                    marginLeft: '10px',
+                  }}
+                />
+              </div>
+              <div className="column spacing" style={{ marginTop: 40 }}>
+                {gameRooms
+                  .filter((room) => !game || room.gameData.gameId === game)
+                  .map((room, rIdx) => {
+                    return (
+                      <IndividualReportCard
+                        key={`room-${rIdx}`}
+                        room={room}
+                        classroom={classroom}
+                      />
+                    );
+                  })}
+              </div>
+            </div>
+          ),
         },
       ]}
     />

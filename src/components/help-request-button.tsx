@@ -41,15 +41,15 @@ export function HelpRequestButton(props: HelpRequestButtonProps) {
           {!myStatusInRoom.needsHelpInRoom ? (
             <Button
               variant="text"
-              style={{ color: 'white', opacity: 0.9 }}
+              style={{ color: 'white', opacity: 0.9, textTransform: 'none' }}
               onClick={() => handleHelpRequest(true)}
             >
-              Request Help?
+              Request Help
             </Button>
           ) : (
             <Button
               variant="text"
-              style={{ color: 'white' }}
+              style={{ color: 'white', textTransform: 'none' }}
               onClick={() => handleHelpRequest(false)}
             >
               Cancel Help Request

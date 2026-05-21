@@ -55,26 +55,35 @@ export interface ClassMembership {
   classId: string;
   groupId: number;
   userId: string;
-  userEmail: string;
   status: ClassMembershipStatus;
   roomId?: string;
 }
 
 export const classMembershipDataQuery = `
-    classId
-    groupId
-    userId
-    userEmail
-    status
-  `;
+  classId
+  groupId
+  userId
+  status
+`;
 
 export const phaseReflectionsDataQuery = `
-    roomId
-    stepId
-    question
-    roundNumber
-    reflections
-  `;
+  roomId
+  stepId
+  phaseId
+  question
+  roundNumber
+  reflections
+`;
+
+export const notificationDataQuery = `
+  classId
+  roomId
+  userId
+  event
+  eventAt
+  dismissedAt
+  eventType
+`;
 
 export interface JoinClassroomResponse {
   classMembership: ClassMembership;
@@ -88,10 +97,28 @@ export interface FetchEducationalDataHydrationResponse {
   classMemberships: ClassMembership[];
   phaseReflections: GamePhaseReflections[];
   gameList: StaticGame[];
+  notifications: NotificationEvent[];
 }
 
 export interface RoomHeartBeat {
   roomId: string;
   userId: string;
   lastHeartBeatAt: Date;
+}
+
+export enum NotificationType {
+  NONE = '',
+  JOIN = 'JOIN',
+  LEAVE = 'LEAVE',
+  REPORT = 'REPORT',
+  REQUEST_HELP = 'REQUEST_HELP',
+}
+export interface NotificationEvent {
+  classId: string;
+  roomId: string;
+  userId: string;
+  event: string;
+  eventAt: Date;
+  dismissedAt: Date;
+  eventType: NotificationType;
 }

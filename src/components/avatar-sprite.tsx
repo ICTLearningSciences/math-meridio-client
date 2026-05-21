@@ -168,6 +168,7 @@ export default function AvatarSprite(props: {
   border?: boolean;
 }): JSX.Element {
   const { player } = props;
+  const avatar = player?.avatar || [];
 
   if (!player) return <div />;
   return (
@@ -198,8 +199,26 @@ export default function AvatarSprite(props: {
         >
           <Pause style={{ color: 'white' }} />
         </div>
+      ) : !avatar.length ? (
+        <div
+          className="column center-div"
+          style={{
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+          }}
+        >
+          <Typography>
+            {player.name
+              .split(' ')
+              .map((c) => c[0])
+              .join('')}
+          </Typography>
+        </div>
       ) : (
-        player.avatar
+        avatar
           .filter((a) => a.id && a.type)
           .map((a) => (
             <div

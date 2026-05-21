@@ -6,7 +6,14 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Button, IconButton, Typography } from '@mui/material';
+import {
+  Button,
+  IconButton,
+  Menu,
+  MenuItem,
+  Tooltip,
+  Typography,
+} from '@mui/material';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { clearPlayer } from '../store/slices/player';
 import AvatarSprite from './avatar-sprite';
@@ -14,6 +21,7 @@ import { UseWithLogin } from '../store/slices/player/use-with-login';
 import { useWithEducationalData } from '../store/slices/educational-data/use-with-educational-data';
 import { HelpRequestButton } from './help-request-button';
 import { RefreshRequestButton } from './refresh-request-button';
+import { EducationalRole } from '../store/slices/player/types';
 
 export function Header(props: { useLogin: UseWithLogin }) {
   const dispatch = useAppDispatch();
@@ -30,6 +38,13 @@ export function Header(props: { useLogin: UseWithLogin }) {
     player?._id && room
       ? room?.gameData.playersStatusRecord[player?._id]
       : undefined;
+  const isTeacher = player?.educationalRole === EducationalRole.INSTRUCTOR;
+
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+
+  const handleButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
 
   function homeButtonClick() {
     navigate('/classes');
@@ -68,14 +83,16 @@ export function Header(props: { useLogin: UseWithLogin }) {
         </div>
         <div
           className="row center-div spacing"
-          style={{ width: 300, justifyContent: 'flex-end', marginRight: 10 }}
+          style={{ justifyContent: 'flex-end', marginRight: 10 }}
         >
           <RefreshRequestButton />
-          <HelpRequestButton
-            myStatusInRoom={myStatusInRoom}
-            setPlayerNeedsHelpInRoom={setPlayerNeedsHelpInRoom}
-          />
-          {pathname.includes('/room/') ? (
+          {!isTeacher && (
+            <HelpRequestButton
+              myStatusInRoom={myStatusInRoom}
+              setPlayerNeedsHelpInRoom={setPlayerNeedsHelpInRoom}
+            />
+          )}
+          {pathname.includes('/room/') && (
             <Button
               variant="text"
               disabled={!player || !room}
@@ -90,24 +107,29 @@ export function Header(props: { useLogin: UseWithLogin }) {
             >
               Leave Room
             </Button>
-          ) : (
-            <Button
-              disabled={!player}
-              style={{
-                height: 'fit-content',
-                color: 'white',
-                textTransform: 'none',
-              }}
-              onClick={() => {
-                dispatch(clearPlayer());
-                logout();
-              }}
-            >
-              Logout
-            </Button>
           )}
           {player && (
-            <AvatarSprite bgColor="rgb(217, 217, 217)" player={player} />
+            <div>
+              <Tooltip title="Logout">
+                <Button onClick={handleButtonClick}>
+                  <AvatarSprite bgColor="rgb(217, 217, 217)" player={player} />
+                </Button>
+              </Tooltip>
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={() => setAnchorEl(null)}
+              >
+                <MenuItem
+                  onClick={() => {
+                    dispatch(clearPlayer());
+                    logout();
+                  }}
+                >
+                  Logout
+                </MenuItem>
+              </Menu>
+            </div>
           )}
         </div>
       </div>

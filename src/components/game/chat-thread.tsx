@@ -15,7 +15,11 @@ import {
   styled,
   Typography,
 } from '@mui/material';
-import { GameData, SenderType } from '../../store/slices/game/types';
+import {
+  ChatMessage,
+  GameData,
+  SenderType,
+} from '../../store/slices/game/types';
 import React, { useState, useEffect, useRef } from 'react';
 import AvatarSprite from '../avatar-sprite';
 import {
@@ -23,7 +27,7 @@ import {
   RequireInputType,
 } from '../discussion-stage-builder/types';
 import WaitingForPlayers from './waiting-for-players';
-import { Player } from '../../store/slices/player/types';
+import { EducationalRole, Player } from '../../store/slices/player/types';
 import { ProcessingIndicator } from './processing-indicator';
 import { useAnimatedMessages } from './use-animated-messages';
 import { useOutletContext } from 'react-router-dom';
@@ -100,13 +104,15 @@ export default function ChatThread(props: {
   roomIsProcessing: boolean;
   requestUserInputPhaseData: CurGameState;
   uiGameData: GameData;
+  messages?: ChatMessage[];
 }): JSX.Element {
   const { roomIsProcessing, requestUserInputPhaseData, uiGameData } = props;
   const { reportPlayerAway } = useOutletContext<UseWithEducationalData>();
 
   const { classes } = useStyles();
   const { player } = useAppSelector((state) => state.playerData);
-  const allMessages = uiGameData.chat || [];
+  const isTeacher = player?.educationalRole === EducationalRole.INSTRUCTOR;
+  const allMessages = props.messages || uiGameData.chat || [];
   const { displayedMessages, isAnimating } = useAnimatedMessages(allMessages);
   const messages = displayedMessages.filter((msg) => msg.message);
   const players = uiGameData.players;
@@ -254,6 +260,7 @@ export default function ChatThread(props: {
     >
       <Stack direction="column">
         {messages.map((msg, idx) => {
+          const teacherMessage = msg.sender === SenderType.INSTRUCTOR;
           const myMessage =
             msg.sender === SenderType.PLAYER && msg.senderId === player?._id;
 
@@ -268,10 +275,11 @@ export default function ChatThread(props: {
             skipAvatar = false;
             prevMessageOwner = currMessageOwner;
           }
-          const bubbleColor =
-            msg.sender === SenderType.PLAYER
-              ? playerColorMap.get(msg.senderId ?? '')
-              : PlayerChatColors.Grey;
+          const bubbleColor = teacherMessage
+            ? 'white'
+            : msg.sender === SenderType.PLAYER
+            ? playerColorMap.get(msg.senderId ?? '')
+            : PlayerChatColors.Grey;
 
           return (
             <Stack key={`chat-msg-container-${idx}`} direction="column">
@@ -280,7 +288,9 @@ export default function ChatThread(props: {
                   color="teal"
                   textAlign={!myMessage ? 'left' : 'right'}
                 >
-                  {msg.sender === SenderType.PLAYER
+                  {teacherMessage
+                    ? 'Instructor'
+                    : msg.sender === SenderType.PLAYER
                     ? msg.senderId === player?._id
                       ? 'You'
                       : msg.senderName
@@ -344,24 +354,30 @@ export default function ChatThread(props: {
                       fontFamily: 'inherit',
                     }}
                   >
-                    <Typography color={'white'}>{msg.message}</Typography>
+                    <Typography color={teacherMessage ? 'black' : 'white'}>
+                      {msg.message}
+                    </Typography>
                   </pre>
                 </Paper>
               </Stack>
             </Stack>
           );
         })}
-        {(roomIsProcessing || isAnimating) && <ProcessingIndicator />}
-        <WaitingForPlayers
-          reportPlayerAway={reportPlayerAway}
-          numPlayersInRoom={players?.length || 0}
-          playersBeingWaitedFor={playersBeingWaitedFor || []}
-          currentPlayerId={player?._id}
-          isInRequestUserInputState={isInRequestUserInputState}
-          requestUserInputPhaseData={requestUserInputPhaseData}
-          roomIsProcessing={roomIsProcessing}
-          requestInputStartTime={requestInputStartTime}
-        />
+        {!isTeacher && (roomIsProcessing || isAnimating) && (
+          <ProcessingIndicator />
+        )}
+        {!isTeacher && (
+          <WaitingForPlayers
+            reportPlayerAway={reportPlayerAway}
+            numPlayersInRoom={players?.length || 0}
+            playersBeingWaitedFor={playersBeingWaitedFor || []}
+            currentPlayerId={player?._id}
+            isInRequestUserInputState={isInRequestUserInputState}
+            requestUserInputPhaseData={requestUserInputPhaseData}
+            roomIsProcessing={roomIsProcessing}
+            requestInputStartTime={requestInputStartTime}
+          />
+        )}
       </Stack>
     </div>
   );

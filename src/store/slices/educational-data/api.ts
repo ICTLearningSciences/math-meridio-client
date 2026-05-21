@@ -10,9 +10,11 @@ import {
   classMembershipDataQuery,
   Classroom,
   classroomDataQuery,
+  notificationDataQuery,
   FetchEducationalDataHydrationResponse,
   JoinClassroomResponse,
   phaseReflectionsDataQuery,
+  NotificationEvent,
 } from './types';
 import { userDataQuery } from '../player/api';
 import { fullRoomQueryData } from '../../../api';
@@ -331,33 +333,57 @@ export async function adjustClassroomArchiveStatus(
   );
 }
 
+export const dismissNotificationsMutation = `
+  mutation DismissNotifications {
+    dismissNotifications {
+      ${notificationDataQuery}
+    }
+  }
+`;
+
+export async function dismissNotifications(): Promise<NotificationEvent[]> {
+  const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
+  return await execGql<NotificationEvent[]>(
+    {
+      query: dismissNotificationsMutation,
+    },
+    {
+      dataPath: 'dismissNotifications',
+      accessToken: accessToken,
+    }
+  );
+}
+
 export async function fetchInstructorDataHydration(): Promise<FetchEducationalDataHydrationResponse> {
   const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
   return await execGql<FetchEducationalDataHydrationResponse>(
     {
       query: `  query FetchInstructorDataHydration {
-    fetchInstructorDataHydration {
-        classes {
+        fetchInstructorDataHydration {
+          classes {
             ${classroomDataQuery}
-        }
-        rooms {
+          }
+          rooms {
             ${fullRoomQueryData}
-        }
-        students {
-           ${userDataQuery}
-        }
-        classMemberships {
+          }
+          students {
+            ${userDataQuery}
+          }
+          classMemberships {
             ${classMembershipDataQuery}
-        }
-        phaseReflections {
+          }
+          phaseReflections {
             ${phaseReflectionsDataQuery}
-        }
-        gameList {
+          }
+          gameList {
             id
             name
+          }
+          notifications {
+            ${notificationDataQuery}
+          }
         }
-    }
-  }`,
+    }`,
     },
     {
       dataPath: 'fetchInstructorDataHydration',
@@ -394,37 +420,9 @@ export async function fetchStudentDataHydration(): Promise<FetchEducationalDataH
   );
 }
 
-export const createClassMembershipQuery = `
-  mutation CreateClassMembership($classId: String!, $userEmail: String!) {
-    createClassMembership(classId: $classId, userEmail: $userEmail) {
-      ${classMembershipDataQuery}
-    }
-  }
-`;
-
-export async function createClassMembership(
-  classId: string,
-  userEmail: string
-): Promise<ClassMembership> {
-  const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
-  return await execGql<ClassMembership>(
-    {
-      query: createClassMembershipQuery,
-      variables: {
-        classId,
-        userEmail,
-      },
-    },
-    {
-      dataPath: 'createClassMembership',
-      accessToken: accessToken,
-    }
-  );
-}
-
 export const shareClassroomWithInstructorMutation = `
-  mutation ShareClassroomWithInstructor($classId: String!, $instructorEmail: String!) {
-    shareClassroomWithInstructor(classId: $classId, instructorEmail: $instructorEmail) {
+  mutation ShareClassroomWithInstructor($classId: String!, $instructorId: ID!) {
+    shareClassroomWithInstructor(classId: $classId, instructorId: $instructorId) {
       ${classroomDataQuery}
     }
   }
@@ -432,13 +430,13 @@ export const shareClassroomWithInstructorMutation = `
 
 export async function shareClassroomWithInstructor(
   classId: string,
-  instructorEmail: string
+  instructorId: string
 ): Promise<Classroom> {
   const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
   return await execGql<Classroom>(
     {
       query: shareClassroomWithInstructorMutation,
-      variables: { classId, instructorEmail },
+      variables: { classId, instructorId },
     },
     {
       dataPath: 'shareClassroomWithInstructor',

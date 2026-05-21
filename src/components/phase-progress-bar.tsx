@@ -13,7 +13,7 @@ import { PhaseProgression, Room } from '../store/slices/game/types';
 export function PhaseSelector(props: {
   gameRooms: Room[];
   phase: number | undefined;
-  setPhase: (num: number) => void;
+  setPhase: (num?: number) => void;
 }): JSX.Element {
   const { gameRooms, phase, setPhase } = props;
   const [numPhases, setNumPhases] = React.useState<number>(0);
@@ -36,8 +36,11 @@ export function PhaseSelector(props: {
   }, [gameRooms]);
 
   function onTogglePhase(idx: number): void {
-    if (phase === undefined) return;
-    setPhase(idx);
+    if (idx === phase) {
+      setPhase(undefined);
+    } else {
+      setPhase(idx);
+    }
   }
 
   return (
@@ -86,10 +89,12 @@ export function PhaseSelector(props: {
 export default function PhaseProgressBar(props: {
   gameRooms: Room[];
   size?: 'large';
+  onClickPhase?: (p: number) => void;
 }): JSX.Element {
   const { gameRooms } = props;
   const [phase, setPhase] = React.useState<PhaseProgression>();
   const large = props.size === 'large';
+  const phasesStarted = phase?.phasesStarted.length || 0;
   const phasesCompleted = phase?.phasesCompleted.length || 0;
   const value = !phase?.startingPhaseStepsOrdered.length
     ? 0
@@ -142,7 +147,7 @@ export default function PhaseProgressBar(props: {
           position: 'absolute',
           left: 0,
           right: 0,
-          top: '15%',
+          top: large ? -1 : -4,
           justifyContent: 'space-evenly',
         }}
       >
@@ -151,6 +156,7 @@ export default function PhaseProgressBar(props: {
             fontSize={12}
             style={{
               position: 'absolute',
+              top: 5,
               left: 10,
               color: 'white',
               backgroundColor: 'rgb(180, 180, 180)',
@@ -159,7 +165,7 @@ export default function PhaseProgressBar(props: {
               borderRadius: 20,
             }}
           >
-            OVERALL PROGRESS:
+            PROGRESS:
           </Typography>
         )}
         {phase &&
@@ -167,23 +173,41 @@ export default function PhaseProgressBar(props: {
           Array.from(
             { length: phase.startingPhaseStepsOrdered.length },
             (_, index) => (
-              <Typography
+              <motion.div
                 key={index}
-                fontSize={large ? 14 : 8}
+                whileHover={
+                  props.onClickPhase
+                    ? { scale: 1.5, filter: 'brightness(1.2)' }
+                    : {}
+                }
                 style={{
-                  color:
-                    phasesCompleted > index ? 'white' : 'rgb(180, 180, 180)',
+                  scale: !large && phasesStarted === index + 1 ? 1.5 : 1,
+                  border:
+                    !large && phasesStarted === index + 1
+                      ? '1px solid #666'
+                      : '',
                   backgroundColor:
                     phasesCompleted > index
                       ? 'rgba(255, 165, 0, 0.5)'
                       : 'rgba(217, 217, 217, 0.5)',
-                  paddingLeft: 5,
-                  paddingRight: 5,
+                  padding: 5,
                   borderRadius: 20,
                 }}
+                onClick={() => {
+                  if (props.onClickPhase) {
+                    props.onClickPhase(index);
+                  }
+                }}
               >
-                {large ? 'PHASE' : 'P'} {index + 1}
-              </Typography>
+                <Typography
+                  fontSize={large ? 14 : 8}
+                  style={{
+                    color: phasesCompleted > index ? 'white' : '#666',
+                  }}
+                >
+                  {large ? 'PHASE' : 'P'} {index + 1}
+                </Typography>
+              </motion.div>
             )
           )}
       </div>

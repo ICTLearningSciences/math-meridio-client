@@ -12,6 +12,7 @@ import { ContainedButton, OutlinedButton } from './button';
 
 export interface Tab {
   name: string;
+  tabIcon?: JSX.Element;
   element: React.ReactNode;
   disabled?: boolean;
 }
@@ -21,6 +22,7 @@ export function TabButton(props: {
   index: number;
   children: React.ReactNode;
   disabled?: boolean;
+  icon?: JSX.Element;
   onClick: (idx: number) => void;
 }): JSX.Element {
   const { value, index } = props;
@@ -35,6 +37,7 @@ export function TabButton(props: {
         }}
         disabled={props.disabled}
         onClick={() => props.onClick(index)}
+        endIcon={props.icon}
       >
         {props.children}
       </OutlinedButton>
@@ -49,6 +52,7 @@ export function TabButton(props: {
       }}
       disabled={props.disabled}
       onClick={() => props.onClick(index)}
+      endIcon={props.icon}
     >
       {props.children}
     </ContainedButton>
@@ -99,6 +103,7 @@ export function Tabs(props: {
             key={i}
             index={i}
             value={selectedTab}
+            icon={tab.tabIcon}
             disabled={tab.disabled}
             onClick={handleSelectTab}
           >

@@ -16,7 +16,6 @@ export const defaultFetchPlayerData: FetchPlayerResponse = {
     "fetchPlayer": {
         _id: "my-player-id",
         googleId: "my-google-id",
-        email: "my-email",
         userRole: UserRole.USER,
         loginService: LoginService.GOOGLE,
         lastLoginAt: new Date(),

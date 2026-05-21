@@ -41,7 +41,7 @@ export function SolutionComponent(props: {
   ) => void;
   minimize?: boolean;
 }): JSX.Element {
-  const { uiGameData, player, updatePlayerStateData } = props;
+  const { uiGameData, player, minimize, updatePlayerStateData } = props;
   const { classes } = useStyles();
   const { zoomIn, zoomOut } = useControls();
 
@@ -64,7 +64,6 @@ export function SolutionComponent(props: {
   const [height, setHeight] = React.useState<number>(0);
 
   React.useEffect(() => {
-    if (props.minimize) return;
     if (ref?.current) {
       new ResizeObserver(() => {
         setWidth(ref?.current?.clientWidth || 0);
@@ -74,7 +73,6 @@ export function SolutionComponent(props: {
   }, []);
 
   React.useEffect(() => {
-    if (props.minimize) return;
     const curPlayerStateData = uiGameData.playersGameStateData[player._id];
     const globalGameStateData = uiGameData.globalStateData.gameStateData;
     !understandsTicketPrices &&
@@ -119,7 +117,6 @@ export function SolutionComponent(props: {
   ]);
 
   React.useEffect(() => {
-    if (props.minimize) return;
     if (width < 500 || height < 500) {
       zoomOut(1);
     } else {
@@ -127,118 +124,33 @@ export function SolutionComponent(props: {
     }
   }, [width, height]);
 
-  if (props.minimize) {
-    return (
-      <div className="column center-div">
-        <Typography>Total Profit =</Typography>
-        <div className="column center-div">
-          <Typography fontSize={10}>
-            {understandsTicketPrices ? 'VIP sales' : ''}
-          </Typography>
-          <div className="row center-div spacing">
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
-              {understandsTicketPrices ? `$${String(VIP_TICKET_PRICE)}` : `?`}
-            </Typography>
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
-              {understandsMultiplication ? 'X' : '?'}
-            </Typography>
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
-              {
-                {
-                  ...globalGameStateDataRecord,
-                  ...playerGameStateDataRecord,
-                }[VIP_TICKET_PERCENT_KEY]
-              }{' '}
-              VIP tickets
-            </Typography>
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
-              {understandsMultiplication ? 'X' : '?'}
-            </Typography>
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
-              {understandsSellThroughRates
-                ? `${String(VIP_TICKET_CONVERSION_RATE)}%`
-                : `?`}
-            </Typography>
-          </div>
-        </div>
-        <Typography style={{ backgroundColor: '#ddd', margin: 5 }}>
-          {understandsAddition ? '+' : '?'}
-        </Typography>
-
-        <div className="column center-div">
-          <Typography fontSize={10}>
-            {understandsTicketPrices ? 'Reserved sales' : ''}
-          </Typography>
-          <div className="row center-div spacing">
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
-              {understandsTicketPrices
-                ? `$${String(RESERVED_TICKET_PRICE)}`
-                : `?`}
-            </Typography>
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
-              {understandsMultiplication ? 'X' : '?'}
-            </Typography>
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
-              {
-                {
-                  ...globalGameStateDataRecord,
-                  ...playerGameStateDataRecord,
-                }[RESERVED_TICKET_PERCENT_KEY]
-              }{' '}
-              Reserved tickets
-            </Typography>
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
-              {understandsMultiplication ? 'X' : '?'}
-            </Typography>
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
-              {understandsSellThroughRates
-                ? `${String(RESERVED_TICKET_CONVERSION_RATE)}%`
-                : `?`}
-            </Typography>
-          </div>
-        </div>
-        <Typography style={{ backgroundColor: '#ddd', margin: 5 }}>
-          {understandsAddition ? '+' : '?'}
-        </Typography>
-
-        <div className="column center-div">
-          <Typography fontSize={10}>
-            {understandsTicketPrices ? 'General Admission sales' : ''}
-          </Typography>
-          <div className="row center-div spacing">
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
-              {understandsTicketPrices
-                ? `$${String(GENERAL_ADMISSION_TICKET_PRICE)}`
-                : `?`}
-            </Typography>
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
-              {understandsMultiplication ? 'X' : '?'}
-            </Typography>
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
-              {
-                {
-                  ...globalGameStateDataRecord,
-                  ...playerGameStateDataRecord,
-                }[GENERAL_ADMISSION_TICKET_PERCENT_KEY]
-              }{' '}
-              GA tickets
-            </Typography>
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
-              {understandsMultiplication ? 'X' : '?'}
-            </Typography>
-            <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
-              {understandsSellThroughRates
-                ? `${String(GENERAL_ADMISSION_TICKET_CONVERSION_RATE)}%`
-                : `?`}
-            </Typography>
-          </div>
-        </div>
-        <TransformComponent>
-          <div />
-        </TransformComponent>
-      </div>
-    );
-  }
+  React.useEffect(() => {
+    if (!playerGameStateDataRecord) return;
+    let vip = playerGameStateDataRecord[VIP_TICKET_PERCENT_KEY];
+    let reserved = playerGameStateDataRecord[RESERVED_TICKET_PERCENT_KEY];
+    let general =
+      playerGameStateDataRecord[GENERAL_ADMISSION_TICKET_PERCENT_KEY];
+    if (vip === undefined || reserved === undefined || general === undefined)
+      return;
+    vip = Number.parseInt(vip);
+    reserved = Number.parseInt(reserved);
+    general = Number.parseInt(general);
+    const sum = vip + reserved + general;
+    if (sum > 100 || sum < 0) {
+      reserved = 100 - vip - general;
+      if (reserved < 0) reserved = 0;
+      general = 100 - vip - reserved;
+      if (general < 0) general = 0;
+      updatePlayerStateData(
+        {
+          [VIP_TICKET_PERCENT_KEY]: vip,
+          [RESERVED_TICKET_PERCENT_KEY]: reserved,
+          [GENERAL_ADMISSION_TICKET_PERCENT_KEY]: general,
+        },
+        player._id
+      );
+    }
+  }, [playerGameStateDataRecord]);
 
   function Variable(props: {
     dataKey: string;
@@ -319,6 +231,173 @@ export function SolutionComponent(props: {
       >
         <Typography className={classes.boxText}>{icon}</Typography>
       </Card>
+    );
+  }
+
+  if (minimize) {
+    return (
+      <div
+        className="row spacing"
+        style={{ alignItems: 'center', overflowX: 'auto' }}
+      >
+        <Typography style={{ whiteSpace: 'nowrap' }}>Profit =</Typography>
+        <div className="column center-div">
+          <Typography
+            fontSize={10}
+            style={{ whiteSpace: 'nowrap', color: 'blue' }}
+          >
+            {understandsTicketPrices ? 'VIP sales' : ''}
+          </Typography>
+          <div className="row center-div spacing">
+            <Typography
+              style={{
+                whiteSpace: 'nowrap',
+                backgroundColor: 'lightblue',
+                padding: 5,
+              }}
+            >
+              {understandsTicketPrices ? `$${String(VIP_TICKET_PRICE)}` : ``}
+            </Typography>
+            <Typography style={{ backgroundColor: 'lightblue', padding: 5 }}>
+              {understandsMultiplication ? 'x' : ''}
+            </Typography>
+            <Typography
+              style={{
+                whiteSpace: 'nowrap',
+                backgroundColor: 'lightblue',
+                padding: 5,
+              }}
+            >
+              {
+                {
+                  ...globalGameStateDataRecord,
+                  ...playerGameStateDataRecord,
+                }[VIP_TICKET_PERCENT_KEY]
+              }{' '}
+              VIP
+            </Typography>
+            <Typography style={{ backgroundColor: 'lightblue', padding: 5 }}>
+              {understandsMultiplication ? 'x' : ''}
+            </Typography>
+            <Typography
+              style={{
+                whiteSpace: 'nowrap',
+                backgroundColor: 'lightblue',
+                padding: 5,
+              }}
+            >
+              {understandsSellThroughRates
+                ? `${String(VIP_TICKET_CONVERSION_RATE)}%`
+                : ''}
+            </Typography>
+          </div>
+        </div>
+        <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+          {understandsAddition ? '+' : ''}
+        </Typography>
+
+        <div className="column center-div">
+          <Typography
+            fontSize={10}
+            style={{ whiteSpace: 'nowrap', color: 'red' }}
+          >
+            {understandsTicketPrices ? 'Reserved sales' : ''}
+          </Typography>
+          <div className="row center-div spacing">
+            <Typography
+              style={{
+                whiteSpace: 'nowrap',
+                backgroundColor: 'pink',
+                padding: 5,
+              }}
+            >
+              {understandsTicketPrices
+                ? `$${String(RESERVED_TICKET_PRICE)}`
+                : ''}
+            </Typography>
+            <Typography style={{ backgroundColor: 'pink', padding: 5 }}>
+              {understandsMultiplication ? 'x' : ''}
+            </Typography>
+            <Typography
+              style={{
+                whiteSpace: 'nowrap',
+                backgroundColor: 'pink',
+                padding: 5,
+              }}
+            >
+              {
+                {
+                  ...globalGameStateDataRecord,
+                  ...playerGameStateDataRecord,
+                }[RESERVED_TICKET_PERCENT_KEY]
+              }{' '}
+              Reserved
+            </Typography>
+            <Typography style={{ backgroundColor: 'pink', padding: 5 }}>
+              {understandsMultiplication ? 'x' : ''}
+            </Typography>
+            <Typography style={{ backgroundColor: 'pink', padding: 5 }}>
+              {understandsSellThroughRates
+                ? `${String(RESERVED_TICKET_CONVERSION_RATE)}%`
+                : ''}
+            </Typography>
+          </div>
+        </div>
+        <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
+          {understandsAddition ? '+' : ''}
+        </Typography>
+
+        <div className="column center-div">
+          <Typography
+            fontSize={10}
+            style={{ whiteSpace: 'nowrap', color: 'brown' }}
+          >
+            {understandsTicketPrices ? 'General Admission sales' : ''}
+          </Typography>
+          <div className="row center-div spacing">
+            <Typography
+              style={{
+                whiteSpace: 'nowrap',
+                backgroundColor: 'tan',
+                padding: 5,
+              }}
+            >
+              {understandsTicketPrices
+                ? `$${String(GENERAL_ADMISSION_TICKET_PRICE)}`
+                : ''}
+            </Typography>
+            <Typography style={{ backgroundColor: 'tan', padding: 5 }}>
+              {understandsMultiplication ? 'x' : ''}
+            </Typography>
+            <Typography
+              style={{
+                whiteSpace: 'nowrap',
+                backgroundColor: 'tan',
+                padding: 5,
+              }}
+            >
+              {
+                {
+                  ...globalGameStateDataRecord,
+                  ...playerGameStateDataRecord,
+                }[GENERAL_ADMISSION_TICKET_PERCENT_KEY]
+              }{' '}
+              General
+            </Typography>
+            <Typography style={{ backgroundColor: 'tan', padding: 5 }}>
+              {understandsMultiplication ? 'x' : ''}
+            </Typography>
+            <Typography style={{ backgroundColor: 'tan', padding: 5 }}>
+              {understandsSellThroughRates
+                ? `${String(GENERAL_ADMISSION_TICKET_CONVERSION_RATE)}%`
+                : ''}
+            </Typography>
+          </div>
+        </div>
+        <TransformComponent>
+          <div />
+        </TransformComponent>
+      </div>
     );
   }
 

@@ -16,7 +16,6 @@ export interface Avatar {
 export interface Player {
   _id: string;
   googleId: string;
-  email: string;
   userRole: UserRole;
   loginService: LoginService;
   lastLoginAt: Date;

@@ -16,6 +16,7 @@ import { SkillsPracticed, TroubleSpots } from './skill-card';
 import { Classroom } from '../../../store/slices/educational-data/types';
 import { GamesDropdown } from '../../button';
 import { useSearchParams } from 'react-router-dom';
+import { useWithWindow } from '../../../hooks/use-with-window';
 
 const styles = makeStyles()(() => ({
   card: {
@@ -38,6 +39,7 @@ export default function ActiveSessionView(props: {
   const { classroom } = props;
   const { classes } = styles();
   const { educationalData } = useWithEducationalData();
+  const { windowHeight } = useWithWindow();
   const [studentSearch, setStudentSearch] = React.useState<string>();
   const [game, setGame] = React.useState<string>();
   const searchParams = useSearchParams();
@@ -50,7 +52,7 @@ export default function ActiveSessionView(props: {
   );
 
   return (
-    <div className="dashboard">
+    <div className="dashboard" style={{ minHeight: windowHeight - 250 }}>
       <div className="row" style={{ justifyContent: 'space-between' }}>
         <Typography variant="h5" fontWeight="bold">
           ACTIVE SESSION
@@ -147,7 +149,7 @@ export default function ActiveSessionView(props: {
                 color="inherit"
                 style={{ alignSelf: 'end' }}
                 endIcon={<ChevronRight />}
-                onClick={() => searchParams[1]({ tab: '1', report: '2' })}
+                onClick={() => searchParams[1]({ tab: '1', report: '1' })}
               >
                 Monitor Students
               </Button>

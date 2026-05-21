@@ -70,7 +70,7 @@ function DroppableGroup(props: {
       <Typography fontSize={12}>
         {props.groupId === -1
           ? 'UNASSIGNED STUDENTS'
-          : `Group ${props.groupId}`}
+          : `Group ${props.groupId + 1}`}
       </Typography>
       <div
         className="row center-div spacing"
@@ -146,7 +146,14 @@ export function RoomSetupView(props: { classroom: Classroom }): JSX.Element {
   );
 
   React.useEffect(() => {
-    setStudentMembers(getCurrentMembers());
+    if (
+      studentMembers.map((s) => s.userId).toString() !==
+      getCurrentMembers()
+        .map((s) => s.userId)
+        .toString()
+    ) {
+      setStudentMembers(getCurrentMembers());
+    }
   }, [classroom]);
 
   React.useEffect(() => {
@@ -165,11 +172,13 @@ export function RoomSetupView(props: { classroom: Classroom }): JSX.Element {
     const members: ClassMembership[] = [];
     for (const m of studentMemberships) {
       const room = rooms.find((r) =>
-        r.gameData.players.find((p) => p.email === m.userEmail)
+        r.gameData.players.find((p) => p._id === m.userId)
       );
-      const groupId = Number.parseInt(
-        room?.name.replace('Group #', '').replace(' Solution Space', '') || '-1'
-      );
+      const groupId =
+        Number.parseInt(
+          room?.name.replace('Group #', '').replace(' Solution Space', '') ||
+            '0'
+        ) - 1;
       const member: ClassMembership = {
         ...m,
         groupId: groupId,
@@ -336,7 +345,8 @@ export function RoomSetupView(props: { classroom: Classroom }): JSX.Element {
         }
         onClick={handleStartGame}
       >
-        {starting ? 'Starting...' : 'Start Game'}
+        {rooms.length === 0 ? (starting ? 'Starting...' : 'Start Game') : ''}
+        {rooms.length > 0 ? (starting ? 'Saving...' : 'Save Groups') : ''}
       </Button>
     </div>
   );

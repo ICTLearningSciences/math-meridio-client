@@ -27,13 +27,12 @@ export function defaultClassroomData(classroomOwnerId: string, classroomId: stri
     }
 }
 
-export function defaultClassroomMembershipData(classroomId: string, groupId: number, userId: string, userEmail: string): ClassMembership {
+export function defaultClassroomMembershipData(classroomId: string, groupId: number, userId: string): ClassMembership {
     return {
         classId: classroomId,
         groupId: groupId,
         userId: userId,
         status: ClassMembershipStatus.MEMBER,
-        userEmail: userEmail,
     }
 }
 
@@ -47,6 +46,7 @@ export function fetchStudentDataHydrationResponse(): FetchStudentEducationalData
             gameList: [],
             classMemberships: [],
             phaseReflections: [],
+            notifications: [],
         }
     }
 }
@@ -60,6 +60,7 @@ export function fetchInstructorDataHydrationResponse(): FetchInstructorEducation
             gameList: [],
             classMemberships: [],
             phaseReflections: [],
+            notifications: [],
         }
     }
 }

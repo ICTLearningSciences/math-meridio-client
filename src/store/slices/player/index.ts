@@ -16,6 +16,7 @@ import {
   localStorageStore,
 } from '../../local-storage';
 import { Player } from './types';
+
 export interface PlayerStateData {
   player: Player | undefined;
   loginStatus: LoadingState;

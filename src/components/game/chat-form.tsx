@@ -19,15 +19,20 @@ import {
   CircularProgress,
 } from '@mui/material';
 import { Mic, MicOutlined, Send } from '@mui/icons-material';
+import { GameData } from '../../store/slices/game/types';
+import { useAppSelector } from '../../store/hooks';
 
 export const MAX_MESSAGE_LENGTH = 200;
 
 export default function ChatForm(props: {
+  uiGameData?: GameData;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sendMessage: (msg: string) => Promise<any>;
   isMyTurn: boolean;
   isPaused?: boolean;
+  isTeacher?: boolean;
   phasesCompleted?: boolean;
+  disabled?: boolean;
 }): JSX.Element {
   const [input, setInput] = React.useState<string>('');
   const [isSending, setIsSending] = React.useState<boolean>(false);
@@ -38,6 +43,7 @@ export default function ChatForm(props: {
     resetTranscript,
   } = useSpeechRecognition();
   const { sendMessage, isMyTurn, isPaused } = props;
+  const player = useAppSelector((state) => state.playerData.player);
 
   React.useEffect(() => {
     if (listening) {
@@ -97,23 +103,41 @@ export default function ChatForm(props: {
         <FormControl
           variant="outlined"
           style={{ flex: 1 }}
-          disabled={isSending}
+          disabled={isSending || props.disabled}
         >
-          <InputLabel>Chat:</InputLabel>
+          <InputLabel>
+            {props.phasesCompleted
+              ? 'You have completed the final phase of this activity.'
+              : 'Chat:'}
+          </InputLabel>
           <OutlinedInput
             data-cy="chat-input"
-            label="Chat:"
+            label={
+              props.phasesCompleted
+                ? 'You have completed the final phase of this activity.'
+                : 'Chat:'
+            }
             type="text"
             value={input}
             disabled={
-              listening || isPaused || isSending || props.phasesCompleted
+              listening ||
+              isPaused ||
+              isSending ||
+              props.phasesCompleted ||
+              props.disabled
             }
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => onKeyPress(e, isMyTurn)}
             style={{
               backgroundColor: 'white',
               animation:
-                isMyTurn && !isPaused && !props.phasesCompleted && !isSending
+                props.uiGameData?.curGameState?.playersLeftToRespond?.includes(
+                  player?._id || ''
+                ) &&
+                !isPaused &&
+                !props.phasesCompleted &&
+                !isSending &&
+                !props.isTeacher
                   ? 'blink 1s ease-in-out 0s infinite reverse'
                   : '',
             }}
@@ -149,7 +173,8 @@ export default function ChatForm(props: {
                       !isMyTurn ||
                       isPaused ||
                       isSending ||
-                      props.phasesCompleted
+                      props.phasesCompleted ||
+                      props.disabled
                     }
                   >
                     <Send />
@@ -165,7 +190,8 @@ export default function ChatForm(props: {
           disabled={
             !browserSupportsSpeechRecognition ||
             isPaused ||
-            props.phasesCompleted
+            props.phasesCompleted ||
+            props.disabled
           }
           style={{ marginLeft: 10 }}
         >

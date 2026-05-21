@@ -93,6 +93,7 @@ export default function EndOfPhaseReflectionModal({
   player,
   fetchRoom,
 }: EndOfPhaseReflectionModalProps): JSX.Element {
+  const [isOpen, setIsOpen] = useState<boolean>(false);
   const [reflectionText, setReflectionText] = useState('');
   const [lastSubmittedReflection, setLastSubmittedReflection] = useState('');
   const [locallySubmittedReflection, setLocallySubmittedReflection] =
@@ -112,11 +113,24 @@ export default function EndOfPhaseReflectionModal({
 
   const isInWaitingState = curState === 'WAITING_FOR_STUDENT_READY_TO_CONTINUE';
   const isEndOfPhaseReflection = curState === 'END_OF_PHASE_REFLECTION';
-  const isOpen = isEndOfPhaseReflection || isInWaitingState;
 
   const currentPlayerReflection = studentReflections[player._id];
   const hasSubmittedReflection =
     Boolean(currentPlayerReflection) || hasLocallySubmitted;
+
+  React.useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isEndOfPhaseReflection || isInWaitingState) {
+      timer = setTimeout(() => setIsOpen(true), 10 * 1000); // Adjust the delay before fading in the next string
+    } else {
+      setIsOpen(false);
+    }
+    return () => {
+      if (timer) {
+        clearTimeout(timer);
+      }
+    };
+  }, [isEndOfPhaseReflection, isInWaitingState]);
 
   const handleReflectionChange = (text: string) => {
     setReflectionText(text);
@@ -177,7 +191,7 @@ export default function EndOfPhaseReflectionModal({
   return (
     <Dialog open={isOpen} maxWidth="lg" fullWidth disableEscapeKeyDown>
       <DialogContent>
-        <DialogTitle style={{ textAlign: 'center' }}>
+        <DialogTitle style={{ textAlign: 'center', fontWeight: 'bold' }}>
           Reflection {phaseTitle ? `- ${phaseTitle}` : ''}
         </DialogTitle>
         <Box
@@ -246,6 +260,7 @@ export default function EndOfPhaseReflectionModal({
               variant="outlined"
               style={{ borderRadius: 10 }}
               sx={{ flex: 1, borderRadius: 10 }}
+              disabled={hasSubmittedReady}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
