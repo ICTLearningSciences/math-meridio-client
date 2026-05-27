@@ -29,7 +29,6 @@ import { Room, RoomPhase, SenderType } from '../../../store/slices/game/types';
 import { Player } from '../../../store/slices/player/types';
 import { calculateAverage, calculateSum } from '../../../helpers';
 import {
-  GamePhaseReflections,
   GenericLlmRequest,
   PromptOutputTypes,
   PromptRoles,
@@ -37,7 +36,6 @@ import {
 } from '../../../types';
 import { jsonLlmRequest } from '../../../classes/api-helpers';
 import { useWithConfig } from '../../../store/slices/config/use-with-config';
-import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
 import ChatThread from '../../game/chat-thread';
 
 export interface PlayerPhaseMetrics {
@@ -258,47 +256,25 @@ export function ChatLog(props: {
 
 export function KeyWords(props: {
   gameRooms: Room[];
-  useReflections?: boolean;
   phase?: number;
   category?: string;
 }): JSX.Element {
   const { gameRooms, phase } = props;
+  const [loading, setLoading] = React.useState<boolean>(false);
   const [keywords, setKeywords] = React.useState<Word[]>();
   const [messages, setMessages] = React.useState<string[]>();
   const { firstAvailableAzureServiceModel } = useWithConfig();
-  const { educationalData } = useWithEducationalData();
 
   React.useEffect(() => {
-    const roomIds = gameRooms.map((r) => r._id);
     const msgs: string[] = [];
-    if (props.useReflections) {
-      const phaseReflections: GamePhaseReflections[] = [];
-      for (const room of gameRooms) {
-        phaseReflections.push(
-          ...educationalData.phaseReflections.filter(
-            (p) =>
-              roomIds.includes(p.roomId) &&
-              (phase === undefined ||
-                p.phaseId ===
-                  room.gameData.phaseProgression.phasesStarted[phase])
-          )
-        );
-      }
-      for (const pr of phaseReflections) {
-        for (const r of Object.values(pr.reflections)) {
-          msgs.push(r);
-        }
-      }
-    } else {
-      for (const room of gameRooms) {
-        for (const chat of room.gameData.chat.filter(
-          (c) =>
-            c.sender === SenderType.PLAYER &&
-            (phase === undefined ||
-              c.phaseId === room.gameData.phaseProgression.phasesStarted[phase])
-        )) {
-          msgs.push(chat.message);
-        }
+    for (const room of gameRooms) {
+      for (const chat of room.gameData.chat.filter(
+        (c) =>
+          c.sender === SenderType.PLAYER &&
+          (phase === undefined ||
+            c.phaseId === room.gameData.phaseProgression.phasesStarted[phase])
+      )) {
+        msgs.push(chat.message.toLowerCase().trim());
       }
     }
     if (messages?.join('') !== msgs.join('')) {
@@ -308,23 +284,27 @@ export function KeyWords(props: {
 
   React.useEffect(() => {
     if (!messages || messages.length === 0) return;
-    requestKeyWords(messages, props.category || 'Math Good').then((data) => {
-      const keywords: Word[] = [];
-      const words = messages.join(' ').split(' ');
-      for (const word of data) {
-        const frequency = words.filter(
-          (w) => w.toLowerCase() === word.toLowerCase()
-        ).length;
-        if (frequency > 0) {
-          keywords.push({
-            text: word,
-            value: frequency * 200,
-          });
+    setLoading(true);
+    requestKeyWords(messages, props.category || 'Math Good')
+      .then((data) => {
+        const keywords: Word[] = [];
+        const words = messages.join(' ').replace(/\W /g, '').split(' ');
+        for (const word of data) {
+          const frequency = words.filter((w) => w === word).length;
+          if (frequency > 0) {
+            keywords.push({
+              text: word,
+              value: frequency * 200,
+            });
+          }
         }
-      }
-      setKeywords(keywords);
-    });
-  }, [messages]);
+        setKeywords(keywords);
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
+      });
+  }, [messages, props.category]);
 
   async function requestKeyWords(
     reflections: string[],
@@ -385,7 +365,7 @@ export function KeyWords(props: {
           marginTop: 10,
         }}
       >
-        {keywords ? (
+        {!loading && keywords ? (
           <WordCloud
             words={keywords}
             width={300}
