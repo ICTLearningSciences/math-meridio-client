@@ -132,7 +132,7 @@ export default function EndOfPhaseReflectionModal({
       timer = setTimeout(() => {
         setIsOpen(true);
         setTimeout(reward, 1000);
-      }, 10 * 1000);
+      }, (phaseTitle === 'Introduction' ? 20 : 10) * 1000);
     } else {
       setIsOpen(false);
     }
