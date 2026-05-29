@@ -21,6 +21,7 @@ import {
   ChatLog,
   Contribution,
   KeyWords,
+  NeedsHelp,
   PlayerPhaseMetrics,
   SkillsPracticed,
   TimeSpent,
@@ -80,6 +81,7 @@ export function SummaryReportCard(props: {
             <KeyWords gameRooms={gameRooms} />
           </Grid>
         </Grid>
+        <NeedsHelp students={students} gameRooms={gameRooms} />
         <SkillsPracticed students={students} gameRooms={gameRooms} />
         <TroubleSpots students={students} gameRooms={gameRooms} />
       </CardContent>
@@ -379,7 +381,7 @@ export function PhaseReportCard(props: { classroom: Classroom }): JSX.Element {
             />
           </Grid>
         </Grid>
-
+        <NeedsHelp students={students} gameRooms={gameRooms} />
         <SkillsPracticed students={students} gameRooms={gameRooms} />
         <TroubleSpots students={students} gameRooms={gameRooms} />
       </CardContent>
@@ -483,6 +485,9 @@ export function IndividualReportCard(props: {
             )}
             <Grid item xs={phaseReflections.length > 0 ? 6 : 12}>
               <ChatLog phase={phase} gameRoom={room} />
+            </Grid>
+            <Grid item xs={12}>
+              <NeedsHelp students={room.gameData.players} gameRooms={[room]} />
             </Grid>
             <Grid item xs={12}>
               <SkillsPracticed

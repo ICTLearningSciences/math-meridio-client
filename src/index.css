@@ -24,7 +24,7 @@ body {
 .header {
   height: 6%;
   color: white;
-  background-image: linear-gradient(to bottom, rgb(114, 20, 201), rgb(59, 7, 105));
+  background-image: linear-gradient(to bottom, #7214c9, #3b0769);
 }
 
 .page {
@@ -49,7 +49,7 @@ body {
   display: flex;
   flex-direction: column;
   color: white;
-  background-image: linear-gradient(to bottom, rgb(114, 20, 201), rgb(59, 7, 105));
+  background-image: linear-gradient(to bottom, #7214c9, #3b0769);
   padding: 40px;
   border-top-right-radius: 40px;
   border-top-left-radius: 40px;

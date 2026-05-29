@@ -8,8 +8,8 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowForward,
+  BackHand,
   CheckCircleOutline,
-  ErrorOutline,
   WarningAmberOutlined,
 } from '@mui/icons-material';
 import {
@@ -69,7 +69,7 @@ export default function RoomCard(props: {
               <Tooltip
                 title={`${needsHelp.map((p) => p.name).join(', ')} needs help`}
               >
-                <ErrorOutline color="error" />
+                <BackHand color="error" />
               </Tooltip>
             ) : playersPaused.length === room.gameData.players.length ? (
               <Tooltip title="Players are inactive">

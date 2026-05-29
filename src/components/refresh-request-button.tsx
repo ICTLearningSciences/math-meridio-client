@@ -35,6 +35,7 @@ export function RefreshRequestButton(props: { autoRefreshTime?: number }) {
       !pathname.includes('/room/') &&
       !search.includes('tab=2')
     ) {
+      refresh();
       const timeoutId = setInterval(refresh, pingTime * 1000);
       setPoll(timeoutId);
     }

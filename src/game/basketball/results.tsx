@@ -41,56 +41,54 @@ export function Leaderboard(props: {
 }): JSX.Element {
   const { gameData, simData } = props;
   const me = useAppSelector((state) => state.playerData.player);
+  const data = Object.values(simData).sort(
+    (a, b) => b.totalPoints - a.totalPoints
+  );
+  const topScore = data[0]?.totalPoints;
 
   return (
     <div className="column spacing">
       <Typography fontWeight="bold">Leaderboard</Typography>
       <List>
-        {Object.values(simData)
-          .sort((a, b) => b.totalPoints - a.totalPoints)
-          .map((data, i) => {
-            const player = gameData.players.find((p) => p._id === data.player);
-            const color = i === 0 ? 'gold' : i === 1 ? '#CD7F32' : '';
-            return (
-              <ListItem key={i} className="row">
-                <ListItemAvatar
-                  className="row center-div spacing"
-                  style={{ marginRight: 10 }}
-                >
-                  <Avatar
-                    sx={{ width: 24, height: 24, backgroundColor: color }}
-                  >
-                    <Typography fontSize={12}>{i + 1}</Typography>
-                  </Avatar>
-                  <AvatarSprite
-                    bgColor={'rgb(217, 217, 217)'}
-                    player={player}
-                  />
-                </ListItemAvatar>
-                <div style={{ flexGrow: 1, marginRight: 5 }}>
-                  <Typography fontWeight="bold">
-                    {player?.name} {me?._id === player?._id ? ' (Me) ' : ''}
-                  </Typography>
-                  <LinearProgress
-                    variant="determinate"
-                    value={(data?.totalPoints / 108) * 100}
-                    style={{
-                      height: 10,
-                      borderRadius: 10,
-                      marginTop: 5,
-                      marginBottom: 5,
-                    }}
-                  />
-                  <Typography color="primary" variant="subtitle2">
-                    {data?.totalPoints || 0} points
-                  </Typography>
-                </div>
-                <EmojiEvents
-                  sx={{ color: color, visibility: i === 0 ? '' : 'hidden' }}
+        {data.map((data, i) => {
+          const player = gameData.players.find((p) => p._id === data.player);
+          const isTop = data.totalPoints === topScore;
+          const color = isTop ? 'gold' : i === 1 ? '#CD7F32' : '';
+          return (
+            <ListItem key={i} className="row">
+              <ListItemAvatar
+                className="row center-div spacing"
+                style={{ marginRight: 10 }}
+              >
+                <Avatar sx={{ width: 24, height: 24, backgroundColor: color }}>
+                  <Typography fontSize={12}>{i + 1}</Typography>
+                </Avatar>
+                <AvatarSprite bgColor={'rgb(217, 217, 217)'} player={player} />
+              </ListItemAvatar>
+              <div style={{ flexGrow: 1, marginRight: 5 }}>
+                <Typography fontWeight="bold">
+                  {player?.name} {me?._id === player?._id ? ' (Me) ' : ''}
+                </Typography>
+                <LinearProgress
+                  variant="determinate"
+                  value={(data?.totalPoints / 108) * 100}
+                  style={{
+                    height: 10,
+                    borderRadius: 10,
+                    marginTop: 5,
+                    marginBottom: 5,
+                  }}
                 />
-              </ListItem>
-            );
-          })}
+                <Typography color="primary" variant="subtitle2">
+                  {data?.totalPoints || 0} points
+                </Typography>
+              </div>
+              <EmojiEvents
+                sx={{ color: color, visibility: isTop ? '' : 'hidden' }}
+              />
+            </ListItem>
+          );
+        })}
       </List>
     </div>
   );

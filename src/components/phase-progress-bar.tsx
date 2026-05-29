@@ -51,7 +51,7 @@ export function PhaseSelector(props: {
             key={index}
             whileHover={{ scale: 1.05, filter: 'brightness(0.8)' }}
             className="column center-div spacing"
-            style={{ flexGrow: 1 }}
+            style={{ flexGrow: 1, scale: phase === index ? 1.05 : 1 }}
             onClick={() => onTogglePhase(index)}
           >
             <div
@@ -60,6 +60,7 @@ export function PhaseSelector(props: {
                 height: 30,
                 width: '100%',
                 borderRadius: 40,
+                border: phase === index ? 'solid 2px lightblue' : '',
                 backgroundColor:
                   (phase === undefined && phasesCompleted > index) ||
                   phase === index
