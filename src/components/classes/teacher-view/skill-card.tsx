@@ -8,11 +8,9 @@ import React from 'react';
 import { Word, WordCloud } from '@isoterik/react-word-cloud';
 import {
   CheckCircle,
-  ErrorOutline,
   ExpandLess,
   ExpandMore,
   Person,
-  WarningAmberOutlined,
 } from '@mui/icons-material';
 import {
   Card,
@@ -24,7 +22,7 @@ import {
 } from '@mui/material';
 import { BarChart, PieChart } from '@mui/x-charts';
 
-import { PlayerSprite } from '../../avatar-sprite';
+import AvatarSprite, { PlayerSprite } from '../../avatar-sprite';
 import { Room, RoomPhase, SenderType } from '../../../store/slices/game/types';
 import { Player } from '../../../store/slices/player/types';
 import { calculateAverage, calculateSum } from '../../../helpers';
@@ -37,6 +35,8 @@ import {
 import { jsonLlmRequest } from '../../../classes/api-helpers';
 import { useWithConfig } from '../../../store/slices/config/use-with-config';
 import ChatThread from '../../game/chat-thread';
+import { Link } from 'react-router-dom';
+import { GAMES } from '../../../game/types';
 
 export interface PlayerPhaseMetrics {
   player: Player;
@@ -248,6 +248,7 @@ export function ChatLog(props: {
           requestUserInputPhaseData={gameRoom.gameData.curGameState}
           uiGameData={gameRoom.gameData}
           messages={messages}
+          height={500}
         />
       )}
     </div>
@@ -384,27 +385,10 @@ export function TroubleSpots(props: {
   students: Player[];
   gameRooms: Room[];
   noHeader?: boolean;
-  hidePlayers?: boolean;
 }): JSX.Element {
   const { students, gameRooms } = props;
   const [expanded, setExpanded] = React.useState<boolean>(true);
   const [skills, setSkills] = React.useState<Record<string, SkillsMet>>({});
-
-  const studentsNeedHelp = gameRooms.reduce((students: Player[], room) => {
-    for (const student of room.gameData.players) {
-      if (room.gameData.playersStatusRecord[student._id].needsHelpInRoom) {
-        students.push(student);
-      }
-    }
-    return students;
-  }, []);
-  const studentsIncomplete = students.filter((s) =>
-    gameRooms.find(
-      (r) =>
-        r.gameData.playersStatusRecord[s._id] &&
-        Object.values(r.gameData.mathStandardsCompleted).includes(false)
-    )
-  );
 
   React.useEffect(() => {
     const skills: Record<string, SkillsMet> = {};
@@ -437,7 +421,7 @@ export function TroubleSpots(props: {
         </Typography>
       )}
       <Grid container spacing={2}>
-        <Grid item xs={props.hidePlayers ? 12 : 7}>
+        <Grid item xs={12}>
           <Card
             style={{ backgroundColor: 'rgb(231, 231, 231)', borderRadius: 10 }}
             elevation={0}
@@ -479,69 +463,68 @@ export function TroubleSpots(props: {
             </CardContent>
           </Card>
         </Grid>
-        {!props.hidePlayers && (
-          <Grid item xs={5}>
+      </Grid>
+    </div>
+  );
+}
+
+export function NeedsHelp(props: {
+  students: Player[];
+  gameRooms: Room[];
+}): JSX.Element {
+  const { gameRooms } = props;
+
+  const studentsNeedHelp = gameRooms.reduce((students: Player[], room) => {
+    for (const student of room.gameData.players) {
+      if (room.gameData.playersStatusRecord[student._id].needsHelpInRoom) {
+        students.push(student);
+      }
+    }
+    return students;
+  }, []);
+
+  if (!studentsNeedHelp.length) return <div />;
+  return (
+    <Card
+      style={{ backgroundColor: 'rgb(231, 231, 231)', borderRadius: 10 }}
+      elevation={0}
+    >
+      <CardContent className="column spacing">
+        <Typography fontSize={14} fontWeight="bold">
+          Requested Help
+        </Typography>
+        {studentsNeedHelp.map((p) => {
+          const room = gameRooms.find(
+            (r) => r.gameData.playersStatusRecord[p._id]
+          );
+          if (!room) return <div key={p._id} />;
+          return (
             <Card
+              key={p._id}
+              className="row center-div"
               style={{
-                backgroundColor: 'rgb(246, 246, 246)',
-                borderRadius: 10,
+                justifyContent: 'space-between',
+                backgroundColor: 'white',
+                paddingRight: 20,
               }}
               elevation={0}
             >
-              <CardContent className="column spacing">
-                <Typography fontSize={14} fontWeight="bold">
-                  Needs Help
-                </Typography>
-                <div className="row center-div spacing">
-                  {studentsNeedHelp.map((p) => {
-                    const room = gameRooms.find(
-                      (r) => r.gameData.playersStatusRecord[p._id]
-                    );
-                    return (
-                      <div key={p._id} className="column center-div">
-                        <ErrorOutline
-                          color="error"
-                          style={{ marginBottom: 10 }}
-                        />
-                        <PlayerSprite player={p} />
-                        {room && (
-                          <Typography fontSize={12}>
-                            Phase{' '}
-                            {room.gameData.phaseProgression.phasesCompleted
-                              .length + 1}
-                          </Typography>
-                        )}
-                      </div>
-                    );
-                  })}
-                  {studentsIncomplete.map((p) => {
-                    const room = gameRooms.find(
-                      (r) => r.gameData.playersStatusRecord[p._id]
-                    );
-                    return (
-                      <div key={p._id} className="column center-div">
-                        <WarningAmberOutlined
-                          color="warning"
-                          style={{ marginBottom: 10 }}
-                        />
-                        <PlayerSprite player={p} />
-                        {room && (
-                          <Typography fontSize={12}>
-                            Phase{' '}
-                            {room.gameData.phaseProgression.phasesCompleted
-                              .length + 1}
-                          </Typography>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </CardContent>
+              <div className="row center-div">
+                <AvatarSprite player={p} />
+                <Typography>{p.name}</Typography>
+              </div>
+              <Link to={`/classes/${room.classId}/room/${room._id}`}>
+                {room.name}
+              </Link>
+              <Typography>
+                {GAMES.find((g) => g.id === room.gameData.gameId)?.name}: Phase{' '}
+                {room?.gameData.phaseProgression.phasesCompleted.length + 1}
+              </Typography>
             </Card>
-          </Grid>
-        )}
-      </Grid>
-    </div>
+          );
+        })}
+      </CardContent>
+    </Card>
   );
 }
 

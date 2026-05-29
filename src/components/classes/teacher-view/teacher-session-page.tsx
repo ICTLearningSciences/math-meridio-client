@@ -12,7 +12,7 @@ import { Button, Grid, TextField, Typography } from '@mui/material';
 import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
 import PhaseProgressBar from '../../phase-progress-bar';
 import RoomCard from './teacher-room-card';
-import { SkillsPracticed, TroubleSpots } from './skill-card';
+import { NeedsHelp, SkillsPracticed, TroubleSpots } from './skill-card';
 import { Classroom } from '../../../store/slices/educational-data/types';
 import { GamesDropdown } from '../../button';
 import { useSearchParams } from 'react-router-dom';
@@ -70,6 +70,10 @@ export default function ActiveSessionView(props: {
 
       <div className="column spacing" style={{ marginTop: 10 }}>
         <PhaseProgressBar gameRooms={gameRooms} size="large" />
+      </div>
+
+      <div className="column spacing" style={{ marginTop: 10 }}>
+        <NeedsHelp students={students} gameRooms={gameRooms} />
       </div>
 
       <div className="column spacing" style={{ marginTop: 10 }}>
@@ -154,12 +158,7 @@ export default function ActiveSessionView(props: {
                 Monitor Students
               </Button>
             </div>
-            <TroubleSpots
-              students={students}
-              gameRooms={gameRooms}
-              noHeader
-              hidePlayers
-            />
+            <TroubleSpots students={students} gameRooms={gameRooms} noHeader />
           </Grid>
         </Grid>
       </div>

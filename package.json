@@ -22,6 +22,7 @@
     "jsonschema": "^1.4.1",
     "motion": "^12.34.0",
     "openai": "^4.88.0",
+    "partycles": "^1.2.6",
     "phaser": "^3.80.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

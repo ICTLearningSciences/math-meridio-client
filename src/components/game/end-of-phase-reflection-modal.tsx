@@ -4,12 +4,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-/*
-This software is Copyright ©️ 2020 The University of Southern California. All Rights Reserved.
-Permission to use, copy, modify, and distribute this software and its documentation for educational, research and non-profit purposes, without fee, and without a written agreement is hereby granted, provided that the above copyright notice and subject to the full license file found in the root of this software deliverable. Permission to make commercial use of this software may be obtained by contacting:  USC Stevens Center for Innovation University of Southern California 1150 S. Olive Street, Suite 2300, Los Angeles, CA 90115, USA Email: accounting@stevens.usc.edu
 
-The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
-*/
 import React, { useState } from 'react';
 import {
   Dialog,
@@ -24,6 +19,7 @@ import {
   InputAdornment,
 } from '@mui/material';
 import { Check, Send } from '@mui/icons-material';
+
 import { Room } from '../../store/slices/game/types';
 import { Player } from '../../store/slices/player/types';
 import AvatarSprite from '../avatar-sprite';
@@ -32,6 +28,8 @@ import {
   submitReadyToContinue,
 } from '../../hooks/game-rooms/game-room-api';
 import { ColumnDiv } from '../../styled-components';
+import { WavyText } from '../animated-text';
+import { useReward } from 'partycles';
 
 interface PlayerReflectionDisplayItemProps {
   player: Player;
@@ -118,10 +116,23 @@ export default function EndOfPhaseReflectionModal({
   const hasSubmittedReflection =
     Boolean(currentPlayerReflection) || hasLocallySubmitted;
 
+  const { reward } = useReward('rewardId', 'confetti', {
+    particleCount: 100,
+    spread: 120,
+    colors: ['#ff0000', '#00ff00', '#0000ff'],
+    physics: {
+      gravity: 0.5,
+      wind: 0.1,
+    },
+  });
+
   React.useEffect(() => {
     let timer: NodeJS.Timeout;
     if (isEndOfPhaseReflection || isInWaitingState) {
-      timer = setTimeout(() => setIsOpen(true), 10 * 1000); // Adjust the delay before fading in the next string
+      timer = setTimeout(() => {
+        setIsOpen(true);
+        setTimeout(reward, 1000);
+      }, 10 * 1000);
     } else {
       setIsOpen(false);
     }
@@ -165,10 +176,6 @@ export default function EndOfPhaseReflectionModal({
     try {
       await submitReadyToContinue(room._id);
       setHasSubmittedReady(true);
-      // turn back to false after 4 seconds
-      setTimeout(() => {
-        setHasSubmittedReady(false);
-      }, 4000);
     } catch (error) {
       console.error('Failed to submit ready to continue:', error);
       setHasSubmittedReady(false);
@@ -186,15 +193,16 @@ export default function EndOfPhaseReflectionModal({
     hasSubmittedReady ||
     !isInWaitingState;
 
-  if (!isOpen) return <></>;
-
   return (
     <Dialog open={isOpen} maxWidth="lg" fullWidth disableEscapeKeyDown>
-      <DialogContent>
-        <DialogTitle style={{ textAlign: 'center', fontWeight: 'bold' }}>
-          Reflection {phaseTitle ? `- ${phaseTitle}` : ''}
+      <DialogContent style={{ overflowX: 'hidden' }}>
+        <DialogTitle
+          style={{ fontSize: 36, textAlign: 'center', fontWeight: 'bold' }}
+        >
+          <WavyText text={`${phaseTitle} - Phase Complete!`} />
         </DialogTitle>
         <Box
+          id="rewardId"
           sx={{
             display: 'flex',
             flexDirection: 'column',

@@ -5,8 +5,9 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import React from 'react';
-import { Button, CircularProgress } from '@mui/material';
+import { CircularProgress, IconButton, Tooltip } from '@mui/material';
 import { PlayerStatusData, Room } from '../store/slices/game/types';
+import { BackHand, DoDisturb } from '@mui/icons-material';
 
 interface HelpRequestButtonProps {
   myStatusInRoom: PlayerStatusData | undefined;
@@ -37,25 +38,30 @@ export function HelpRequestButton(props: HelpRequestButtonProps) {
       {isLoading ? (
         <CircularProgress size={24} style={{ color: 'white' }} />
       ) : (
-        <>
-          {!myStatusInRoom.needsHelpInRoom ? (
-            <Button
-              variant="text"
-              style={{ color: 'white', opacity: 0.9, textTransform: 'none' }}
-              onClick={() => handleHelpRequest(true)}
-            >
-              Request Help
-            </Button>
-          ) : (
-            <Button
-              variant="text"
-              style={{ color: 'white', textTransform: 'none' }}
-              onClick={() => handleHelpRequest(false)}
-            >
-              Cancel Help Request
-            </Button>
-          )}
-        </>
+        <Tooltip
+          title={
+            myStatusInRoom.needsHelpInRoom
+              ? 'Cancel Help Request'
+              : 'Request Help'
+          }
+        >
+          <IconButton
+            onClick={() => {
+              handleHelpRequest(!myStatusInRoom.needsHelpInRoom);
+            }}
+            style={{ color: 'white' }}
+          >
+            <BackHand />
+            {myStatusInRoom.needsHelpInRoom && (
+              <div
+                className="row center-div"
+                style={{ color: 'red', position: 'absolute', right: 1 }}
+              >
+                <DoDisturb fontSize="large" />
+              </div>
+            )}
+          </IconButton>
+        </Tooltip>
       )}
     </div>
   );
