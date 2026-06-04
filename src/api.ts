@@ -14,7 +14,7 @@ import {
   PromptStageStepGql,
 } from './components/discussion-stage-builder/types';
 import { Connection, GenericLlmRequest } from './types';
-import { Player } from './store/slices/player/types';
+import { EducationalRole, Player, UserRole } from './store/slices/player/types';
 import { ChatMessage, Room } from './store/slices/game/types';
 import { extractErrorMessageFromError } from './helpers';
 import { Config } from './store/slices/config';
@@ -371,7 +371,7 @@ export async function fetchPlayer(id: string): Promise<Player> {
 }
 
 export const fetchPlayersMutation = `
-    query FetchPlayers($filter: String!, $limit: Int) {
+    query FetchPlayers($filter: String, $limit: Int) {
       fetchPlayers(filter: $filter, limit: $limit) {
         edges {
           node {
@@ -382,12 +382,54 @@ export const fetchPlayersMutation = `
     }
   `;
 
-export async function fetchPlayers(ids: string[]): Promise<Player[]> {
-  const data = await execGql<Connection<Player>>({
-    query: fetchPlayersMutation,
-    variables: { filter: JSON.stringify({ _id: { in: ids } }), limit: 9999 },
-  });
+export async function fetchPlayers(ids?: string[]): Promise<Player[]> {
+  const data = await execGql<Connection<Player>>(
+    {
+      query: fetchPlayersMutation,
+      variables: {
+        filter: ids ? JSON.stringify({ _id: { in: ids } }) : undefined,
+        limit: 9999,
+      },
+    },
+    {
+      dataPath: 'fetchPlayers',
+    }
+  );
   return data.edges.map((edge) => edge.node);
+}
+
+export const updatePlayerRoleMutation = `
+  mutation UpdatePlayerRole($playerId: String!, $userRole: String, $educationalRole: String) {
+    admin {
+      updatePlayerRole(playerId: $playerId, userRole: $userRole, educationalRole: $educationalRole) {
+        ${userDataQuery}
+      }
+    }
+  }
+`;
+
+export async function updatePlayerRole(
+  playerId: string,
+  userRole?: UserRole,
+  educationalRole?: EducationalRole
+): Promise<Player> {
+  const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
+  const data = await execGql<{ admin: { updatePlayerRole: Player } }>(
+    {
+      query: updatePlayerRoleMutation,
+      variables: {
+        playerId,
+        userRole,
+        educationalRole,
+      },
+    },
+    {
+      dataPath: '',
+      accessToken: accessToken || undefined,
+    }
+  );
+  console.warn(data);
+  return data.admin.updatePlayerRole;
 }
 
 export async function addOrUpdatePlayer(
