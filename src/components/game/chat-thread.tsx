@@ -105,6 +105,7 @@ export default function ChatThread(props: {
   requestUserInputPhaseData: CurGameState;
   uiGameData: GameData;
   messages?: ChatMessage[];
+  height?: number;
 }): JSX.Element {
   const { roomIsProcessing, requestUserInputPhaseData, uiGameData } = props;
   const { reportPlayerAway } = useOutletContext<UseWithEducationalData>();
@@ -255,7 +256,7 @@ export default function ChatThread(props: {
       className={classes.chatThread}
       style={{
         backgroundColor: PlayerChatColors.Grey,
-        maxHeight: window.innerHeight - 250,
+        maxHeight: props.height || window.innerHeight - 250,
       }}
     >
       <Stack direction="column">

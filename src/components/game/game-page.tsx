@@ -17,11 +17,11 @@ import { PlayerComputedState, RoomPhase } from '../../store/slices/game/types';
 import GamePagePhaseDisplay from './game-page-phases';
 import { UseWithEducationalData } from '../../store/slices/educational-data/use-with-educational-data';
 import { useAppSelector } from '../../store/hooks';
+import { EducationalRole } from '../../store/slices/player/types';
 import { RequireInputType } from '../discussion-stage-builder/types';
 import PhaseProgressBar from '../phase-progress-bar';
 
 import '../../layout.css';
-import { EducationalRole } from '../../store/slices/player/types';
 
 // Type for the outlet context provided by GameLayout
 type EducationalDataContext = UseWithEducationalData;
@@ -175,14 +175,12 @@ function GamePage(): JSX.Element {
           fetchRoom={fetchRoom}
         />
       )}
-      {!isTeacher && (
-        <AwayStatusModal
-          roomId={room._id}
-          playerId={player._id}
-          iAmAway={iAmAway}
-        />
-      )}
-      {!isTeacher && <PausedStatusModal iAmPaused={iAmPaused} />}
+      <AwayStatusModal
+        roomId={room._id}
+        playerId={player._id}
+        iAmAway={iAmAway}
+      />
+      <PausedStatusModal iAmPaused={iAmPaused} />
     </div>
   );
 }

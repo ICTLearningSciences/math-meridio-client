@@ -4,8 +4,12 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
+
 import React, { useState, useEffect } from 'react';
-import './fading-text.css';
+import { motion } from 'framer-motion';
+import { randomInt } from '../helpers';
+
+import './animated-text.css';
 
 export const FadingText: React.FC<{ strings: string[] }> = ({ strings }) => {
   const [currentStringIndex, setCurrentStringIndex] = useState(0);
@@ -45,5 +49,44 @@ export const FadingText: React.FC<{ strings: string[] }> = ({ strings }) => {
     >
       {strings[currentStringIndex]}
     </div>
+  );
+};
+
+export const WavyText = ({ text = 'Wavy Motion' }: { text?: string }) => {
+  const colors = ['#ffaa40', '#9c40ff'];
+  const [animationTime, setAnimationTime] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setAnimationTime((prev) => prev + 0.1);
+    }, 50);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <h4 className="row center-div">
+      {text.split('').map((char, i) => {
+        const yOffset = Math.sin(animationTime + i * 0.3) * 5;
+        const color = colors[randomInt(colors.length)];
+        return (
+          <motion.span
+            key={i}
+            animate={{
+              y: yOffset,
+              color: color,
+              transition: {
+                type: 'spring',
+                stiffness: 300,
+                damping: 30,
+                mass: 0.8,
+              },
+            }}
+            className="inline-block"
+          >
+            {char === ' ' ? '\u00A0' : char}
+          </motion.span>
+        );
+      })}
+    </h4>
   );
 };

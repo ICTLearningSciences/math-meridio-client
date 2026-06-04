@@ -24,6 +24,7 @@ import { useWithHydrateRedux } from './store/use-with-hydrate-redux';
 import { useWithLogin } from './store/slices/player/use-with-login';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { useWithEducationalData } from './store/slices/educational-data/use-with-educational-data';
+import AdminPage from './components/admin';
 
 // Layout component that provides useLogin to all routes
 function RootLayout() {
@@ -81,6 +82,10 @@ const router = createBrowserRouter([
             element: <RoomViewPage />,
           },
         ],
+      },
+      {
+        path: '/admin',
+        element: <AdminPage />,
       },
       {
         path: '/discussion-builder',

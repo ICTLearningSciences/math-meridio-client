@@ -21,7 +21,8 @@ import { UseWithLogin } from '../store/slices/player/use-with-login';
 import { useWithEducationalData } from '../store/slices/educational-data/use-with-educational-data';
 import { HelpRequestButton } from './help-request-button';
 import { RefreshRequestButton } from './refresh-request-button';
-import { EducationalRole } from '../store/slices/player/types';
+import { EducationalRole, UserRole } from '../store/slices/player/types';
+import { Logout } from '@mui/icons-material';
 
 export function Header(props: { useLogin: UseWithLogin }) {
   const dispatch = useAppDispatch();
@@ -93,20 +94,15 @@ export function Header(props: { useLogin: UseWithLogin }) {
             />
           )}
           {pathname.includes('/room/') && (
-            <Button
-              variant="text"
-              disabled={!player || !room}
-              style={{
-                height: 'fit-content',
-                color: 'white',
-                marginRight: 5,
-                padding: 0,
-                textTransform: 'none',
-              }}
-              onClick={() => navigate('/classes')}
-            >
-              Leave Room
-            </Button>
+            <Tooltip title="Leave Room">
+              <IconButton
+                disabled={!player || !room}
+                style={{ color: 'white' }}
+                onClick={() => navigate('/classes')}
+              >
+                <Logout />
+              </IconButton>
+            </Tooltip>
           )}
           {player && (
             <div>
@@ -128,6 +124,9 @@ export function Header(props: { useLogin: UseWithLogin }) {
                 >
                   Logout
                 </MenuItem>
+                {player.userRole === UserRole.ADMIN && (
+                  <MenuItem onClick={() => navigate('/admin')}>Admin</MenuItem>
+                )}
               </Menu>
             </div>
           )}

@@ -6,7 +6,7 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React from 'react';
 import { Stack, Typography, Paper } from '@mui/material';
-import { FadingText } from '../fading-text';
+import { FadingText } from '../animated-text';
 
 export function ProcessingIndicator(): JSX.Element {
   return (
