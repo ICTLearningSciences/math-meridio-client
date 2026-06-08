@@ -7,7 +7,7 @@ The full terms of this copyright and license should always be found in the root 
 import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Badge, Typography } from '@mui/material';
-import { Archive, Mail, Unarchive } from '@mui/icons-material';
+import { Archive, ContentCopy, Mail, Unarchive } from '@mui/icons-material';
 
 import { useAppSelector } from '../../../store/hooks';
 import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
@@ -21,8 +21,11 @@ import TeacherManageClass from './teacher-manage-class';
 import TeacherEvents from './teacher-events-page';
 
 export default function TeacherLandingPage(): JSX.Element {
-  const { educationalData, adjustClassroomArchiveStatus } =
-    useWithEducationalData();
+  const {
+    educationalData,
+    adjustClassroomArchiveStatus,
+    copyAndArchiveClassroom,
+  } = useWithEducationalData();
   const { player } = useAppSelector((state) => state.playerData);
   const [classId, setClassId] = React.useState<string>();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -98,6 +101,15 @@ export default function TeacherLandingPage(): JSX.Element {
             icon={myClass.archivedAt ? <Unarchive /> : <Archive />}
           >
             {myClass.archivedAt ? 'Unarchive Class' : 'Archive Class'}
+          </OutlinedButton>
+        )}
+        {myClass && (
+          <OutlinedButton
+            color="secondary"
+            onClick={() => copyAndArchiveClassroom(myClass._id)}
+            icon={<ContentCopy />}
+          >
+            Copy & Archive Class
           </OutlinedButton>
         )}
       </div>

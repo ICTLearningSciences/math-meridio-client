@@ -309,6 +309,33 @@ export async function assignClassGroupsAndStart(
   );
 }
 
+export async function copyAndArchiveClassroom(
+  classId: string
+): Promise<AssignClassGroupsAndStartResponse> {
+  const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
+  return await execGql<AssignClassGroupsAndStartResponse>(
+    {
+      query: `mutation CopyAndArchiveClassroom($classId: String!) {
+        copyAndArchiveClassroom(classId: $classId) {
+          updatedClassroom {
+            ${classroomDataQuery}
+          }
+          createdRooms {
+            ${fullRoomQueryData}
+          }
+        }
+      }`,
+      variables: {
+        classId,
+      },
+    },
+    {
+      dataPath: 'copyAndArchiveClassroom',
+      accessToken: accessToken,
+    }
+  );
+}
+
 export async function adjustClassroomArchiveStatus(
   classId: string,
   setArchived: boolean

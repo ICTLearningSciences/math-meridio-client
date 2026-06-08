@@ -182,7 +182,6 @@ export function RoomSetupView(props: { classroom: Classroom }): JSX.Element {
       const member: ClassMembership = {
         ...m,
         groupId: groupId,
-        roomId: room?._id,
       };
       members.push(member);
     }
