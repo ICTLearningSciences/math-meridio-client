@@ -182,7 +182,6 @@ export function RoomSetupView(props: { classroom: Classroom }): JSX.Element {
       const member: ClassMembership = {
         ...m,
         groupId: groupId,
-        roomId: room?._id,
       };
       members.push(member);
     }
@@ -314,7 +313,7 @@ export function RoomSetupView(props: { classroom: Classroom }): JSX.Element {
                     );
                     return (
                       <ImageListItem key={member.userId}>
-                        {member.roomId ? (
+                        {member.groupId !== -1 ? (
                           <PlayerSprite player={p} color="white" />
                         ) : (
                           <DraggablePlayer

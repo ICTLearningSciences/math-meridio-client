@@ -7,7 +7,7 @@ The full terms of this copyright and license should always be found in the root 
 import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Badge, Typography } from '@mui/material';
-import { Archive, Mail, Unarchive } from '@mui/icons-material';
+import { Archive, ContentCopy, Mail, Unarchive } from '@mui/icons-material';
 
 import { useAppSelector } from '../../../store/hooks';
 import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
@@ -19,10 +19,14 @@ import TeacherHome from './teacher-home-page';
 import TeacherReports from './teacher-reports-page';
 import TeacherManageClass from './teacher-manage-class';
 import TeacherEvents from './teacher-events-page';
+import { Classroom } from '../../../store/slices/educational-data/types';
 
 export default function TeacherLandingPage(): JSX.Element {
-  const { educationalData, adjustClassroomArchiveStatus } =
-    useWithEducationalData();
+  const {
+    educationalData,
+    adjustClassroomArchiveStatus,
+    copyAndArchiveClassroom,
+  } = useWithEducationalData();
   const { player } = useAppSelector((state) => state.playerData);
   const [classId, setClassId] = React.useState<string>();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -61,6 +65,15 @@ export default function TeacherLandingPage(): JSX.Element {
     }
   }, [myClasses]);
 
+  function onArchive(c: Classroom): void {
+    adjustClassroomArchiveStatus(c._id, !c.archivedAt);
+  }
+
+  async function onCopyAndArchive(c: Classroom): Promise<void> {
+    const newClass = await copyAndArchiveClassroom(c._id);
+    setClassId(newClass.updatedClassroom._id);
+  }
+
   if (!loaded || myClasses.length === 0) {
     return <TeacherLoading />;
   }
@@ -92,12 +105,19 @@ export default function TeacherLandingPage(): JSX.Element {
         {myClass && (
           <OutlinedButton
             color="secondary"
-            onClick={() =>
-              adjustClassroomArchiveStatus(myClass._id, !myClass.archivedAt)
-            }
+            onClick={() => onArchive(myClass)}
             icon={myClass.archivedAt ? <Unarchive /> : <Archive />}
           >
             {myClass.archivedAt ? 'Unarchive Class' : 'Archive Class'}
+          </OutlinedButton>
+        )}
+        {myClass && (
+          <OutlinedButton
+            color="secondary"
+            onClick={() => onCopyAndArchive(myClass)}
+            icon={<ContentCopy />}
+          >
+            Copy & Archive Class
           </OutlinedButton>
         )}
       </div>

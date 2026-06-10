@@ -142,6 +142,13 @@ export const assignClassGroupsAndStart = createAsyncThunk(
   }
 );
 
+export const copyAndArchiveClassroom = createAsyncThunk(
+  'educationalData/copyAndArchiveClassroom',
+  async (args: { classId: string }) => {
+    return await api.copyAndArchiveClassroom(args.classId);
+  }
+);
+
 export const adjustClassroomArchiveStatus = createAsyncThunk(
   'educationalData/adjustClassroomArchiveStatus',
   async (args: { classId: string; setArchived: boolean }) => {
@@ -482,6 +489,13 @@ export const educationalDataSlice = createSlice({
       })
 
       .addCase(assignClassGroupsAndStart.fulfilled, (state, action) => {
+        const { updatedClassroom, createdRooms } = action.payload;
+        addOrUpdateClass(state, updatedClassroom);
+        createdRooms.forEach((room) => {
+          addOrUpdateGameRoom(state, room);
+        });
+      })
+      .addCase(copyAndArchiveClassroom.fulfilled, (state, action) => {
         const { updatedClassroom, createdRooms } = action.payload;
         addOrUpdateClass(state, updatedClassroom);
         createdRooms.forEach((room) => {

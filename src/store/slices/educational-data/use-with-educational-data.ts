@@ -57,6 +57,9 @@ export interface UseWithEducationalData {
     classId: string,
     groups: ClassMembership[]
   ) => Promise<AssignClassGroupsAndStartResponse>;
+  copyAndArchiveClassroom: (
+    classId: string
+  ) => Promise<AssignClassGroupsAndStartResponse>;
   adjustClassroomArchiveStatus: (
     classId: string,
     setArchived: boolean
@@ -220,6 +223,16 @@ export function useWithEducationalData(rId?: string): UseWithEducationalData {
       educationalDataActions.assignClassGroupsAndStart({
         classId,
         groups,
+      })
+    ).unwrap();
+  }
+
+  async function copyAndArchiveClassroom(
+    classId: string
+  ): Promise<AssignClassGroupsAndStartResponse> {
+    return await dispatch(
+      educationalDataActions.copyAndArchiveClassroom({
+        classId,
       })
     ).unwrap();
   }
@@ -429,6 +442,7 @@ export function useWithEducationalData(rId?: string): UseWithEducationalData {
     unblockStudentFromClass,
     assignStudentToGroup,
     assignClassGroupsAndStart,
+    copyAndArchiveClassroom,
     adjustClassroomArchiveStatus,
     updateClassNameDescription,
     joinGameRoom,
