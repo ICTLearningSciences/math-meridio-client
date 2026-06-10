@@ -55,7 +55,7 @@ export default function ActiveSessionView(props: {
     <div className="dashboard" style={{ minHeight: windowHeight - 250 }}>
       <div className="row" style={{ justifyContent: 'space-between' }}>
         <Typography variant="h5" fontWeight="bold">
-          ACTIVE SESSION
+          {classroom.archivedAt ? 'ARCHIVED' : 'ACTIVE'} SESSION
         </Typography>
         <GamesDropdown
           game={game}

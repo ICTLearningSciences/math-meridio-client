@@ -35,6 +35,9 @@ export function Header(props: { useLogin: UseWithLogin }) {
     useWithEducationalData();
 
   const room = educationalData.rooms.find((r) => r._id === roomId);
+  const classroom = educationalData.classes.find(
+    (c) => c._id === room?.classId
+  );
   const myStatusInRoom =
     player?._id && room
       ? room?.gameData.playersStatusRecord[player?._id]
@@ -79,8 +82,11 @@ export function Header(props: { useLogin: UseWithLogin }) {
           </IconButton>
         </div>
         {/* Empty div for spacing */}
-        <div className="row center-div" style={{ flexGrow: 1 }}>
-          <Typography variant="h5">{room ? room.name : ''}</Typography>
+        <div className="row center-div spacing" style={{ flexGrow: 1 }}>
+          <Typography variant="h5">{room?.name}</Typography>
+          <Typography variant="h5" color="red">
+            {classroom?.archivedAt ? ' (Archived)' : ''}
+          </Typography>
         </div>
         <div
           className="row center-div spacing"
