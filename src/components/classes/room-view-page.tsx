@@ -4,35 +4,14 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
+
 import React from 'react';
-import { useParams, useOutletContext } from 'react-router-dom';
-import { CircularProgress, Typography } from '@mui/material';
-import { UseWithEducationalData } from '../../store/slices/educational-data/use-with-educational-data';
 import GamePage from '../game/game-page';
 import withAuthorizationOnly from '../../wrap-with-authorization-only';
 import { useWithPollActiveRoom } from '../../store/slices/educational-data/use-with-poll-active-room';
 
 function RoomViewPage(): JSX.Element {
-  const { roomId } = useParams<{ roomId: string }>();
   useWithPollActiveRoom();
-
-  const educationalDataContext = useOutletContext<UseWithEducationalData>();
-
-  const room = educationalDataContext.educationalData.rooms.find(
-    (r) => r._id === roomId
-  );
-
-  if (!room) {
-    return (
-      <div className="root center-div">
-        <CircularProgress />
-        <Typography variant="body1" style={{ marginTop: 20 }}>
-          Loading room...
-        </Typography>
-      </div>
-    );
-  }
-
   return <GamePage />;
 }
 

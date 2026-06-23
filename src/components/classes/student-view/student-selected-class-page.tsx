@@ -6,21 +6,13 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import {
-  Card,
-  CardActionArea,
-  CardContent,
-  CircularProgress,
-  Typography,
-} from '@mui/material';
+import { Card, CardActionArea, CardContent, Typography } from '@mui/material';
 import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
 import { useAppSelector } from '../../../store/hooks';
-import { LoadStatus } from '../../../types';
 import { GAMES, Game } from '../../../game/types';
 import { StudentRoomCard } from './student-room-card';
 import { ClassMembershipStatus } from '../../../store/slices/educational-data/types';
 import AvatarSprite from '../../avatar-sprite';
-// import { UseWithHostGameManagement } from '../../../classes/authority/use-with-host-game-manage';
 
 export default function StudentSelectedClassPage(): JSX.Element {
   const { classId } = useParams<{ classId: string }>();
@@ -44,14 +36,6 @@ export default function StudentSelectedClassPage(): JSX.Element {
   const handleSelectGame = (game: Game) => {
     setSelectedGame(game);
   };
-
-  if (educationalData.hydrationLoadStatus.status === LoadStatus.IN_PROGRESS) {
-    return (
-      <div className="root center-div">
-        <CircularProgress />
-      </div>
-    );
-  }
 
   if (!classroom) {
     return (

@@ -110,8 +110,13 @@ function GamePage(): JSX.Element {
     );
   }
 
-  if (!curGame || !room || !player) {
-    return <div className="root center-div">Missing game or room data</div>;
+  if (!room || !player) {
+    return <div className="root center-div">Missing or invalid room</div>;
+  }
+  if (!curGame) {
+    return (
+      <div className="root center-div">Group has not yet selected a game</div>
+    );
   }
 
   return (
@@ -168,13 +173,11 @@ function GamePage(): JSX.Element {
           </Stack>
         </Grid>
       </Grid>
-      {!isTeacher && (
-        <EndOfPhaseReflectionModal
-          room={room}
-          player={player}
-          fetchRoom={fetchRoom}
-        />
-      )}
+      <EndOfPhaseReflectionModal
+        room={room}
+        player={player}
+        fetchRoom={fetchRoom}
+      />
       <AwayStatusModal
         roomId={room._id}
         playerId={player._id}

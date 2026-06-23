@@ -21,7 +21,7 @@ import {
 import { Check, Send } from '@mui/icons-material';
 
 import { Room } from '../../store/slices/game/types';
-import { Player } from '../../store/slices/player/types';
+import { EducationalRole, Player } from '../../store/slices/player/types';
 import AvatarSprite from '../avatar-sprite';
 import {
   submitGamePhaseReflection,
@@ -112,6 +112,7 @@ export default function EndOfPhaseReflectionModal({
   const isInWaitingState = curState === 'WAITING_FOR_STUDENT_READY_TO_CONTINUE';
   const isEndOfPhaseReflection = curState === 'END_OF_PHASE_REFLECTION';
 
+  const isTeacher = player?.educationalRole === EducationalRole.INSTRUCTOR;
   const currentPlayerReflection = studentReflections[player._id];
   const hasSubmittedReflection =
     Boolean(currentPlayerReflection) || hasLocallySubmitted;
@@ -189,7 +190,10 @@ export default function EndOfPhaseReflectionModal({
   };
 
   const isSubmitDisabled =
-    !reflectionText.trim() || isSubmittingReflection || hasLocallySubmitted;
+    !reflectionText.trim() ||
+    isSubmittingReflection ||
+    hasLocallySubmitted ||
+    isTeacher;
 
   const isReadyDisabled =
     !hasSubmittedReflection ||
@@ -272,7 +276,7 @@ export default function EndOfPhaseReflectionModal({
               variant="outlined"
               style={{ borderRadius: 10 }}
               sx={{ flex: 1, borderRadius: 10 }}
-              disabled={hasSubmittedReady}
+              disabled={hasSubmittedReady || isTeacher}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
