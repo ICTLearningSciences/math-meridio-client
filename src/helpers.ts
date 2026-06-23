@@ -152,6 +152,13 @@ export function extractErrorMessageFromError(err: any | unknown): string {
     return err.message;
   } else if (axios.isAxiosError(err)) {
     return err.response?.data || err.message;
+  } else if (err.message) {
+    try {
+      const message = err.message;
+      return message['errors in response'];
+    } catch {
+      return err.message;
+    }
   } else {
     try {
       const error = JSON.stringify(err);

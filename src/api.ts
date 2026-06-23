@@ -428,7 +428,6 @@ export async function updatePlayerRole(
       accessToken: accessToken || undefined,
     }
   );
-  console.warn(data);
   return data.admin.updatePlayerRole;
 }
 
