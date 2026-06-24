@@ -184,12 +184,11 @@ export function TeacherEditClass(props: {
             value={classDescription}
             onChange={(e) => setClassDescription(e.target.value)}
             multiline
-            rows={3}
           />
           <div className="row spacing">
             <Button
               variant="contained"
-              color="primary"
+              color="secondary"
               fullWidth
               disabled={
                 creating ||

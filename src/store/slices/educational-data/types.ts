@@ -53,10 +53,9 @@ export enum ClassMembershipStatus {
 
 export interface ClassMembership {
   classId: string;
-  groupId: number;
   userId: string;
+  groupId: number;
   status: ClassMembershipStatus;
-  roomId?: string;
 }
 
 export const classMembershipDataQuery = `

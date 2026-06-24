@@ -68,9 +68,7 @@ function DroppableGroup(props: {
   return (
     <div ref={ref}>
       <Typography fontSize={12}>
-        {props.groupId === -1
-          ? 'UNASSIGNED STUDENTS'
-          : `Group ${props.groupId + 1}`}
+        {!props.groupId ? 'UNASSIGNED STUDENTS' : `Group ${props.groupId}`}
       </Typography>
       <div
         className="row center-div spacing"
@@ -82,7 +80,7 @@ function DroppableGroup(props: {
           justifyContent: 'space-evenly',
           backgroundColor: isDropTarget
             ? 'orange'
-            : props.groupId === -1
+            : !props.groupId
             ? '#ef9a9a'
             : undefined,
         }}
@@ -146,14 +144,15 @@ export function RoomSetupView(props: { classroom: Classroom }): JSX.Element {
   );
 
   React.useEffect(() => {
-    if (
-      studentMembers.map((s) => s.userId).toString() !==
-      getCurrentMembers()
-        .map((s) => s.userId)
-        .toString()
-    ) {
-      setStudentMembers(getCurrentMembers());
+    const members: ClassMembership[] = [];
+    for (const member of studentMemberships) {
+      const cur = studentMembers.find((m) => m.userId === member.userId);
+      members.push({
+        ...member,
+        groupId: !member.groupId && cur?.groupId ? cur.groupId : member.groupId,
+      });
     }
+    setStudentMembers(members);
   }, [classroom]);
 
   React.useEffect(() => {
@@ -170,33 +169,20 @@ export function RoomSetupView(props: { classroom: Classroom }): JSX.Element {
 
   const getCurrentMembers = () => {
     const members: ClassMembership[] = [];
-    for (const m of studentMemberships) {
-      const room = rooms.find((r) =>
-        r.gameData.players.find((p) => p._id === m.userId)
-      );
-      const groupId =
-        Number.parseInt(
-          room?.name.replace('Group #', '').replace(' Solution Space', '') ||
-            '0'
-        ) - 1;
-      const member: ClassMembership = {
-        ...m,
-        groupId: groupId,
-      };
-      members.push(member);
+    for (const member of studentMemberships) {
+      members.push({ ...member });
     }
     return members;
   };
 
   const randomizeGroups = (groupSize: number) => {
-    const members: ClassMembership[] = getCurrentMembers();
-    const shuffled = members
+    const shuffled = getCurrentMembers()
       .map((value) => ({ value, sort: Math.random() }))
       .sort((a, b) => a.sort - b.sort)
       .map(({ value }) => value);
     for (let i = 0; i < shuffled.length; i++) {
-      if (!shuffled[i].roomId) {
-        let groupId = 0;
+      if (!shuffled[i].groupId) {
+        let groupId = 1;
         let groupMembers = shuffled.filter((m) => m.groupId === groupId);
         while (groupMembers && groupMembers.length >= groupSize) {
           groupId++;
@@ -224,7 +210,7 @@ export function RoomSetupView(props: { classroom: Classroom }): JSX.Element {
     setStarting(true);
     try {
       const validMembers = studentMembers.filter(
-        (m) => m.userId !== player?._id && m.groupId !== -1
+        (m) => m.userId !== player?._id && m.groupId
       );
       await assignClassGroupsAndStart(classroom._id, validMembers);
     } catch (err) {
@@ -303,24 +289,29 @@ export function RoomSetupView(props: { classroom: Classroom }): JSX.Element {
               }
             }}
           >
-            {Object.entries(groups).map(([groupId, group]) => {
-              const gIdx = Number.parseInt(groupId);
+            {Object.values(groups).map((group, gIdx) => {
               return (
-                <DroppableGroup key={`group-${groupId}`} groupId={gIdx}>
+                <DroppableGroup
+                  key={`group-${gIdx}`}
+                  groupId={group[0].groupId}
+                >
                   {group.map((member, mIdx) => {
                     const p = educationalData.students.find(
                       (p) => p._id === member.userId
                     );
+                    const studentMembership = studentMemberships.find(
+                      (m) => m.userId === member.userId
+                    );
                     return (
                       <ImageListItem key={member.userId}>
-                        {member.groupId !== -1 ? (
-                          <PlayerSprite player={p} color="white" />
-                        ) : (
+                        {!studentMembership?.groupId ? (
                           <DraggablePlayer
                             player={p}
                             group={member.groupId}
                             index={gIdx * groupSize + mIdx}
                           />
+                        ) : (
+                          <PlayerSprite player={p} color="white" />
                         )}
                       </ImageListItem>
                     );
@@ -332,6 +323,7 @@ export function RoomSetupView(props: { classroom: Classroom }): JSX.Element {
           </DragDropProvider>
         </ImageList>
       )}
+
       <Button
         variant="contained"
         color="primary"
@@ -339,7 +331,7 @@ export function RoomSetupView(props: { classroom: Classroom }): JSX.Element {
         disabled={
           starting ||
           studentMembers.length === 0 ||
-          studentMembers.some((m) => m.groupId === -1) ||
+          studentMembers.some((m) => !m.groupId) ||
           educationalData.hydrationLoadStatus.status !== LoadStatus.DONE
         }
         onClick={handleStartGame}

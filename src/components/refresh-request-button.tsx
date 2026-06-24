@@ -28,13 +28,7 @@ export function RefreshRequestButton(props: { autoRefreshTime?: number }) {
       clearInterval(poll);
       setPoll(undefined);
     }
-    if (
-      player &&
-      pingTime &&
-      pathname.includes('/classes') &&
-      !pathname.includes('/room/') &&
-      !search.includes('tab=2')
-    ) {
+    if (player && pingTime) {
       refresh();
       const timeoutId = setInterval(refresh, pingTime * 1000);
       setPoll(timeoutId);
@@ -63,13 +57,7 @@ export function RefreshRequestButton(props: { autoRefreshTime?: number }) {
     }
   }
 
-  if (
-    !player ||
-    !pingTime ||
-    !pathname.includes('/classes') ||
-    pathname.includes('/room/') ||
-    search.includes('tab=2')
-  ) {
+  if (!player || !pingTime) {
     return null;
   }
   return (
