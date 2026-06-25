@@ -26,6 +26,7 @@ import {
 import { Game } from '../types';
 import { Player } from '../../store/slices/player/types';
 import { viewGameRoomSimulation } from '../../hooks/game-rooms/game-room-api';
+import { useWithPlayer } from '../../store/slices/player/use-with-player-state';
 
 export function PlayerStrategy(props: {
   playersGameStateData: GameStateData;
@@ -36,6 +37,7 @@ export function PlayerStrategy(props: {
   const insideShots = psd[INSIDE_SHOT_PERCENT] || 0;
   const midShots = psd[MID_SHOT_PERCENT] || 0;
   const outsideShots = psd[OUTSIDE_SHOT_PERCENT] || 0;
+  const { player } = useWithPlayer();
 
   const canSimulate = Boolean(
     parseInt(insideShots) + parseInt(midShots) + parseInt(outsideShots) ===
@@ -75,7 +77,8 @@ export function PlayerStrategy(props: {
       }}
     >
       <Typography style={{ fontWeight: 'bold' }}>
-        {props.player?.name}&apos;s strategy:
+        {player?._id === props.player?._id ? 'My ' : `${props.player?.name}'s`}{' '}
+        strategy:
       </Typography>
       <Typography>
         {insideShots} inside, {midShots} mid, {outsideShots} 3-pointers
