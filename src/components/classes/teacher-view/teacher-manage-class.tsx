@@ -124,12 +124,14 @@ export function TeacherEditClass(props: {
   const { classroom } = props;
   const { updateClassNameDescription } = useWithEducationalData();
 
+  const [classId, setClassId] = React.useState('');
   const [className, setClassName] = React.useState('');
   const [classDescription, setClassDescription] = React.useState('');
   const [creating, setCreating] = React.useState(false);
 
   React.useEffect(() => {
-    if (classroom) {
+    if (classroom && classId !== classroom._id) {
+      setClassId(classroom._id);
       setClassName(classroom.name);
       setClassDescription(classroom.description || '');
     }
