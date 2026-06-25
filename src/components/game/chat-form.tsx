@@ -22,7 +22,7 @@ import { Mic, MicOutlined, Send } from '@mui/icons-material';
 import { GameData } from '../../store/slices/game/types';
 import { useAppSelector } from '../../store/hooks';
 
-export const MAX_MESSAGE_LENGTH = 200;
+export const MAX_MESSAGE_LENGTH = 500;
 
 export default function ChatForm(props: {
   uiGameData?: GameData;

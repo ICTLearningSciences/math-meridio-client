@@ -522,6 +522,31 @@ export async function setPlayerNeedsHelpInRoom(
   );
 }
 
+export const dismissPlayerNeedsHelpInRoomMutation = `
+  mutation DismissNeedsHelp($roomId: String!, $userId: String!) {
+    dismissNeedsHelp(roomId: $roomId, userId: $userId) {
+      ${fullRoomQueryData}
+    }
+  }
+`;
+
+export async function dismissPlayerNeedsHelpInRoom(
+  roomId: string,
+  userId: string
+): Promise<Room> {
+  const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
+  return await execGql<Room>(
+    {
+      query: dismissPlayerNeedsHelpInRoomMutation,
+      variables: { roomId, userId },
+    },
+    {
+      dataPath: 'dismissNeedsHelp',
+      accessToken: accessToken,
+    }
+  );
+}
+
 export const fullLearningObjectiveData = `
   _id
   variableName

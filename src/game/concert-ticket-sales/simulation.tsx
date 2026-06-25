@@ -26,6 +26,7 @@ import {
 import { Player } from '../../store/slices/player/types';
 import { Game } from '../types';
 import { viewGameRoomSimulation } from '../../hooks/game-rooms/game-room-api';
+import { useWithPlayer } from '../../store/slices/player/use-with-player-state';
 
 export function PlayerStrategy(props: {
   playersGameStateData: GameStateData;
@@ -37,6 +38,7 @@ export function PlayerStrategy(props: {
   const reservedTicketsUpForSale = psd[RESERVED_TICKET_PERCENT_KEY] || 0;
   const generalAdmissionTicketsUpForSale =
     psd[GENERAL_ADMISSION_TICKET_PERCENT_KEY] || 0;
+  const { player } = useWithPlayer();
 
   const canSimulate = Boolean(
     parseInt(vipTicketsUpForSale) +
@@ -86,7 +88,8 @@ export function PlayerStrategy(props: {
       }}
     >
       <Typography style={{ fontWeight: 'bold' }}>
-        {props.player?.name}&apos;s strategy:
+        {player?._id === props.player?._id ? 'My ' : `${props.player?.name}'s`}{' '}
+        strategy:
       </Typography>
       <Typography>
         {vipTicketsUpForSale} vip, {reservedTicketsUpForSale} reserved,{' '}

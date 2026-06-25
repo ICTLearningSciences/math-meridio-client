@@ -7,7 +7,9 @@ The full terms of this copyright and license should always be found in the root 
 import React from 'react';
 import { Word, WordCloud } from '@isoterik/react-word-cloud';
 import {
+  BackHand,
   CheckCircle,
+  DoDisturb,
   ExpandLess,
   ExpandMore,
   Person,
@@ -18,6 +20,8 @@ import {
   CircularProgress,
   Collapse,
   Grid,
+  IconButton,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import { BarChart, PieChart } from '@mui/x-charts';
@@ -37,6 +41,7 @@ import { useWithConfig } from '../../../store/slices/config/use-with-config';
 import ChatThread from '../../game/chat-thread';
 import { Link } from 'react-router-dom';
 import { GAMES } from '../../../game/types';
+import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
 
 export interface PlayerPhaseMetrics {
   player: Player;
@@ -473,6 +478,7 @@ export function NeedsHelp(props: {
   gameRooms: Room[];
 }): JSX.Element {
   const { gameRooms } = props;
+  const { dismissPlayerNeedsHelpInRoom } = useWithEducationalData();
 
   const studentsNeedHelp = gameRooms.reduce((students: Player[], room) => {
     for (const student of room.gameData.players) {
@@ -520,6 +526,20 @@ export function NeedsHelp(props: {
                 {GAMES.find((g) => g.id === room.gameData.gameId)?.name}: Phase{' '}
                 {room?.gameData.phaseProgression.phasesCompleted.length + 1}
               </Typography>
+              <Tooltip title="Dismiss Help Request">
+                <IconButton
+                  onClick={() => dismissPlayerNeedsHelpInRoom(room._id, p._id)}
+                  style={{ color: 'black' }}
+                >
+                  <BackHand />
+                  <div
+                    className="row center-div"
+                    style={{ color: 'red', position: 'absolute', right: 1 }}
+                  >
+                    <DoDisturb fontSize="large" />
+                  </div>
+                </IconButton>
+              </Tooltip>
             </Card>
           );
         })}

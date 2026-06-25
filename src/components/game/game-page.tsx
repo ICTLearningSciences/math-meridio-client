@@ -161,23 +161,26 @@ function GamePage(): JSX.Element {
               requestUserInputPhaseData={room.gameData.curGameState}
               uiGameData={room.gameData}
             />
-            <ChatForm
-              sendMessage={sendMessageToGameRoom}
-              isMyTurn={isTeacher || isMyTurn}
-              isTeacher={isTeacher}
-              isPaused={!isTeacher && iAmPaused}
-              disabled={isEndOfPhaseReflection && isInWaitingState}
-              phasesCompleted={!isTeacher && phasesCompleted === 5}
-              uiGameData={room.gameData}
-            />
+            {isInWaitingState || isEndOfPhaseReflection ? (
+              <EndOfPhaseReflectionModal
+                room={room}
+                player={player}
+                fetchRoom={fetchRoom}
+              />
+            ) : (
+              <ChatForm
+                sendMessage={sendMessageToGameRoom}
+                isMyTurn={isTeacher || isMyTurn}
+                isTeacher={isTeacher}
+                isPaused={!isTeacher && iAmPaused}
+                disabled={isEndOfPhaseReflection && isInWaitingState}
+                phasesCompleted={!isTeacher && phasesCompleted === 5}
+                uiGameData={room.gameData}
+              />
+            )}
           </Stack>
         </Grid>
       </Grid>
-      <EndOfPhaseReflectionModal
-        room={room}
-        player={player}
-        fetchRoom={fetchRoom}
-      />
       <AwayStatusModal
         roomId={room._id}
         playerId={player._id}

@@ -284,6 +284,13 @@ export const setPlayerNeedsHelpInRoom = createAsyncThunk(
   }
 );
 
+export const dismissPlayerNeedsHelpInRoom = createAsyncThunk(
+  'educationalData/dismissPlayerNeedsHelpInRoom',
+  async (args: { roomId: string; userId: string }) => {
+    return await api.dismissPlayerNeedsHelpInRoom(args.roomId, args.userId);
+  }
+);
+
 export const fetchLearningObjectives = createAsyncThunk(
   'educationalData/fetchLearningObjectives',
   async () => {
@@ -520,6 +527,10 @@ export const educationalDataSlice = createSlice({
       })
 
       .addCase(setPlayerNeedsHelpInRoom.fulfilled, (state, action) => {
+        addOrUpdateGameRoom(state, action.payload);
+      })
+
+      .addCase(dismissPlayerNeedsHelpInRoom.fulfilled, (state, action) => {
         addOrUpdateGameRoom(state, action.payload);
       });
   },

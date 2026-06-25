@@ -97,6 +97,10 @@ export interface UseWithEducationalData {
   ) => Promise<Classroom>;
   assignGameToGameRoom: (roomId: string, gameId: string) => Promise<Room>;
   setPlayerNeedsHelpInRoom: (needsHelp: boolean) => Promise<Room>;
+  dismissPlayerNeedsHelpInRoom: (
+    roomId: string,
+    userId: string
+  ) => Promise<Room>;
   fetchLearningObjectives: () => Promise<LearningObjective[]>;
   createLearningObjective: (
     learningObjective: Omit<LearningObjective, '_id'>
@@ -397,6 +401,20 @@ export function useWithEducationalData(rId?: string): UseWithEducationalData {
     ).unwrap();
   }
 
+  async function dismissPlayerNeedsHelpInRoom(
+    roomId: string,
+    userId: string
+  ): Promise<Room> {
+    if (!roomId || !userId) {
+      throw new Error(
+        'Room ID and User ID is required to set player needs help in room'
+      );
+    }
+    return await dispatch(
+      educationalDataActions.dismissPlayerNeedsHelpInRoom({ roomId, userId })
+    ).unwrap();
+  }
+
   async function fetchLearningObjectives(): Promise<LearningObjective[]> {
     return await dispatch(
       educationalDataActions.fetchLearningObjectives()
@@ -464,6 +482,7 @@ export function useWithEducationalData(rId?: string): UseWithEducationalData {
     shareClassroomWithInstructor,
     assignGameToGameRoom,
     setPlayerNeedsHelpInRoom,
+    dismissPlayerNeedsHelpInRoom,
     fetchLearningObjectives,
     createLearningObjective,
     updateLearningObjective,

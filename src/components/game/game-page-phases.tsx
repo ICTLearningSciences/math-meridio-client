@@ -30,6 +30,7 @@ import { Player } from '../../store/slices/player/types';
 import { useWithConfig } from '../../store/slices/config/use-with-config';
 
 import 'react-multi-carousel/lib/styles.css';
+import { useWithPlayer } from '../../store/slices/player/use-with-player-state';
 
 function MyCarousel(props: {
   children: React.ReactNode;
@@ -104,6 +105,49 @@ function Space(props: {
   );
 }
 
+function SimulationSelection(props: { room: Room; game: Game }): JSX.Element {
+  const { room, game } = props;
+  const { isMuted, toggleMuted } = useWithConfig();
+  const { player } = useWithPlayer();
+  return (
+    <div className="row" style={{ flexGrow: 1 }}>
+      <TextField select fullWidth style={{ marginLeft: 10 }} label="Strategy">
+        {[...room.gameData.players]
+          .sort((a, b) => {
+            if (a._id === player?._id) return -1;
+            if (b._id === player?._id) return 1;
+            return 0;
+          })
+          .map((p) => {
+            return (
+              <MenuItem
+                key={p._id}
+                value={p._id}
+                style={{
+                  width: '100%',
+                  padding: 0,
+                  margin: 0,
+                  backgroundColor: p._id === player?._id ? 'lightblue' : '',
+                }}
+              >
+                {game.showPlayerStrategy(
+                  p,
+                  room.gameData.playersGameStateData[p._id],
+                  room
+                )}
+              </MenuItem>
+            );
+          })}
+      </TextField>
+      <Tooltip title="Mute game audio">
+        <IconButton onClick={toggleMuted} style={{ width: 55 }}>
+          {isMuted ? <VolumeOff /> : <VolumeUp />}
+        </IconButton>
+      </Tooltip>
+    </div>
+  );
+}
+
 export default function GamePagePhaseDisplay(props: {
   room?: Room;
   game?: Game;
@@ -112,7 +156,6 @@ export default function GamePagePhaseDisplay(props: {
   updateMyRoomGameStateData: (gameStateData: GameStateData) => Promise<Room>;
 }): JSX.Element {
   const { room, game, player, updateMyRoomGameStateData } = props;
-  const { isMuted, toggleMuted } = useWithConfig();
   const { windowHeight } = useWithWindow();
   const [expanded, setExpanded] = React.useState<boolean>(false);
   const phasesStarted =
@@ -192,37 +235,7 @@ export default function GamePagePhaseDisplay(props: {
           <Space
             title="Simulation"
             height={maxHeight}
-            header={
-              <div className="row" style={{ flexGrow: 1 }}>
-                <TextField
-                  select
-                  fullWidth
-                  style={{ marginLeft: 10 }}
-                  label="Strategy"
-                >
-                  {room.gameData.players.map((player) => {
-                    return (
-                      <MenuItem
-                        key={player._id}
-                        value={player._id}
-                        style={{ width: '100%', padding: 0, margin: 0 }}
-                      >
-                        {game.showPlayerStrategy(
-                          player,
-                          room.gameData.playersGameStateData[player._id],
-                          room
-                        )}
-                      </MenuItem>
-                    );
-                  })}
-                </TextField>
-                <Tooltip title="Mute game audio">
-                  <IconButton onClick={toggleMuted} style={{ width: 55 }}>
-                    {isMuted ? <VolumeOff /> : <VolumeUp />}
-                  </IconButton>
-                </Tooltip>
-              </div>
-            }
+            header={<SimulationSelection room={room} game={game} />}
           >
             {game.showSimulation(game)}
           </Space>
@@ -237,37 +250,7 @@ export default function GamePagePhaseDisplay(props: {
         <Space title="Results">{game.showResult(room.gameData)}</Space>
         <Space
           title="Simulation"
-          header={
-            <div className="row" style={{ flexGrow: 1 }}>
-              <TextField
-                select
-                fullWidth
-                style={{ marginLeft: 10 }}
-                label="Strategy"
-              >
-                {room.gameData.players.map((player) => {
-                  return (
-                    <MenuItem
-                      key={player._id}
-                      value={player._id}
-                      style={{ width: '100%', padding: 0, margin: 0 }}
-                    >
-                      {game.showPlayerStrategy(
-                        player,
-                        room.gameData.playersGameStateData[player._id],
-                        room
-                      )}
-                    </MenuItem>
-                  );
-                })}
-              </TextField>
-              <Tooltip title="Mute game audio">
-                <IconButton onClick={toggleMuted} style={{ width: 55 }}>
-                  {isMuted ? <VolumeOff /> : <VolumeUp />}
-                </IconButton>
-              </Tooltip>
-            </div>
-          }
+          header={<SimulationSelection room={room} game={game} />}
         >
           {game.showSimulation(game)}
         </Space>
@@ -312,37 +295,7 @@ export default function GamePagePhaseDisplay(props: {
       </Space>
       <Space
         title="Simulation"
-        header={
-          <div className="row" style={{ flexGrow: 1 }}>
-            <TextField
-              select
-              fullWidth
-              style={{ marginLeft: 10 }}
-              label="Strategy"
-            >
-              {room.gameData.players.map((player) => {
-                return (
-                  <MenuItem
-                    key={player._id}
-                    value={player._id}
-                    style={{ width: '100%', padding: 0, margin: 0 }}
-                  >
-                    {game.showPlayerStrategy(
-                      player,
-                      room.gameData.playersGameStateData[player._id],
-                      room
-                    )}
-                  </MenuItem>
-                );
-              })}
-            </TextField>
-            <Tooltip title="Mute game audio">
-              <IconButton onClick={toggleMuted} style={{ width: 55 }}>
-                {isMuted ? <VolumeOff /> : <VolumeUp />}
-              </IconButton>
-            </Tooltip>
-          </div>
-        }
+        header={<SimulationSelection room={room} game={game} />}
       >
         {game.showSimulation(game)}
       </Space>

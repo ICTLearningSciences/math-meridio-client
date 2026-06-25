@@ -30,6 +30,7 @@ import {
 import { ColumnDiv } from '../../styled-components';
 import { WavyText } from '../animated-text';
 import { useReward } from 'partycles';
+import { MAX_MESSAGE_LENGTH } from './chat-form';
 
 interface PlayerReflectionDisplayItemProps {
   player: Player;
@@ -42,8 +43,8 @@ function PlayerReflectionDisplayItem({
 }: PlayerReflectionDisplayItemProps): JSX.Element {
   return (
     <Box
+      className="column"
       sx={{
-        display: 'flex',
         alignItems: 'center',
         gap: 2,
         padding: 2,
@@ -53,11 +54,7 @@ function PlayerReflectionDisplayItem({
         height: '125px',
       }}
     >
-      <ColumnDiv
-        style={{
-          alignItems: 'center',
-        }}
-      >
+      <ColumnDiv style={{ alignItems: 'center' }}>
         <AvatarSprite player={player} />
         <Typography fontWeight="bold">{player.name}</Typography>
       </ColumnDiv>
@@ -110,7 +107,6 @@ export default function EndOfPhaseReflectionModal({
   const isMultiplayer = players.length > 1;
 
   const isInWaitingState = curState === 'WAITING_FOR_STUDENT_READY_TO_CONTINUE';
-  const isEndOfPhaseReflection = curState === 'END_OF_PHASE_REFLECTION';
 
   const isTeacher = player?.educationalRole === EducationalRole.INSTRUCTOR;
   const currentPlayerReflection = studentReflections[player._id];
@@ -126,23 +122,6 @@ export default function EndOfPhaseReflectionModal({
       wind: 0.1,
     },
   });
-
-  React.useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (isEndOfPhaseReflection || isInWaitingState) {
-      timer = setTimeout(() => {
-        setIsOpen(true);
-        setTimeout(reward, 1000);
-      }, (phaseTitle === 'Introduction' ? 20 : 10) * 1000);
-    } else {
-      setIsOpen(false);
-    }
-    return () => {
-      if (timer) {
-        clearTimeout(timer);
-      }
-    };
-  }, [isEndOfPhaseReflection, isInWaitingState]);
 
   const handleReflectionChange = (text: string) => {
     setReflectionText(text);
@@ -202,135 +181,172 @@ export default function EndOfPhaseReflectionModal({
     !isInWaitingState;
 
   return (
-    <Dialog open={isOpen} maxWidth="lg" fullWidth disableEscapeKeyDown>
-      <DialogContent style={{ overflowX: 'hidden' }}>
-        <DialogTitle
-          style={{ fontSize: 36, textAlign: 'center', fontWeight: 'bold' }}
-        >
-          <WavyText text={`${phaseTitle} - Phase Complete!`} />
-        </DialogTitle>
-        <Box
-          id="rewardId"
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            gap: 3,
-            minHeight: 400,
-            paddingTop: 2,
-          }}
-        >
-          {/* Question at top */}
-          <Typography variant="h6" gutterBottom style={{ textAlign: 'left' }}>
-            {selectedQuestion}
-          </Typography>
+    <div>
+      <Button
+        variant="contained"
+        onClick={() => {
+          setIsOpen(true);
+          setTimeout(reward, 1000);
+        }}
+        sx={{ width: '100%' }}
+      >
+        Complete Reflection to Continue
+      </Button>
 
-          {/* Player Reflections (horizontal scroll in multiplayer) */}
-          {isMultiplayer && (
-            <Box>
-              <Typography
-                variant="h6"
-                gutterBottom
-                style={{ textAlign: 'left' }}
-              >
-                Player Reflections
-              </Typography>
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  gap: 2,
-                  overflowX: 'auto',
-                  paddingBottom: 1,
-                }}
-              >
-                {players.map((p) => {
-                  // Show optimistic reflection for current player
-                  const reflection =
-                    p._id === player._id && locallySubmittedReflection
-                      ? locallySubmittedReflection
-                      : studentReflections[p._id];
-                  return (
-                    <PlayerReflectionDisplayItem
-                      key={p._id}
-                      player={p}
-                      reflection={reflection}
-                    />
-                  );
-                })}
-              </Box>
-            </Box>
-          )}
-
-          {/* Input section */}
-          <Box
-            sx={{ display: 'flex', gap: 2, width: '100%', borderRadius: 10 }}
+      <Dialog
+        open={isOpen}
+        onClose={() => setIsOpen(false)}
+        maxWidth="lg"
+        fullWidth
+        disableEscapeKeyDown
+      >
+        <DialogContent style={{ overflowX: 'hidden' }}>
+          <DialogTitle
+            style={{ fontSize: 36, textAlign: 'center', fontWeight: 'bold' }}
           >
-            <TextField
-              multiline
-              minRows={2}
-              maxRows={8}
-              value={reflectionText}
-              onChange={(e) => handleReflectionChange(e.target.value)}
-              placeholder="Write your reflection here..."
-              variant="outlined"
-              style={{ borderRadius: 10 }}
-              sx={{ flex: 1, borderRadius: 10 }}
-              disabled={hasSubmittedReady || isTeacher}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      onClick={handleSubmitReflection}
-                      disabled={isSubmitDisabled}
-                      edge="end"
-                      style={{
-                        height: '100%',
-                        color: 'black',
-                      }}
-                    >
-                      {isSubmittingReflection ? (
-                        <CircularProgress size={24} />
-                      ) : (
-                        <Send />
-                      )}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
-            {isInWaitingState && (
-              <Button
-                variant="contained"
-                onClick={handleReadyToContinue}
-                disabled={isReadyDisabled}
-                sx={{
-                  width: '20%',
-                  backgroundColor: hasSubmittedReady
-                    ? 'success.main'
-                    : undefined,
-                  '&:hover': {
-                    backgroundColor: hasSubmittedReady
-                      ? 'success.dark'
-                      : undefined,
-                  },
-                }}
-              >
-                {isSubmittingReady ? (
-                  <CircularProgress size={24} color="inherit" />
-                ) : hasSubmittedReady ? (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Check />
-                    <span>Ready!</span>
-                  </Box>
-                ) : (
-                  'Ready to continue!'
-                )}
-              </Button>
+            <WavyText text={`${phaseTitle} - Phase Complete!`} />
+          </DialogTitle>
+          <Box
+            id="rewardId"
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              gap: 3,
+              minHeight: 400,
+              paddingTop: 2,
+            }}
+          >
+            {/* Question at top */}
+            <Typography variant="h6" gutterBottom style={{ textAlign: 'left' }}>
+              {selectedQuestion}
+            </Typography>
+
+            {/* Player Reflections (horizontal scroll in multiplayer) */}
+            {isMultiplayer && (
+              <Box>
+                <Typography
+                  variant="h6"
+                  gutterBottom
+                  style={{ textAlign: 'left' }}
+                >
+                  Player Reflections
+                </Typography>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    gap: 2,
+                    overflowX: 'auto',
+                    paddingBottom: 1,
+                  }}
+                >
+                  {players.map((p) => {
+                    // Show optimistic reflection for current player
+                    const reflection =
+                      p._id === player._id && locallySubmittedReflection
+                        ? locallySubmittedReflection
+                        : studentReflections[p._id];
+                    return (
+                      <PlayerReflectionDisplayItem
+                        key={p._id}
+                        player={p}
+                        reflection={reflection}
+                      />
+                    );
+                  })}
+                </Box>
+              </Box>
             )}
+
+            {/* Input section */}
+            <Box
+              sx={{ display: 'flex', gap: 2, width: '100%', borderRadius: 10 }}
+            >
+              {!isTeacher ? (
+                <TextField
+                  multiline
+                  minRows={2}
+                  maxRows={8}
+                  value={reflectionText}
+                  onChange={(e) => handleReflectionChange(e.target.value)}
+                  placeholder="Write your reflection here..."
+                  variant="outlined"
+                  style={{ borderRadius: 10 }}
+                  sx={{ flex: 1, borderRadius: 10 }}
+                  disabled={hasSubmittedReady || isTeacher}
+                  inputProps={{
+                    maxLength: MAX_MESSAGE_LENGTH,
+                  }}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={handleSubmitReflection}
+                          disabled={isSubmitDisabled}
+                          edge="end"
+                          style={{
+                            height: '100%',
+                            color: 'black',
+                          }}
+                        >
+                          {isSubmittingReflection ? (
+                            <CircularProgress size={24} />
+                          ) : (
+                            <Send />
+                          )}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              ) : (
+                <Button
+                  variant="contained"
+                  onClick={handleReadyToContinue}
+                  disabled={isSubmittingReady}
+                  sx={{ width: '100%' }}
+                >
+                  {isSubmittingReady ? (
+                    <CircularProgress size={24} color="inherit" />
+                  ) : (
+                    'Skip Reflection and Continue'
+                  )}
+                </Button>
+              )}
+              {isInWaitingState && !isTeacher && (
+                <Button
+                  variant="contained"
+                  onClick={handleReadyToContinue}
+                  disabled={isReadyDisabled}
+                  sx={{
+                    width: '20%',
+                    backgroundColor: hasSubmittedReady
+                      ? 'success.main'
+                      : undefined,
+                    '&:hover': {
+                      backgroundColor: hasSubmittedReady
+                        ? 'success.dark'
+                        : undefined,
+                    },
+                  }}
+                >
+                  {isSubmittingReady ? (
+                    <CircularProgress size={24} color="inherit" />
+                  ) : hasSubmittedReady ? (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Check />
+                      <span>Ready!</span>
+                    </Box>
+                  ) : (
+                    'Ready to continue!'
+                  )}
+                </Button>
+              )}
+            </Box>
           </Box>
-        </Box>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }
