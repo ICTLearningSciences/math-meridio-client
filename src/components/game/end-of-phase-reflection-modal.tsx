@@ -30,6 +30,7 @@ import {
 import { ColumnDiv } from '../../styled-components';
 import { WavyText } from '../animated-text';
 import { useReward } from 'partycles';
+import { MAX_MESSAGE_LENGTH } from './chat-form';
 
 interface PlayerReflectionDisplayItemProps {
   player: Player;
@@ -42,8 +43,8 @@ function PlayerReflectionDisplayItem({
 }: PlayerReflectionDisplayItemProps): JSX.Element {
   return (
     <Box
+      className="column"
       sx={{
-        display: 'flex',
         alignItems: 'center',
         gap: 2,
         padding: 2,
@@ -53,11 +54,7 @@ function PlayerReflectionDisplayItem({
         height: '125px',
       }}
     >
-      <ColumnDiv
-        style={{
-          alignItems: 'center',
-        }}
-      >
+      <ColumnDiv style={{ alignItems: 'center' }}>
         <AvatarSprite player={player} />
         <Typography fontWeight="bold">{player.name}</Typography>
       </ColumnDiv>
@@ -266,40 +263,58 @@ export default function EndOfPhaseReflectionModal({
           <Box
             sx={{ display: 'flex', gap: 2, width: '100%', borderRadius: 10 }}
           >
-            <TextField
-              multiline
-              minRows={2}
-              maxRows={8}
-              value={reflectionText}
-              onChange={(e) => handleReflectionChange(e.target.value)}
-              placeholder="Write your reflection here..."
-              variant="outlined"
-              style={{ borderRadius: 10 }}
-              sx={{ flex: 1, borderRadius: 10 }}
-              disabled={hasSubmittedReady || isTeacher}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      onClick={handleSubmitReflection}
-                      disabled={isSubmitDisabled}
-                      edge="end"
-                      style={{
-                        height: '100%',
-                        color: 'black',
-                      }}
-                    >
-                      {isSubmittingReflection ? (
-                        <CircularProgress size={24} />
-                      ) : (
-                        <Send />
-                      )}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
-            {isInWaitingState && (
+            {!isTeacher ? (
+              <TextField
+                multiline
+                minRows={2}
+                maxRows={8}
+                value={reflectionText}
+                onChange={(e) => handleReflectionChange(e.target.value)}
+                placeholder="Write your reflection here..."
+                variant="outlined"
+                style={{ borderRadius: 10 }}
+                sx={{ flex: 1, borderRadius: 10 }}
+                disabled={hasSubmittedReady || isTeacher}
+                inputProps={{
+                  maxLength: MAX_MESSAGE_LENGTH,
+                }}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={handleSubmitReflection}
+                        disabled={isSubmitDisabled}
+                        edge="end"
+                        style={{
+                          height: '100%',
+                          color: 'black',
+                        }}
+                      >
+                        {isSubmittingReflection ? (
+                          <CircularProgress size={24} />
+                        ) : (
+                          <Send />
+                        )}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            ) : (
+              <Button
+                variant="contained"
+                onClick={handleReadyToContinue}
+                disabled={isSubmittingReady}
+                sx={{ width: '100%' }}
+              >
+                {isSubmittingReady ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : (
+                  'Skip Reflection and Continue'
+                )}
+              </Button>
+            )}
+            {isInWaitingState && !isTeacher && (
               <Button
                 variant="contained"
                 onClick={handleReadyToContinue}
