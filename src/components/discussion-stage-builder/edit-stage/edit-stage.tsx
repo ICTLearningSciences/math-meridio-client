@@ -68,7 +68,11 @@ export function EditDiscussionStage(props: {
       fileReader.readAsText(file, 'UTF-8');
       fileReader.onload = (e) => {
         if (e.target?.result) {
-          setLocalStageCopy(JSON.parse(e.target.result as string));
+          setLocalStageCopy({
+            ...JSON.parse(e.target.result as string),
+            _id: stage._id,
+            clientId: stage.clientId,
+          });
         }
         setUploadInProgress(false);
       };
