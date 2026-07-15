@@ -168,17 +168,18 @@ export default function EndOfPhaseReflectionModal({
     }
   };
 
-  const isSubmitDisabled =
-    !reflectionText.trim() ||
-    isSubmittingReflection ||
-    hasLocallySubmitted ||
-    isTeacher;
-
   const isReadyDisabled =
     !hasSubmittedReflection ||
     isSubmittingReady ||
     hasSubmittedReady ||
     !isInWaitingState;
+
+  const isSubmitDisabled =
+    !reflectionText.trim() ||
+    isReadyDisabled ||
+    isSubmittingReflection ||
+    hasLocallySubmitted ||
+    isTeacher;
 
   return (
     <div>
@@ -304,7 +305,7 @@ export default function EndOfPhaseReflectionModal({
                 <Button
                   variant="contained"
                   onClick={handleReadyToContinue}
-                  disabled={isSubmittingReady}
+                  disabled={isSubmittingReady && isReadyDisabled}
                   sx={{ width: '100%' }}
                 >
                   {isSubmittingReady ? (
