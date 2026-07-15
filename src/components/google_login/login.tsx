@@ -11,23 +11,13 @@ import { useNavigateWithParams } from '../../hooks/use-navigate-with-params';
 import { UseWithLogin } from '../../store/slices/player/use-with-login';
 import { LoadStatus } from '../../types';
 import { EducationalRole } from '../../store/slices/player/types';
+
 export default function Login(props: { useLogin: UseWithLogin }): JSX.Element {
   const navigate = useNavigateWithParams();
   const { useLogin } = props;
-  const { loginWithGoogle, state: loginState, setViewingAs } = useLogin;
-  const instructorloginGoogle = useGoogleLogin({
-    onSuccess: (tokenResponse) => {
-      loginWithGoogle(
-        tokenResponse.access_token,
-        EducationalRole.INSTRUCTOR
-      ).then((user) => {
-        console.log('user logged in', user);
-        handleLoginNavigate();
-      });
-    },
-  });
+  const { loginWithGoogle, state: loginState } = useLogin;
 
-  const studentloginGoogle = useGoogleLogin({
+  const loginGoogle = useGoogleLogin({
     onSuccess: (tokenResponse) => {
       loginWithGoogle(tokenResponse.access_token, EducationalRole.STUDENT).then(
         (user) => {
@@ -63,12 +53,7 @@ export default function Login(props: { useLogin: UseWithLogin }): JSX.Element {
         justifyContent: 'center',
       }}
     >
-      <LoginUI
-        loginState={loginState}
-        setViewingAs={setViewingAs}
-        instructorloginGoogle={instructorloginGoogle}
-        studentloginGoogle={studentloginGoogle}
-      />
+      <LoginUI loginState={loginState} loginGoogle={loginGoogle} />
       <div
         style={{
           position: 'absolute',
