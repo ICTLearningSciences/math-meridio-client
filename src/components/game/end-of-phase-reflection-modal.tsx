@@ -305,7 +305,7 @@ export default function EndOfPhaseReflectionModal({
                 <Button
                   variant="contained"
                   onClick={handleReadyToContinue}
-                  disabled={isSubmittingReady && isReadyDisabled}
+                  disabled={isSubmittingReady}
                   sx={{ width: '100%' }}
                 >
                   {isSubmittingReady ? (
