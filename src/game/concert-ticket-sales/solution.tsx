@@ -136,11 +136,13 @@ export function SolutionComponent(props: {
     reserved = Number.parseInt(reserved);
     general = Number.parseInt(general);
     const sum = vip + reserved + general;
-    if (sum > 100 || sum < 0) {
+    if (sum !== 100) {
       reserved = 100 - vip - general;
       if (reserved < 0) reserved = 0;
       general = 100 - vip - reserved;
       if (general < 0) general = 0;
+      vip = 100 - reserved - general;
+      if (vip < 0) vip = 0;
       updatePlayerStateData(
         {
           [VIP_TICKET_PERCENT_KEY]: vip,

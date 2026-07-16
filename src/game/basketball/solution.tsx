@@ -124,25 +124,27 @@ export function SolutionComponent(props: {
 
   React.useEffect(() => {
     if (!playerGameStateDataRecord) return;
-    let vip = playerGameStateDataRecord[OUTSIDE_SHOT_PERCENT];
-    let reserved = playerGameStateDataRecord[MID_SHOT_PERCENT];
-    let general = playerGameStateDataRecord[INSIDE_SHOT_PERCENT];
-    if (vip === undefined || reserved === undefined || general === undefined)
+    let outside = playerGameStateDataRecord[OUTSIDE_SHOT_PERCENT];
+    let mid = playerGameStateDataRecord[MID_SHOT_PERCENT];
+    let inside = playerGameStateDataRecord[INSIDE_SHOT_PERCENT];
+    if (outside === undefined || mid === undefined || inside === undefined)
       return;
-    vip = Number.parseInt(vip);
-    reserved = Number.parseInt(reserved);
-    general = Number.parseInt(general);
-    const sum = vip + reserved + general;
-    if (sum > 100 || sum < 0) {
-      reserved = 100 - vip - general;
-      if (reserved < 0) reserved = 0;
-      general = 100 - vip - reserved;
-      if (general < 0) general = 0;
+    outside = Number.parseInt(outside);
+    mid = Number.parseInt(mid);
+    inside = Number.parseInt(inside);
+    const sum = outside + mid + inside;
+    if (sum !== 100) {
+      mid = 100 - outside - inside;
+      if (mid < 0) mid = 0;
+      inside = 100 - outside - mid;
+      if (inside < 0) inside = 0;
+      outside = 100 - inside - mid;
+      if (outside < 0) outside = 0;
       updatePlayerStateData(
         {
-          [OUTSIDE_SHOT_PERCENT]: vip,
-          [MID_SHOT_PERCENT]: reserved,
-          [INSIDE_SHOT_PERCENT]: general,
+          [OUTSIDE_SHOT_PERCENT]: outside,
+          [MID_SHOT_PERCENT]: mid,
+          [INSIDE_SHOT_PERCENT]: inside,
         },
         player._id
       );

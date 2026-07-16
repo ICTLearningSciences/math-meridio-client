@@ -9,22 +9,13 @@ import { ColumnCenterDiv, ColumnDiv } from '../../styled-components';
 import { PlayerStateData } from '../../store/slices/player';
 import { Button, CircularProgress } from '@mui/material';
 import { LoadStatus } from '../../types';
-import { EducationalRole } from '../../store/slices/player/types';
 
 export function LoginUI(props: {
-  loginState: PlayerStateData;
-  setViewingAs: (educationalRole: EducationalRole) => void;
-  instructorloginGoogle: () => void;
-  studentloginGoogle: () => void;
   titleText?: string;
+  loginState: PlayerStateData;
+  loginGoogle: () => void;
 }) {
-  const {
-    loginState,
-    setViewingAs,
-    instructorloginGoogle,
-    studentloginGoogle,
-    titleText,
-  } = props;
+  const { titleText, loginState, loginGoogle } = props;
 
   return (
     <ColumnCenterDiv
@@ -63,10 +54,7 @@ export function LoginUI(props: {
               <Button
                 variant="contained"
                 color="primary"
-                onClick={() => {
-                  setViewingAs(EducationalRole.STUDENT);
-                  studentloginGoogle();
-                }}
+                onClick={loginGoogle}
                 style={{
                   fontSize: '16px',
                   margin: '10px',
@@ -74,29 +62,7 @@ export function LoginUI(props: {
                 }}
                 data-cy="login-btn"
               >
-                Student Login
-              </Button>
-            </ColumnDiv>
-            <ColumnDiv
-              style={{
-                alignItems: 'center',
-              }}
-            >
-              <Button
-                variant="outlined"
-                color="primary"
-                onClick={() => {
-                  setViewingAs(EducationalRole.INSTRUCTOR);
-                  instructorloginGoogle();
-                }}
-                style={{
-                  fontSize: '16px',
-                  margin: '10px',
-                  width: 300,
-                }}
-                data-cy="login-btn"
-              >
-                Instructor Login
+                Login
               </Button>
             </ColumnDiv>
           </ColumnDiv>
