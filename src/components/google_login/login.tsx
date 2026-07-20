@@ -20,8 +20,7 @@ export default function Login(props: { useLogin: UseWithLogin }): JSX.Element {
   const loginGoogle = useGoogleLogin({
     onSuccess: (tokenResponse) => {
       loginWithGoogle(tokenResponse.access_token, EducationalRole.STUDENT).then(
-        (user) => {
-          console.log('user logged in', user);
+        () => {
           handleLoginNavigate();
         }
       );
@@ -32,8 +31,6 @@ export default function Login(props: { useLogin: UseWithLogin }): JSX.Element {
     if (typeof window === 'undefined') {
       return;
     }
-    // TODO: navigate to the home page
-    console.log('navigating to home');
     navigate('/classes');
   }
 

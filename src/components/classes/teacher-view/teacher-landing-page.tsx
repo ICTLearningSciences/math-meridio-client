@@ -74,7 +74,7 @@ export default function TeacherLandingPage(): JSX.Element {
     setClassId(newClass.updatedClassroom._id);
   }
 
-  if (!loaded || myClasses.length === 0) {
+  if (!player || !loaded || myClasses.length === 0) {
     return <TeacherLoading />;
   }
 
