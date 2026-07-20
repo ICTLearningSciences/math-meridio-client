@@ -168,17 +168,18 @@ export default function EndOfPhaseReflectionModal({
     }
   };
 
-  const isSubmitDisabled =
-    !reflectionText.trim() ||
-    isSubmittingReflection ||
-    hasLocallySubmitted ||
-    isTeacher;
-
   const isReadyDisabled =
     !hasSubmittedReflection ||
     isSubmittingReady ||
     hasSubmittedReady ||
     !isInWaitingState;
+
+  const isSubmitDisabled =
+    !reflectionText.trim() ||
+    !isReadyDisabled ||
+    isSubmittingReflection ||
+    hasLocallySubmitted ||
+    isTeacher;
 
   return (
     <div>
