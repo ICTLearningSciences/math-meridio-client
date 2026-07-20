@@ -4,65 +4,25 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React, { useEffect, useCallback } from 'react';
-import { Card, TextField, Typography } from '@mui/material';
+import React, { useEffect } from 'react';
+import { Card, IconButton, Typography } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
-import {
-  INSIDE_SHOT_PERCENT,
-  MID_SHOT_PERCENT,
-  OUTSIDE_SHOT_PERCENT,
-} from '../game/basketball/solution';
-import { useDebouncedCallback } from '../hooks/use-debounced-callback';
 import { didGameStateDataChange } from '../helpers';
+import { Edit } from '@mui/icons-material';
 import { SolutionGameStateData } from '../types';
 
 export const EditableVariable = React.memo(
   function EditableVariable(props: {
     dataKey: string;
     title: string;
-    updatePlayerStateData: (value: number) => void;
     myPlayerStateData: SolutionGameStateData;
-    shouldDisable: boolean;
-    setEditingVariable: (variable: string) => void;
+    onEditVariable: () => void;
+    backgroundColor?: string;
   }): JSX.Element {
-    const {
-      updatePlayerStateData,
-      myPlayerStateData,
-      dataKey,
-      title,
-      shouldDisable,
-      setEditingVariable,
-    } = props;
+    const { myPlayerStateData, dataKey, title } = props;
     const data = myPlayerStateData[dataKey];
-    const otherKeys = [
-      INSIDE_SHOT_PERCENT,
-      MID_SHOT_PERCENT,
-      OUTSIDE_SHOT_PERCENT,
-    ].filter((key) => key !== dataKey);
-    const otherKeysTotal = otherKeys.reduce(
-      (acc, key) => acc + parseInt(myPlayerStateData[key] || 0, 10),
-      0
-    );
     const [value, setValue] = React.useState(data || 0);
     const { classes } = useStyles();
-
-    const debouncedUpdate = useDebouncedCallback(
-      useCallback(
-        (newValue: number, otherKeysTotal: number) => {
-          const data = { ...myPlayerStateData };
-          let newVal = newValue;
-          if (otherKeysTotal + newValue > 100) {
-            newVal = Math.max(0, 100 - otherKeysTotal);
-          }
-          data[dataKey] = newVal;
-          setValue(newVal);
-          updatePlayerStateData(newVal);
-          setEditingVariable('');
-        },
-        [updatePlayerStateData, myPlayerStateData, dataKey]
-      ),
-      300
-    );
 
     useEffect(() => {
       setValue(data);
@@ -72,7 +32,7 @@ export const EditableVariable = React.memo(
       <Card
         className={classes.box}
         style={{
-          backgroundColor: '#fff8db',
+          backgroundColor: props.backgroundColor || '#fff8db',
           borderColor: 'red',
           display: value !== undefined ? '' : 'none',
         }}
@@ -80,32 +40,25 @@ export const EditableVariable = React.memo(
         <Typography className={classes.text} style={{ color: '#c96049' }}>
           {title}
         </Typography>
-        <TextField
+        <Typography
           className="panningDisabled"
-          value={value || 0}
-          variant="standard"
-          type="number"
-          disabled={shouldDisable}
           sx={{
-            input: {
-              color: '#c96049',
-              fontSize: 40,
-              fontFamily: 'SigmarOne',
-              textAlign: 'center',
-              margin: 0,
-              padding: 0,
-            },
-            '& .MuiInput-underline:before': { borderBottomColor: '#c96049' },
-            '& .MuiInput-underline:after': { borderBottomColor: '#c96049' },
+            color: '#c96049',
+            fontSize: 40,
+            fontFamily: 'SigmarOne',
+            textAlign: 'center',
+            margin: 0,
+            padding: 0,
           }}
-          InputProps={{ inputProps: { min: 0, max: 100 } }}
-          onChange={(e) => {
-            const newValue = parseInt(e.target.value);
-            setValue(newValue);
-            setEditingVariable(dataKey);
-            debouncedUpdate(newValue, otherKeysTotal);
-          }}
-        />
+        >
+          {value || 0}
+        </Typography>
+        <IconButton
+          onClick={props.onEditVariable}
+          style={{ width: 18, height: 18, marginLeft: 5, color: '#c96049' }}
+        >
+          <Edit style={{ width: 18, height: 18 }} />
+        </IconButton>
       </Card>
     );
   },
@@ -116,8 +69,7 @@ export const EditableVariable = React.memo(
       !didGameStateDataChange(
         prevProps.myPlayerStateData,
         nextProps.myPlayerStateData
-      ) &&
-      prevProps.shouldDisable === nextProps.shouldDisable
+      )
     );
   }
 );

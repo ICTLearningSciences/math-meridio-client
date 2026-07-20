@@ -6,11 +6,21 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React, { useEffect, useRef } from 'react';
 import { TransformComponent, useControls } from 'react-zoom-pan-pinch';
-import { Card, Typography } from '@mui/material';
+import {
+  Button,
+  Card,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+  Typography,
+} from '@mui/material';
 import { GameData, GameStateData } from '../../store/slices/game/types';
 import { makeStyles } from 'tss-react/mui';
 import { Player } from '../../store/slices/player/types';
 import { checkGameAndPlayerStateForValue } from '../../components/discussion-stage-builder/helpers';
+import { EditableVariable } from '../../components/editable-variable';
 
 export const NUMBER_OF_SHOTS = 100;
 export const INSIDE_SHOT_PERCENT = 'inside_shot_percent';
@@ -31,7 +41,6 @@ export const UNDERSTANDS_MULTIPLICATION = 'understands_multiplication';
 export const UNDERSTANDS_ADDITION = 'understands_addition';
 
 import courtBg from './court.png';
-import { EditableVariable } from '../../components/editable-variable';
 
 export function SolutionComponent(props: {
   uiGameData: GameData;
@@ -55,7 +64,11 @@ export function SolutionComponent(props: {
   const [understandsMultiplication, setUnderstandsMultiplication] =
     React.useState(false);
   const [understandsAddition, setUnderstandsAddition] = React.useState(false);
-  const [editingVariable, setEditingVariable] = React.useState('');
+  const [editing, setEditing] = React.useState<{
+    inside: number;
+    mid: number;
+    outside: number;
+  }>();
 
   const ref = useRef<HTMLDivElement | null>(null);
   const [width, setWidth] = React.useState<number>(0);
@@ -123,21 +136,18 @@ export function SolutionComponent(props: {
   ]);
 
   React.useEffect(() => {
-    if (!playerGameStateDataRecord) return;
-    let outside = playerGameStateDataRecord[OUTSIDE_SHOT_PERCENT];
-    let mid = playerGameStateDataRecord[MID_SHOT_PERCENT];
-    let inside = playerGameStateDataRecord[INSIDE_SHOT_PERCENT];
-    if (outside === undefined || mid === undefined || inside === undefined)
-      return;
+    let outside = playerGameStateDataRecord[OUTSIDE_SHOT_PERCENT] || 0;
+    let mid = playerGameStateDataRecord[MID_SHOT_PERCENT] || 0;
+    let inside = playerGameStateDataRecord[INSIDE_SHOT_PERCENT] || 0;
     outside = Number.parseInt(outside);
     mid = Number.parseInt(mid);
     inside = Number.parseInt(inside);
     const sum = outside + mid + inside;
     if (sum !== 100) {
-      mid = 100 - outside - inside;
-      if (mid < 0) mid = 0;
       inside = 100 - outside - mid;
       if (inside < 0) inside = 0;
+      mid = 100 - outside - inside;
+      if (mid < 0) mid = 0;
       outside = 100 - inside - mid;
       if (outside < 0) outside = 0;
       updatePlayerStateData(
@@ -150,6 +160,20 @@ export function SolutionComponent(props: {
       );
     }
   }, [playerGameStateDataRecord]);
+
+  function onClickEdit(): void {
+    if (editing) {
+      setEditing(undefined);
+    } else {
+      let outside = playerGameStateDataRecord[OUTSIDE_SHOT_PERCENT] || 0;
+      let mid = playerGameStateDataRecord[MID_SHOT_PERCENT] || 0;
+      let inside = playerGameStateDataRecord[INSIDE_SHOT_PERCENT] || 0;
+      outside = Number.parseInt(outside);
+      mid = Number.parseInt(mid);
+      inside = Number.parseInt(inside);
+      setEditing({ inside, mid, outside });
+    }
+  }
 
   function Variable(props: {
     dataKey: string;
@@ -438,23 +462,13 @@ export function SolutionComponent(props: {
               }
             />
             <EditableVariable
-              updatePlayerStateData={(newValue: number) => {
-                updatePlayerStateData(
-                  { [INSIDE_SHOT_PERCENT]: newValue },
-                  player._id
-                );
-              }}
               dataKey={INSIDE_SHOT_PERCENT}
               title="# of inside shots"
               myPlayerStateData={{
                 ...globalGameStateDataRecord,
                 ...playerGameStateDataRecord,
               }}
-              shouldDisable={
-                Boolean(editingVariable) &&
-                editingVariable !== INSIDE_SHOT_PERCENT
-              }
-              setEditingVariable={setEditingVariable}
+              onEditVariable={onClickEdit}
             />
             <RevealingIcon
               reveal={understandsMultiplication}
@@ -507,22 +521,13 @@ export function SolutionComponent(props: {
               }
             />
             <EditableVariable
-              updatePlayerStateData={(newValue: number) => {
-                updatePlayerStateData(
-                  { [MID_SHOT_PERCENT]: newValue },
-                  player._id
-                );
-              }}
               dataKey={MID_SHOT_PERCENT}
               title="# of mid shots"
               myPlayerStateData={{
                 ...globalGameStateDataRecord,
                 ...playerGameStateDataRecord,
               }}
-              shouldDisable={
-                Boolean(editingVariable) && editingVariable !== MID_SHOT_PERCENT
-              }
-              setEditingVariable={setEditingVariable}
+              onEditVariable={onClickEdit}
             />
             <RevealingIcon
               reveal={understandsMultiplication}
@@ -575,23 +580,13 @@ export function SolutionComponent(props: {
               }
             />
             <EditableVariable
-              updatePlayerStateData={(newValue: number) => {
-                updatePlayerStateData(
-                  { [OUTSIDE_SHOT_PERCENT]: newValue },
-                  player._id
-                );
-              }}
               dataKey={OUTSIDE_SHOT_PERCENT}
               title="# of 3 pointers"
               myPlayerStateData={{
                 ...globalGameStateDataRecord,
                 ...playerGameStateDataRecord,
               }}
-              shouldDisable={
-                Boolean(editingVariable) &&
-                editingVariable !== OUTSIDE_SHOT_PERCENT
-              }
-              setEditingVariable={setEditingVariable}
+              onEditVariable={onClickEdit}
             />
             <RevealingIcon
               reveal={understandsMultiplication}
@@ -614,6 +609,116 @@ export function SolutionComponent(props: {
           </div>
         </div>
       </TransformComponent>
+
+      {editing && (
+        <Dialog open={Boolean(editing)} onClose={onClickEdit}>
+          <DialogTitle style={{ textAlign: 'center' }}>My Strategy</DialogTitle>
+          <DialogContent style={{ paddingTop: 10 }}>
+            <TextField
+              label="Number of Inside Shots"
+              defaultValue={playerGameStateDataRecord[INSIDE_SHOT_PERCENT] || 0}
+              type="number"
+              fullWidth
+              style={{ marginBottom: 10 }}
+              sx={{
+                input: {
+                  color: '#c96049',
+                  fontSize: 40,
+                  fontFamily: 'SigmarOne',
+                  textAlign: 'center',
+                  backgroundColor: '#fff8db',
+                },
+                '& .MuiInput-underline:before': {
+                  borderBottomColor: '#c96049',
+                },
+                '& .MuiInput-underline:after': { borderBottomColor: '#c96049' },
+              }}
+              InputProps={{ inputProps: { min: 0, max: 100 } }}
+              onChange={(e) => {
+                setEditing({ ...editing, inside: parseInt(e.target.value) });
+              }}
+            />
+            <TextField
+              label="Number of Mid Shots"
+              defaultValue={playerGameStateDataRecord[MID_SHOT_PERCENT] || 0}
+              type="number"
+              fullWidth
+              style={{ marginBottom: 10 }}
+              sx={{
+                input: {
+                  color: '#c96049',
+                  fontSize: 40,
+                  fontFamily: 'SigmarOne',
+                  textAlign: 'center',
+                  backgroundColor: '#fff8db',
+                },
+                '& .MuiInput-underline:before': {
+                  borderBottomColor: '#c96049',
+                },
+                '& .MuiInput-underline:after': { borderBottomColor: '#c96049' },
+              }}
+              InputProps={{ inputProps: { min: 0, max: 100 } }}
+              onChange={(e) => {
+                setEditing({ ...editing, mid: parseInt(e.target.value) });
+              }}
+            />
+            <TextField
+              label="Number of 3 Pointers"
+              defaultValue={
+                playerGameStateDataRecord[OUTSIDE_SHOT_PERCENT] || 0
+              }
+              type="number"
+              fullWidth
+              style={{ marginBottom: 10 }}
+              sx={{
+                input: {
+                  color: '#c96049',
+                  fontSize: 40,
+                  fontFamily: 'SigmarOne',
+                  textAlign: 'center',
+                  backgroundColor: '#fff8db',
+                },
+                '& .MuiInput-underline:before': {
+                  borderBottomColor: '#c96049',
+                },
+                '& .MuiInput-underline:after': { borderBottomColor: '#c96049' },
+              }}
+              InputProps={{ inputProps: { min: 0, max: 100 } }}
+              onChange={(e) => {
+                setEditing({ ...editing, outside: parseInt(e.target.value) });
+              }}
+            />
+            {editing.outside + editing.mid + editing.inside !== 100 && (
+              <Typography color="error" textAlign="center">
+                Total must add up to 100
+              </Typography>
+            )}
+          </DialogContent>
+          <DialogActions style={{ justifyContent: 'center' }}>
+            <Button onClick={onClickEdit} color="primary" variant="outlined">
+              Close
+            </Button>
+            <Button
+              color="primary"
+              variant="contained"
+              disabled={editing.outside + editing.mid + editing.inside !== 100}
+              onClick={() => {
+                updatePlayerStateData(
+                  {
+                    [OUTSIDE_SHOT_PERCENT]: editing.outside,
+                    [MID_SHOT_PERCENT]: editing.mid,
+                    [INSIDE_SHOT_PERCENT]: editing.inside,
+                  },
+                  player._id
+                );
+                onClickEdit();
+              }}
+            >
+              Save
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
     </div>
   );
 }
