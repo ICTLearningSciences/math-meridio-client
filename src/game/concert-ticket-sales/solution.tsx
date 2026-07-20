@@ -6,7 +6,16 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React, { useEffect, useRef } from 'react';
 import { TransformComponent, useControls } from 'react-zoom-pan-pinch';
-import { Card, Typography } from '@mui/material';
+import {
+  Button,
+  Card,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+  Typography,
+} from '@mui/material';
 
 import { GameStateData, GameData } from '../../store/slices/game/types';
 import { makeStyles } from 'tss-react/mui';
@@ -14,7 +23,6 @@ import { Player } from '../../store/slices/player/types';
 import { checkGameAndPlayerStateForValue } from '../../components/discussion-stage-builder/helpers';
 
 import stageBg from './stage.jpg';
-import { EditableVariable } from './editable-variable';
 import {
   VIP_TICKET_PERCENT_KEY,
   VIP_TICKET_PRICE,
@@ -31,6 +39,7 @@ import {
   UNDERSTANDS_TICKET_PRICES_KEY,
   UNDERSTANDS_CONVERSION_RATE_KEY,
 } from '.';
+import { EditableVariable } from '../../components/editable-variable';
 
 export function SolutionComponent(props: {
   uiGameData: GameData;
@@ -57,7 +66,11 @@ export function SolutionComponent(props: {
   const [understandsMultiplication, setUnderstandsMultiplication] =
     React.useState(false);
   const [understandsAddition, setUnderstandsAddition] = React.useState(false);
-  const [editingVariable, setEditingVariable] = React.useState('');
+  const [editing, setEditing] = React.useState<{
+    general: number;
+    reserved: number;
+    vip: number;
+  }>();
 
   const ref = useRef<HTMLDivElement | null>(null);
   const [width, setWidth] = React.useState<number>(0);
@@ -125,22 +138,19 @@ export function SolutionComponent(props: {
   }, [width, height]);
 
   React.useEffect(() => {
-    if (!playerGameStateDataRecord) return;
-    let vip = playerGameStateDataRecord[VIP_TICKET_PERCENT_KEY];
-    let reserved = playerGameStateDataRecord[RESERVED_TICKET_PERCENT_KEY];
+    let vip = playerGameStateDataRecord[VIP_TICKET_PERCENT_KEY] || 0;
+    let reserved = playerGameStateDataRecord[RESERVED_TICKET_PERCENT_KEY] || 0;
     let general =
-      playerGameStateDataRecord[GENERAL_ADMISSION_TICKET_PERCENT_KEY];
-    if (vip === undefined || reserved === undefined || general === undefined)
-      return;
+      playerGameStateDataRecord[GENERAL_ADMISSION_TICKET_PERCENT_KEY] || 0;
     vip = Number.parseInt(vip);
     reserved = Number.parseInt(reserved);
     general = Number.parseInt(general);
     const sum = vip + reserved + general;
     if (sum !== 100) {
-      reserved = 100 - vip - general;
-      if (reserved < 0) reserved = 0;
       general = 100 - vip - reserved;
       if (general < 0) general = 0;
+      reserved = 100 - vip - general;
+      if (reserved < 0) reserved = 0;
       vip = 100 - reserved - general;
       if (vip < 0) vip = 0;
       updatePlayerStateData(
@@ -153,6 +163,22 @@ export function SolutionComponent(props: {
       );
     }
   }, [playerGameStateDataRecord]);
+
+  function onClickEdit(): void {
+    if (editing) {
+      setEditing(undefined);
+    } else {
+      let vip = playerGameStateDataRecord[VIP_TICKET_PERCENT_KEY] || 0;
+      let reserved =
+        playerGameStateDataRecord[RESERVED_TICKET_PERCENT_KEY] || 0;
+      let general =
+        playerGameStateDataRecord[GENERAL_ADMISSION_TICKET_PERCENT_KEY] || 0;
+      vip = Number.parseInt(vip);
+      reserved = Number.parseInt(reserved);
+      general = Number.parseInt(general);
+      setEditing({ general, reserved, vip });
+    }
+  }
 
   function Variable(props: {
     dataKey: string;
@@ -446,23 +472,14 @@ export function SolutionComponent(props: {
               }
             />
             <EditableVariable
-              updatePlayerStateData={(newValue: number) => {
-                updatePlayerStateData(
-                  { [VIP_TICKET_PERCENT_KEY]: newValue },
-                  player._id
-                );
-              }}
+              backgroundColor="#301934"
               dataKey={VIP_TICKET_PERCENT_KEY}
               title="# of VIP tickets"
               myPlayerStateData={{
                 ...globalGameStateDataRecord,
                 ...playerGameStateDataRecord,
               }}
-              shouldDisable={
-                Boolean(editingVariable) &&
-                editingVariable !== VIP_TICKET_PERCENT_KEY
-              }
-              setEditingVariable={setEditingVariable}
+              onEditVariable={onClickEdit}
             />
             <RevealingIcon
               reveal={understandsMultiplication}
@@ -513,23 +530,14 @@ export function SolutionComponent(props: {
               }
             />
             <EditableVariable
-              updatePlayerStateData={(newValue: number) => {
-                updatePlayerStateData(
-                  { [RESERVED_TICKET_PERCENT_KEY]: newValue },
-                  player._id
-                );
-              }}
+              backgroundColor="#301934"
               dataKey={RESERVED_TICKET_PERCENT_KEY}
               title="# of Reserved tickets"
               myPlayerStateData={{
                 ...globalGameStateDataRecord,
                 ...playerGameStateDataRecord,
               }}
-              shouldDisable={
-                Boolean(editingVariable) &&
-                editingVariable !== RESERVED_TICKET_PERCENT_KEY
-              }
-              setEditingVariable={setEditingVariable}
+              onEditVariable={onClickEdit}
             />
             <RevealingIcon
               reveal={understandsMultiplication}
@@ -580,23 +588,14 @@ export function SolutionComponent(props: {
               }
             />
             <EditableVariable
-              updatePlayerStateData={(newValue: number) => {
-                updatePlayerStateData(
-                  { [GENERAL_ADMISSION_TICKET_PERCENT_KEY]: newValue },
-                  player._id
-                );
-              }}
+              backgroundColor="#301934"
               dataKey={GENERAL_ADMISSION_TICKET_PERCENT_KEY}
               title="# of GA tickets"
               myPlayerStateData={{
                 ...globalGameStateDataRecord,
                 ...playerGameStateDataRecord,
               }}
-              shouldDisable={
-                Boolean(editingVariable) &&
-                editingVariable !== GENERAL_ADMISSION_TICKET_PERCENT_KEY
-              }
-              setEditingVariable={setEditingVariable}
+              onEditVariable={onClickEdit}
             />
             <RevealingIcon
               reveal={understandsMultiplication}
@@ -619,6 +618,121 @@ export function SolutionComponent(props: {
           </div>
         </div>
       </TransformComponent>
+
+      {editing && (
+        <Dialog open={Boolean(editing)} onClose={onClickEdit}>
+          <DialogTitle style={{ textAlign: 'center' }}>My Strategy</DialogTitle>
+          <DialogContent style={{ paddingTop: 10 }}>
+            <TextField
+              label="Number of VIP Tickets"
+              defaultValue={
+                playerGameStateDataRecord[VIP_TICKET_PERCENT_KEY] || 0
+              }
+              type="number"
+              fullWidth
+              style={{ marginBottom: 10 }}
+              sx={{
+                input: {
+                  color: '#c96049',
+                  fontSize: 40,
+                  fontFamily: 'SigmarOne',
+                  textAlign: 'center',
+                },
+                '& .MuiInput-underline:before': {
+                  borderBottomColor: '#c96049',
+                },
+                '& .MuiInput-underline:after': { borderBottomColor: '#c96049' },
+              }}
+              InputProps={{ inputProps: { min: 0, max: 100 } }}
+              onChange={(e) => {
+                setEditing({ ...editing, vip: parseInt(e.target.value) });
+              }}
+            />
+            <TextField
+              label="Number of Reserved Tickets"
+              defaultValue={
+                playerGameStateDataRecord[RESERVED_TICKET_PERCENT_KEY] || 0
+              }
+              type="number"
+              fullWidth
+              style={{ marginBottom: 10 }}
+              sx={{
+                input: {
+                  color: '#c96049',
+                  fontSize: 40,
+                  fontFamily: 'SigmarOne',
+                  textAlign: 'center',
+                },
+                '& .MuiInput-underline:before': {
+                  borderBottomColor: '#c96049',
+                },
+                '& .MuiInput-underline:after': { borderBottomColor: '#c96049' },
+              }}
+              InputProps={{ inputProps: { min: 0, max: 100 } }}
+              onChange={(e) => {
+                setEditing({ ...editing, reserved: parseInt(e.target.value) });
+              }}
+            />
+            <TextField
+              label="Number of General Tickets"
+              defaultValue={
+                playerGameStateDataRecord[
+                  GENERAL_ADMISSION_TICKET_PERCENT_KEY
+                ] || 0
+              }
+              type="number"
+              fullWidth
+              style={{ marginBottom: 10 }}
+              sx={{
+                input: {
+                  color: '#c96049',
+                  fontSize: 40,
+                  fontFamily: 'SigmarOne',
+                  textAlign: 'center',
+                },
+                '& .MuiInput-underline:before': {
+                  borderBottomColor: '#c96049',
+                },
+                '& .MuiInput-underline:after': { borderBottomColor: '#c96049' },
+              }}
+              InputProps={{ inputProps: { min: 0, max: 100 } }}
+              onChange={(e) => {
+                setEditing({ ...editing, general: parseInt(e.target.value) });
+              }}
+            />
+            {editing.vip + editing.general + editing.reserved !== 100 && (
+              <Typography color="error" textAlign="center">
+                Total must add up to 100
+              </Typography>
+            )}
+          </DialogContent>
+          <DialogActions style={{ justifyContent: 'center' }}>
+            <Button onClick={onClickEdit} color="primary" variant="outlined">
+              Close
+            </Button>
+            <Button
+              color="primary"
+              variant="contained"
+              disabled={
+                editing.vip + editing.general + editing.reserved !== 100
+              }
+              onClick={() => {
+                updatePlayerStateData(
+                  {
+                    [GENERAL_ADMISSION_TICKET_PERCENT_KEY]: editing.general,
+                    [RESERVED_TICKET_PERCENT_KEY]: editing.reserved,
+                    [VIP_TICKET_PERCENT_KEY]: editing.vip,
+                  },
+                  player._id
+                );
+                onClickEdit();
+              }}
+            >
+              Save
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
     </div>
   );
 }
