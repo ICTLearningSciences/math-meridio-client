@@ -136,6 +136,7 @@ export function SolutionComponent(props: {
   ]);
 
   React.useEffect(() => {
+    if (!playerGameStateDataRecord) return;
     let outside = playerGameStateDataRecord[OUTSIDE_SHOT_PERCENT] || 0;
     let mid = playerGameStateDataRecord[MID_SHOT_PERCENT] || 0;
     let inside = playerGameStateDataRecord[INSIDE_SHOT_PERCENT] || 0;

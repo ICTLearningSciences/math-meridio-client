@@ -10,6 +10,8 @@ import { makeStyles } from 'tss-react/mui';
 import { didGameStateDataChange } from '../helpers';
 import { Edit } from '@mui/icons-material';
 import { SolutionGameStateData } from '../types';
+import { useWithPlayer } from '../store/slices/player/use-with-player-state';
+import { EducationalRole } from '../store/slices/player/types';
 
 export const EditableVariable = React.memo(
   function EditableVariable(props: {
@@ -19,6 +21,7 @@ export const EditableVariable = React.memo(
     onEditVariable: () => void;
     backgroundColor?: string;
   }): JSX.Element {
+    const { player } = useWithPlayer();
     const { myPlayerStateData, dataKey, title } = props;
     const data = myPlayerStateData[dataKey];
     const [value, setValue] = React.useState(data || 0);
@@ -53,12 +56,14 @@ export const EditableVariable = React.memo(
         >
           {value || 0}
         </Typography>
-        <IconButton
-          onClick={props.onEditVariable}
-          style={{ width: 18, height: 18, marginLeft: 5, color: '#c96049' }}
-        >
-          <Edit style={{ width: 18, height: 18 }} />
-        </IconButton>
+        {player?.educationalRole === EducationalRole.STUDENT && (
+          <IconButton
+            onClick={props.onEditVariable}
+            style={{ width: 18, height: 18, marginLeft: 5, color: '#c96049' }}
+          >
+            <Edit style={{ width: 18, height: 18 }} />
+          </IconButton>
+        )}
       </Card>
     );
   },
