@@ -138,6 +138,7 @@ export function SolutionComponent(props: {
   }, [width, height]);
 
   React.useEffect(() => {
+    if (!playerGameStateDataRecord) return;
     let vip = playerGameStateDataRecord[VIP_TICKET_PERCENT_KEY] || 0;
     let reserved = playerGameStateDataRecord[RESERVED_TICKET_PERCENT_KEY] || 0;
     let general =
