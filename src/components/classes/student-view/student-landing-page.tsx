@@ -4,23 +4,22 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { Button, CircularProgress, TextField, Typography } from '@mui/material';
-import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
-import { ClassMembershipStatus } from '../../../store/slices/educational-data/types';
-import { extractErrorMessageFromError } from '../../../helpers';
-import { StudentClassroomCard } from './student-classroom-card';
-import { LoadStatus } from '../../../types';
 
-export default function StudentLandingPage(): JSX.Element {
+import React from "react";
+import { Button, CircularProgress, TextField, Typography } from "@mui/material";
+import { useWithEducationalData } from "../../../store/slices/educational-data/use-with-educational-data";
+import { extractErrorMessageFromError } from "../../../helpers";
+import { StudentClassroomCard } from "./student-classroom-card";
+
+export default function StudentLandingPage(): React.ReactNode {
   const { joinClassroom, educationalData } = useWithEducationalData();
-  const [inviteCode, setInviteCode] = React.useState('');
+  const [inviteCode, setInviteCode] = React.useState("");
   const [joining, setJoining] = React.useState(false);
   const [error, setError] = React.useState<string>();
   const [loaded, setLoaded] = React.useState<boolean>(false);
 
   const myClassMemberships = educationalData.classMemberships.filter(
-    (cm) => cm.status === ClassMembershipStatus.MEMBER
+    (cm) => cm.status === "Member",
   );
   const myClasses = educationalData.classes
     .filter((c) => myClassMemberships.some((cm) => cm.classId === c._id))
@@ -28,23 +27,24 @@ export default function StudentLandingPage(): JSX.Element {
 
   React.useEffect(() => {
     if (loaded) return;
-    if (educationalData.hydrationLoadStatus.status === LoadStatus.DONE) {
+    if (educationalData.hydrationLoadStatus.status === 2) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLoaded(true);
     }
-  }, [educationalData.hydrationLoadStatus.status]);
+  }, [loaded, educationalData.hydrationLoadStatus.status]);
 
   const handleJoinClass = async () => {
     if (!inviteCode.trim()) {
-      setError('Please enter an invite code');
+      setError("Please enter an invite code");
       return;
     }
     setJoining(true);
     setError(undefined);
     try {
       await joinClassroom(inviteCode);
-      setInviteCode('');
+      setInviteCode("");
     } catch (err) {
-      setError(extractErrorMessageFromError(err) || 'Failed to join classroom');
+      setError(extractErrorMessageFromError(err) || "Failed to join classroom");
     } finally {
       setJoining(false);
     }
@@ -62,9 +62,9 @@ export default function StudentLandingPage(): JSX.Element {
     <div
       className="column"
       style={{
-        width: '100%',
-        height: '100%',
-        alignItems: 'center',
+        width: "100%",
+        height: "100%",
+        alignItems: "center",
         padding: 20,
       }}
     >
@@ -73,19 +73,19 @@ export default function StudentLandingPage(): JSX.Element {
       </Typography>
       <div
         className="column"
-        style={{ width: '90%', maxWidth: 600, marginBottom: 40 }}
+        style={{ width: "90%", maxWidth: 600, marginBottom: 40 }}
       >
         <Typography variant="h6" style={{ marginBottom: 10 }}>
           Join a Class
         </Typography>
-        <div className="row" style={{ gap: 10, alignItems: 'flex-start' }}>
+        <div className="row" style={{ gap: 10, alignItems: "flex-start" }}>
           <TextField
             data-cy="join-class-invite-code-input"
             fullWidth
             label="Class Invite Code"
             value={inviteCode}
             onChange={(e) => setInviteCode(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleJoinClass()}
+            onKeyPress={(e) => e.key === "Enter" && handleJoinClass()}
             error={Boolean(error)}
             helperText={error}
             disabled={joining}
@@ -98,14 +98,18 @@ export default function StudentLandingPage(): JSX.Element {
             disabled={joining}
             style={{ height: 56 }}
           >
-            {joining ? 'Joining...' : 'Join'}
+            {joining ? "Joining..." : "Join"}
           </Button>
         </div>
       </div>
 
-      <div className="column" style={{ width: '90%', maxWidth: 800, gap: 15 }}>
+      <div className="column" style={{ width: "90%", maxWidth: 800, gap: 15 }}>
         {myClasses.length === 0 ? (
-          <Typography variant="body1" color="text.secondary" textAlign="center">
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            style={{ textAlign: "center" }}
+          >
             You haven&apos;t joined any classes yet. Enter an invite code above
             to join your first class.
           </Typography>

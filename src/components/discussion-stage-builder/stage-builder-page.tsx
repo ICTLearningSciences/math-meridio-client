@@ -4,19 +4,20 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { SelectCreateStage } from './select-create-stage';
-import { EditDiscussionStage } from './edit-stage/edit-stage';
-import { DiscussionStage } from './types';
-import { useWithStages } from '../../store/slices/stages/use-with-stages';
-import { Button, TextField, Tabs, Tab, Box } from '@mui/material';
-import { getAllStartOfPhaseSteps } from '../../helpers';
-import { LearningObjectivesBuilder } from './learning-objectives-builder';
-import { localStorageGet } from '../../store/local-storage';
+
+import React from "react";
+import { Button, TextField, Tabs, Tab, Box } from "@mui/material";
+import { SelectCreateStage } from "./select-create-stage";
+import { EditDiscussionStage } from "./edit-stage/edit-stage";
+import type { DiscussionStage } from "./types";
+import { useWithStages } from "../../store/slices/stages/use-with-stages";
+import { getAllStartOfPhaseSteps } from "../../helpers";
+import { LearningObjectivesBuilder } from "./learning-objectives-builder";
+import { localStorageGet } from "../../store/local-storage";
 
 export function StageBuilderPage(props: {
   goToStage: (stage: DiscussionStage) => void;
-}): JSX.Element {
+}): React.ReactNode {
   const {
     addNewLocalDiscussionStage,
     addOrUpdateDiscussionStage,
@@ -28,18 +29,18 @@ export function StageBuilderPage(props: {
   const gameIdentifierToStartOfPhaseSteps =
     getAllStartOfPhaseSteps(existingStages);
   const [selectedStageClientId, setSelectedStageClientId] =
-    React.useState<string>('');
-  const localStorageGqlSecret = localStorageGet<string>('gqlSecret');
+    React.useState<string>("");
+  const localStorageGqlSecret = localStorageGet<string>("gqlSecret");
   const [password, setPassword] = React.useState<string>(
-    localStorageGqlSecret || ''
+    localStorageGqlSecret || "",
   );
   const [authorized, setAuthorized] = React.useState<boolean>(
-    localStorageGqlSecret === process.env.REACT_APP_GQL_SECRET || false
+    localStorageGqlSecret === import.meta.env.VITE_GQL_SECRET || false,
   );
   const [selectedTab, setSelectedTab] = React.useState<number>(0);
 
   const selectedStage = existingStages.find(
-    (stage) => stage.clientId === selectedStageClientId
+    (stage) => stage.clientId === selectedStageClientId,
   );
 
   if (!authorized) {
@@ -53,7 +54,7 @@ export function StageBuilderPage(props: {
           onChange={(e) => setPassword(e.target.value)}
         />
         <Button
-          disabled={password !== process.env.REACT_APP_GQL_SECRET}
+          disabled={password !== import.meta.env.VITE_GQL_SECRET}
           onClick={() => setAuthorized(true)}
         >
           Login
@@ -81,7 +82,7 @@ export function StageBuilderPage(props: {
       return (
         <EditDiscussionStage
           returnTo={() => {
-            setSelectedStageClientId('');
+            setSelectedStageClientId("");
           }}
           goToStage={goToStage}
           stage={selectedStage}
@@ -95,8 +96,8 @@ export function StageBuilderPage(props: {
   };
 
   return (
-    <Box sx={{ width: '100%' }}>
-      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+    <Box sx={{ width: "100%" }}>
+      <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
         <Tabs
           value={selectedTab}
           onChange={(_, newValue) => setSelectedTab(newValue)}

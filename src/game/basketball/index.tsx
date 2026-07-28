@@ -4,30 +4,31 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { Game } from '../types';
-import { SimulationScene } from './SimulationScene';
-import { ProblemComponent } from './problem';
-import { SolutionComponent } from './solution';
-import { PlayerStrategy, SimulationComponent } from './simulation';
-import { ResultComponent } from './results';
-import {
+
+import Phaser from "phaser";
+import type { Game } from "../types";
+import { SimulationScene } from "./SimulationScene";
+import { ProblemComponent } from "./problem";
+import { SolutionComponent } from "./solution";
+import { PlayerStrategy, SimulationComponent } from "./simulation";
+import { ResultComponent } from "./results";
+import type {
   GameData,
   GameStateData,
   PlayerStateData,
   Room,
-} from '../../store/slices/game/types';
-import { Player } from '../../store/slices/player/types';
+} from "../../store/slices/game/types";
+import type { Player } from "../../store/slices/player/types";
 
 const BasketballGame: Game = {
-  id: 'basketball',
-  name: 'NBA Analyst',
+  id: "basketball",
+  name: "NBA Analyst",
   problem: `We need you and the analyst team to figure out why we're losing and what to change in our strategy to start winning. Based on what you see, what do you think we're doing wrong? Out of 100 shots, how many should be inside, outside, or mid lane? Inside and mid lane shots earn 2 points, and outside shots earn 3, but they're harder to make.`,
   minProblem:
-    'To score the most points in 100 shots, how many should be inside (2p), outside (3p), or mid lane (2p) shots? Outside shots are harder to make.',
+    "To score the most points in 100 shots, how many should be inside (2p), outside (3p), or mid lane (2p) shots? Outside shots are harder to make.",
   config: {
     type: Phaser.CANVAS,
-    backgroundColor: '#282c34',
+    backgroundColor: "#282c34",
     width: 1280,
     height: 720,
     scale: {
@@ -47,9 +48,9 @@ const BasketballGame: Game = {
     player: Player,
     updatePlayerStateData: (
       newPlayerStateData: GameStateData,
-      playerId: string
+      playerId: string,
     ) => void,
-    minimize?: boolean
+    minimize?: boolean,
   ) => {
     return (
       <SolutionComponent
@@ -66,7 +67,7 @@ const BasketballGame: Game = {
   showPlayerStrategy: (
     player: Player,
     playersGameStateData: PlayerStateData,
-    room: Room
+    room: Room,
   ) => {
     return (
       <PlayerStrategy

@@ -5,27 +5,28 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 
-import { useRef, useEffect } from 'react';
-import { debounce } from 'lodash';
+import { useRef, useEffect } from "react";
+import { debounce } from "lodash";
 
 // Custom hook for debouncing a callback
 export const useDebouncedCallback = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   callback: (...args: any[]) => void,
-  delay: number
+  delay: number,
 ) => {
-  const debouncedFn = useRef(debounce(callback, delay)).current;
+  const debouncedFn = useRef(debounce(callback, delay));
 
   useEffect(() => {
     // Update the debounced function if callback or delay changes
-    debouncedFn.cancel(); // Cancel the previous debounce instance
-    debouncedFn.flush = debounce(callback, delay);
+    debouncedFn.current.cancel(); // Cancel the previous debounce instance
+    debouncedFn.current.flush = debounce(callback, delay);
   }, [callback, delay]);
 
   useEffect(() => {
+    const cur = debouncedFn.current;
     // Cleanup on unmount
     return () => {
-      debouncedFn.cancel();
+      cur.cancel();
     };
   }, [debouncedFn]);
 

@@ -4,19 +4,20 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React, { useState } from 'react';
-import { Button, Card, CardContent, Typography } from '@mui/material';
-import { Room } from '../../../store/slices/game/types';
-import { Player } from '../../../store/slices/player/types';
-import { useNavigate } from 'react-router-dom';
-import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
+
+import React, { useState } from "react";
+import { Button, Card, CardContent, Typography } from "@mui/material";
+import type { Room } from "../../../store/slices/game/types";
+import type { Player } from "../../../store/slices/player/types";
+import { useNavigate } from "react-router-dom";
+import { useWithEducationalData } from "../../../store/slices/educational-data/use-with-educational-data";
 
 export function StudentRoomCard(props: {
   room: Room;
   player: Player;
   classId: string;
   gameId?: string;
-}): JSX.Element {
+}): React.ReactNode {
   const navigate = useNavigate();
   const { assignGameToGameRoom } = useWithEducationalData();
   const { room, classId } = props;
@@ -33,27 +34,27 @@ export function StudentRoomCard(props: {
       }
       navigate(`/classes/${classId}/room/${roomId}`);
     } catch (err) {
-      console.error('Failed to join room', err);
+      console.error("Failed to join room", err);
     } finally {
       setJoining(false);
     }
   };
 
   return (
-    <Card key={room._id} style={{ width: '100%' }}>
+    <Card key={room._id} style={{ width: "100%" }}>
       <CardContent>
         <div
           className="row"
           style={{
-            justifyContent: 'space-between',
-            alignItems: 'center',
+            justifyContent: "space-between",
+            alignItems: "center",
           }}
         >
           <div>
             <Typography variant="h6">{room.name}</Typography>
             <Typography variant="body2" color="text.secondary">
-              {room.gameData.players.length}{' '}
-              {room.gameData.players.length === 1 ? 'player' : 'players'}
+              {room.gameData.players.length}{" "}
+              {room.gameData.players.length === 1 ? "player" : "players"}
             </Typography>
             {!hasGame && (
               <Typography
@@ -71,7 +72,7 @@ export function StudentRoomCard(props: {
             onClick={() => handleJoinRoom(room._id)}
             disabled={joining || !hasGame}
           >
-            {joining ? 'Joining...' : !hasGame ? 'Start' : 'Join'}
+            {joining ? "Joining..." : !hasGame ? "Start" : "Join"}
           </Button>
         </div>
       </CardContent>

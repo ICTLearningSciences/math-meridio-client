@@ -4,26 +4,26 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Typography } from '@mui/material';
+import React from "react";
+import { useSearchParams } from "react-router-dom";
+import { Typography } from "@mui/material";
 
-import { Classroom } from '../../../store/slices/educational-data/types';
-import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
-import { RoomSetupView } from './teacher-room-setup';
-import { GamesDropdown } from '../../button';
-import { IndividualReportCard, PhaseReportCard } from './report-card';
-import { Tabs } from '../../tab';
-import { useWithWindow } from '../../../hooks/use-with-window';
+import type { Classroom } from "../../../store/slices/educational-data/types";
+import { useWithEducationalData } from "../../../store/slices/educational-data/use-with-educational-data";
+import { RoomSetupView } from "./teacher-room-setup";
+import { GamesDropdown } from "../../button";
+import { IndividualReportCard, PhaseReportCard } from "./report-card";
+import { Tabs } from "../../tab";
+import { useWithWindow } from "../../../hooks/use-with-window";
 
 export default function TeacherReports(props: {
   classroom?: Classroom;
-}): JSX.Element {
+}): React.ReactNode {
   const { classroom } = props;
   const { educationalData } = useWithEducationalData();
   const { windowHeight } = useWithWindow();
   const rooms = educationalData.rooms.filter(
-    (r) => r.classId === classroom?._id
+    (r) => r.classId === classroom?._id,
   );
   const [searchParams, setSearchParams] = useSearchParams();
   const [game, setGame] = React.useState<string>();
@@ -43,19 +43,19 @@ export default function TeacherReports(props: {
   }
 
   const gameRooms = educationalData.rooms.filter(
-    (r) => r.classId === classroom._id
+    (r) => r.classId === classroom._id,
   );
   return (
     <Tabs
-      selectedTab={Number.parseInt(searchParams.get('report') || '0')}
-      onSelectTab={(t) => setSearchParams({ tab: '1', report: `${t}` })}
+      selectedTab={Number.parseInt(searchParams.get("report") || "0")}
+      onSelectTab={(t) => setSearchParams({ tab: "1", report: `${t}` })}
       tabsStyle={{
-        marginLeft: '20px',
-        marginBottom: '20px',
+        marginLeft: "20px",
+        marginBottom: "20px",
       }}
       tabs={[
         {
-          name: 'SUMMARY',
+          name: "SUMMARY",
           element: (
             <div
               className="dashboard"
@@ -63,8 +63,7 @@ export default function TeacherReports(props: {
             >
               <Typography
                 variant="h5"
-                fontWeight="bold"
-                style={{ marginBottom: 20 }}
+                style={{ marginBottom: 20, fontWeight: "bold" }}
               >
                 SUMMARY REPORT
               </Typography>
@@ -73,7 +72,7 @@ export default function TeacherReports(props: {
           ),
         },
         {
-          name: 'ROOM REPORTS',
+          name: "ROOM REPORTS",
           element: (
             <div
               className="dashboard"
@@ -81,18 +80,18 @@ export default function TeacherReports(props: {
             >
               <div
                 className="row center-div"
-                style={{ justifyContent: 'space-between' }}
+                style={{ justifyContent: "space-between" }}
               >
-                <Typography variant="h5" fontWeight="bold">
+                <Typography variant="h5" style={{ fontWeight: "bold" }}>
                   ROOM REPORTS
                 </Typography>
                 <GamesDropdown
                   game={game}
                   setGame={(id: string) => setGame(id)}
                   buttonStyle={{
-                    color: 'white',
-                    borderColor: 'white',
-                    marginLeft: '10px',
+                    color: "white",
+                    borderColor: "white",
+                    marginLeft: "10px",
                   }}
                 />
               </div>

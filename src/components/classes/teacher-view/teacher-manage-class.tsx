@@ -4,8 +4,8 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { useSearchParams } from 'react-router-dom';
+import React from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   Button,
   Card,
@@ -18,33 +18,28 @@ import {
   TableRow,
   TextField,
   Typography,
-} from '@mui/material';
-import { Save } from '@mui/icons-material';
+} from "@mui/material";
+import { Save } from "@mui/icons-material";
 
-import {
-  ClassMembershipStatus,
-  Classroom,
-} from '../../../store/slices/educational-data/types';
-import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
-import { Tabs } from '../../tab';
-import { RoomSetupView } from './teacher-room-setup';
-import TeacherInviteCode from './teacher-invite-code';
-import { useWithWindow } from '../../../hooks/use-with-window';
+import type { Classroom } from "../../../store/slices/educational-data/types";
+import { useWithEducationalData } from "../../../store/slices/educational-data/use-with-educational-data";
+import { Tabs } from "../../tab";
+import { RoomSetupView } from "./teacher-room-setup";
+import TeacherInviteCode from "./teacher-invite-code";
+import { useWithWindow } from "../../../hooks/use-with-window";
 
-function TeacherSummary(props: { classroom?: Classroom }): JSX.Element {
+function TeacherSummary(props: { classroom?: Classroom }): React.ReactNode {
   const { classroom } = props;
   const { educationalData } = useWithEducationalData();
 
   const studentMemberships = educationalData.classMemberships.filter(
-    (cm) =>
-      cm.classId === classroom?._id &&
-      cm.status === ClassMembershipStatus.MEMBER
+    (cm) => cm.classId === classroom?._id && cm.status === "Member",
   );
   const students = educationalData.students.filter((s) =>
-    studentMemberships.some((sm) => sm.userId === s._id)
+    studentMemberships.some((sm) => sm.userId === s._id),
   );
   const rooms = educationalData.rooms.filter(
-    (r) => r.classId === classroom?._id
+    (r) => r.classId === classroom?._id,
   );
 
   if (!classroom) {
@@ -59,13 +54,13 @@ function TeacherSummary(props: { classroom?: Classroom }): JSX.Element {
 
   return (
     <div className="column spacing">
-      <Typography fontSize={16} fontWeight="bold">
+      <Typography style={{ fontSize: 16, fontWeight: "bold" }}>
         STUDENTS
       </Typography>
       <Card style={{ borderRadius: 10 }}>
         <CardContent
           className="column spacing"
-          style={{ position: 'relative', padding: 20 }}
+          style={{ position: "relative", padding: 20 }}
         >
           {students.length === 0 ? (
             <Typography variant="body2" color="error">
@@ -90,10 +85,10 @@ function TeacherSummary(props: { classroom?: Classroom }): JSX.Element {
                 <TableBody>
                   {students.map((student) => {
                     const room = rooms.find((r) =>
-                      r.gameData.players.find((s) => s._id === student._id)
+                      r.gameData.players.find((s) => s._id === student._id),
                     );
                     const groupId = studentMemberships.find(
-                      (s) => s.userId === student._id
+                      (s) => s.userId === student._id,
                     )?.groupId;
                     return (
                       <TableRow key={student._id}>
@@ -103,7 +98,7 @@ function TeacherSummary(props: { classroom?: Classroom }): JSX.Element {
                           {new Date(student.lastLoginAt).toLocaleString()}
                         </TableCell>
                         <TableCell>
-                          {room && groupId !== undefined ? groupId + 1 : 'none'}
+                          {room && groupId !== undefined ? groupId + 1 : "none"}
                         </TableCell>
                       </TableRow>
                     );
@@ -120,22 +115,23 @@ function TeacherSummary(props: { classroom?: Classroom }): JSX.Element {
 
 export function TeacherEditClass(props: {
   classroom?: Classroom;
-}): JSX.Element {
+}): React.ReactNode {
   const { classroom } = props;
   const { updateClassNameDescription } = useWithEducationalData();
 
-  const [classId, setClassId] = React.useState('');
-  const [className, setClassName] = React.useState('');
-  const [classDescription, setClassDescription] = React.useState('');
+  const [classId, setClassId] = React.useState("");
+  const [className, setClassName] = React.useState("");
+  const [classDescription, setClassDescription] = React.useState("");
   const [creating, setCreating] = React.useState(false);
 
   React.useEffect(() => {
     if (classroom && classId !== classroom._id) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setClassId(classroom._id);
       setClassName(classroom.name);
-      setClassDescription(classroom.description || '');
+      setClassDescription(classroom.description || "");
     }
-  }, [classroom]);
+  }, [classroom, classId]);
 
   const handleUpdateClass = async () => {
     if (!classroom) return;
@@ -144,10 +140,10 @@ export function TeacherEditClass(props: {
       await updateClassNameDescription(
         classroom._id,
         className,
-        classDescription
+        classDescription,
       );
     } catch (err) {
-      console.error('Failed to update class', err);
+      console.error("Failed to update class", err);
     } finally {
       setCreating(false);
     }
@@ -165,13 +161,13 @@ export function TeacherEditClass(props: {
 
   return (
     <div className="column spacing">
-      <Typography fontSize={16} fontWeight="bold">
+      <Typography style={{ fontSize: 16, fontWeight: "bold" }}>
         EDIT CLASS
       </Typography>
       <Card style={{ borderRadius: 10 }}>
         <CardContent
           className="column spacing"
-          style={{ position: 'relative', padding: 20 }}
+          style={{ position: "relative", padding: 20 }}
         >
           <TextField
             fullWidth
@@ -201,7 +197,7 @@ export function TeacherEditClass(props: {
               onClick={handleUpdateClass}
               startIcon={<Save />}
             >
-              {creating ? 'Saving...' : 'Save Changes'}
+              {creating ? "Saving..." : "Save Changes"}
             </Button>
           </div>
         </CardContent>
@@ -213,7 +209,7 @@ export function TeacherEditClass(props: {
 
 export default function TeacherManageClass(props: {
   classroom?: Classroom;
-}): JSX.Element {
+}): React.ReactNode {
   const { classroom } = props;
   const [searchParams, setSearchParams] = useSearchParams();
   const { windowHeight } = useWithWindow();
@@ -229,15 +225,15 @@ export default function TeacherManageClass(props: {
   }
   return (
     <Tabs
-      selectedTab={Number.parseInt(searchParams.get('manage') || '0')}
-      onSelectTab={(t) => setSearchParams({ tab: '2', manage: `${t}` })}
+      selectedTab={Number.parseInt(searchParams.get("manage") || "0")}
+      onSelectTab={(t) => setSearchParams({ tab: "2", manage: `${t}` })}
       tabsStyle={{
-        marginLeft: '20px',
-        marginBottom: '20px',
+        marginLeft: "20px",
+        marginBottom: "20px",
       }}
       tabs={[
         {
-          name: 'DETAILS',
+          name: "DETAILS",
           element: (
             <div
               className="dashboard"
@@ -248,7 +244,7 @@ export default function TeacherManageClass(props: {
           ),
         },
         {
-          name: 'STUDENTS',
+          name: "STUDENTS",
           element: (
             <div
               className="dashboard"
@@ -259,7 +255,7 @@ export default function TeacherManageClass(props: {
           ),
         },
         {
-          name: 'GROUP FORMATION',
+          name: "GROUP FORMATION",
           element: (
             <div
               className="dashboard"

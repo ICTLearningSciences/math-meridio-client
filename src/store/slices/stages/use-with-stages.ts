@@ -5,32 +5,32 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 
-import { useAppDispatch, useAppSelector } from '../../hooks';
+import { useAppDispatch, useAppSelector } from "../../hooks";
 import {
   addOrUpdateDiscussionStage as _addOrUpdateDiscussionStage,
   fetchDiscussionStages as _fetchDiscussionStages,
   addNewLocalDiscussionStage as _addNewLocalDiscussionStage,
-} from '.';
+} from ".";
 import {
   defaultDicussionStage,
-  DiscussionStage,
-} from '../../../components/discussion-stage-builder/types';
+  type DiscussionStage,
+} from "../../../components/discussion-stage-builder/types";
 
 export function useWithStages() {
   const dispatch = useAppDispatch();
   const discussionStages = useAppSelector(
-    (state) => state.stages.discussionStages
+    (state) => state.stages.discussionStages,
   );
   const loadStagesStatus = useAppSelector(
-    (state) => state.stages.loadStagesStatus
+    (state) => state.stages.loadStagesStatus,
   );
 
   async function addOrUpdateDiscussionStage(
     stage: DiscussionStage,
-    password: string
+    password: string,
   ): Promise<DiscussionStage> {
     const res = await dispatch(
-      _addOrUpdateDiscussionStage({ stage, password })
+      _addOrUpdateDiscussionStage({ stage, password }),
     );
     return res.payload as DiscussionStage;
   }

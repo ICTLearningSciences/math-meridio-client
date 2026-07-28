@@ -4,101 +4,95 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { makeStyles } from 'tss-react/mui';
-import { useAppSelector } from '../../store/hooks';
+
+import React, { useState, useEffect, useRef } from "react";
+import { useOutletContext } from "react-router-dom";
+import { makeStyles } from "tss-react/mui";
 import {
   Avatar,
-  AvatarProps,
+  type AvatarProps,
   Box,
   Paper,
   Stack,
   styled,
   Typography,
-} from '@mui/material';
-import {
-  ChatMessage,
-  GameData,
-  SenderType,
-} from '../../store/slices/game/types';
-import React, { useState, useEffect, useRef } from 'react';
-import AvatarSprite from '../avatar-sprite';
-import {
-  CurGameState,
-  RequireInputType,
-} from '../discussion-stage-builder/types';
-import WaitingForPlayers from './waiting-for-players';
-import { EducationalRole, Player } from '../../store/slices/player/types';
-import { ProcessingIndicator } from './processing-indicator';
-import { useAnimatedMessages } from './use-animated-messages';
-import { useOutletContext } from 'react-router-dom';
-import { UseWithEducationalData } from '../../store/slices/educational-data/use-with-educational-data';
+} from "@mui/material";
+
+import { useAppSelector } from "../../store/hooks";
+import type { ChatMessage, GameData } from "../../store/slices/game/types";
+import AvatarSprite from "../avatar-sprite";
+import type { CurGameState } from "../discussion-stage-builder/types";
+import WaitingForPlayers from "./waiting-for-players";
+import type { Player } from "../../store/slices/player/types";
+import { ProcessingIndicator } from "./processing-indicator";
+import { useAnimatedMessages } from "./use-animated-messages";
+import type { UseWithEducationalData } from "../../store/slices/educational-data/use-with-educational-data";
+
+export type PlayerChatColors =
+  | "info.main"
+  | "success.main"
+  | "warning.main"
+  | "secondary.main"
+  | "text.secondary"
+  | "error.main";
 
 const useStyles = makeStyles()(() => ({
   chatThread: {
-    display: 'flex',
-    flexDirection: 'column',
+    display: "flex",
+    flexDirection: "column",
     flexGrow: 1,
-    overflowY: 'auto',
+    overflowY: "auto",
     spacing: 3,
   },
   chatItem: {
-    position: 'relative',
-    flexDirection: 'row',
+    position: "relative",
+    flexDirection: "row",
     borderRadius: 30,
-    alignItems: 'center',
-    fontFamily: 'Helvetica, Arial, sans-serif',
-    textAlign: 'left',
-    '&.mine': {
-      alignSelf: 'flex-end',
-      backgroundColor: '#0084ff',
+    alignItems: "center",
+    fontFamily: "Helvetica, Arial, sans-serif",
+    textAlign: "left",
+    "&.mine": {
+      alignSelf: "flex-end",
+      backgroundColor: "#0084ff",
       borderBottomRightRadius: 5,
-      '&:after': {
+      "&:after": {
         content: '""',
-        display: 'block',
-        position: 'absolute',
+        display: "block",
+        position: "absolute",
         right: -15,
         bottom: -15,
-        transform: 'rotate(270deg)',
-        borderStyle: 'solid',
-        borderWidth: '30px 0 0 30px',
-        borderColor: '#0084ff transparent',
-        borderRadius: '0 0 40px 0',
+        transform: "rotate(270deg)",
+        borderStyle: "solid",
+        borderWidth: "30px 0 0 30px",
+        borderColor: "#0084ff transparent",
+        borderRadius: "0 0 40px 0",
       },
     },
-    '&.other': {
-      alignSelf: 'flex-start',
-      backgroundColor: '#e6e6e6',
+    "&.other": {
+      alignSelf: "flex-start",
+      backgroundColor: "#e6e6e6",
       borderBottomLeftRadius: 5,
-      '&:after': {
+      "&:after": {
         content: '""',
-        display: 'block',
-        position: 'absolute',
+        display: "block",
+        position: "absolute",
         left: 0,
         bottom: -5,
-        transform: 'rotate(-140deg)',
-        borderStyle: 'solid',
-        borderWidth: '30px 0 0 30px',
-        borderColor: '#e6e6e6 transparent',
-        borderRadius: '0 0 40px 0',
+        transform: "rotate(-140deg)",
+        borderStyle: "solid",
+        borderWidth: "30px 0 0 30px",
+        borderColor: "#e6e6e6 transparent",
+        borderRadius: "0 0 40px 0",
       },
-      '&.PLAYER': {
-        backgroundColor: '#d2eafe',
-        '&:after': {
-          borderColor: '#d2eafe transparent',
+      "&.PLAYER": {
+        backgroundColor: "#d2eafe",
+        "&:after": {
+          borderColor: "#d2eafe transparent",
         },
       },
     },
   },
 }));
-
-export enum PlayerChatColors {
-  Blue = 'info.main',
-  Green = 'success.main',
-  Orange = 'warning.main',
-  Lavender = 'secondary.main',
-  Grey = 'text.secondary',
-  Red = 'error.main',
-}
 
 export default function ChatThread(props: {
   roomIsProcessing: boolean;
@@ -106,13 +100,13 @@ export default function ChatThread(props: {
   uiGameData: GameData;
   messages?: ChatMessage[];
   height?: number;
-}): JSX.Element {
+}): React.ReactNode {
   const { roomIsProcessing, requestUserInputPhaseData, uiGameData } = props;
   const { reportPlayerAway } = useOutletContext<UseWithEducationalData>();
 
   const { classes } = useStyles();
   const { player } = useAppSelector((state) => state.playerData);
-  const isTeacher = player?.educationalRole === EducationalRole.INSTRUCTOR;
+  const isTeacher = player?.educationalRole === "INSTRUCTOR";
   const allMessages = props.messages || uiGameData.chat || [];
   const { displayedMessages, isAnimating } = useAnimatedMessages(allMessages);
   const messages = displayedMessages.filter((msg) => msg.message);
@@ -126,12 +120,10 @@ export default function ChatThread(props: {
       return acc;
     }, [] as Player[]);
   const isInRequestUserInputState =
+    requestUserInputPhaseData.curState === "ALL_REQUIRED_IN_ORDER" ||
+    requestUserInputPhaseData.curState === "SINGLE_RESPONSE_REQUIRED" ||
     requestUserInputPhaseData.curState ===
-      RequireInputType.ALL_USER_RESPONSES_REQUIRED_IN_ORDER ||
-    requestUserInputPhaseData.curState ===
-      RequireInputType.SINGLE_RESPONSE_REQUIRED ||
-    requestUserInputPhaseData.curState ===
-      RequireInputType.ALL_USER_RESPONSES_REQUIRED_FREE_FOR_ALL;
+      "ALL_USER_RESPONSES_REQUIRED_FREE_FOR_ALL";
 
   // Track when request user input state starts for the 60-second timer
   const [requestInputStartTime, setRequestInputStartTime] = useState<
@@ -145,7 +137,7 @@ export default function ChatThread(props: {
       isInRequestUserInputState &&
       !previousIsInRequestUserInputState.current
     ) {
-      console.log('ChatThread: Request user input state started');
+      console.log("ChatThread: Request user input state started");
       setRequestInputStartTime(Date.now());
     }
 
@@ -154,7 +146,7 @@ export default function ChatThread(props: {
       !isInRequestUserInputState &&
       previousIsInRequestUserInputState.current
     ) {
-      console.log('ChatThread: Request user input state ended');
+      console.log("ChatThread: Request user input state ended");
       setRequestInputStartTime(null);
     }
 
@@ -164,14 +156,14 @@ export default function ChatThread(props: {
   const playerColorMap: Map<string, string> = new Map([]);
 
   const usedColors: Map<string, boolean> = new Map([
-    [PlayerChatColors.Green, false],
-    [PlayerChatColors.Lavender, false],
-    [PlayerChatColors.Orange, false],
+    ["success.main", false],
+    ["secondary.main", false],
+    ["warning.main", false],
   ]);
   //setting only 3 colors as we have 4 players max. Blue is reserved for Self and Grey is for System.
 
   const GetUnusedColor = (): string => {
-    let retColor = PlayerChatColors.Red.toString();
+    let retColor = "error.main".toString();
     for (const myKey of usedColors.keys()) {
       if (usedColors.get(myKey) == false) {
         usedColors.set(myKey, true);
@@ -183,10 +175,10 @@ export default function ChatThread(props: {
   };
 
   const GetMyColor = (id: string, isPlayer: boolean): string => {
-    if (id != '') {
+    if (id != "") {
       if (!(id in playerColorMap)) {
         if (isPlayer) {
-          playerColorMap.set(id, PlayerChatColors.Blue);
+          playerColorMap.set(id, "info.main");
         } else {
           const unusedColor = GetUnusedColor();
           playerColorMap.set(id, unusedColor);
@@ -195,7 +187,7 @@ export default function ChatThread(props: {
       return playerColorMap.get(id) as string;
     }
 
-    return PlayerChatColors.Red;
+    return "error.main";
   };
 
   const BorderedAvatar = styled(Avatar)`
@@ -205,21 +197,21 @@ export default function ChatThread(props: {
   const stringAvatar = (name: string, id: string): AvatarProps => {
     if (!name) {
       return {
-        alt: 'System',
+        alt: "System",
 
         sx: {
-          bgcolor: 'text.secondary',
+          bgcolor: "text.secondary",
         },
-        children: 'S',
+        children: "S",
       };
     }
-    if (name.split(' ').length > 1) {
+    if (name.split(" ").length > 1) {
       return {
         alt: name,
         sx: {
           bgcolor: playerColorMap.get(id),
         },
-        children: `${name.split(' ')[0][0]}${name.split(' ')[1][0]}`,
+        children: `${name.split(" ")[0][0]}${name.split(" ")[1][0]}`,
       };
     } else {
       return {
@@ -227,7 +219,7 @@ export default function ChatThread(props: {
         sx: {
           bgcolor: playerColorMap.get(id),
         },
-        children: `${name.split(' ')[0][0]}`,
+        children: `${name.split(" ")[0][0]}`,
       };
     }
   };
@@ -237,38 +229,38 @@ export default function ChatThread(props: {
   });
 
   React.useEffect(() => {
-    const objDiv = document.getElementById('chat-thread');
+    const objDiv = document.getElementById("chat-thread");
     if (objDiv) {
       objDiv.scroll({
         top: objDiv.scrollHeight,
-        behavior: 'smooth',
+        behavior: "smooth",
       });
     }
   }, [messages.length]);
 
-  let prevMessageOwner = '';
-  let currMessageOwner = '';
+  let prevMessageOwner = "";
+  let currMessageOwner = "";
   let skipAvatar = false;
-
   return (
     <div
       id="chat-thread"
       className={classes.chatThread}
       style={{
-        backgroundColor: PlayerChatColors.Grey,
+        backgroundColor: "text.secondary",
         maxHeight: props.height || window.innerHeight - 250,
       }}
     >
       <Stack direction="column">
         {messages.map((msg, idx) => {
-          const teacherMessage = msg.sender === SenderType.INSTRUCTOR;
+          const teacherMessage = msg.sender === "INSTRUCTOR";
           const myMessage =
-            msg.sender === SenderType.PLAYER && msg.senderId === player?._id;
+            msg.sender === "PLAYER" && msg.senderId === player?._id;
 
-          if (msg.sender == SenderType.SYSTEM) {
-            currMessageOwner = 'System';
+          if (msg.sender == "SYSTEM") {
+            // eslint-disable-next-line react-hooks/immutability
+            currMessageOwner = "System";
           } else {
-            currMessageOwner = msg.senderId ?? '';
+            currMessageOwner = msg.senderId ?? "";
           }
           if (prevMessageOwner == currMessageOwner) {
             skipAvatar = true;
@@ -277,35 +269,39 @@ export default function ChatThread(props: {
             prevMessageOwner = currMessageOwner;
           }
           const bubbleColor = teacherMessage
-            ? 'white'
-            : msg.sender === SenderType.PLAYER
-            ? playerColorMap.get(msg.senderId ?? '')
-            : PlayerChatColors.Grey;
+            ? "white"
+            : msg.sender === "PLAYER"
+              ? playerColorMap.get(msg.senderId ?? "")
+              : "text.secondary";
 
           return (
             <Stack key={`chat-msg-container-${idx}`} direction="column">
               {!skipAvatar && (
                 <Typography
                   color="teal"
-                  textAlign={!myMessage ? 'left' : 'right'}
+                  style={{
+                    textAlign: !myMessage ? "left" : "right",
+                  }}
                 >
                   {teacherMessage
-                    ? 'Instructor'
-                    : msg.sender === SenderType.PLAYER
-                    ? msg.senderId === player?._id
-                      ? 'You'
-                      : msg.senderName
-                    : 'System'}
+                    ? "Instructor"
+                    : msg.sender === "PLAYER"
+                      ? msg.senderId === player?._id
+                        ? "You"
+                        : msg.senderName
+                      : "System"}
                 </Typography>
               )}
 
               <Stack
-                p={1}
-                direction={!myMessage ? 'row' : 'row-reverse'}
-                justifyContent={!myMessage ? 'left' : 'right'}
+                style={{
+                  padding: 1,
+                  flexDirection: !myMessage ? "row" : "row-reverse",
+                  justifyContent: !myMessage ? "left" : "right",
+                }}
               >
                 {!skipAvatar &&
-                  (msg.sender === SenderType.PLAYER ? (
+                  (msg.sender === "PLAYER" ? (
                     <AvatarSprite
                       player={players?.find((p) => p._id === msg.senderId)}
                       bgColor={bubbleColor}
@@ -313,17 +309,17 @@ export default function ChatThread(props: {
                   ) : (
                     <BorderedAvatar
                       {...stringAvatar(
-                        msg.senderName ?? '',
-                        msg.senderId ?? ''
+                        msg.senderName ?? "",
+                        msg.senderId ?? "",
                       )}
                     ></BorderedAvatar>
                   ))}
                 {skipAvatar && (
                   <Box
-                    width={46}
-                    sx={{
+                    style={{
                       flexGrow: 0,
                       flexShrink: 0,
+                      width: 46,
                     }}
                   ></Box>
                 )}
@@ -332,30 +328,30 @@ export default function ChatThread(props: {
                   elevation={0}
                   sx={{
                     p: 3,
-                    whiteSpace: 'normal',
-                    wordWrap: 'break-word',
+                    whiteSpace: "normal",
+                    wordWrap: "break-word",
                     backgroundColor: bubbleColor,
-                    paddingLeft: !myMessage ? '10%' : '5%',
-                    paddingRight: !myMessage ? '5%' : '10%',
+                    paddingLeft: !myMessage ? "10%" : "5%",
+                    paddingRight: !myMessage ? "5%" : "10%",
                     clipPath: !myMessage
-                      ? 'polygon(0% 0%, 100% 0%, 100% 100%, calc(0% + 1em) 100%, calc(0% + 1em) calc(0% + 1em), 0% 0%)'
-                      : 'polygon(0% 0%, 100% 0%, calc(100% - 1em) calc(0% + 1em), calc(100% - 1em) 100%, 0% 100%, 0% 0%)',
-                    borderBottomLeftRadius: !myMessage ? 0 : '1em',
-                    borderTopLeftRadius: !myMessage ? 0 : '1em',
-                    borderBottomRightRadius: !myMessage ? '1em' : 0,
-                    borderTopRightRadius: !myMessage ? '1em' : 0,
+                      ? "polygon(0% 0%, 100% 0%, 100% 100%, calc(0% + 1em) 100%, calc(0% + 1em) calc(0% + 1em), 0% 0%)"
+                      : "polygon(0% 0%, 100% 0%, calc(100% - 1em) calc(0% + 1em), calc(100% - 1em) 100%, 0% 100%, 0% 0%)",
+                    borderBottomLeftRadius: !myMessage ? 0 : "1em",
+                    borderTopLeftRadius: !myMessage ? 0 : "1em",
+                    borderBottomRightRadius: !myMessage ? "1em" : 0,
+                    borderTopRightRadius: !myMessage ? "1em" : 0,
                   }}
                 >
                   <pre
                     style={{
-                      whiteSpace: 'pre-wrap',
-                      wordWrap: 'break-word',
-                      overflowWrap: 'break-word',
+                      whiteSpace: "pre-wrap",
+                      wordWrap: "break-word",
+                      overflowWrap: "break-word",
                       margin: 0,
-                      fontFamily: 'inherit',
+                      fontFamily: "inherit",
                     }}
                   >
-                    <Typography color={teacherMessage ? 'black' : 'white'}>
+                    <Typography color={teacherMessage ? "black" : "white"}>
                       {msg.message}
                     </Typography>
                   </pre>

@@ -4,18 +4,17 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import GameScene from '../game-scene';
-import { addBackground, addImage, addTween } from '../phaser-helpers';
-import EventSystem from '../event-system';
+import GameScene from "../game-scene";
+import { addBackground, addImage, addTween } from "../phaser-helpers";
+import EventSystem from "../event-system";
 import {
   INSIDE_SHOT_SUCCESS_VALUE,
   MID_SHOT_SUCCESS_VALUE,
   NUMBER_OF_SHOTS,
   OUTSIDE_SHOT_SUCCESS_VALUE,
-} from './solution';
-import { SenderType } from '../../store/slices/game/types';
-import { localStorageGet, SESSION_ID } from '../../store/local-storage';
-import { Player } from '../../store/slices/player/types';
+} from "./solution";
+import { localStorageGet, SESSION_ID } from "../../store/local-storage";
+import type { Player } from "../../store/slices/player/types";
 
 export interface BasketballSimulationData {
   player: string;
@@ -33,7 +32,7 @@ export interface BasketballSimulationData {
 }
 
 export interface BasketballShot {
-  position: 'outside' | 'mid' | 'inside';
+  position: "outside" | "mid" | "inside";
   success: boolean;
 }
 
@@ -43,7 +42,7 @@ export class SimulationScene extends GameScene {
   curShot: number;
 
   constructor() {
-    super('Simulation');
+    super("Simulation");
     this.simulation = undefined;
     this.shots = [];
     this.curShot = 0;
@@ -52,15 +51,15 @@ export class SimulationScene extends GameScene {
   preload() {
     super.preload();
     //  Load the assets for the game - Replace with your own assets
-    this.load.setPath('/assets/basketball');
-    this.load.image('court', 'court_side.jpg');
-    this.load.image('hoop', 'court_hoop.jpg');
-    this.load.image('basketball', 'basketball.png');
+    this.load.setPath("/assets/basketball");
+    this.load.image("court", "court_side.jpg");
+    this.load.image("hoop", "court_hoop.jpg");
+    this.load.image("basketball", "basketball.png");
   }
 
   create() {
     super.create();
-    EventSystem.on('simulate', this.simulate, this);
+    EventSystem.on("simulate", this.simulate, this);
     this.createScene();
   }
 
@@ -69,14 +68,14 @@ export class SimulationScene extends GameScene {
   }
 
   createScene() {
-    this.bg = addBackground(this, 'court');
+    this.bg = addBackground(this, "court");
     this.chatWindow?.setY(this.bg.displayHeight / 2);
     this.addChatMessage({
-      messageId: '',
-      sender: SenderType.SYSTEM,
-      message: 'Select a strategy first to see simulation',
+      messageId: "",
+      sender: "SYSTEM",
+      message: "Select a strategy first to see simulation",
       sessionId: localStorageGet(SESSION_ID) as string,
-      phaseId: '',
+      phaseId: "",
     });
     super.createScene();
   }
@@ -95,7 +94,7 @@ export class SimulationScene extends GameScene {
       {
         x: this.bg.displayWidth / 2,
         y: 500,
-      }
+      },
     );
     this.shots = [];
     this.curShot = 0;
@@ -106,7 +105,7 @@ export class SimulationScene extends GameScene {
       i++
     ) {
       this.shots.push({
-        position: 'outside',
+        position: "outside",
         success: Math.random() <= OUTSIDE_SHOT_SUCCESS_VALUE,
       });
     }
@@ -116,7 +115,7 @@ export class SimulationScene extends GameScene {
       i++
     ) {
       this.shots.push({
-        position: 'mid',
+        position: "mid",
         success: Math.random() <= MID_SHOT_SUCCESS_VALUE,
       });
     }
@@ -126,7 +125,7 @@ export class SimulationScene extends GameScene {
       i++
     ) {
       this.shots.push({
-        position: 'inside',
+        position: "inside",
         success: Math.random() <= INSIDE_SHOT_SUCCESS_VALUE,
       });
     }
@@ -136,21 +135,21 @@ export class SimulationScene extends GameScene {
 
   shootBall() {
     if (this.curShot >= this.shots.length) {
-      EventSystem.emit('simulationEnded', this.simulation);
+      EventSystem.emit("simulationEnded", this.simulation);
       return;
     }
     const shot = this.shots[this.curShot];
     const x =
-      shot.position === 'outside'
+      shot.position === "outside"
         ? this.bg!.displayWidth * 0.6
-        : shot.position === 'mid'
-        ? this.bg!.displayWidth * 0.7
-        : this.bg!.displayWidth * 0.8;
-    let direction = '';
+        : shot.position === "mid"
+          ? this.bg!.displayWidth * 0.7
+          : this.bg!.displayWidth * 0.8;
+    let direction = "";
     if (x > this.mySprite[0].x) {
-      direction = '_right';
+      direction = "_right";
     } else if (x < this.mySprite[0].x) {
-      direction = '_left';
+      direction = "_left";
     }
     this.playSpriteAnim(this.mySprite, `walk${direction}`);
 
@@ -175,11 +174,11 @@ export class SimulationScene extends GameScene {
   _shoot(shot: BasketballShot) {
     // jump
     this.playSpriteAnim(this.mySprite, `jump_right`);
-    const hoop = addImage(this, 'hoop', undefined, {
+    const hoop = addImage(this, "hoop", undefined, {
       bg: this.bg,
       heightRel: 1,
     }).setAlpha(0);
-    const ball = addImage(this, 'basketball', undefined, {
+    const ball = addImage(this, "basketball", undefined, {
       bg: this.bg,
       height: this.mySprite[0].displayHeight / 2,
     });

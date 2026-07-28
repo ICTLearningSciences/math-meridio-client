@@ -5,9 +5,8 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 
-import React from 'react';
-import Carousel from 'react-multi-carousel';
-import { TransformWrapper } from 'react-zoom-pan-pinch';
+import React from "react";
+import { TransformWrapper } from "react-zoom-pan-pinch";
 import {
   Card,
   IconButton,
@@ -15,54 +14,62 @@ import {
   TextField,
   Tooltip,
   Typography,
-} from '@mui/material';
+} from "@mui/material";
 import {
   FullscreenExit,
   Fullscreen,
   VolumeOff,
   VolumeUp,
-} from '@mui/icons-material';
+  RadioButtonUnchecked,
+  RadioButtonChecked,
+} from "@mui/icons-material";
 
-import { Game } from '../../game/types';
-import { useWithWindow } from '../../hooks/use-with-window';
-import { GameStateData, Room } from '../../store/slices/game/types';
-import { Player } from '../../store/slices/player/types';
-import { useWithConfig } from '../../store/slices/config/use-with-config';
-
-import 'react-multi-carousel/lib/styles.css';
-import { useWithPlayer } from '../../store/slices/player/use-with-player-state';
+import type { Game } from "../../game/types";
+import { useWithWindow } from "../../hooks/use-with-window";
+import type { GameStateData, Room } from "../../store/slices/game/types";
+import type { Player } from "../../store/slices/player/types";
+import { useWithConfig } from "../../store/slices/config/use-with-config";
+import { useWithPlayer } from "../../store/slices/player/use-with-player-state";
 
 function MyCarousel(props: {
-  children: React.ReactNode;
   phase: number;
-}): JSX.Element {
-  const ref = React.useRef<Carousel | null>(null);
+  children: React.ReactElement | React.ReactElement[];
+}): React.ReactNode {
+  const [slide, setSlide] = React.useState<number>(0);
 
   React.useEffect(() => {
-    if (!ref.current) return;
-    ref.current.goToSlide(0, true);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSlide(0);
   }, [props.phase]);
 
-  return (
-    <Carousel
-      ref={ref}
-      showDots
-      autoPlay={false}
-      infinite={false}
-      responsive={{
-        desktop: {
-          breakpoint: { max: 4000, min: 3000 },
-          items: 2,
-        },
-        mobile: {
-          breakpoint: { max: 3000, min: 0 },
-          items: 1,
-        },
-      }}
-    >
-      {props.children}
-    </Carousel>
-  );
+  if (Array.isArray(props.children)) {
+    return (
+      <div className="column" style={{ position: "relative" }}>
+        {props.children[slide]}
+        <div
+          className="row center-div"
+          style={{ position: "absolute", bottom: 0, width: "100%" }}
+        >
+          {props.children.map((_c, i) => {
+            return (
+              <IconButton
+                color={slide === i ? "primary" : "default"}
+                onClick={() => setSlide(i)}
+              >
+                {slide === i ? (
+                  <RadioButtonChecked />
+                ) : (
+                  <RadioButtonUnchecked />
+                )}
+              </IconButton>
+            );
+          })}
+        </div>
+      </div>
+    );
+  } else {
+    return props.children;
+  }
 }
 
 function Space(props: {
@@ -72,7 +79,7 @@ function Space(props: {
   expanded?: boolean;
   onExpand?: () => void;
   children: React.ReactNode;
-}): JSX.Element {
+}): React.ReactNode {
   const { windowHeight } = useWithWindow();
   return (
     <Card
@@ -85,27 +92,30 @@ function Space(props: {
       <div
         className="row"
         style={{
-          alignItems: 'center',
-          justifyContent: 'space-between',
+          alignItems: "center",
+          justifyContent: "space-between",
         }}
       >
-        <Typography fontWeight="bold">{props.title}</Typography>
+        <Typography style={{ fontWeight: "bold" }}>{props.title}</Typography>
         {props.header}
         {props.onExpand && (
           <IconButton
-            color={props.expanded ? 'primary' : 'default'}
+            color={props.expanded ? "primary" : "default"}
             onClick={props.onExpand}
           >
             {props.expanded ? <FullscreenExit /> : <Fullscreen />}
           </IconButton>
         )}
       </div>
-      <div style={{ height: '100%', overflowY: 'auto' }}>{props.children}</div>
+      <div style={{ height: "100%", overflowY: "auto" }}>{props.children}</div>
     </Card>
   );
 }
 
-function SimulationSelection(props: { room: Room; game: Game }): JSX.Element {
+function SimulationSelection(props: {
+  room: Room;
+  game: Game;
+}): React.ReactNode {
   const { room, game } = props;
   const { isMuted, toggleMuted } = useWithConfig();
   const { player } = useWithPlayer();
@@ -124,16 +134,16 @@ function SimulationSelection(props: { room: Room; game: Game }): JSX.Element {
                 key={p._id}
                 value={p._id}
                 style={{
-                  width: '100%',
+                  width: "100%",
                   padding: 0,
                   margin: 0,
-                  backgroundColor: p._id === player?._id ? 'lightblue' : '',
+                  backgroundColor: p._id === player?._id ? "lightblue" : "",
                 }}
               >
                 {game.showPlayerStrategy(
                   p,
                   room.gameData.playersGameStateData[p._id],
-                  room
+                  room,
                 )}
               </MenuItem>
             );
@@ -154,7 +164,7 @@ export default function GamePagePhaseDisplay(props: {
   player?: Player;
   selectedPhase?: number;
   updateMyRoomGameStateData: (gameStateData: GameStateData) => Promise<Room>;
-}): JSX.Element {
+}): React.ReactNode {
   const { room, game, player, updateMyRoomGameStateData } = props;
   const { windowHeight } = useWithWindow();
   const [expanded, setExpanded] = React.useState<boolean>(false);
@@ -168,6 +178,7 @@ export default function GamePagePhaseDisplay(props: {
     Math.min(cardHeight - 100, cardHeight * (expanded ? 0.5 : 0.9)) - 25;
 
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setExpanded(false);
   }, [phasesStarted]);
 
@@ -192,12 +203,12 @@ export default function GamePagePhaseDisplay(props: {
             <TransformWrapper
               minScale={0.5}
               maxScale={1}
-              panning={{ excluded: ['panningDisabled'] }}
+              panning={{ excluded: ["panningDisabled"] }}
             >
               {game.showSolution(
                 room.gameData,
                 player,
-                updateMyRoomGameStateData
+                updateMyRoomGameStateData,
               )}
             </TransformWrapper>
           </Space>
@@ -222,13 +233,13 @@ export default function GamePagePhaseDisplay(props: {
             <TransformWrapper
               minScale={0.5}
               maxScale={1}
-              panning={{ excluded: ['panningDisabled'] }}
+              panning={{ excluded: ["panningDisabled"] }}
             >
               {game.showSolution(
                 room.gameData,
                 player,
                 updateMyRoomGameStateData,
-                !expanded
+                !expanded,
               )}
             </TransformWrapper>
           </Space>
@@ -267,12 +278,12 @@ export default function GamePagePhaseDisplay(props: {
             <TransformWrapper
               minScale={0.5}
               maxScale={1}
-              panning={{ excluded: ['panningDisabled'] }}
+              panning={{ excluded: ["panningDisabled"] }}
             >
               {game.showSolution(
                 room.gameData,
                 player,
-                updateMyRoomGameStateData
+                updateMyRoomGameStateData,
               )}
             </TransformWrapper>
           </Space>
@@ -288,7 +299,7 @@ export default function GamePagePhaseDisplay(props: {
         <TransformWrapper
           minScale={0.5}
           maxScale={1}
-          panning={{ excluded: ['panningDisabled'] }}
+          panning={{ excluded: ["panningDisabled"] }}
         >
           {game.showSolution(room.gameData, player, updateMyRoomGameStateData)}
         </TransformWrapper>

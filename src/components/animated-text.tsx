@@ -5,46 +5,46 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { randomInt } from '../helpers';
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { randomInt } from "../helpers";
 
-import './animated-text.css';
+import "./animated-text.css";
 
 export const FadingText: React.FC<{ strings: string[] }> = ({ strings }) => {
   const [currentStringIndex, setCurrentStringIndex] = useState(0);
-  const [fadeState, setFadeState] = useState<'fading-out' | 'fading-in'>(
-    'fading-in'
+  const [fadeState, setFadeState] = useState<"fading-out" | "fading-in">(
+    "fading-in",
   );
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (currentStringIndex !== strings.length - 1) {
-        setFadeState('fading-out');
+        setFadeState("fading-out");
       }
     }, 3000); // Change the duration as needed
 
     return () => clearTimeout(timeoutId);
-  }, [currentStringIndex]);
+  }, [strings.length, currentStringIndex]);
 
   useEffect(() => {
     if (
-      fadeState === 'fading-out' &&
+      fadeState === "fading-out" &&
       currentStringIndex !== strings.length - 1
     ) {
       const timeoutId = setTimeout(() => {
         setCurrentStringIndex((prevIndex) => (prevIndex + 1) % strings.length);
-        setFadeState('fading-in');
+        setFadeState("fading-in");
       }, 1000); // Adjust the delay before fading in the next string
 
       return () => clearTimeout(timeoutId);
     }
-  }, [fadeState, strings.length]);
+  }, [currentStringIndex, fadeState, strings.length]);
 
   return (
     <div
       className={`fading-text ${
-        fadeState === 'fading-out' ? 'fade-out' : 'fade-in'
+        fadeState === "fading-out" ? "fade-out" : "fade-in"
       }`}
     >
       {strings[currentStringIndex]}
@@ -52,8 +52,8 @@ export const FadingText: React.FC<{ strings: string[] }> = ({ strings }) => {
   );
 };
 
-export const WavyText = ({ text = 'Wavy Motion' }: { text?: string }) => {
-  const colors = ['#ffaa40', '#9c40ff'];
+export const WavyText = ({ text = "Wavy Motion" }: { text?: string }) => {
+  const colors = ["#ffaa40", "#9c40ff"];
   const [animationTime, setAnimationTime] = useState(0);
 
   useEffect(() => {
@@ -65,7 +65,7 @@ export const WavyText = ({ text = 'Wavy Motion' }: { text?: string }) => {
 
   return (
     <h4 className="row center-div">
-      {text.split('').map((char, i) => {
+      {text.split("").map((char, i) => {
         const yOffset = Math.sin(animationTime + i * 0.3) * 5;
         const color = colors[randomInt(colors.length)];
         return (
@@ -75,7 +75,7 @@ export const WavyText = ({ text = 'Wavy Motion' }: { text?: string }) => {
               y: yOffset,
               color: color,
               transition: {
-                type: 'spring',
+                type: "spring",
                 stiffness: 300,
                 damping: 30,
                 mass: 0.8,
@@ -83,7 +83,7 @@ export const WavyText = ({ text = 'Wavy Motion' }: { text?: string }) => {
             }}
             className="inline-block"
           >
-            {char === ' ' ? '\u00A0' : char}
+            {char === " " ? "\u00A0" : char}
           </motion.span>
         );
       })}

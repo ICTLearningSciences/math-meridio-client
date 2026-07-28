@@ -4,28 +4,11 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-/*
-This software is Copyright ©️ 2020 The University of Southern California. All Rights Reserved.
-Permission to use, copy, modify, and distribute this software and its documentation for educational, research and non-profit purposes, without fee, and without a written agreement is hereby granted, provided that the above copyright notice and subject to the full license file found in the root of this software deliverable. Permission to make commercial use of this software may be obtained by contacting:  USC Stevens Center for Innovation University of Southern California 1150 S. Olive Street, Suite 2300, Los Angeles, CA 90115, USA Email: accounting@stevens.usc.edu
 
-The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
-*/
-import React from 'react';
-
-import InfoIcon from '@mui/icons-material/Info';
-import {
-  CheckBoxInput,
-  InputField,
-  SelectInputField,
-} from '../../shared/input-components';
-import {
-  GenericLlmRequest,
-  PromptConfiguration as PromptConfigurationType,
-  PromptOutputTypes,
-  PromptRoles,
-} from '../../../../types';
+import React from "react";
 import {
   Button,
+  Collapse,
   CircularProgress,
   IconButton,
   Tabs,
@@ -36,101 +19,66 @@ import {
   InputLabel,
   Select,
   MenuItem,
-} from '@mui/material';
-import { Delete, Add } from '@mui/icons-material';
-import { v4 as uuid } from 'uuid';
-import { JumpToAlternateStep } from '../../shared/jump-to-alternate-step';
-import { AiServicesResponseTypes } from '../../../../ai-services/ai-service-types';
-import ViewPreviousRunModal from '../../ai-runs-viewer/view-previous-run-modal';
-import { recursivelyConvertExpectedDataToAiPromptString } from '../../helpers';
-import ViewPreviousRunsModal from '../../ai-runs-viewer/view-previous-runs-modal';
-import { JsonResponseDataUpdater } from './json-response-data-builder';
-import Collapse from '@mui/material/Collapse';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import { TextDialog } from '../../../dialog';
-import {
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-} from '@mui/material';
+} from "@mui/material";
+import { Delete, Add, Info, ExpandMore, ExpandLess } from "@mui/icons-material";
+
 import {
+  CheckBoxInput,
+  InputField,
+  SelectInputField,
+} from "../../shared/input-components";
+import type {
+  GenericLlmRequest,
+  PromptConfiguration as PromptConfigurationType,
+} from "../../../../types";
+import { JumpToAlternateStep } from "../../shared/jump-to-alternate-step";
+import type { AiServicesResponseTypes } from "../../../../ai-services/ai-service-types";
+import ViewPreviousRunModal from "../../ai-runs-viewer/view-previous-run-modal";
+import { recursivelyConvertExpectedDataToAiPromptString } from "../../helpers";
+import ViewPreviousRunsModal from "../../ai-runs-viewer/view-previous-runs-modal";
+import { JsonResponseDataUpdater } from "./json-response-data-builder";
+import { TextDialog } from "../../../dialog";
+import type {
   DiscussionStage,
-  DiscussionStageStepType,
   FlowItem,
   IncludeMessagesContextTypeEnum,
   IncludeMessageContext,
   JsonResponseData,
-  JsonResponseDataType,
   ProcessPromptAs,
   PromptConfiguration,
   PromptStageStep,
   RequestUserInputStageStep,
-} from '../../types';
+} from "../../types";
 import {
   RoundedBorderDiv,
   RowDiv,
   TopLeftText,
   ColumnDiv,
-} from '../../../../styled-components';
-import { syncLlmRequest } from '../../../../hooks/use-with-synchronous-polling';
-import { useWithConfig } from '../../../../store/slices/config/use-with-config';
-export function getEmptyJsonResponseData(): JsonResponseData {
-  return {
-    clientId: uuid(),
-    name: '',
-    type: JsonResponseDataType.STRING,
-    isRequired: false,
-    additionalInfo: '',
-  };
-}
+} from "../../../../styled-components";
+import { syncLlmRequest } from "../../../../hooks/use-with-synchronous-polling";
+import { useWithConfig } from "../../../../store/slices/config/use-with-config";
+import { getEmptyJsonResponseData } from "./helpers";
 
-export function defaultPromptBuilder(): PromptStageStep {
-  return {
-    stepId: uuid(),
-    lastStep: false,
-    stepType: DiscussionStageStepType.PROMPT,
-    prompts: [
-      {
-        processPromptAs: ProcessPromptAs.INDIVIDUALLY,
-        promptText: '',
-        responseFormat: '',
-        outputDataType: PromptOutputTypes.TEXT,
-        jsonResponseData: [] as JsonResponseData[],
-        customSystemRole: '',
-        analyzeLearningObjectives: false,
-        includeMessageContext: {
-          type: IncludeMessagesContextTypeEnum.NONE,
-          stepIds: [],
-          includeMessagesFromOtherUsers: false,
-        },
-      },
-    ],
-    jumpToStepId: '',
-  };
-}
-
-export enum ViewingInputType {
-  PROMPT_TEXT = 'PROMPT_TEXT',
-  RESPONSE_FORMAT = 'RESPONSE_FORMAT',
-  NONE = 'NONE',
-}
+export type ViewingInputType = "PROMPT_TEXT" | "RESPONSE_FORMAT" | "NONE";
 
 function getEmptyPromptConfiguration(): Omit<
   PromptConfiguration,
-  'jsonResponseData'
+  "jsonResponseData"
 > & { jsonResponseData: JsonResponseData[] } {
   return {
-    processPromptAs: ProcessPromptAs.INDIVIDUALLY,
-    promptText: '',
-    responseFormat: '',
-    outputDataType: PromptOutputTypes.TEXT,
+    processPromptAs: "INDIVIDUALLY",
+    promptText: "",
+    responseFormat: "",
+    outputDataType: "TEXT",
     jsonResponseData: [] as JsonResponseData[],
-    customSystemRole: '',
+    customSystemRole: "",
     analyzeLearningObjectives: false,
     includeMessageContext: {
-      type: IncludeMessagesContextTypeEnum.NONE,
+      type: "NONE",
       stepIds: [],
       includeMessagesFromOtherUsers: false,
     },
@@ -141,18 +89,18 @@ interface ConversionConfirmationDialogProps {
   open: boolean;
   onConfirm: () => void;
   onCancel: () => void;
-  convertingTo: 'analyze' | 'normal';
+  convertingTo: "analyze" | "normal";
 }
 
 function ConversionConfirmationDialog(
-  props: ConversionConfirmationDialogProps
-): JSX.Element {
+  props: ConversionConfirmationDialogProps,
+): React.ReactNode {
   const { open, onConfirm, onCancel, convertingTo } = props;
 
   const message =
-    convertingTo === 'analyze'
-      ? 'Converting this prompt will cause you to lose the current prompt configuration. Are you sure you want to continue?'
-      : 'Converting back to a normal prompt will cause you to lose the Analyze Math Standards configuration. Are you sure you want to continue?';
+    convertingTo === "analyze"
+      ? "Converting this prompt will cause you to lose the current prompt configuration. Are you sure you want to continue?"
+      : "Converting back to a normal prompt will cause you to lose the Analyze Math Standards configuration. Are you sure you want to continue?";
 
   return (
     <Dialog open={open} onClose={onCancel}>
@@ -179,8 +127,8 @@ interface IncludeMessageContextUpdaterProps {
 }
 
 function IncludeMessageContextUpdater(
-  props: IncludeMessageContextUpdaterProps
-): JSX.Element {
+  props: IncludeMessageContextUpdaterProps,
+): React.ReactNode {
   const {
     includeMessageContext,
     updateIncludeMessageContext,
@@ -188,12 +136,12 @@ function IncludeMessageContextUpdater(
     currentStepId,
     isIndividualMode,
   } = props;
-  const [selectedFlowId, setSelectedFlowId] = React.useState<string>('');
-  const [selectedStepId, setSelectedStepId] = React.useState<string>('');
+  const [selectedFlowId, setSelectedFlowId] = React.useState<string>("");
+  const [selectedStepId, setSelectedStepId] = React.useState<string>("");
 
   function updateContextField<K extends keyof IncludeMessageContext>(
     field: K,
-    value: IncludeMessageContext[K]
+    value: IncludeMessageContext[K],
   ) {
     updateIncludeMessageContext({
       ...includeMessageContext,
@@ -203,17 +151,17 @@ function IncludeMessageContextUpdater(
 
   function addStepId(stepId: string) {
     if (stepId && !includeMessageContext.stepIds.includes(stepId)) {
-      updateContextField('stepIds', [...includeMessageContext.stepIds, stepId]);
+      updateContextField("stepIds", [...includeMessageContext.stepIds, stepId]);
       // Reset selection
-      setSelectedFlowId('');
-      setSelectedStepId('');
+      setSelectedFlowId("");
+      setSelectedStepId("");
     }
   }
 
   function removeStepId(stepId: string) {
     updateContextField(
-      'stepIds',
-      includeMessageContext.stepIds.filter((id) => id !== stepId)
+      "stepIds",
+      includeMessageContext.stepIds.filter((id) => id !== stepId),
     );
   }
 
@@ -227,69 +175,68 @@ function IncludeMessageContextUpdater(
       }))
       .filter(
         ({ step }) =>
-          step.stepType === DiscussionStageStepType.REQUEST_USER_INPUT &&
+          step.stepType === "REQUEST_USER_INPUT" &&
           step.stepId !== currentStepId &&
-          !includeMessageContext.stepIds.includes(step.stepId)
+          !includeMessageContext.stepIds.includes(step.stepId),
       ),
   }));
 
   return (
     <ColumnDiv
       style={{
-        border: '1px solid #ccc',
+        border: "1px solid #ccc",
         borderRadius: 4,
         padding: 10,
         marginTop: 10,
       }}
     >
-      <span style={{ fontWeight: 'bold', marginBottom: 10 }}>
+      <span style={{ fontWeight: "bold", marginBottom: 10 }}>
         Include Message Context
       </span>
 
       <SelectInputField
         label="Context Type"
         value={includeMessageContext.type}
-        options={[...Object.values(IncludeMessagesContextTypeEnum)]}
+        options={["NONE", "ALL_MESSAGES", "FROM_INPUT_STEPS"]}
         onChange={(e) => {
-          updateContextField('type', e as IncludeMessagesContextTypeEnum);
+          updateContextField("type", e as IncludeMessagesContextTypeEnum);
         }}
       />
 
-      {includeMessageContext.type ===
-        IncludeMessagesContextTypeEnum.FROM_INPUT_STEPS && (
+      {includeMessageContext.type === "FROM_INPUT_STEPS" && (
         <ColumnDiv style={{ marginTop: 10 }}>
-          <span style={{ fontWeight: 'bold', marginBottom: 5 }}>
+          <span style={{ fontWeight: "bold", marginBottom: 5 }}>
             Selected Input Steps:
           </span>
           {includeMessageContext.stepIds.map((stepId) => {
             // Find the step in the ORIGINAL (unfiltered) flowsList to get correct step number
             const originalFlow = flowsList.find((f) =>
-              f.steps.some((s) => s.stepId === stepId)
+              f.steps.some((s) => s.stepId === stepId),
             );
             const step = originalFlow?.steps.find((s) => s.stepId === stepId);
             const stepIndex = originalFlow?.steps.findIndex(
-              (s) => s.stepId === stepId
+              (s) => s.stepId === stepId,
             );
             return (
               <RowDiv
                 key={stepId}
                 style={{
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
+                  alignItems: "center",
+                  justifyContent: "space-between",
                   padding: 5,
-                  borderBottom: '1px dotted #ccc',
+                  borderBottom: "1px dotted #ccc",
                 }}
               >
                 <span>
-                  {originalFlow?.name} - Step{' '}
-                  {stepIndex !== undefined ? stepIndex + 1 : '?'}
+                  {originalFlow?.name} - Step{" "}
+                  {stepIndex !== undefined ? stepIndex + 1 : "?"}
                   {step &&
                   (step as RequestUserInputStageStep).saveResponseVariableName
                     ? ` (${
                         (step as RequestUserInputStageStep)
                           .saveResponseVariableName
                       })`
-                    : ''}
+                    : ""}
                 </span>
                 <IconButton
                   size="small"
@@ -303,7 +250,7 @@ function IncludeMessageContextUpdater(
           })}
 
           <div style={{ marginTop: 10 }}>
-            <span style={{ alignSelf: 'center', marginBottom: 5 }}>
+            <span style={{ alignSelf: "center", marginBottom: 5 }}>
               Add Input Step
             </span>
             {inputStepsByFlow.some((flow) => flow.inputSteps.length > 0) ? (
@@ -315,7 +262,7 @@ function IncludeMessageContextUpdater(
                     value={selectedFlowId}
                     onChange={(e) => {
                       setSelectedFlowId(e.target.value);
-                      setSelectedStepId('');
+                      setSelectedStepId("");
                     }}
                     label="Select flow"
                   >
@@ -354,7 +301,7 @@ function IncludeMessageContextUpdater(
                                 (step as RequestUserInputStageStep)
                                   .saveResponseVariableName
                               })`
-                            : ''}
+                            : ""}
                         </MenuItem>
                       ))}
                   </Select>
@@ -363,8 +310,8 @@ function IncludeMessageContextUpdater(
                 <Button
                   disabled={!selectedFlowId && !selectedStepId}
                   onClick={() => {
-                    setSelectedFlowId('');
-                    setSelectedStepId('');
+                    setSelectedFlowId("");
+                    setSelectedStepId("");
                   }}
                 >
                   Clear
@@ -372,7 +319,7 @@ function IncludeMessageContextUpdater(
               </RowDiv>
             ) : (
               <span
-                style={{ fontStyle: 'italic', color: '#666', marginTop: 5 }}
+                style={{ fontStyle: "italic", color: "#666", marginTop: 5 }}
               >
                 (no more request user input steps to select)
               </span>
@@ -387,7 +334,7 @@ function IncludeMessageContextUpdater(
           label="Include Messages from Other Users"
           value={includeMessageContext.includeMessagesFromOtherUsers}
           onChange={(e) => {
-            updateContextField('includeMessagesFromOtherUsers', e);
+            updateContextField("includeMessagesFromOtherUsers", e);
           }}
         />
       )}
@@ -397,11 +344,11 @@ function IncludeMessageContextUpdater(
 
 interface AnalyzeLearningObjectivesPromptEditorProps {
   promptIndex: number;
-  promptConfig: PromptStageStep['prompts'][0];
+  promptConfig: PromptStageStep["prompts"][0];
   updatePromptField: (
     promptIndex: number,
     field: string,
-    value: string | boolean | JsonResponseData[] | IncludeMessageContext
+    value: string | boolean | JsonResponseData[] | IncludeMessageContext,
   ) => void;
   flowsList: FlowItem[];
   stepId: string;
@@ -409,8 +356,8 @@ interface AnalyzeLearningObjectivesPromptEditorProps {
 }
 
 function AnalyzeLearningObjectivesPromptEditor(
-  props: AnalyzeLearningObjectivesPromptEditorProps
-): JSX.Element {
+  props: AnalyzeLearningObjectivesPromptEditorProps,
+): React.ReactNode {
   const {
     promptIndex,
     promptConfig,
@@ -427,12 +374,12 @@ function AnalyzeLearningObjectivesPromptEditor(
         sx={{
           p: 2,
           mb: 2,
-          backgroundColor: '#e3f2fd',
-          border: '1px solid #2196f3',
+          backgroundColor: "#e3f2fd",
+          border: "1px solid #2196f3",
           borderRadius: 1,
         }}
       >
-        <InfoIcon sx={{ verticalAlign: 'middle', mr: 1, color: '#2196f3' }} />
+        <Info sx={{ verticalAlign: "middle", mr: 1, color: "#2196f3" }} />
         <span>
           This is a special prompt that will include the learning objectives and
           the learning objective analysis prompt for you. Be sure to add any
@@ -456,7 +403,7 @@ function AnalyzeLearningObjectivesPromptEditor(
         label="Include Prompt Data"
         value={promptConfig.promptText}
         onChange={(e) => {
-          updatePromptField(promptIndex, 'promptText', e);
+          updatePromptField(promptIndex, "promptText", e);
         }}
         width="100%"
         maxRows={20}
@@ -467,7 +414,7 @@ function AnalyzeLearningObjectivesPromptEditor(
         isIndividualMode={true}
         includeMessageContext={promptConfig.includeMessageContext}
         updateIncludeMessageContext={(context) => {
-          updatePromptField(promptIndex, 'includeMessageContext', context);
+          updatePromptField(promptIndex, "includeMessageContext", context);
         }}
         flowsList={flowsList}
         currentStepId={stepId}
@@ -478,11 +425,11 @@ function AnalyzeLearningObjectivesPromptEditor(
 
 interface PromptConfigurationEditorProps {
   promptIndex: number;
-  promptConfig: PromptStageStep['prompts'][0];
+  promptConfig: PromptStageStep["prompts"][0];
   updatePromptField: (
     promptIndex: number,
     field: string,
-    value: string | boolean | JsonResponseData[] | IncludeMessageContext
+    value: string | boolean | JsonResponseData[] | IncludeMessageContext,
   ) => void;
   deletePrompt: (promptIndex: number) => void;
   canDelete: boolean;
@@ -491,8 +438,8 @@ interface PromptConfigurationEditorProps {
 }
 
 function PromptConfigurationEditor(
-  props: PromptConfigurationEditorProps
-): JSX.Element {
+  props: PromptConfigurationEditorProps,
+): React.ReactNode {
   const {
     promptIndex,
     promptConfig,
@@ -511,98 +458,94 @@ function PromptConfigurationEditor(
   >([]);
   const [viewingPreviousRuns, setViewingPreviousRuns] =
     React.useState<boolean>(false);
-  const [executeError, setExecuteError] = React.useState<string>('');
+  const [executeError, setExecuteError] = React.useState<string>("");
   const [executeInProgress, setExecuteInProgress] =
     React.useState<boolean>(false);
   const [viewingInputType, setViewingInputType] =
-    React.useState<ViewingInputType>(ViewingInputType.PROMPT_TEXT);
+    React.useState<ViewingInputType>("PROMPT_TEXT");
   const [showConversionDialog, setShowConversionDialog] =
     React.useState<boolean>(false);
   const [conversionTarget, setConversionTarget] = React.useState<
-    'analyze' | 'normal'
-  >('analyze');
+    "analyze" | "normal"
+  >("analyze");
 
   function editJsonResponseData(
     clientId: string,
     field: string,
     value: string | boolean,
-    parentJsonResponseDataIds: string[]
+    parentJsonResponseDataIds: string[],
   ) {
     const updated = recursiveUpdateNestedJsonResponseData(
       clientId,
       field,
       value,
       promptConfig.jsonResponseData || [],
-      parentJsonResponseDataIds
+      parentJsonResponseDataIds,
     );
-    updatePromptField(promptIndex, 'jsonResponseData', updated);
+    updatePromptField(promptIndex, "jsonResponseData", updated);
   }
 
   function addNewJsonResponseData(parentJsonResponseDataIds: string[]) {
     if (!parentJsonResponseDataIds?.length) {
-      updatePromptField(promptIndex, 'jsonResponseData', [
+      updatePromptField(promptIndex, "jsonResponseData", [
         ...(promptConfig.jsonResponseData || []),
         getEmptyJsonResponseData(),
       ]);
     } else {
       const updated = recursiveAddNewJsonResponseData(
         parentJsonResponseDataIds,
-        promptConfig.jsonResponseData || []
+        promptConfig.jsonResponseData || [],
       );
-      updatePromptField(promptIndex, 'jsonResponseData', updated);
+      updatePromptField(promptIndex, "jsonResponseData", updated);
     }
   }
 
   function deleteJsonResponseData(
     clientId: string,
-    parentJsonResponseDataIds: string[]
+    parentJsonResponseDataIds: string[],
   ) {
     if (!parentJsonResponseDataIds?.length) {
       updatePromptField(
         promptIndex,
-        'jsonResponseData',
+        "jsonResponseData",
         (promptConfig.jsonResponseData || []).filter(
-          (jrd) => jrd.clientId !== clientId
-        )
+          (jrd) => jrd.clientId !== clientId,
+        ),
       );
     } else {
       const updated = recursiveDeleteJsonResponseData(
         clientId,
         promptConfig.jsonResponseData || [],
-        parentJsonResponseDataIds
+        parentJsonResponseDataIds,
       );
-      updatePromptField(promptIndex, 'jsonResponseData', updated);
+      updatePromptField(promptIndex, "jsonResponseData", updated);
     }
   }
 
   function handleConvertToAnalyze() {
-    setConversionTarget('analyze');
+    setConversionTarget("analyze");
     setShowConversionDialog(true);
   }
 
   function handleConvertToNormal() {
-    setConversionTarget('normal');
+    setConversionTarget("normal");
     setShowConversionDialog(true);
   }
 
   function confirmConversion() {
-    if (conversionTarget === 'analyze') {
+    if (conversionTarget === "analyze") {
       // Convert to Analyze Learning Objectives mode
-      updatePromptField(promptIndex, 'analyzeLearningObjectives', true);
-      updatePromptField(
-        promptIndex,
-        'processPromptAs',
-        ProcessPromptAs.INDIVIDUALLY
-      );
-      updatePromptField(promptIndex, 'outputDataType', PromptOutputTypes.JSON);
-      updatePromptField(promptIndex, 'promptText', '');
-      updatePromptField(promptIndex, 'responseFormat', '');
-      updatePromptField(promptIndex, 'customSystemRole', '');
-      updatePromptField(promptIndex, 'jsonResponseData', []);
+      updatePromptField(promptIndex, "analyzeLearningObjectives", true);
+      updatePromptField(promptIndex, "processPromptAs", "INDIVIDUALLY");
+      updatePromptField(promptIndex, "outputDataType", "JSON");
+      updatePromptField(promptIndex, "promptText", "");
+      updatePromptField(promptIndex, "responseFormat", "");
+      updatePromptField(promptIndex, "customSystemRole", "");
+      updatePromptField(promptIndex, "jsonResponseData", []);
     } else {
       // Convert to Normal mode
-      updatePromptField(promptIndex, 'analyzeLearningObjectives', false);
-      updatePromptField(promptIndex, 'promptText', '');
+      updatePromptField(promptIndex, "analyzeLearningObjectives", false);
+      updatePromptField(promptIndex, "promptText", "");
     }
     setShowConversionDialog(false);
   }
@@ -622,13 +565,13 @@ function PromptConfigurationEditor(
     };
     const promptConfiguration: PromptConfigurationType = {
       promptText: promptConfig.promptText,
-      promptRole: PromptRoles.SYSTEM,
+      promptRole: "system",
     };
     llmRequest.prompts.push(promptConfiguration);
     if (promptConfig.jsonResponseData?.length) {
       llmRequest.responseFormat +=
         recursivelyConvertExpectedDataToAiPromptString(
-          promptConfig.jsonResponseData
+          promptConfig.jsonResponseData,
         );
     }
     try {
@@ -688,7 +631,7 @@ function PromptConfigurationEditor(
       <RowDiv
         data-cy="run-prompt-buttons"
         style={{
-          alignSelf: 'center',
+          alignSelf: "center",
           marginBottom: 10,
         }}
       >
@@ -752,7 +695,7 @@ function PromptConfigurationEditor(
           body={executeError}
           open={Boolean(executeError)}
           close={() => {
-            setExecuteError('');
+            setExecuteError("");
           }}
         />
       </RowDiv>
@@ -761,12 +704,12 @@ function PromptConfigurationEditor(
         <SelectInputField
           label="Process Prompt As"
           value={promptConfig.processPromptAs}
-          options={[...Object.values(ProcessPromptAs)]}
+          options={["GROUP", "INDIVIDUALLY"]}
           onChange={(e) => {
             updatePromptField(
               promptIndex,
-              'processPromptAs',
-              e as ProcessPromptAs
+              "processPromptAs",
+              e as ProcessPromptAs,
             );
           }}
         />
@@ -775,18 +718,18 @@ function PromptConfigurationEditor(
           
           INDIVIDUALLY: executes a separate prompt for each user, analyzing and updating their individual data with the results.`}
         >
-          <InfoIcon />
+          <Info />
         </Tooltip>
       </RowDiv>
       <InputField
         label="Prompt Text"
         value={promptConfig.promptText}
         onFocus={() => {
-          setViewingInputType(ViewingInputType.PROMPT_TEXT);
+          setViewingInputType("PROMPT_TEXT");
         }}
-        maxRows={viewingInputType === ViewingInputType.PROMPT_TEXT ? 20 : 3}
+        maxRows={viewingInputType === "PROMPT_TEXT" ? 20 : 3}
         onChange={(e) => {
-          updatePromptField(promptIndex, 'promptText', e);
+          updatePromptField(promptIndex, "promptText", e);
         }}
         width="100%"
       />
@@ -794,11 +737,11 @@ function PromptConfigurationEditor(
         label="Response Format"
         value={promptConfig.responseFormat}
         onFocus={() => {
-          setViewingInputType(ViewingInputType.RESPONSE_FORMAT);
+          setViewingInputType("RESPONSE_FORMAT");
         }}
-        maxRows={viewingInputType === ViewingInputType.RESPONSE_FORMAT ? 20 : 3}
+        maxRows={viewingInputType === "RESPONSE_FORMAT" ? 20 : 3}
         onChange={(e) => {
-          updatePromptField(promptIndex, 'responseFormat', e);
+          updatePromptField(promptIndex, "responseFormat", e);
         }}
         width="100%"
       />
@@ -807,7 +750,7 @@ function PromptConfigurationEditor(
         label="Custom System Role"
         value={promptConfig.customSystemRole}
         onChange={(e) => {
-          updatePromptField(promptIndex, 'customSystemRole', e);
+          updatePromptField(promptIndex, "customSystemRole", e);
         }}
         width="100%"
       />
@@ -815,13 +758,13 @@ function PromptConfigurationEditor(
       <SelectInputField
         label="Output Data Type"
         value={promptConfig.outputDataType}
-        options={[...Object.values(PromptOutputTypes)]}
+        options={["TEXT", "JSON"]}
         onChange={(e) => {
-          updatePromptField(promptIndex, 'outputDataType', e);
+          updatePromptField(promptIndex, "outputDataType", e);
         }}
       />
 
-      {promptConfig.outputDataType === PromptOutputTypes.JSON && (
+      {promptConfig.outputDataType === "JSON" && (
         <JsonResponseDataUpdater
           jsonResponseData={promptConfig.jsonResponseData || []}
           editDataField={editJsonResponseData}
@@ -832,12 +775,10 @@ function PromptConfigurationEditor(
       )}
 
       <IncludeMessageContextUpdater
-        isIndividualMode={
-          promptConfig.processPromptAs === ProcessPromptAs.INDIVIDUALLY
-        }
+        isIndividualMode={promptConfig.processPromptAs === "INDIVIDUALLY"}
         includeMessageContext={promptConfig.includeMessageContext}
         updateIncludeMessageContext={(context) => {
-          updatePromptField(promptIndex, 'includeMessageContext', context);
+          updatePromptField(promptIndex, "includeMessageContext", context);
         }}
         flowsList={flowsList}
         currentStepId={stepId}
@@ -851,7 +792,7 @@ function recursiveUpdateNestedJsonResponseData(
   field: string,
   value: string | boolean,
   baseJsonResponseDatas: JsonResponseData[],
-  parentJsonResponseDataIds: string[]
+  parentJsonResponseDataIds: string[],
 ): JsonResponseData[] {
   if (!parentJsonResponseDataIds?.length) {
     return baseJsonResponseDatas.map((jrd) => {
@@ -873,7 +814,7 @@ function recursiveUpdateNestedJsonResponseData(
             field,
             value,
             jrd.subData || [],
-            parentJsonResponseDataIds.slice(1)
+            parentJsonResponseDataIds.slice(1),
           ),
         };
       }
@@ -884,7 +825,7 @@ function recursiveUpdateNestedJsonResponseData(
 
 function recursiveAddNewJsonResponseData(
   parentJsonResponseDataIds: string[],
-  baseJsonResponseDatas: JsonResponseData[]
+  baseJsonResponseDatas: JsonResponseData[],
 ): JsonResponseData[] {
   if (!parentJsonResponseDataIds?.length) {
     return [...baseJsonResponseDatas, getEmptyJsonResponseData()];
@@ -895,7 +836,7 @@ function recursiveAddNewJsonResponseData(
           ...jrd,
           subData: recursiveAddNewJsonResponseData(
             parentJsonResponseDataIds.slice(1),
-            jrd.subData || []
+            jrd.subData || [],
           ),
         };
       }
@@ -907,7 +848,7 @@ function recursiveAddNewJsonResponseData(
 function recursiveDeleteJsonResponseData(
   clientId: string,
   baseJsonResponseDatas: JsonResponseData[],
-  parentJsonResponseDataIds: string[]
+  parentJsonResponseDataIds: string[],
 ): JsonResponseData[] {
   // for all json response data, if the clientId matches, remove it
   if (!parentJsonResponseDataIds?.length) {
@@ -920,7 +861,7 @@ function recursiveDeleteJsonResponseData(
           subData: recursiveDeleteJsonResponseData(
             clientId,
             jrd.subData || [],
-            parentJsonResponseDataIds.slice(1)
+            parentJsonResponseDataIds.slice(1),
           ),
         };
       }
@@ -940,7 +881,7 @@ export function PromptStepBuilder(props: {
   stopPreview: () => void;
   width?: string;
   height?: string;
-}): JSX.Element {
+}): React.ReactNode {
   const { step, stepIndex, updateLocalStage, deleteStep, flowsList } = props;
   const currentFLow = flowsList.find((f) => {
     return f.steps.find((s) => s.stepId === step.stepId);
@@ -974,7 +915,7 @@ export function PromptStepBuilder(props: {
   function updatePromptField(
     promptIndex: number,
     field: string,
-    value: string | boolean | JsonResponseData[] | IncludeMessageContext
+    value: string | boolean | JsonResponseData[] | IncludeMessageContext,
   ) {
     updateLocalStage((prevValue) => {
       return {
@@ -1044,7 +985,7 @@ export function PromptStepBuilder(props: {
                 return {
                   ...s,
                   prompts: (s as PromptStageStep).prompts.filter(
-                    (_, index) => index !== promptIndex
+                    (_, index) => index !== promptIndex,
                   ),
                 };
               }
@@ -1063,48 +1004,48 @@ export function PromptStepBuilder(props: {
   return (
     <RoundedBorderDiv
       style={{
-        width: props.width || '100%',
-        height: props.height || '100%',
-        display: 'flex',
-        position: 'relative',
-        flexDirection: 'column',
+        width: props.width || "100%",
+        height: props.height || "100%",
+        display: "flex",
+        position: "relative",
+        flexDirection: "column",
         padding: 10,
-        border: '1px solid black',
+        border: "1px solid black",
       }}
     >
       <TopLeftText>{`Step ${stepIndex + 1}`}</TopLeftText>
       <IconButton
         style={{
-          width: 'fit-content',
-          position: 'absolute',
+          width: "fit-content",
+          position: "absolute",
           left: 10,
           top: 40,
         }}
         onClick={() => setCollapsed(!collapsed)}
       >
-        {collapsed ? <ExpandMoreIcon /> : <ExpandLessIcon />}
+        {collapsed ? <ExpandMore /> : <ExpandLess />}
       </IconButton>
       <IconButton
         style={{
-          position: 'absolute',
+          position: "absolute",
           right: 10,
           top: 10,
         }}
         onClick={() => {
-          deleteStep(step.stepId, currentFLow?.clientId || '');
+          deleteStep(step.stepId, currentFLow?.clientId || "");
         }}
       >
         <Delete />
       </IconButton>
-      <h4 style={{ alignSelf: 'center' }}>Prompt</h4>
+      <h4 style={{ alignSelf: "center" }}>Prompt</h4>
       <Collapse in={!collapsed}>
         {/* Prompt configurations tabs */}
         <Box
           sx={{
             borderBottom: 1,
-            borderColor: 'divider',
-            display: 'flex',
-            alignItems: 'center',
+            borderColor: "divider",
+            display: "flex",
+            alignItems: "center",
           }}
         >
           <Tabs
@@ -1138,13 +1079,13 @@ export function PromptStepBuilder(props: {
           </Box>
         ))}
         {/* Global step fields */}
-        <Box sx={{ mb: 2, p: 2, border: '1px solid #ccc', borderRadius: 1 }}>
+        <Box sx={{ mb: 2, p: 2, border: "1px solid #ccc", borderRadius: 1 }}>
           <h5>Step Settings</h5>
           <CheckBoxInput
             label="Is final step (discussion finished)?"
             value={step.lastStep}
             onChange={(e) => {
-              updateStepField('lastStep', e);
+              updateStepField("lastStep", e);
             }}
           />
 
@@ -1152,7 +1093,7 @@ export function PromptStepBuilder(props: {
             step={step}
             flowsList={props.flowsList}
             onNewStepSelected={(stepId) => {
-              updateStepField('jumpToStepId', stepId);
+              updateStepField("jumpToStepId", stepId);
             }}
           />
         </Box>

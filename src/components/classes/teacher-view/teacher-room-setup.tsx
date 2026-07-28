@@ -4,38 +4,37 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import * as motion from 'motion/react-client';
-import { DragDropProvider, useDroppable } from '@dnd-kit/react';
-import { useSortable, isSortable } from '@dnd-kit/react/sortable';
-import { CollisionPriority } from '@dnd-kit/abstract';
-import { Button, ImageList, ImageListItem, Typography } from '@mui/material';
-import { Add, Remove } from '@mui/icons-material';
 
-import {
+import React from "react";
+import * as motion from "motion/react-client";
+import { DragDropProvider, useDroppable } from "@dnd-kit/react";
+import { useSortable, isSortable } from "@dnd-kit/react/sortable";
+import { CollisionPriority } from "@dnd-kit/abstract";
+import { Button, ImageList, ImageListItem, Typography } from "@mui/material";
+import { Add, Remove } from "@mui/icons-material";
+
+import type {
   ClassMembership,
-  ClassMembershipStatus,
   Classroom,
-} from '../../../store/slices/educational-data/types';
-import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
-import { Player } from '../../../store/slices/player/types';
-import AvatarSprite, { PlayerSprite } from '../../avatar-sprite';
-import { ContainedButton } from '../../button';
-import { useAppSelector } from '../../../store/hooks';
-import { LoadStatus } from '../../../types';
-import { TeacherEditClass } from './teacher-manage-class';
+} from "../../../store/slices/educational-data/types";
+import { useWithEducationalData } from "../../../store/slices/educational-data/use-with-educational-data";
+import type { Player } from "../../../store/slices/player/types";
+import AvatarSprite, { PlayerSprite } from "../../avatar-sprite";
+import { ContainedButton } from "../../button";
+import { useAppSelector } from "../../../store/hooks";
+import { TeacherEditClass } from "./teacher-manage-class";
 
 function DraggablePlayer(props: {
   player?: Player;
   group: number;
   index: number;
-}): JSX.Element {
+}): React.ReactNode {
   const { player, group } = props;
   const { ref, isDragging } = useSortable({
-    id: player?._id || '',
+    id: player?._id || "",
     index: props.index,
-    type: 'item',
-    accept: 'item',
+    type: "item",
+    accept: "item",
     group: group,
   });
 
@@ -47,7 +46,7 @@ function DraggablePlayer(props: {
       className="column center-div"
     >
       <AvatarSprite player={player} bgColor="rgb(218, 183, 250)" />
-      <Typography variant="body2" fontSize={12} align="center">
+      <Typography variant="body2" style={{ fontSize: 12, textAlign: "center" }}>
         {player?.name}
       </Typography>
     </motion.div>
@@ -57,32 +56,32 @@ function DraggablePlayer(props: {
 function DroppableGroup(props: {
   groupId: number;
   children: React.ReactNode;
-}): JSX.Element {
+}): React.ReactNode {
   const { ref, isDropTarget } = useDroppable({
     id: props.groupId,
-    type: 'column',
-    accept: 'item',
+    type: "column",
+    accept: "item",
     collisionPriority: CollisionPriority.Low,
   });
 
   return (
     <div ref={ref}>
-      <Typography fontSize={12}>
-        {!props.groupId ? 'UNASSIGNED STUDENTS' : `Group ${props.groupId}`}
+      <Typography style={{ fontSize: 12 }}>
+        {!props.groupId ? "UNASSIGNED STUDENTS" : `Group ${props.groupId}`}
       </Typography>
       <div
         className="row center-div spacing"
         style={{
-          borderStyle: 'solid',
+          borderStyle: "solid",
           borderWidth: 1,
           borderRadius: 10,
           padding: 15,
-          justifyContent: 'space-evenly',
+          justifyContent: "space-evenly",
           backgroundColor: isDropTarget
-            ? 'orange'
+            ? "orange"
             : !props.groupId
-            ? '#ef9a9a'
-            : undefined,
+              ? "#ef9a9a"
+              : undefined,
         }}
       >
         {props.children}
@@ -91,25 +90,25 @@ function DroppableGroup(props: {
   );
 }
 
-function NewDroppableGroup(): JSX.Element {
+function NewDroppableGroup(): React.ReactNode {
   const { ref, isDropTarget } = useDroppable({
-    id: 'new',
-    type: 'column',
-    accept: 'item',
+    id: "new",
+    type: "column",
+    accept: "item",
     collisionPriority: CollisionPriority.Low,
   });
 
   return (
     <div ref={ref}>
-      <Typography fontSize={12}>New Group</Typography>
+      <Typography style={{ fontSize: 12 }}>New Group</Typography>
       <div
         className="column center-div"
         style={{
-          borderStyle: 'solid',
+          borderStyle: "solid",
           borderWidth: 1,
           borderRadius: 10,
           padding: 15,
-          backgroundColor: isDropTarget ? 'orange' : undefined,
+          backgroundColor: isDropTarget ? "orange" : undefined,
         }}
       >
         <Add fontSize="large" style={{ marginBottom: 5 }} />
@@ -119,28 +118,30 @@ function NewDroppableGroup(): JSX.Element {
   );
 }
 
-export function RoomSetupView(props: { classroom: Classroom }): JSX.Element {
+export function RoomSetupView(props: {
+  classroom: Classroom;
+}): React.ReactNode {
   const { classroom } = props;
   const { player } = useAppSelector((state) => state.playerData);
   const { educationalData, assignClassGroupsAndStart } =
     useWithEducationalData();
   const [groupSize, setGroupSize] = React.useState<number>(3);
   const [studentMembers, setStudentMembers] = React.useState<ClassMembership[]>(
-    []
+    [],
   );
   const [groups, setGroups] = React.useState<Record<number, ClassMembership[]>>(
-    {}
+    {},
   );
   const [starting, setStarting] = React.useState<boolean>(false);
 
   const studentMemberships = educationalData.classMemberships.filter(
     (cm) =>
       cm.classId === classroom._id &&
-      cm.status === ClassMembershipStatus.MEMBER &&
-      cm.userId !== player?._id // ensure teacher isn't accidentally added as a member of the room
+      cm.status === "Member" &&
+      cm.userId !== player?._id, // ensure teacher isn't accidentally added as a member of the room
   );
   const rooms = educationalData.rooms.filter(
-    (r) => r.classId === classroom._id
+    (r) => r.classId === classroom._id,
   );
 
   React.useEffect(() => {
@@ -152,7 +153,9 @@ export function RoomSetupView(props: { classroom: Classroom }): JSX.Element {
         groupId: !member.groupId && cur?.groupId ? cur.groupId : member.groupId,
       });
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setStudentMembers(members);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [classroom]);
 
   React.useEffect(() => {
@@ -164,6 +167,7 @@ export function RoomSetupView(props: { classroom: Classroom }): JSX.Element {
         groups[member.groupId] = [member];
       }
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setGroups(groups);
   }, [studentMembers]);
 
@@ -210,11 +214,11 @@ export function RoomSetupView(props: { classroom: Classroom }): JSX.Element {
     setStarting(true);
     try {
       const validMembers = studentMembers.filter(
-        (m) => m.userId !== player?._id && m.groupId
+        (m) => m.userId !== player?._id && m.groupId,
       );
       await assignClassGroupsAndStart(classroom._id, validMembers);
     } catch (err) {
-      console.error('Failed to start class', err);
+      console.error("Failed to start class", err);
     } finally {
       setStarting(false);
     }
@@ -224,16 +228,16 @@ export function RoomSetupView(props: { classroom: Classroom }): JSX.Element {
     <div className="column spacing">
       <TeacherEditClass classroom={classroom} />
 
-      <Typography fontSize={16} fontWeight="bold" style={{ marginTop: 20 }}>
+      <Typography style={{ marginTop: 20, fontSize: 16, fontWeight: "bold" }}>
         GROUP STUDENTS
       </Typography>
-      <Typography variant="body1" fontWeight="lighter">
+      <Typography variant="body1" style={{ fontWeight: "lighter" }}>
         Drag students around to create custom groups. Click on the randomizer
         button to randomize grouped students, and use the + and - buttons to
         create larger or smaller groups
       </Typography>
 
-      <div className="row spacing" style={{ alignItems: 'center' }}>
+      <div className="row spacing" style={{ alignItems: "center" }}>
         <ContainedButton
           color="secondary"
           onClick={() => randomizeGroups(groupSize)}
@@ -265,7 +269,7 @@ export function RoomSetupView(props: { classroom: Classroom }): JSX.Element {
           No students have joined yet.
         </Typography>
       ) : (
-        <ImageList sx={{ width: '100%', height: '100%' }} cols={3}>
+        <ImageList sx={{ width: "100%", height: "100%" }} cols={3}>
           <DragDropProvider
             onDragEnd={(event) => {
               if (event.canceled) return;
@@ -273,9 +277,9 @@ export function RoomSetupView(props: { classroom: Classroom }): JSX.Element {
               if (isSortable(source) && target?.isDropTarget) {
                 setStudentMembers((items) => {
                   const idx = items.findIndex((s) => s.userId === source.id);
-                  if (target.id === 'new') {
+                  if (target.id === "new") {
                     const max = Math.max(
-                      ...Object.keys(groups).map((k) => Number.parseInt(k))
+                      ...Object.keys(groups).map((k) => Number.parseInt(k)),
                     );
                     items[idx].groupId = max + 1;
                     return [...items];
@@ -297,10 +301,10 @@ export function RoomSetupView(props: { classroom: Classroom }): JSX.Element {
                 >
                   {group.map((member, mIdx) => {
                     const p = educationalData.students.find(
-                      (p) => p._id === member.userId
+                      (p) => p._id === member.userId,
                     );
                     const studentMembership = studentMemberships.find(
-                      (m) => m.userId === member.userId
+                      (m) => m.userId === member.userId,
                     );
                     return (
                       <ImageListItem key={member.userId}>
@@ -332,12 +336,12 @@ export function RoomSetupView(props: { classroom: Classroom }): JSX.Element {
           starting ||
           studentMembers.length === 0 ||
           studentMembers.some((m) => !m.groupId) ||
-          educationalData.hydrationLoadStatus.status !== LoadStatus.DONE
+          educationalData.hydrationLoadStatus.status !== 2
         }
         onClick={handleStartGame}
       >
-        {rooms.length === 0 ? (starting ? 'Starting...' : 'Start Game') : ''}
-        {rooms.length > 0 ? (starting ? 'Saving...' : 'Save Groups') : ''}
+        {rooms.length === 0 ? (starting ? "Starting..." : "Start Game") : ""}
+        {rooms.length > 0 ? (starting ? "Saving..." : "Save Groups") : ""}
       </Button>
     </div>
   );

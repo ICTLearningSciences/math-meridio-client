@@ -4,18 +4,21 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import * as api from '../../../api';
-import { LoadStatus, LoadingState } from '../../../types';
-import { EducationalRole, UserRole } from './types';
-import { refreshAccessToken as _refreshAccessToken, loginGoogle } from './api';
-import { extractErrorMessageFromError } from '../../../helpers';
+import {
+  createAsyncThunk,
+  createSlice,
+  type PayloadAction,
+} from "@reduxjs/toolkit";
+import * as api from "../../../api";
+import type { LoadingState } from "../../../types";
+import type { EducationalRole, UserRole } from "./types";
+import { refreshAccessToken as _refreshAccessToken, loginGoogle } from "./api";
 import {
   ACCESS_TOKEN_KEY,
   localStorageClear,
   localStorageStore,
-} from '../../local-storage';
-import { Player } from './types';
+} from "../../local-storage";
+import type { Player } from "./types";
 
 export interface PlayerStateData {
   player: Player | undefined;
@@ -28,8 +31,8 @@ export interface PlayerStateData {
 
 const initialState: PlayerStateData = {
   player: undefined,
-  loginStatus: { status: LoadStatus.NONE },
-  saveStatus: { status: LoadStatus.NONE },
+  loginStatus: { status: 0 },
+  saveStatus: { status: 0 },
   accessToken: undefined,
   userRole: undefined,
   viewingAs: undefined,
@@ -37,56 +40,51 @@ const initialState: PlayerStateData = {
 
 /** Actions */
 export const fetchPlayer = createAsyncThunk(
-  'playerData/fetchPlayer',
+  "playerData/fetchPlayer",
   async (args: string): Promise<Player> => {
     return await api.fetchPlayer(args);
-  }
+  },
 );
 
 export const savePlayer = createAsyncThunk(
-  'playerData/savePlayer',
+  "playerData/savePlayer",
   async (args: {
     playerId: string;
     player: Partial<Player>;
   }): Promise<Player> => {
     return await api.addOrUpdatePlayer(args.playerId, args.player);
-  }
+  },
 );
 
 export const refreshAccessToken = createAsyncThunk(
-  'login/refreshAccessToken',
+  "login/refreshAccessToken",
   async () => {
     return await _refreshAccessToken();
-  }
+  },
 );
 
 export const login = createAsyncThunk(
-  'login/login',
+  "login/login",
   async (args: {
     accessToken: string;
     educationalLoginRole: EducationalRole;
   }) => {
-    try {
-      return await loginGoogle(args.accessToken, args.educationalLoginRole);
-    } catch (err: unknown) {
-      console.error(err);
-      throw new Error(extractErrorMessageFromError(err));
-    }
-  }
+    return await loginGoogle(args.accessToken, args.educationalLoginRole);
+  },
 );
 
-export const logout = createAsyncThunk('login/logout', async () => {
+export const logout = createAsyncThunk("login/logout", async () => {
   return Promise.resolve();
 });
 
 export const dataSlice = createSlice({
-  name: 'playerData',
+  name: "playerData",
   initialState,
   reducers: {
     clearPlayer: (state) => {
       state.player = undefined;
-      state.loginStatus = { status: LoadStatus.NOT_LOGGED_IN };
-      state.saveStatus = { status: LoadStatus.NONE };
+      state.loginStatus = { status: 4 };
+      state.saveStatus = { status: 0 };
     },
     setViewingAs: (state, action: PayloadAction<EducationalRole>) => {
       state.viewingAs = action.payload;
@@ -96,15 +94,15 @@ export const dataSlice = createSlice({
     builder
       .addCase(logout.fulfilled, (state) => {
         state.player = undefined;
-        state.loginStatus = { status: LoadStatus.NOT_LOGGED_IN };
-        state.saveStatus = { status: LoadStatus.NONE };
+        state.loginStatus = { status: 4 };
+        state.saveStatus = { status: 0 };
         state.accessToken = undefined;
         state.userRole = undefined;
         state.viewingAs = undefined;
       })
 
       .addCase(login.pending, (state) => {
-        state.loginStatus.status = LoadStatus.IN_PROGRESS;
+        state.loginStatus.status = 1;
         state.loginStatus.startedAt = Date.now.toString();
         state.loginStatus.error = undefined;
       })
@@ -113,19 +111,19 @@ export const dataSlice = createSlice({
         state.player = action.payload.user;
         state.accessToken = action.payload.accessToken;
         state.userRole = action.payload.user.userRole;
-        state.loginStatus.status = LoadStatus.DONE;
+        state.loginStatus.status = 2;
         state.loginStatus.endedAt = Date.now.toString();
         state.loginStatus.error = undefined;
       })
       .addCase(login.rejected, (state, action) => {
-        state.loginStatus.status = LoadStatus.FAILED;
+        state.loginStatus.status = 3;
         state.loginStatus.failedAt = Date.now.toString();
         state.loginStatus.error = action.error.message;
         localStorageClear(ACCESS_TOKEN_KEY);
       })
 
       .addCase(refreshAccessToken.pending, (state) => {
-        state.loginStatus.status = LoadStatus.IN_PROGRESS;
+        state.loginStatus.status = 1;
         state.loginStatus.startedAt = Date.now.toString();
         state.loginStatus.error = undefined;
       })
@@ -134,47 +132,47 @@ export const dataSlice = createSlice({
         state.player = action.payload.user;
         state.accessToken = action.payload.accessToken;
         state.userRole = action.payload.user.userRole;
-        state.loginStatus.status = LoadStatus.DONE;
+        state.loginStatus.status = 2;
         state.loginStatus.endedAt = Date.now.toString();
         state.loginStatus.error = undefined;
       })
       .addCase(refreshAccessToken.rejected, (state, action) => {
-        state.loginStatus.status = LoadStatus.FAILED;
+        state.loginStatus.status = 3;
         state.loginStatus.failedAt = Date.now.toString();
         state.loginStatus.error = action.error.message;
         localStorageClear(ACCESS_TOKEN_KEY);
       })
 
       .addCase(fetchPlayer.pending, (state) => {
-        state.loginStatus.status = LoadStatus.IN_PROGRESS;
+        state.loginStatus.status = 1;
         state.loginStatus.startedAt = Date.now.toString();
         state.loginStatus.error = undefined;
       })
       .addCase(fetchPlayer.fulfilled, (state, action) => {
         state.player = action.payload;
-        state.loginStatus.status = LoadStatus.DONE;
+        state.loginStatus.status = 2;
         state.loginStatus.endedAt = Date.now.toString();
         state.loginStatus.error = undefined;
       })
       .addCase(fetchPlayer.rejected, (state, action) => {
-        state.loginStatus.status = LoadStatus.FAILED;
+        state.loginStatus.status = 3;
         state.loginStatus.failedAt = Date.now.toString();
         state.loginStatus.error = action.error.message;
       })
 
       .addCase(savePlayer.pending, (state) => {
-        state.saveStatus.status = LoadStatus.IN_PROGRESS;
+        state.saveStatus.status = 1;
         state.saveStatus.startedAt = Date.now.toString();
         state.saveStatus.error = undefined;
       })
       .addCase(savePlayer.fulfilled, (state, action) => {
         state.player = action.payload;
-        state.saveStatus.status = LoadStatus.DONE;
+        state.saveStatus.status = 2;
         state.saveStatus.endedAt = Date.now.toString();
         state.saveStatus.error = undefined;
       })
       .addCase(savePlayer.rejected, (state, action) => {
-        state.saveStatus.status = LoadStatus.FAILED;
+        state.saveStatus.status = 3;
         state.saveStatus.failedAt = Date.now.toString();
         state.saveStatus.error = action.error.message;
         console.error(action.error.message);

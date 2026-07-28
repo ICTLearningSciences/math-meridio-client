@@ -4,8 +4,13 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
-import type { RootState, AppDispatch } from './';
+
+import {
+  type TypedUseSelectorHook,
+  useDispatch,
+  useSelector,
+} from "react-redux";
+import type { RootState, AppDispatch } from "./";
 
 // Use throughout your app instead of plain `useDispatch` and `useSelector`
 export const useAppDispatch = (): AppDispatch => useDispatch<AppDispatch>();

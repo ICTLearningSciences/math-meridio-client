@@ -4,21 +4,22 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import * as api from './api';
-import * as mainApi from '../../../api';
-import { GamePhaseReflections, LoadStatus, LoadingState } from '../../../types';
-import { NotificationEvent, ClassMembership, Classroom } from './types';
-import { Player } from '../player/types';
-import { GameStateData, LearningObjective, Room } from '../game/types';
+
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import * as api from "./api";
+import * as mainApi from "../../../api";
+import type { GamePhaseReflections, LoadingState } from "../../../types";
+import type { NotificationEvent, ClassMembership, Classroom } from "./types";
+import type { Player } from "../player/types";
+import type { GameStateData, LearningObjective, Room } from "../game/types";
 import {
   addOrUpdateClass,
   addOrUpdateClassMembership,
   addOrUpdateGameRoom,
   addOrUpdateLearningObjective,
   removeGameRoom,
-} from './helpers';
-import * as gameRoomApi from '../../../hooks/game-rooms/game-room-api';
+} from "./helpers";
+import * as gameRoomApi from "../../../hooks/game-room-api";
 
 export interface StaticGame {
   id: string;
@@ -44,176 +45,176 @@ const initialState: EducationalDataStateData = {
   classMemberships: [],
   phaseReflections: [],
   learningObjectives: [],
-  hydrationLoadStatus: { status: LoadStatus.NONE },
+  hydrationLoadStatus: { status: 0 },
   gameList: [],
   notifications: [],
 };
 
 /** Actions */
 export const fetchInstructorDataHydration = createAsyncThunk(
-  'educationalData/fetchInstructorDataHydration',
+  "educationalData/fetchInstructorDataHydration",
   async () => {
     return await api.fetchInstructorDataHydration();
-  }
+  },
 );
 
 export const fetchStudentDataHydration = createAsyncThunk(
-  'educationalData/fetchStudentDataHydration',
+  "educationalData/fetchStudentDataHydration",
   async () => {
     return await api.fetchStudentDataHydration();
-  }
+  },
 );
 
 export const createClassroom = createAsyncThunk(
-  'educationalData/createClassroom',
+  "educationalData/createClassroom",
   async () => {
     return await api.createClassroom();
-  }
+  },
 );
 
 export const createNewClassInviteCode = createAsyncThunk(
-  'educationalData/createNewClassInviteCode',
+  "educationalData/createNewClassInviteCode",
   async (args: { classId: string; validUntil: Date; numUses: number }) => {
     return await api.createNewClassInviteCode(
       args.classId,
       args.validUntil,
-      args.numUses
+      args.numUses,
     );
-  }
+  },
 );
 
 export const revokeClassInviteCode = createAsyncThunk(
-  'educationalData/revokeClassInviteCode',
+  "educationalData/revokeClassInviteCode",
   async (args: { classId: string; classroomCode: string }) => {
     return await api.revokeClassInviteCode(args.classId, args.classroomCode);
-  }
+  },
 );
 
 export const joinClassroom = createAsyncThunk(
-  'educationalData/joinClassroom',
+  "educationalData/joinClassroom",
   async (args: { inviteCode: string }) => {
     return await api.joinClassroom(args.inviteCode);
-  }
+  },
 );
 
 export const leaveClassroom = createAsyncThunk(
-  'educationalData/leaveClassroom',
+  "educationalData/leaveClassroom",
   async (args: { classId: string }) => {
     return await api.leaveClassroom(args.classId);
-  }
+  },
 );
 
 export const removeStudentFromClass = createAsyncThunk(
-  'educationalData/removeStudentFromClass',
+  "educationalData/removeStudentFromClass",
   async (args: { studentId: string; classId: string }) => {
     return await api.removeStudentFromClass(args.studentId, args.classId);
-  }
+  },
 );
 
 export const blockStudentFromClass = createAsyncThunk(
-  'educationalData/blockStudentFromClass',
+  "educationalData/blockStudentFromClass",
   async (args: { studentId: string; classId: string }) => {
     return await api.blockStudentFromClass(args.studentId, args.classId);
-  }
+  },
 );
 
 export const unblockStudentFromClass = createAsyncThunk(
-  'educationalData/unblockStudentFromClass',
+  "educationalData/unblockStudentFromClass",
   async (args: { studentId: string; classId: string }) => {
     return await api.unblockStudentFromClass(args.studentId, args.classId);
-  }
+  },
 );
 
 export const assignStudentToGroup = createAsyncThunk(
-  'educationalData/assignStudentToGroup',
+  "educationalData/assignStudentToGroup",
   async (args: { studentId: string; classId: string; groupId: number }) => {
     return await api.assignStudentToGroup(
       args.studentId,
       args.classId,
-      args.groupId
+      args.groupId,
     );
-  }
+  },
 );
 
 export const assignClassGroupsAndStart = createAsyncThunk(
-  'educationalData/assignClassGroupsAndStart',
+  "educationalData/assignClassGroupsAndStart",
   async (args: { classId: string; groups: ClassMembership[] }) => {
     return await api.assignClassGroupsAndStart(args.classId, args.groups);
-  }
+  },
 );
 
 export const copyAndArchiveClassroom = createAsyncThunk(
-  'educationalData/copyAndArchiveClassroom',
+  "educationalData/copyAndArchiveClassroom",
   async (args: { classId: string }) => {
     return await api.copyAndArchiveClassroom(args.classId);
-  }
+  },
 );
 
 export const adjustClassroomArchiveStatus = createAsyncThunk(
-  'educationalData/adjustClassroomArchiveStatus',
+  "educationalData/adjustClassroomArchiveStatus",
   async (args: { classId: string; setArchived: boolean }) => {
     return await api.adjustClassroomArchiveStatus(
       args.classId,
-      args.setArchived
+      args.setArchived,
     );
-  }
+  },
 );
 
 export const updateClassNameDescription = createAsyncThunk(
-  'educationalData/updateClassNameDescription',
+  "educationalData/updateClassNameDescription",
   async (args: { classId: string; name: string; description: string }) => {
     return await api.updateClassNameDescription(
       args.classId,
       args.name,
-      args.description
+      args.description,
     );
-  }
+  },
 );
 
 export const joinGameRoom = createAsyncThunk(
-  'educationalData/joinGameRoom',
+  "educationalData/joinGameRoom",
   async (args: { gameRoomId: string }): Promise<Room> => {
     return await gameRoomApi.joinGameRoom(args.gameRoomId);
-  }
+  },
 );
 
 export const leaveGameRoom = createAsyncThunk(
-  'educationalData/leaveGameRoom',
+  "educationalData/leaveGameRoom",
   async (args: { gameRoomId: string }): Promise<Room> => {
     return await gameRoomApi.leaveGameRoom(args.gameRoomId);
-  }
+  },
 );
 
 export const deleteGameRoom = createAsyncThunk(
-  'educationalData/deleteGameRoom',
+  "educationalData/deleteGameRoom",
   async (args: { gameRoomId: string }): Promise<Room> => {
     return await mainApi.deleteRoom(args.gameRoomId);
-  }
+  },
 );
 
 export const renameGameRoom = createAsyncThunk(
-  'educationalData/renameGameRoom',
+  "educationalData/renameGameRoom",
   async (args: { gameRoomId: string; name: string }): Promise<Room> => {
     return await mainApi.renameGameRoom(args.name, args.gameRoomId);
-  }
+  },
 );
 
 export const fetchRoom = createAsyncThunk(
-  'educationalData/fetchRoom',
+  "educationalData/fetchRoom",
   async (args: { roomId: string }): Promise<Room> => {
     return await mainApi.fetchRoom(args.roomId);
-  }
+  },
 );
 
 export const fetchRooms = createAsyncThunk(
-  'educationalData/fetchRooms',
+  "educationalData/fetchRooms",
   async (args: { game: string }): Promise<Room[]> => {
     return await mainApi.fetchRooms(args.game);
-  }
+  },
 );
 
 export const createNewGameRoom = createAsyncThunk(
-  'educationalData/createNewGameRoom',
+  "educationalData/createNewGameRoom",
   async (args: {
     gameId: string;
     gameName: string;
@@ -222,13 +223,13 @@ export const createNewGameRoom = createAsyncThunk(
     return await gameRoomApi.createNewGameRoom(
       args.gameId,
       args.gameName,
-      args.classId
+      args.classId,
     );
-  }
+  },
 );
 
 export const updatePlayerGameStateData = createAsyncThunk(
-  'educationalData/updatePlayerGameStateData',
+  "educationalData/updatePlayerGameStateData",
   async (args: {
     roomId: string;
     playerId: string;
@@ -237,96 +238,96 @@ export const updatePlayerGameStateData = createAsyncThunk(
     return await gameRoomApi.updatePlayerGameStateData(
       args.roomId,
       args.playerId,
-      args.gameStateData
+      args.gameStateData,
     );
-  }
+  },
 );
 
 export const sendMessageToGameRoom = createAsyncThunk(
-  'educationalData/sendMessageToGameRoom',
+  "educationalData/sendMessageToGameRoom",
   async (args: { roomId: string; message: string }) => {
     return await gameRoomApi.sendMessageToGameRoom(args.roomId, args.message);
-  }
+  },
 );
 
 export const setPlayerPauseStatus = createAsyncThunk(
-  'educationalData/setPlayerPauseStatus',
+  "educationalData/setPlayerPauseStatus",
   async (args: { roomId: string; playerId: string; isPaused: boolean }) => {
     return await gameRoomApi.setPlayerPauseStatus(
       args.roomId,
       args.playerId,
-      args.isPaused
+      args.isPaused,
     );
-  }
+  },
 );
 
 export const shareClassroomWithInstructor = createAsyncThunk(
-  'educationalData/shareClassroomWithInstructor',
+  "educationalData/shareClassroomWithInstructor",
   async (args: { classId: string; instructorId: string }) => {
     return await api.shareClassroomWithInstructor(
       args.classId,
-      args.instructorId
+      args.instructorId,
     );
-  }
+  },
 );
 
 export const assignGameToGameRoom = createAsyncThunk(
-  'educationalData/assignGameToGameRoom',
+  "educationalData/assignGameToGameRoom",
   async (args: { roomId: string; gameId: string }) => {
     return await api.assignGameToGameRoom(args.roomId, args.gameId);
-  }
+  },
 );
 
 export const setPlayerNeedsHelpInRoom = createAsyncThunk(
-  'educationalData/setPlayerNeedsHelpInRoom',
+  "educationalData/setPlayerNeedsHelpInRoom",
   async (args: { roomId: string; needsHelp: boolean }) => {
     return await api.setPlayerNeedsHelpInRoom(args.roomId, args.needsHelp);
-  }
+  },
 );
 
 export const dismissPlayerNeedsHelpInRoom = createAsyncThunk(
-  'educationalData/dismissPlayerNeedsHelpInRoom',
+  "educationalData/dismissPlayerNeedsHelpInRoom",
   async (args: { roomId: string; userId: string }) => {
     return await api.dismissPlayerNeedsHelpInRoom(args.roomId, args.userId);
-  }
+  },
 );
 
 export const fetchLearningObjectives = createAsyncThunk(
-  'educationalData/fetchLearningObjectives',
+  "educationalData/fetchLearningObjectives",
   async () => {
     return await api.fetchLearningObjectives();
-  }
+  },
 );
 
 export const createLearningObjective = createAsyncThunk(
-  'educationalData/createLearningObjective',
-  async (args: { learningObjective: Omit<LearningObjective, '_id'> }) => {
+  "educationalData/createLearningObjective",
+  async (args: { learningObjective: Omit<LearningObjective, "_id"> }) => {
     return await api.createLearningObjective(args.learningObjective);
-  }
+  },
 );
 
 export const updateLearningObjective = createAsyncThunk(
-  'educationalData/updateLearningObjective',
+  "educationalData/updateLearningObjective",
   async (args: {
     learningObjectiveId: string;
-    learningObjective: Omit<LearningObjective, '_id'>;
+    learningObjective: Omit<LearningObjective, "_id">;
   }) => {
     return await api.updateLearningObjective(
       args.learningObjectiveId,
-      args.learningObjective
+      args.learningObjective,
     );
-  }
+  },
 );
 
 export const dismissNotifications = createAsyncThunk(
-  'educationalData/dismissNotifications',
+  "educationalData/dismissNotifications",
   async () => {
     return await api.dismissNotifications();
-  }
+  },
 );
 
 export const educationalDataSlice = createSlice({
-  name: 'educationalData',
+  name: "educationalData",
   initialState,
   reducers: {},
   extraReducers: (builder) => {
@@ -385,14 +386,28 @@ export const educationalDataSlice = createSlice({
 
       .addCase(fetchInstructorDataHydration.pending, (state) => {
         state.hydrationLoadStatus = {
-          status: LoadStatus.IN_PROGRESS,
+          status: 1,
           startedAt: Date.now.toString(),
+          error: undefined,
+        };
+      })
+      .addCase(fetchInstructorDataHydration.fulfilled, (state, action) => {
+        state.classes = action.payload.classes;
+        state.rooms = action.payload.rooms;
+        state.students = action.payload.students;
+        state.classMemberships = action.payload.classMemberships;
+        state.phaseReflections = action.payload.phaseReflections;
+        state.gameList = action.payload.gameList;
+        state.notifications = action.payload.notifications;
+        state.hydrationLoadStatus = {
+          status: 2,
+          endedAt: Date.now.toString(),
           error: undefined,
         };
       })
       .addCase(fetchInstructorDataHydration.rejected, (state, action) => {
         state.hydrationLoadStatus = {
-          status: LoadStatus.FAILED,
+          status: 3,
           failedAt: Date.now.toString(),
           error: action.error.message,
         };
@@ -404,39 +419,12 @@ export const educationalDataSlice = createSlice({
         state.gameList = [];
         state.notifications = [];
       })
-      .addCase(fetchInstructorDataHydration.fulfilled, (state, action) => {
-        state.classes = action.payload.classes;
-        state.rooms = action.payload.rooms;
-        state.students = action.payload.students;
-        state.classMemberships = action.payload.classMemberships;
-        state.phaseReflections = action.payload.phaseReflections;
-        state.gameList = action.payload.gameList;
-        state.notifications = action.payload.notifications;
-        state.hydrationLoadStatus = {
-          status: LoadStatus.DONE,
-          endedAt: Date.now.toString(),
-          error: undefined,
-        };
-      })
 
       .addCase(fetchStudentDataHydration.pending, (state) => {
         state.hydrationLoadStatus = {
-          status: LoadStatus.IN_PROGRESS,
+          status: 1,
           startedAt: Date.now.toString(),
           error: undefined,
-        };
-      })
-      .addCase(fetchStudentDataHydration.rejected, (state, action) => {
-        state.classes = [];
-        state.rooms = [];
-        state.students = [];
-        state.classMemberships = [];
-        state.gameList = [];
-        state.notifications = [];
-        state.hydrationLoadStatus = {
-          status: LoadStatus.FAILED,
-          failedAt: Date.now.toString(),
-          error: action.error.message,
         };
       })
       .addCase(fetchStudentDataHydration.fulfilled, (state, action) => {
@@ -448,9 +436,22 @@ export const educationalDataSlice = createSlice({
         state.gameList = action.payload.gameList;
         state.notifications = action.payload.notifications;
         state.hydrationLoadStatus = {
-          status: LoadStatus.DONE,
+          status: 2,
           endedAt: Date.now.toString(),
           error: undefined,
+        };
+      })
+      .addCase(fetchStudentDataHydration.rejected, (state, action) => {
+        state.classes = [];
+        state.rooms = [];
+        state.students = [];
+        state.classMemberships = [];
+        state.gameList = [];
+        state.notifications = [];
+        state.hydrationLoadStatus = {
+          status: 3,
+          failedAt: Date.now.toString(),
+          error: action.error.message,
         };
       })
 
@@ -460,13 +461,13 @@ export const educationalDataSlice = createSlice({
 
       .addCase(createNewClassInviteCode.fulfilled, (state, action) => {
         state.classes = state.classes.map((c) =>
-          c._id === action.payload._id ? action.payload : c
+          c._id === action.payload._id ? action.payload : c,
         );
       })
 
       .addCase(revokeClassInviteCode.fulfilled, (state, action) => {
         state.classes = state.classes.map((c) =>
-          c._id === action.payload._id ? action.payload : c
+          c._id === action.payload._id ? action.payload : c,
         );
       })
 

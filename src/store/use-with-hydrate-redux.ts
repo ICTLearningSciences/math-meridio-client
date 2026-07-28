@@ -4,19 +4,24 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { useEffect } from 'react';
-import { useWithStages } from './slices/stages/use-with-stages';
-import { useWithConfig } from './slices/config/use-with-config';
-import { useWithEducationalData } from './slices/educational-data/use-with-educational-data';
+
+import { useEffect, useRef } from "react";
+import { useWithStages } from "./slices/stages/use-with-stages";
+import { useWithConfig } from "./slices/config/use-with-config";
+import { useWithEducationalData } from "./slices/educational-data/use-with-educational-data";
 
 export function useWithHydrateRedux() {
   const { loadDiscussionStages } = useWithStages();
   const { loadAbeConfig } = useWithConfig();
   const { fetchLearningObjectives } = useWithEducationalData();
+  const isCalledRef = useRef(false);
 
   useEffect(() => {
-    loadDiscussionStages();
-    loadAbeConfig();
-    fetchLearningObjectives();
-  }, []);
+    if (!isCalledRef.current) {
+      isCalledRef.current = true;
+      loadDiscussionStages();
+      loadAbeConfig();
+      fetchLearningObjectives();
+    }
+  }, [loadDiscussionStages, loadAbeConfig, fetchLearningObjectives]);
 }

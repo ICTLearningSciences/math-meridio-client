@@ -4,13 +4,13 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
+import React from "react";
+import { Typography } from "@mui/material";
 
-import { useWithPhaserGame } from '../../hooks/use-with-phaser-game';
-import { GameStateData, Room } from '../../store/slices/game/types';
-import EventSystem from '../event-system';
-import { Typography } from '@mui/material';
-import { BasketballSimulationData } from './SimulationScene';
+import { useWithPhaserGame } from "../../hooks/use-with-phaser-game";
+import type { GameStateData, Room } from "../../store/slices/game/types";
+import EventSystem from "../event-system";
+import type { BasketballSimulationData } from "./SimulationScene";
 import {
   INSIDE_SHOT_PERCENT,
   MID_SHOT_PERCENT,
@@ -22,17 +22,17 @@ import {
   OUTSIDE_SHOT_POINTS_VALUE,
   INSIDE_SHOT_POINTS_VALUE,
   MID_SHOT_POINTS_VALUE,
-} from './solution';
-import { Game } from '../types';
-import { Player } from '../../store/slices/player/types';
-import { viewGameRoomSimulation } from '../../hooks/game-rooms/game-room-api';
-import { useWithPlayer } from '../../store/slices/player/use-with-player-state';
+} from "./solution";
+import type { Game } from "../types";
+import type { Player } from "../../store/slices/player/types";
+import { viewGameRoomSimulation } from "../../hooks/game-room-api";
+import { useWithPlayer } from "../../store/slices/player/use-with-player-state";
 
 export function PlayerStrategy(props: {
   playersGameStateData: GameStateData;
   player: Player;
   room: Room;
-}): JSX.Element {
+}): React.ReactNode {
   const psd = props.playersGameStateData;
   const insideShots = psd[INSIDE_SHOT_PERCENT] || 0;
   const midShots = psd[MID_SHOT_PERCENT] || 0;
@@ -41,7 +41,7 @@ export function PlayerStrategy(props: {
 
   const canSimulate = Boolean(
     parseInt(insideShots) + parseInt(midShots) + parseInt(outsideShots) ===
-      NUMBER_OF_SHOTS
+    NUMBER_OF_SHOTS,
   );
 
   function simulate(): void {
@@ -61,7 +61,7 @@ export function PlayerStrategy(props: {
       simData.outsideShotsMade * OUTSIDE_SHOT_POINTS_VALUE +
       simData.insideShotsMade * INSIDE_SHOT_POINTS_VALUE +
       simData.midShotsMade * MID_SHOT_POINTS_VALUE;
-    EventSystem.emit('simulate', simData);
+    EventSystem.emit("simulate", simData);
     viewGameRoomSimulation(props.room._id);
   }
 
@@ -69,15 +69,15 @@ export function PlayerStrategy(props: {
     <div
       onClick={simulate}
       style={{
-        width: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
       }}
     >
-      <Typography style={{ fontWeight: 'bold' }}>
-        {player?._id === props.player?._id ? 'My ' : `${props.player?.name}'s`}{' '}
+      <Typography style={{ fontWeight: "bold" }}>
+        {player?._id === props.player?._id ? "My " : `${props.player?.name}'s`}{" "}
         strategy:
       </Typography>
       <Typography>
@@ -87,13 +87,14 @@ export function PlayerStrategy(props: {
   );
 }
 
-export function SimulationComponent(props: { game: Game }): JSX.Element {
+export function SimulationComponent(props: { game: Game }): React.ReactNode {
   const { game } = props;
   const gameContainerRef = React.useRef<HTMLDivElement | null>(null);
   const { startPhaserGame } = useWithPhaserGame(gameContainerRef);
 
   React.useEffect(() => {
-    startPhaserGame(game.config, 'Simulation');
+    startPhaserGame(game.config, "Simulation");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [game.config]);
 
   return (

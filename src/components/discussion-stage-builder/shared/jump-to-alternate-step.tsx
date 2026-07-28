@@ -4,27 +4,28 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { Button, IconButton } from '@mui/material';
-import { FlowStepSelector } from './flow-step-selector';
-import { useState } from 'react';
-import CloseIcon from '@mui/icons-material/Close';
-import { ColumnDiv, RowDiv, ColumnCenterDiv } from '../../../styled-components';
-import { DiscussionStageStep, FlowItem } from '../types';
+
+import React, { useState } from "react";
+import { Button, IconButton } from "@mui/material";
+import { Close } from "@mui/icons-material";
+import { FlowStepSelector } from "./flow-step-selector";
+import { ColumnDiv, RowDiv, ColumnCenterDiv } from "../../../styled-components";
+import type { DiscussionStageStep, FlowItem } from "../types";
+
 export function JumpToAlternateStep(props: {
   step: DiscussionStageStep;
   flowsList: FlowItem[];
   onNewStepSelected: (stepId: string) => void;
-}): JSX.Element {
+}): React.ReactNode {
   const { step, flowsList, onNewStepSelected } = props;
   const [displayStepSelector, setDisplayStepSelector] = useState<boolean>(
-    Boolean(step.jumpToStepId) && step.jumpToStepId !== ''
+    Boolean(step.jumpToStepId) && step.jumpToStepId !== "",
   );
   return (
     <ColumnDiv>
       {!displayStepSelector && (
         <RowDiv>
-          <span style={{ color: 'grey' }}>Jump to alternate step?</span>
+          <span style={{ color: "grey" }}>Jump to alternate step?</span>
           <Button
             onClick={() => {
               setDisplayStepSelector(true);
@@ -38,27 +39,27 @@ export function JumpToAlternateStep(props: {
       {displayStepSelector && (
         <ColumnCenterDiv
           style={{
-            width: '80%',
-            border: '1px solid black',
+            width: "80%",
+            border: "1px solid black",
             padding: 10,
-            alignSelf: 'center',
-            position: 'relative',
+            alignSelf: "center",
+            position: "relative",
           }}
         >
           <IconButton
             style={{
-              position: 'absolute',
+              position: "absolute",
               right: 10,
               top: 10,
             }}
             onClick={() => {
               setDisplayStepSelector(false);
-              onNewStepSelected('');
+              onNewStepSelected("");
             }}
           >
-            <CloseIcon />
+            <Close />
           </IconButton>
-          <span style={{ fontWeight: 'bold' }}>Custom Step Jump</span>
+          <span style={{ fontWeight: "bold" }}>Custom Step Jump</span>
           <FlowStepSelector
             flowsList={flowsList}
             rowOrColumn="row"

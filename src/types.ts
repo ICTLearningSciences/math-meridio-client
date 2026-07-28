@@ -4,26 +4,28 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import {
+
+import type {
   DiscussionStage,
   IStage,
-} from './components/discussion-stage-builder/types';
-import { Player } from './store/slices/player/types';
+} from "./components/discussion-stage-builder/types";
+import type { Player } from "./store/slices/player/types";
 
-export enum PromptOutputTypes {
-  TEXT = 'TEXT',
-  JSON = 'JSON',
-}
+export type PromptOutputTypes = "TEXT" | "JSON";
+export type PromptRoles = "system" | "user" | "assistant";
+export type JobStatus = "QUEUED" | "IN_PROGRESS" | "COMPLETE" | "FAILED";
+export type LoadStatus = 0 | 1 | 2 | 3 | 4; // none, in_progress, done, failed, not_logged_in
+export type AiServiceNames =
+  | "AZURE_OPEN_AI"
+  | "OPEN_AI"
+  | "CAMO_GPT"
+  | "ASK_SAGE"
+  | "GEMINI"
+  | "ANTHROPIC";
 
 export interface TargetAiModelServiceType {
   serviceName: string;
   model: string;
-}
-
-export enum PromptRoles {
-  SYSTEM = 'system',
-  USER = 'user',
-  ASSISSANT = 'assistant',
 }
 
 export interface PromptConfiguration {
@@ -39,36 +41,12 @@ export interface GenericLlmRequest {
   responseFormat?: string;
 }
 
-export enum JobStatus {
-  QUEUED = 'QUEUED',
-  IN_PROGRESS = 'IN_PROGRESS',
-  COMPLETE = 'COMPLETE',
-  FAILED = 'FAILED',
-}
-
-export enum LoadStatus {
-  NONE = 0,
-  IN_PROGRESS = 1,
-  DONE = 2,
-  FAILED = 3,
-  NOT_LOGGED_IN = 4,
-}
-
 export interface LoadingState {
   status: LoadStatus;
   error?: string;
   startedAt?: string;
   endedAt?: string;
   failedAt?: string;
-}
-
-export enum AiServiceNames {
-  AZURE = 'AZURE_OPEN_AI',
-  OPEN_AI = 'OPEN_AI',
-  CAMO_GPT = 'CAMO_GPT',
-  ASK_SAGE = 'ASK_SAGE',
-  GEMINI = 'GEMINI',
-  ANTHROPIC = 'ANTHROPIC',
 }
 
 export interface ServiceModelInfo {
@@ -118,7 +96,7 @@ export type CollectedDiscussionData = Record<
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type SolutionGameStateData = Record<string, any>;
 
-export const SIMULTAION_VIEWED_KEY = 'viewed-simulation';
+export const SIMULTAION_VIEWED_KEY = "viewed-simulation";
 
 export function getSimulationViewedKey(stageId: string): string {
   return `${SIMULTAION_VIEWED_KEY}-${stageId}`;

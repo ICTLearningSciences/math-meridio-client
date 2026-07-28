@@ -4,20 +4,21 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import {
+
+import type {
   FunctionCall,
   GenerateContentCandidate,
   PromptFeedback,
   StartChatParams,
   UsageMetadata,
-} from '@google/generative-ai';
-import {
+} from "@google/generative-ai";
+import type {
   AiResponseType,
   AiJobStatusType,
   AiStepData,
   AiServiceStepDataTypes,
-} from './ai-service-types';
-import { OpenAiServiceResponse } from './open-ai-service';
+} from "./ai-service-types";
+import type { OpenAiServiceResponse } from "./open-ai-service";
 
 export interface GeminiChatCompletionRequest {
   startChatParams: StartChatParams;
@@ -49,7 +50,7 @@ export type GeminiAiServiceJobStatusResponseType =
   AiJobStatusType<OpenAiServiceResponse>;
 
 export function isGeminiData(
-  stepData: AiServiceStepDataTypes
+  stepData: AiServiceStepDataTypes,
 ): stepData is GeminiStepDataType {
-  return 'text' in stepData.aiServiceResponse;
+  return "text" in stepData.aiServiceResponse;
 }

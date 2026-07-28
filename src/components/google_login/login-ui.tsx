@@ -4,11 +4,10 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { ColumnCenterDiv, ColumnDiv } from '../../styled-components';
-import { PlayerStateData } from '../../store/slices/player';
-import { Button, CircularProgress } from '@mui/material';
-import { LoadStatus } from '../../types';
+
+import { ColumnCenterDiv, ColumnDiv } from "../../styled-components";
+import type { PlayerStateData } from "../../store/slices/player";
+import { Button, CircularProgress } from "@mui/material";
 
 export function LoginUI(props: {
   titleText?: string;
@@ -20,35 +19,35 @@ export function LoginUI(props: {
   return (
     <ColumnCenterDiv
       style={{
-        width: '400px',
-        textAlign: 'center',
-        border: '1px solid lightgrey',
-        padding: '20px',
-        boxShadow: '-5px 5px 10px 0px rgba(0,0,0,0.75)',
+        width: "400px",
+        textAlign: "center",
+        border: "1px solid lightgrey",
+        padding: "20px",
+        boxShadow: "-5px 5px 10px 0px rgba(0,0,0,0.75)",
       }}
     >
       <ColumnDiv
         style={{
-          marginBottom: '20px',
+          marginBottom: "20px",
         }}
       >
         <img height={100} src="/logo.png" alt="image" />
-        <span data-cy="login-title" style={{ fontSize: '22px' }}>
-          {titleText || 'Meridio Math'}
+        <span data-cy="login-title" style={{ fontSize: "22px" }}>
+          {titleText || "Meridio Math"}
         </span>
       </ColumnDiv>
       <div>
-        {loginState.loginStatus.status === LoadStatus.IN_PROGRESS ? (
+        {loginState.loginStatus.status === 1 ? (
           <CircularProgress />
         ) : (
           <ColumnDiv
             style={{
-              alignItems: 'center',
+              alignItems: "center",
             }}
           >
             <ColumnDiv
               style={{
-                alignItems: 'center',
+                alignItems: "center",
               }}
             >
               <Button
@@ -56,8 +55,8 @@ export function LoginUI(props: {
                 color="primary"
                 onClick={loginGoogle}
                 style={{
-                  fontSize: '16px',
-                  margin: '10px',
+                  fontSize: "16px",
+                  margin: "10px",
                   width: 300,
                 }}
                 data-cy="login-btn"

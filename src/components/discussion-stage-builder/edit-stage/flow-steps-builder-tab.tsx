@@ -4,23 +4,15 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import {
-  RequestUserInputStepBuilder,
-  getDefaultRequestUserInputBuilder,
-} from './step-builder/request-user-input-step-builder';
-import {
-  PromptStepBuilder,
-  defaultPromptBuilder,
-} from './step-builder/prompt-step-builder';
-import { InputField } from '../shared/input-components';
-import { AddNewDiscussionStageButton } from '../shared/add-new-stage-button';
-import { Button } from '@mui/material';
-import {
-  SystemMessageStepBuilder,
-  getDefaultSystemMessage,
-} from './step-builder/system-message-step-builder';
-import {
+
+import React from "react";
+import { RequestUserInputStepBuilder } from "./step-builder/request-user-input-step-builder";
+import { PromptStepBuilder } from "./step-builder/prompt-step-builder";
+import { InputField } from "../shared/input-components";
+import { AddNewDiscussionStageButton } from "../shared/add-new-stage-button";
+import { Button } from "@mui/material";
+import { SystemMessageStepBuilder } from "./step-builder/system-message-step-builder";
+import type {
   DiscussionStage,
   DiscussionStageStep,
   DiscussionStageStepType,
@@ -28,20 +20,19 @@ import {
   FlowItem,
   StartOfPhaseStep,
   SystemMessageStageStep,
-} from '../types';
-import { ColumnDiv } from '../../../styled-components';
+} from "../types";
+import { ColumnDiv } from "../../../styled-components";
+import { ConditionalStepBuilder } from "./step-builder/conditional-step-builder";
+import { EndOfPhaseReflectionStepBuilder } from "./step-builder/end-of-phase-step-builder";
+import { StartOfPhaseStepBuilder } from "./step-builder/start-of-phase-builder";
 import {
-  ConditionalStepBuilder,
+  defaultPromptBuilder,
   getDefaultConditionalStep,
-} from './step-builder/conditional-step-builder';
-import {
-  EndOfPhaseReflectionStepBuilder,
   getDefaultEndOfPhaseReflection,
-} from './step-builder/end-of-phase-step-builder';
-import {
+  getDefaultRequestUserInputBuilder,
   getDefaultStartOfPhase,
-  StartOfPhaseStepBuilder,
-} from './step-builder/start-of-phase-builder';
+  getDefaultSystemMessage,
+} from "./step-builder/helpers";
 
 export function FlowStepsBuilderTab(props: {
   flow: FlowItem;
@@ -62,7 +53,7 @@ export function FlowStepsBuilderTab(props: {
 
   function renderActivityStep(step: DiscussionStageStep, i: number) {
     switch (step.stepType) {
-      case DiscussionStageStepType.SYSTEM_MESSAGE:
+      case "SYSTEM_MESSAGE":
         return (
           <SystemMessageStepBuilder
             key={i}
@@ -74,7 +65,7 @@ export function FlowStepsBuilderTab(props: {
             flowsList={flowsList}
           />
         );
-      case DiscussionStageStepType.START_OF_PHASE:
+      case "START_OF_PHASE":
         return (
           <StartOfPhaseStepBuilder
             key={i}
@@ -86,7 +77,7 @@ export function FlowStepsBuilderTab(props: {
             flowsList={flowsList}
           />
         );
-      case DiscussionStageStepType.END_OF_PHASE_REFLECTION:
+      case "END_OF_PHASE_REFLECTION":
         return (
           <EndOfPhaseReflectionStepBuilder
             key={i}
@@ -99,7 +90,7 @@ export function FlowStepsBuilderTab(props: {
             startOfPhaseSteps={startOfPhaseSteps}
           />
         );
-      case DiscussionStageStepType.REQUEST_USER_INPUT:
+      case "REQUEST_USER_INPUT":
         return (
           <RequestUserInputStepBuilder
             key={i}
@@ -110,7 +101,7 @@ export function FlowStepsBuilderTab(props: {
             flowsList={flowsList}
           />
         );
-      case DiscussionStageStepType.PROMPT:
+      case "PROMPT":
         return (
           <PromptStepBuilder
             key={i}
@@ -121,10 +112,10 @@ export function FlowStepsBuilderTab(props: {
             flowsList={flowsList}
             previewed={false}
             startPreview={() => setPreviewPromptId(step.stepId)}
-            stopPreview={() => setPreviewPromptId('')}
+            stopPreview={() => setPreviewPromptId("")}
           />
         );
-      case DiscussionStageStepType.CONDITIONAL:
+      case "CONDITIONAL":
         return (
           <ConditionalStepBuilder
             step={step}
@@ -145,7 +136,7 @@ export function FlowStepsBuilderTab(props: {
       return {
         ...prevValue,
         flowsList: prevValue.flowsList.filter(
-          (f) => f.clientId !== flow.clientId
+          (f) => f.clientId !== flow.clientId,
         ),
       };
     });
@@ -153,17 +144,17 @@ export function FlowStepsBuilderTab(props: {
 
   function insertNewStageStep(stepType: DiscussionStageStepType, i: number) {
     const newStep: DiscussionStageStep =
-      stepType === DiscussionStageStepType.SYSTEM_MESSAGE
+      stepType === "SYSTEM_MESSAGE"
         ? getDefaultSystemMessage()
-        : stepType === DiscussionStageStepType.REQUEST_USER_INPUT
-        ? getDefaultRequestUserInputBuilder()
-        : stepType === DiscussionStageStepType.CONDITIONAL
-        ? getDefaultConditionalStep()
-        : stepType === DiscussionStageStepType.START_OF_PHASE
-        ? getDefaultStartOfPhase()
-        : stepType === DiscussionStageStepType.END_OF_PHASE_REFLECTION
-        ? getDefaultEndOfPhaseReflection()
-        : defaultPromptBuilder();
+        : stepType === "REQUEST_USER_INPUT"
+          ? getDefaultRequestUserInputBuilder()
+          : stepType === "CONDITIONAL"
+            ? getDefaultConditionalStep()
+            : stepType === "START_OF_PHASE"
+              ? getDefaultStartOfPhase()
+              : stepType === "END_OF_PHASE_REFLECTION"
+                ? getDefaultEndOfPhaseReflection()
+                : defaultPromptBuilder();
     updateLocalStage((prevValue) => {
       return {
         ...prevValue,
@@ -187,15 +178,15 @@ export function FlowStepsBuilderTab(props: {
   return (
     <ColumnDiv
       style={{
-        alignItems: 'center',
-        position: 'relative',
+        alignItems: "center",
+        position: "relative",
       }}
     >
       <Button
         style={{
-          position: 'absolute',
-          right: '0',
-          top: '0',
+          position: "absolute",
+          right: "0",
+          top: "0",
         }}
         variant="outlined"
         onClick={deleteFlow}
@@ -204,7 +195,7 @@ export function FlowStepsBuilderTab(props: {
       </Button>
       <div
         style={{
-          alignSelf: 'center',
+          alignSelf: "center",
         }}
       >
         <InputField
@@ -238,10 +229,10 @@ export function FlowStepsBuilderTab(props: {
           <ColumnDiv
             key={`${flow.clientId}-${step.stepId}`}
             style={{
-              alignItems: 'center',
-              width: '100%',
-              maxWidth: '900px',
-              position: 'relative',
+              alignItems: "center",
+              width: "100%",
+              maxWidth: "900px",
+              position: "relative",
             }}
           >
             {renderActivityStep(step, i)}

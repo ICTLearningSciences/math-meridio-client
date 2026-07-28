@@ -5,7 +5,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 export interface WindowSize {
   isMobile: boolean;
@@ -26,9 +26,9 @@ export function useWithWindow(): WindowSize {
       setIsMobile(isMobile);
     };
     handleResize();
-    window.addEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
     return () => {
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("resize", handleResize);
     };
   }, []);
 

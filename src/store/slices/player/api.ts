@@ -4,8 +4,8 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { execGql } from '../../../api-helpers';
-import { EducationalRole, UserAccessToken } from './types';
+import { execGql } from "../../../api-helpers";
+import type { EducationalRole, UserAccessToken } from "./types";
 
 export const userDataQuery = `
   _id
@@ -27,7 +27,7 @@ export const userDataQuery = `
 
 export async function loginGoogle(
   accessToken: string,
-  educationalLoginRole: EducationalRole
+  educationalLoginRole: EducationalRole,
 ): Promise<UserAccessToken> {
   return await execGql<UserAccessToken>(
     {
@@ -48,11 +48,11 @@ export async function loginGoogle(
     },
     // login responds with set-cookie, w/o withCredentials it doesnt get stored
     {
-      dataPath: 'loginGoogle',
+      dataPath: "loginGoogle",
       axiosConfig: {
         withCredentials: true,
       },
-    }
+    },
   );
 }
 
@@ -72,10 +72,10 @@ export async function refreshAccessToken(): Promise<UserAccessToken> {
     },
     // login responds with set-cookie, w/o withCredentials it doesnt get stored
     {
-      dataPath: 'refreshAccessToken',
+      dataPath: "refreshAccessToken",
       axiosConfig: {
         withCredentials: true,
       },
-    }
+    },
   );
 }

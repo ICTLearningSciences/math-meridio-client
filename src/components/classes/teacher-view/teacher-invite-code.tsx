@@ -4,8 +4,9 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { ToastContainer, toast } from 'react-toastify';
+
+import React from "react";
+import { ToastContainer, toast } from "react-toastify";
 import {
   Button,
   Card,
@@ -22,21 +23,21 @@ import {
   TableRow,
   TextField,
   Typography,
-} from '@mui/material';
-import { ContentCopy } from '@mui/icons-material';
+} from "@mui/material";
+import { ContentCopy } from "@mui/icons-material";
 
-import { Classroom } from '../../../store/slices/educational-data/types';
-import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
+import type { Classroom } from "../../../store/slices/educational-data/types";
+import { useWithEducationalData } from "../../../store/slices/educational-data/use-with-educational-data";
 
 export default function TeacherInviteCode(props: {
   classroom?: Classroom;
-}): JSX.Element {
+}): React.ReactNode {
   const { classroom } = props;
   const { revokeClassInviteCode, createNewClassInviteCode } =
     useWithEducationalData();
   const [inviteDialogOpen, setInviteDialogOpen] = React.useState(false);
-  const [validUntil, setValidUntil] = React.useState('');
-  const [numUses, setNumUses] = React.useState('50');
+  const [validUntil, setValidUntil] = React.useState("");
+  const [numUses, setNumUses] = React.useState("50");
   const [creating, setCreating] = React.useState(false);
 
   const handleCreateInviteCode = async () => {
@@ -46,13 +47,13 @@ export default function TeacherInviteCode(props: {
       await createNewClassInviteCode(
         classroom._id,
         new Date(validUntil),
-        parseInt(numUses)
+        parseInt(numUses),
       );
       setInviteDialogOpen(false);
-      setValidUntil('');
-      setNumUses('50');
+      setValidUntil("");
+      setNumUses("50");
     } catch (err) {
-      console.error('Failed to create invite code', err);
+      console.error("Failed to create invite code", err);
     } finally {
       setCreating(false);
     }
@@ -63,14 +64,14 @@ export default function TeacherInviteCode(props: {
     try {
       await revokeClassInviteCode(classroom._id, code);
     } catch (err) {
-      console.error('Failed to revoke invite code', err);
+      console.error("Failed to revoke invite code", err);
     }
   };
 
   const handleCopyInviteCode = async (code: string) => {
     navigator.clipboard.writeText(code);
-    toast('Copied code to clipboard!', {
-      position: 'top-center',
+    toast("Copied code to clipboard!", {
+      position: "top-center",
     });
   };
 
@@ -88,17 +89,17 @@ export default function TeacherInviteCode(props: {
     <div className="column spacing">
       <ToastContainer />
 
-      <Typography fontSize={16} fontWeight="bold">
+      <Typography style={{ fontSize: 16, fontWeight: "bold" }}>
         INVITE CODES
       </Typography>
-      <Typography variant="body1" fontWeight="lighter">
+      <Typography variant="body1" style={{ fontWeight: "lighter" }}>
         Copy and send these codes to students so they can join your class.
       </Typography>
 
       <Card style={{ borderRadius: 10 }}>
         <CardContent
           className="column spacing"
-          style={{ position: 'relative', padding: 20 }}
+          style={{ position: "relative", padding: 20 }}
         >
           {classroom.inviteCodes.length === 0 ? (
             <Typography variant="body2" color="error">
@@ -134,11 +135,11 @@ export default function TeacherInviteCode(props: {
                         </Button>
                       </TableCell>
                       <TableCell>{inviteCode.uses}</TableCell>
-                      <TableCell>{inviteCode.maxUses || 'Unlimited'}</TableCell>
+                      <TableCell>{inviteCode.maxUses || "Unlimited"}</TableCell>
                       <TableCell>
                         {inviteCode.validUntil
                           ? new Date(inviteCode.validUntil).toLocaleDateString()
-                          : 'No expiration'}
+                          : "No expiration"}
                       </TableCell>
                       <TableCell>
                         <Button
@@ -181,7 +182,6 @@ export default function TeacherInviteCode(props: {
             type="date"
             value={validUntil}
             onChange={(e) => setValidUntil(e.target.value)}
-            InputLabelProps={{ shrink: true }}
             style={{ marginTop: 10, marginBottom: 20 }}
           />
           <TextField
@@ -204,7 +204,7 @@ export default function TeacherInviteCode(props: {
             variant="contained"
             disabled={creating || !validUntil || !numUses}
           >
-            {creating ? 'Creating...' : 'Create'}
+            {creating ? "Creating..." : "Create"}
           </Button>
         </DialogActions>
       </Dialog>

@@ -4,10 +4,11 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
+
+import React from "react";
 import SpeechRecognition, {
   useSpeechRecognition,
-} from 'react-speech-recognition';
+} from "react-speech-recognition";
 import {
   Fab,
   FormControl,
@@ -17,10 +18,10 @@ import {
   OutlinedInput,
   Typography,
   CircularProgress,
-} from '@mui/material';
-import { Mic, MicOutlined, Send } from '@mui/icons-material';
-import { GameData } from '../../store/slices/game/types';
-import { useAppSelector } from '../../store/hooks';
+} from "@mui/material";
+import { Mic, MicOutlined, Send } from "@mui/icons-material";
+import type { GameData } from "../../store/slices/game/types";
+import { useAppSelector } from "../../store/hooks";
 
 export const MAX_MESSAGE_LENGTH = 500;
 
@@ -33,8 +34,8 @@ export default function ChatForm(props: {
   isTeacher?: boolean;
   phasesCompleted?: boolean;
   disabled?: boolean;
-}): JSX.Element {
-  const [input, setInput] = React.useState<string>('');
+}): React.ReactNode {
+  const [input, setInput] = React.useState<string>("");
   const [isSending, setIsSending] = React.useState<boolean>(false);
   const {
     transcript,
@@ -45,20 +46,18 @@ export default function ChatForm(props: {
   const { sendMessage, isMyTurn, isPaused } = props;
   const player = useAppSelector((state) => state.playerData.player);
 
-  React.useEffect(() => {
-    if (listening) {
-      setInput(transcript);
-    }
-  }, [transcript]);
+  if (listening) {
+    setInput(transcript);
+  }
 
   async function onSend(): Promise<void> {
-    if (input.trim() === '' || input.length > MAX_MESSAGE_LENGTH || isSending) {
+    if (input.trim() === "" || input.length > MAX_MESSAGE_LENGTH || isSending) {
       return;
     }
     try {
       setIsSending(true);
       await sendMessage(input);
-      setInput('');
+      setInput("");
     } catch (error) {
       console.error(error);
     } finally {
@@ -68,9 +67,9 @@ export default function ChatForm(props: {
 
   function onKeyPress(
     e: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>,
-    isMyTurn: boolean
+    isMyTurn: boolean,
   ): void {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       if (isMyTurn) {
         onSend();
       }
@@ -89,17 +88,17 @@ export default function ChatForm(props: {
   }
 
   return (
-    <div style={{ width: '100%' }}>
+    <div style={{ width: "100%" }}>
       {isPaused && (
         <Typography
           variant="body2"
           color="error"
-          sx={{ mb: 1, textAlign: 'center', fontWeight: 'bold' }}
+          sx={{ mb: 1, textAlign: "center", fontWeight: "bold" }}
         >
           You have been paused by your instructor.
         </Typography>
       )}
-      <div className="row" style={{ width: '100%' }}>
+      <div className="row" style={{ width: "100%" }}>
         <FormControl
           variant="outlined"
           style={{ flex: 1 }}
@@ -107,15 +106,15 @@ export default function ChatForm(props: {
         >
           <InputLabel>
             {props.phasesCompleted
-              ? 'You have completed the final phase of this activity.'
-              : 'Chat:'}
+              ? "You have completed the final phase of this activity."
+              : "Chat:"}
           </InputLabel>
           <OutlinedInput
             data-cy="chat-input"
             label={
               props.phasesCompleted
-                ? 'You have completed the final phase of this activity.'
-                : 'Chat:'
+                ? "You have completed the final phase of this activity."
+                : "Chat:"
             }
             type="text"
             value={input}
@@ -129,17 +128,17 @@ export default function ChatForm(props: {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => onKeyPress(e, isMyTurn)}
             style={{
-              backgroundColor: 'white',
+              backgroundColor: "white",
               animation:
                 props.uiGameData?.curGameState?.playersLeftToRespond?.includes(
-                  player?._id || ''
+                  player?._id || "",
                 ) &&
                 !isPaused &&
                 !props.phasesCompleted &&
                 !isSending &&
                 !props.isTeacher
-                  ? 'blink 1s ease-in-out 0s infinite reverse'
-                  : '',
+                  ? "blink 1s ease-in-out 0s infinite reverse"
+                  : "",
             }}
             multiline
             inputProps={{ maxLength: MAX_MESSAGE_LENGTH }}
@@ -149,8 +148,10 @@ export default function ChatForm(props: {
                   <Typography
                     variant="body2"
                     color="text.secondary"
-                    margin={0}
-                    padding={0}
+                    style={{
+                      margin: 0,
+                      padding: 0,
+                    }}
                   >
                     {input.length}/{MAX_MESSAGE_LENGTH}
                   </Typography>
@@ -185,7 +186,7 @@ export default function ChatForm(props: {
           />
         </FormControl>
         <Fab
-          color={listening ? 'primary' : 'inherit'}
+          color={listening ? "primary" : "inherit"}
           onClick={onToggleSTT}
           disabled={
             !browserSupportsSpeechRecognition ||

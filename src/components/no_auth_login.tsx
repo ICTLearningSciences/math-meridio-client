@@ -4,41 +4,34 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button, CircularProgress, TextField, Typography } from '@mui/material';
-import { useAppSelector } from '../store/hooks';
-import { useWithPlayer } from '../store/slices/player/use-with-player-state';
-import { LoadStatus } from '../types';
-import { EducationalRole } from '../store/slices/player/types';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { Button, CircularProgress, TextField, Typography } from "@mui/material";
+import { useAppSelector } from "../store/hooks";
+import { useWithPlayer } from "../store/slices/player/use-with-player-state";
 
-function LoginPage(): JSX.Element {
+function LoginPage(): React.ReactNode {
   const { player, loginStatus, saveStatus } = useAppSelector(
-    (state) => state.playerData
+    (state) => state.playerData,
   );
-  const [username, setUsername] = React.useState<string>('');
-  const isLoading =
-    loginStatus.status === LoadStatus.NONE ||
-    loginStatus.status === LoadStatus.IN_PROGRESS;
+  const [username, setUsername] = React.useState<string>("");
+  const isLoading = loginStatus.status === 0 || loginStatus.status === 1;
 
   const navigate = useNavigate();
   const { createPlayerName } = useWithPlayer();
 
   React.useEffect(() => {
-    if (loginStatus.status !== LoadStatus.DONE) return;
+    if (loginStatus.status !== 2) return;
     if (player) {
-      if (
-        player.description ||
-        player.educationalRole === EducationalRole.INSTRUCTOR
-      ) {
-        console.log('navigating to home');
-        navigate('/classes');
+      if (player.description || player.educationalRole === "INSTRUCTOR") {
+        console.log("navigating to home");
+        navigate("/classes");
       } else {
-        console.log('navigating to avatar-creator');
-        navigate('/avatar-creator');
+        console.log("navigating to avatar-creator");
+        navigate("/avatar-creator");
       }
     }
-  }, [player, loginStatus]);
+  }, [player, loginStatus, navigate]);
 
   return (
     <div className="root column center-div">
@@ -48,14 +41,19 @@ function LoginPage(): JSX.Element {
         <div
           className="column center-div"
           style={{
-            width: '400px',
-            textAlign: 'center',
-            border: '1px solid lightgrey',
-            padding: '20px',
-            boxShadow: '-5px 5px 10px 0px rgba(0,0,0,0.75)',
+            width: "400px",
+            textAlign: "center",
+            border: "1px solid lightgrey",
+            padding: "20px",
+            boxShadow: "-5px 5px 10px 0px rgba(0,0,0,0.75)",
           }}
         >
-          <Typography fontSize={24} fontWeight="bold">
+          <Typography
+            style={{
+              fontSize: 24,
+              fontWeight: "bold",
+            }}
+          >
             Enter a username:
           </Typography>
           <TextField
@@ -64,15 +62,15 @@ function LoginPage(): JSX.Element {
             style={{ width: 300, marginBottom: 10 }}
             onChange={(e) => setUsername(e.target.value)}
           />
-          {saveStatus.status === LoadStatus.IN_PROGRESS ? (
+          {saveStatus.status === 1 ? (
             <CircularProgress />
           ) : (
             <Button
               variant="contained"
               color="primary"
               style={{
-                fontSize: '16px',
-                margin: '10px',
+                fontSize: "16px",
+                margin: "10px",
                 width: 300,
               }}
               disabled={!username}

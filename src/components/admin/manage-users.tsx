@@ -4,22 +4,23 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { Card, CardContent, CircularProgress, Typography } from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
 
-import { useWithWindow } from '../../hooks/use-with-window';
-import {
+import React from "react";
+import { Card, CardContent, CircularProgress, Typography } from "@mui/material";
+import { DataGrid } from "@mui/x-data-grid";
+
+import { useWithWindow } from "../../hooks/use-with-window";
+import type {
   EducationalRole,
   Player,
   UserRole,
-} from '../../store/slices/player/types';
-import { fetchPlayers, updatePlayerRole } from '../../api';
-import { DropdownButton } from '../button';
-import { copyAndSet } from '../../helpers';
-import AvatarSprite from '../avatar-sprite';
+} from "../../store/slices/player/types";
+import { fetchPlayers, updatePlayerRole } from "../../api";
+import { DropdownButton } from "../button";
+import { copyAndSet } from "../../helpers";
+import AvatarSprite from "../avatar-sprite";
 
-export default function AdminManageUsers(): JSX.Element {
+export default function AdminManageUsers(): React.ReactNode {
   const { windowHeight } = useWithWindow();
   const [players, setPlayers] = React.useState<Player[]>([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
@@ -31,6 +32,7 @@ export default function AdminManageUsers(): JSX.Element {
       setPlayers(players);
       setIsLoading(false);
     } catch (err) {
+      console.error(err);
       setIsLoading(false);
     }
   }
@@ -38,7 +40,7 @@ export default function AdminManageUsers(): JSX.Element {
   async function updateUser(
     id: string,
     userRole?: UserRole,
-    educationalRole?: EducationalRole
+    educationalRole?: EducationalRole,
   ) {
     const player = await updatePlayerRole(id, userRole, educationalRole);
     const idx = players.findIndex((p) => p._id === player._id);
@@ -48,20 +50,21 @@ export default function AdminManageUsers(): JSX.Element {
   }
 
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadPlayers();
   }, []);
 
   return (
     <div className="dashboard" style={{ minHeight: windowHeight - 230 }}>
       <div className="column spacing">
-        <Typography fontSize={16} fontWeight="bold">
+        <Typography style={{ fontSize: 16, fontWeight: "bold" }}>
           USERS
         </Typography>
         <Card style={{ borderRadius: 10 }}>
           <CardContent
             className="column spacing"
             style={{
-              position: 'relative',
+              position: "relative",
               padding: 20,
               height: windowHeight - 350,
             }}
@@ -75,10 +78,10 @@ export default function AdminManageUsers(): JSX.Element {
                   id: p._id,
                 }))}
                 columns={[
-                  { field: 'id' },
+                  { field: "id" },
                   {
-                    field: 'name',
-                    headerName: 'Name',
+                    field: "name",
+                    headerName: "Name",
                     width: 300,
                     renderCell: (params) => (
                       <div className="row center-div spacing">
@@ -88,26 +91,26 @@ export default function AdminManageUsers(): JSX.Element {
                     ),
                   },
                   {
-                    field: 'lastLoginAt',
-                    headerName: 'Last Activity',
+                    field: "lastLoginAt",
+                    headerName: "Last Activity",
                     width: 250,
                     renderCell: (params) => (
                       <Typography>
                         {params.row.lastLoginAt
                           ? new Date(params.row.lastLoginAt).toLocaleString()
-                          : ''}
+                          : ""}
                       </Typography>
                     ),
                   },
                   {
-                    field: 'userRole',
-                    headerName: 'User Role',
+                    field: "userRole",
+                    headerName: "User Role",
                     width: 150,
                     renderCell: (params) => (
                       <DropdownButton
                         label={params.row.userRole}
                         value={params.row.userRole}
-                        items={Object.values(UserRole)}
+                        items={["USER", "ADMIN"]}
                         onSelect={(id: string) =>
                           updateUser(params.row.id, id as UserRole)
                         }
@@ -115,26 +118,25 @@ export default function AdminManageUsers(): JSX.Element {
                     ),
                   },
                   {
-                    field: 'educationalRole',
-                    headerName: 'Educational Role',
+                    field: "educationalRole",
+                    headerName: "Educational Role",
                     width: 200,
                     renderCell: (params) => (
                       <DropdownButton
-                        label={params.row.educationalRole || ''}
+                        label={params.row.educationalRole || ""}
                         value={params.row.educationalRole}
-                        items={Object.values(EducationalRole)}
+                        items={["STUDENT", "INSTRUCTOR"]}
                         onSelect={(id: string) =>
                           updateUser(
                             params.row.id,
                             undefined,
-                            id as EducationalRole
+                            id as EducationalRole,
                           )
                         }
                       />
                     ),
                   },
                 ]}
-                pageSize={20}
                 initialState={{
                   columns: {
                     columnVisibilityModel: {

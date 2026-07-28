@@ -4,10 +4,11 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { DiscussionStage } from './types';
-import { Button } from '@mui/material';
-import { RowDiv, ColumnDiv } from '../../styled-components';
+
+import React from "react";
+import type { DiscussionStage } from "./types";
+import { Button } from "@mui/material";
+import { RowDiv, ColumnDiv } from "../../styled-components";
 
 export function ExistingStageItem(props: {
   stage: DiscussionStage;
@@ -18,9 +19,9 @@ export function ExistingStageItem(props: {
   return (
     <RowDiv
       style={{
-        width: '100%',
-        justifyContent: 'space-between',
-        borderBottom: '1px solid black',
+        width: "100%",
+        justifyContent: "space-between",
+        borderBottom: "1px solid black",
       }}
     >
       <h3>{stage.title}</h3>
@@ -35,33 +36,33 @@ export function ExistingStages(props: {
   goToStage: (stage: DiscussionStage) => void;
   stages: DiscussionStage[];
   editStage: (stage: DiscussionStage) => void;
-}): JSX.Element {
+}): React.ReactNode {
   const { stages, editStage } = props;
   if (!stages.length) {
     return <></>;
   }
-  const titleGroupByKeys = ['Test Base', 'Concert', 'Basketball'];
+  const titleGroupByKeys = ["Test Base", "Concert", "Basketball"];
 
   const groupedStages = titleGroupByKeys.map((groupKey) => ({
     groupByKey: groupKey,
     stages: stages
       .filter((stage) => stage.title.includes(groupKey))
       .sort((a, b) => {
-        const aNumber = parseInt(a.title.split('.')[0]) || 0;
-        const bNumber = parseInt(b.title.split('.')[0]) || 0;
+        const aNumber = parseInt(a.title.split(".")[0]) || 0;
+        const bNumber = parseInt(b.title.split(".")[0]) || 0;
         return aNumber - bNumber;
       }),
   }));
 
   const unmatchedStages = stages.filter(
     (stage) =>
-      !titleGroupByKeys.some((groupKey) => stage.title.includes(groupKey))
+      !titleGroupByKeys.some((groupKey) => stage.title.includes(groupKey)),
   );
 
   return (
     <ColumnDiv
       style={{
-        width: '95%',
+        width: "95%",
       }}
     >
       {groupedStages.map((group) => (
@@ -107,16 +108,16 @@ export function SelectCreateStage(props: {
   existingStages: DiscussionStage[];
   onEditStage: (stage: DiscussionStage) => void;
   onCreateStage: () => void;
-}): JSX.Element {
+}): React.ReactNode {
   const { existingStages, onEditStage, onCreateStage, goToStage } = props;
   return (
     <ColumnDiv
       style={{
-        width: '100%',
-        height: '100%',
-        alignItems: 'center',
-        overflow: 'auto',
-        position: 'relative',
+        width: "100%",
+        height: "100%",
+        alignItems: "center",
+        overflow: "auto",
+        position: "relative",
       }}
     >
       <h1>Discussion Stage Builder</h1>

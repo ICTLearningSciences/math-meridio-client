@@ -4,27 +4,28 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import * as motion from 'motion/react-client';
-import { Tooltip, Typography } from '@mui/material';
-import { Pause } from '@mui/icons-material';
-import { Player } from '../store/slices/player/types';
-import { Room } from '../store/slices/game/types';
-import { getLastActivityString } from '../helpers';
-import { useWithEducationalData } from '../store/slices/educational-data/use-with-educational-data';
-import { TwoOptionDialog } from './dialog';
+
+import React from "react";
+import * as motion from "motion/react-client";
+import { Tooltip, Typography } from "@mui/material";
+import { Pause } from "@mui/icons-material";
+import type { Player } from "../store/slices/player/types";
+import type { Room } from "../store/slices/game/types";
+import { getLastActivityString } from "../helpers";
+import { useWithEducationalData } from "../store/slices/educational-data/use-with-educational-data";
+import { TwoOptionDialog } from "./dialog";
 
 export function PlayerActivitySprite(props: {
   player: Player;
   room: Room;
-}): JSX.Element {
+}): React.ReactNode {
   const { player, room } = props;
   const { togglePlayerPausedInRoomStatus } = useWithEducationalData(room._id);
   const [pausePlayer, setPausePlayer] = React.useState<Player>();
   const [updating, setUpdating] = React.useState<boolean>(false);
 
   const isActive =
-    room.gameData.playersStatusRecord[player._id]?.computedState === 'ACTIVE';
+    room.gameData.playersStatusRecord[player._id]?.computedState === "ACTIVE";
   const isPaused = room.gameData.playersStatusRecord[player._id]?.pausedByAdmin;
 
   const onTogglePause = async () => {
@@ -47,7 +48,7 @@ export function PlayerActivitySprite(props: {
           <div className="column center-div">
             <motion.div
               className="column center-div"
-              whileHover={{ scale: 1.05, filter: 'brightness(0.8)' }}
+              whileHover={{ scale: 1.05, filter: "brightness(0.8)" }}
               onClick={() => setPausePlayer(player)}
             >
               <AvatarSprite
@@ -58,14 +59,22 @@ export function PlayerActivitySprite(props: {
             </motion.div>
             <Typography
               variant="body2"
-              fontSize={12}
-              fontWeight="bold"
-              align="center"
-              style={{ marginTop: 5 }}
+
+              style={{
+                marginTop: 5,
+                fontSize: 12,
+                fontWeight: "bold",
+                textAlign: "center",
+              }}
             >
               {player.name}
             </Typography>
-            <Typography fontSize={10} fontWeight="lighter">
+            <Typography
+              style={{
+                fontSize: 10,
+                fontWeight: "lighter",
+              }}
+            >
               PAUSED
             </Typography>
             <Dialog />
@@ -76,23 +85,28 @@ export function PlayerActivitySprite(props: {
 
     return (
       <PlayerSprite key={player._id} player={player}>
-        <Typography fontSize={10} fontWeight="lighter">
+        <Typography
+          style={{
+            fontSize: 10,
+            fontWeight: "lighter",
+          }}
+        >
           {isActive
             ? room.gameData.playersStatusRecord[player._id]?.computedState
             : getLastActivityString(player.lastLoginAt)}
         </Typography>
         <Tooltip title="Pause player">
           <motion.div
-            whileHover={{ scale: 1.05, filter: 'brightness(0.8)' }}
+            whileHover={{ scale: 1.05, filter: "brightness(0.8)" }}
             onClick={() => setPausePlayer(player)}
             style={{
-              position: 'absolute',
+              position: "absolute",
               marginRight: -30,
               width: 12,
               height: 12,
               borderRadius: 12,
-              backgroundColor: isActive ? 'rgb(91, 197, 57)' : 'white',
-              border: `1px solid ${isActive ? 'white' : 'black'}`,
+              backgroundColor: isActive ? "rgb(91, 197, 57)" : "white",
+              border: `1px solid ${isActive ? "white" : "black"}`,
             }}
           />
         </Tooltip>
@@ -106,16 +120,16 @@ export function PlayerActivitySprite(props: {
     return (
       <TwoOptionDialog
         title={`Mark [${pausePlayer.name}] as ${
-          isPaused ? 'Active' : 'Inactive'
+          isPaused ? "Active" : "Inactive"
         }?`}
         open={Boolean(pausePlayer)}
         actionInProgress={updating}
         option1={{
-          display: 'Confirm',
+          display: "Confirm",
           onClick: () => onTogglePause(),
         }}
         option2={{
-          display: 'Cancel',
+          display: "Cancel",
           onClick: () => setPausePlayer(undefined),
         }}
       />
@@ -134,25 +148,27 @@ export function PlayerSprite(props: {
   player: Player | undefined;
   color?: string;
   children?: React.ReactNode;
-}): JSX.Element {
+}): React.ReactNode {
   const { player } = props;
   if (!player) return <div />;
   return (
     <div
       key={player._id}
       className="column center-div"
-      style={{ position: 'relative' }}
+      style={{ position: "relative" }}
     >
       <AvatarSprite
         player={player}
-        bgColor={props.color || 'rgb(218, 183, 250)'}
+        bgColor={props.color || "rgb(218, 183, 250)"}
       />
       <Typography
         variant="body2"
-        fontSize={12}
-        fontWeight="bold"
-        align="center"
-        style={{ marginTop: 5 }}
+        style={{
+          marginTop: 5,
+          fontSize: 12,
+          fontWeight: "bold",
+          textAlign: "center",
+        }}
       >
         {player.name}
       </Typography>
@@ -166,7 +182,7 @@ export default function AvatarSprite(props: {
   isPaused?: boolean;
   bgColor?: string;
   border?: boolean;
-}): JSX.Element {
+}): React.ReactNode {
   const { player } = props;
   const avatar = player?.avatar || [];
 
@@ -174,36 +190,36 @@ export default function AvatarSprite(props: {
   return (
     <div
       style={{
-        position: 'relative',
+        position: "relative",
         height: 40,
         width: 40,
         borderRadius: 40,
         padding: 3,
-        border: props.border ? '1px solid rgb(114, 20, 201)' : 'none',
-        backgroundColor: props.bgColor || 'white',
+        border: props.border ? "1px solid rgb(114, 20, 201)" : "none",
+        backgroundColor: props.bgColor || "white",
       }}
     >
       {props.isPaused ? (
         <div
           className="column center-div"
           style={{
-            position: 'absolute',
+            position: "absolute",
             top: 0,
             bottom: 0,
             left: 0,
             right: 0,
             borderRadius: 40,
-            backgroundColor: 'black',
+            backgroundColor: "black",
             opacity: 0.3,
           }}
         >
-          <Pause style={{ color: 'white' }} />
+          <Pause style={{ color: "white" }} />
         </div>
       ) : !avatar.length ? (
         <div
           className="column center-div"
           style={{
-            position: 'absolute',
+            position: "absolute",
             top: 0,
             bottom: 0,
             left: 0,
@@ -212,9 +228,9 @@ export default function AvatarSprite(props: {
         >
           <Typography>
             {player.name
-              .split(' ')
+              .split(" ")
               .map((c) => c[0])
-              .join('')}
+              .join("")}
           </Typography>
         </div>
       ) : (
@@ -225,10 +241,10 @@ export default function AvatarSprite(props: {
               key={a.id}
               style={{
                 backgroundImage: `url(/assets/avatar/sprite/${
-                  a.type?.split('_')[1]
+                  a.type?.split("_")[1]
                 }/${a.id}.png)`,
-                position: 'absolute',
-                transform: 'scale(1.5)',
+                position: "absolute",
+                transform: "scale(1.5)",
                 left: 7,
                 top: 1,
                 width: 32,

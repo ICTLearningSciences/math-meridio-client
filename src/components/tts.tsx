@@ -4,32 +4,33 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { useTts, TTSHookProps } from 'tts-react';
-import EventSystem from '../game/event-system';
-import { ChatMessage } from '../store/slices/game/types';
+
+import React from "react";
+import { useTts, type TTSHookProps } from "tts-react";
+import EventSystem from "../game/event-system";
+import type { ChatMessage } from "../store/slices/game/types";
 
 interface SpeakProps extends TTSHookProps {
   message: ChatMessage | undefined;
 }
-export function TtsSpeak({ children, message }: SpeakProps): JSX.Element {
-  if (typeof window === 'undefined') {
-    return <div>{children}</div>;
-  }
-
+export function TtsSpeak({ children, message }: SpeakProps): React.ReactNode {
   const { ttsChildren } = useTts({
     children,
     markTextAsSpoken: true,
-    markColor: 'white',
-    markBackgroundColor: '#70CEFF',
+    markColor: "white",
+    markBackgroundColor: "#70CEFF",
     autoPlay: true,
     onStart: () => {
-      console.log('playing?');
+      console.log("playing?");
     },
     onEnd: () => {
-      EventSystem.emit('ttsFinished', message);
+      EventSystem.emit("ttsFinished", message);
     },
   });
 
-  return <div style={{ display: 'none' }}>{ttsChildren}</div>;
+  if (typeof window === "undefined") {
+    return <div>{children}</div>;
+  }
+
+  return <div style={{ display: "none" }}>{ttsChildren}</div>;
 }

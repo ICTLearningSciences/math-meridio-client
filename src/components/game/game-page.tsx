@@ -4,29 +4,27 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { useNavigate, useOutletContext } from 'react-router-dom';
-import { CircularProgress, Grid, Stack } from '@mui/material';
-import ChatThread from './chat-thread';
-import ChatForm from './chat-form';
-import withAuthorizationOnly from '../../wrap-with-authorization-only';
-import EndOfPhaseReflectionModal from './end-of-phase-reflection-modal';
-import AwayStatusModal from './away-status-modal';
-import PausedStatusModal from './paused-status-modal';
-import { PlayerComputedState, RoomPhase } from '../../store/slices/game/types';
-import GamePagePhaseDisplay from './game-page-phases';
-import { UseWithEducationalData } from '../../store/slices/educational-data/use-with-educational-data';
-import { useAppSelector } from '../../store/hooks';
-import { EducationalRole } from '../../store/slices/player/types';
-import { RequireInputType } from '../discussion-stage-builder/types';
-import PhaseProgressBar from '../phase-progress-bar';
 
-import '../../layout.css';
+import React from "react";
+import { useNavigate, useOutletContext } from "react-router-dom";
+import { CircularProgress, Grid, Stack } from "@mui/material";
+import ChatThread from "./chat-thread";
+import ChatForm from "./chat-form";
+import withAuthorizationOnly from "../../wrap-with-authorization-only";
+import EndOfPhaseReflectionModal from "./end-of-phase-reflection-modal";
+import AwayStatusModal from "./away-status-modal";
+import PausedStatusModal from "./paused-status-modal";
+import GamePagePhaseDisplay from "./game-page-phases";
+import type { UseWithEducationalData } from "../../store/slices/educational-data/use-with-educational-data";
+import { useAppSelector } from "../../store/hooks";
+import PhaseProgressBar from "../phase-progress-bar";
+
+import "../../layout.css";
 
 // Type for the outlet context provided by GameLayout
 type EducationalDataContext = UseWithEducationalData;
 
-function GamePage(): JSX.Element {
+function GamePage(): React.ReactNode {
   // Use prop if provided, otherwise try to get from outlet context
   const outletContext = useOutletContext<EducationalDataContext>();
   const { player } = useAppSelector((state) => state.playerData);
@@ -39,40 +37,35 @@ function GamePage(): JSX.Element {
   } = outletContext;
   const navigate = useNavigate();
 
-  const isTeacher = player?.educationalRole === EducationalRole.INSTRUCTOR;
+  const isTeacher = player?.educationalRole === "INSTRUCTOR";
   const myStatusInRoom =
     player?._id && room
       ? room?.gameData.playersStatusRecord[player?._id]
       : undefined;
   const iAmAway =
-    myStatusInRoom?.computedState ===
-      PlayerComputedState.REPORTED_AWAY_BY_OTHER_PLAYER ||
-    myStatusInRoom?.computedState ===
-      PlayerComputedState.REPORTED_AWAY_BY_FRONTEND_DETECTION;
-  const iAmPaused =
-    myStatusInRoom?.computedState === PlayerComputedState.PAUSED_BY_ADMIN;
+    myStatusInRoom?.computedState === "REPORTED_AWAY_BY_OTHER_PLAYER" ||
+    myStatusInRoom?.computedState === "REPORTED_AWAY_BY_FRONTEND_DETECTION";
+  const iAmPaused = myStatusInRoom?.computedState === "PAUSED_BY_ADMIN";
   const phasesCompleted =
     room?.gameData?.phaseProgression?.phasesCompleted?.length;
   const isInWaitingState =
     room?.gameData.curGameState.curState ===
-    'WAITING_FOR_STUDENT_READY_TO_CONTINUE';
+    "WAITING_FOR_STUDENT_READY_TO_CONTINUE";
   const isEndOfPhaseReflection =
-    room?.gameData.curGameState.curState === 'END_OF_PHASE_REFLECTION';
+    room?.gameData.curGameState.curState === "END_OF_PHASE_REFLECTION";
 
   const isSingleResponseRequired =
-    room?.gameData.curGameState.curState ===
-    RequireInputType.SINGLE_RESPONSE_REQUIRED;
+    room?.gameData.curGameState.curState === "SINGLE_RESPONSE_REQUIRED";
   const isFreeForAll =
     room?.gameData.curGameState.curState ===
-    RequireInputType.ALL_USER_RESPONSES_REQUIRED_FREE_FOR_ALL;
+    "ALL_USER_RESPONSES_REQUIRED_FREE_FOR_ALL";
   const isInOrder =
-    room?.gameData.curGameState.curState ===
-    RequireInputType.ALL_USER_RESPONSES_REQUIRED_IN_ORDER;
+    room?.gameData.curGameState.curState === "ALL_REQUIRED_IN_ORDER";
   const moreThanOnePlayerInRoom =
     room?.gameData && room.gameData.players?.length > 1;
   const isAtFrontOfList = Boolean(
     room?.gameData &&
-      room.gameData.curGameState.playersLeftToRespond[0] === player?._id
+    room.gameData.curGameState.playersLeftToRespond[0] === player?._id,
   );
   const isMyTurn =
     isSingleResponseRequired ||
@@ -82,6 +75,18 @@ function GamePage(): JSX.Element {
 
   const [phase, setPhase] = React.useState<number>();
 
+  React.useEffect(() => {
+    if (!room) {
+      console.log("navigating to home");
+      navigate("/classes");
+    }
+  }, [room, navigate]);
+
+  React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPhase(undefined);
+  }, [phasesCompleted]);
+
   // Handle case where context is not yet available
   if (!outletContext) {
     return (
@@ -90,17 +95,6 @@ function GamePage(): JSX.Element {
       </div>
     );
   }
-
-  React.useEffect(() => {
-    if (!room) {
-      console.log('navigating to home');
-      navigate('/classes');
-    }
-  }, [Boolean(room)]);
-
-  React.useEffect(() => {
-    setPhase(undefined);
-  }, [phasesCompleted]);
 
   if (!room) {
     return (
@@ -123,10 +117,10 @@ function GamePage(): JSX.Element {
     <div
       className="root"
       style={{
-        backgroundColor: '#cfdaf8',
+        backgroundColor: "#cfdaf8",
       }}
     >
-      <div style={{ width: '80%', padding: 20 }}>
+      <div style={{ width: "80%", padding: 20 }}>
         <PhaseProgressBar
           gameRooms={[room]}
           onClickPhase={(p) => setPhase(p)}
@@ -135,9 +129,9 @@ function GamePage(): JSX.Element {
       <Grid
         container
         spacing={2}
-        style={{ height: 0, width: '100%', padding: 20 }}
+        style={{ height: 0, width: "100%", padding: 20 }}
       >
-        <Grid xs={6}>
+        <Grid size={6}>
           <GamePagePhaseDisplay
             room={room}
             game={curGame}
@@ -146,18 +140,18 @@ function GamePage(): JSX.Element {
             updateMyRoomGameStateData={updateMyRoomGameStateData}
           />
         </Grid>
-        <Grid xs={6}>
+        <Grid size={6}>
           <Stack
             key="chat"
             spacing={2}
             style={{
-              height: '100%',
-              boxSizing: 'border-box',
+              height: "100%",
+              boxSizing: "border-box",
               padding: 10,
             }}
           >
             <ChatThread
-              roomIsProcessing={room.phase === RoomPhase.PROCESSING}
+              roomIsProcessing={room.phase === "PROCESSING"}
               requestUserInputPhaseData={room.gameData.curGameState}
               uiGameData={room.gameData}
             />
@@ -191,4 +185,5 @@ function GamePage(): JSX.Element {
   );
 }
 
-export default withAuthorizationOnly(GamePage);
+const Page = withAuthorizationOnly(GamePage);
+export default Page;

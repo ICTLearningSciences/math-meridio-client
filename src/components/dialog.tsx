@@ -4,7 +4,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
+import React from "react";
 import {
   Dialog,
   DialogTitle,
@@ -12,13 +12,13 @@ import {
   DialogContentText,
   Button,
   CircularProgress,
-} from '@mui/material';
-import { RowDiv } from '../styled-components';
+} from "@mui/material";
+import { RowDiv } from "../styled-components";
 
 export function ErrorDialog(props: {
   error?: string;
   clearError?: () => void;
-}): JSX.Element {
+}): React.ReactNode {
   const { error, clearError } = props;
   return (
     <Dialog
@@ -28,7 +28,7 @@ export function ErrorDialog(props: {
       open={Boolean(error)}
       onClose={clearError}
       style={{
-        textAlign: 'center',
+        textAlign: "center",
       }}
     >
       <DialogTitle data-cy="error-dialog-title">Error</DialogTitle>
@@ -39,7 +39,9 @@ export function ErrorDialog(props: {
         <Button
           data-cy="close-error-dialog"
           onClick={() => {
-            clearError && clearError();
+            if (clearError) {
+              clearError();
+            }
           }}
         >
           Close
@@ -59,17 +61,17 @@ export function TextDialog(props: {
   body: string;
   open: boolean;
   close: () => void;
-}): JSX.Element {
+}): React.ReactNode {
   const { title, open, close, body } = props;
   return (
     <Dialog data-cy="text-dialog" maxWidth="sm" fullWidth={true} open={open}>
-      <DialogTitle style={{ textAlign: 'center' }}>{title}</DialogTitle>
+      <DialogTitle style={{ textAlign: "center" }}>{title}</DialogTitle>
       <DialogContent
         style={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
         }}
       >
         <DialogContentText>{body}</DialogContentText>
@@ -87,7 +89,7 @@ export function TwoOptionDialog(props: {
   actionInProgress: boolean;
   option1: Option;
   option2: Option;
-}): JSX.Element {
+}): React.ReactNode {
   const { title, option1, option2, open, actionInProgress } = props;
   return (
     <Dialog
@@ -96,13 +98,13 @@ export function TwoOptionDialog(props: {
       fullWidth={true}
       open={open}
     >
-      <DialogTitle style={{ textAlign: 'center' }}>{title}</DialogTitle>
+      <DialogTitle style={{ textAlign: "center" }}>{title}</DialogTitle>
       <DialogContent
         style={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
         }}
       >
         {actionInProgress && <CircularProgress />}

@@ -4,14 +4,13 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React, { useEffect } from 'react';
-import { Card, IconButton, Typography } from '@mui/material';
-import { makeStyles } from 'tss-react/mui';
-import { didGameStateDataChange } from '../helpers';
-import { Edit } from '@mui/icons-material';
-import { SolutionGameStateData } from '../types';
-import { useWithPlayer } from '../store/slices/player/use-with-player-state';
-import { EducationalRole } from '../store/slices/player/types';
+import React, { useEffect } from "react";
+import { Card, IconButton, Typography } from "@mui/material";
+import { makeStyles } from "tss-react/mui";
+import { didGameStateDataChange } from "../helpers";
+import { Edit } from "@mui/icons-material";
+import type { SolutionGameStateData } from "../types";
+import { useWithPlayer } from "../store/slices/player/use-with-player-state";
 
 export const EditableVariable = React.memo(
   function EditableVariable(props: {
@@ -20,7 +19,7 @@ export const EditableVariable = React.memo(
     myPlayerStateData: SolutionGameStateData;
     onEditVariable: () => void;
     backgroundColor?: string;
-  }): JSX.Element {
+  }): React.ReactNode {
     const { player } = useWithPlayer();
     const { myPlayerStateData, dataKey, title } = props;
     const data = myPlayerStateData[dataKey];
@@ -35,31 +34,31 @@ export const EditableVariable = React.memo(
       <Card
         className={classes.box}
         style={{
-          backgroundColor: props.backgroundColor || '#fff8db',
-          borderColor: 'red',
-          display: value !== undefined ? '' : 'none',
+          backgroundColor: props.backgroundColor || "#fff8db",
+          borderColor: "red",
+          display: value !== undefined ? "" : "none",
         }}
       >
-        <Typography className={classes.text} style={{ color: '#c96049' }}>
+        <Typography className={classes.text} style={{ color: "#c96049" }}>
           {title}
         </Typography>
         <Typography
           className="panningDisabled"
           sx={{
-            color: '#c96049',
+            color: "#c96049",
             fontSize: 40,
-            fontFamily: 'SigmarOne',
-            textAlign: 'center',
+            fontFamily: "SigmarOne",
+            textAlign: "center",
             margin: 0,
             padding: 0,
           }}
         >
           {value || 0}
         </Typography>
-        {player?.educationalRole === EducationalRole.STUDENT && (
+        {player?.educationalRole === "STUDENT" && (
           <IconButton
             onClick={props.onEditVariable}
-            style={{ width: 18, height: 18, marginLeft: 5, color: '#c96049' }}
+            style={{ width: 18, height: 18, marginLeft: 5, color: "#c96049" }}
           >
             <Edit style={{ width: 18, height: 18 }} />
           </IconButton>
@@ -73,32 +72,32 @@ export const EditableVariable = React.memo(
       prevProps.title === nextProps.title &&
       !didGameStateDataChange(
         prevProps.myPlayerStateData,
-        nextProps.myPlayerStateData
+        nextProps.myPlayerStateData,
       )
     );
-  }
+  },
 );
 
 const useStyles = makeStyles()(() => ({
   box: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
     padding: 10,
     borderRadius: 10,
     marginRight: 5,
     marginBottom: 10,
-    height: 'auto',
-    width: 'auto',
+    height: "auto",
+    width: "auto",
     minWidth: 100,
-    border: '1px solid lightgrey',
-    boxShadow: '-5px 5px 10px 0px rgba(0,0,0,0.75)',
+    border: "1px solid lightgrey",
+    boxShadow: "-5px 5px 10px 0px rgba(0,0,0,0.75)",
   },
   text: {
-    color: 'white',
+    color: "white",
     fontSize: 14,
     fontWeight: 600,
-    textAlign: 'center',
+    textAlign: "center",
   },
 }));

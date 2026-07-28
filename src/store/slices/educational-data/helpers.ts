@@ -4,18 +4,19 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { EducationalDataStateData } from '.';
-import { LearningObjective, Room } from '../game/types';
-import { ClassMembership, Classroom } from './types';
+
+import type { EducationalDataStateData } from ".";
+import type { LearningObjective, Room } from "../game/types";
+import type { ClassMembership, Classroom } from "./types";
 
 export function addOrUpdateClassMembership(
   state: EducationalDataStateData,
-  newClassMembership: ClassMembership
+  newClassMembership: ClassMembership,
 ) {
   const existingClassMembershipIdx = state.classMemberships.findIndex(
     (cm) =>
       cm.classId === newClassMembership.classId &&
-      cm.userId === newClassMembership.userId
+      cm.userId === newClassMembership.userId,
   );
   if (existingClassMembershipIdx !== -1) {
     state.classMemberships[existingClassMembershipIdx] = newClassMembership;
@@ -26,10 +27,10 @@ export function addOrUpdateClassMembership(
 
 export function addOrUpdateClass(
   state: EducationalDataStateData,
-  updatedClass: Classroom
+  updatedClass: Classroom,
 ) {
   const existingClassIdx = state.classes.findIndex(
-    (c) => c._id === updatedClass._id
+    (c) => c._id === updatedClass._id,
   );
   if (existingClassIdx !== -1) {
     state.classes[existingClassIdx] = updatedClass;
@@ -40,11 +41,11 @@ export function addOrUpdateClass(
 
 export function addOrUpdateGameRoom(
   state: EducationalDataStateData,
-  updatedRoom: Room
+  updatedRoom: Room,
 ) {
-  console.log('state.rooms', state);
+  console.log("state.rooms", state);
   const existingRoomIdx = state.rooms.findIndex(
-    (r) => r._id === updatedRoom._id
+    (r) => r._id === updatedRoom._id,
   );
   if (existingRoomIdx !== -1) {
     if (updatedRoom.gameData.mathStandardsCompleted) {
@@ -62,10 +63,10 @@ export function addOrUpdateGameRoom(
 
 export function addOrUpdateLearningObjective(
   state: EducationalDataStateData,
-  updatedLearningObjective: LearningObjective
+  updatedLearningObjective: LearningObjective,
 ) {
   const existingLearningObjectiveIdx = state.learningObjectives.findIndex(
-    (lo) => lo._id === updatedLearningObjective._id
+    (lo) => lo._id === updatedLearningObjective._id,
   );
   if (existingLearningObjectiveIdx !== -1) {
     state.learningObjectives[existingLearningObjectiveIdx] =
@@ -77,7 +78,7 @@ export function addOrUpdateLearningObjective(
 
 export function removeGameRoom(
   state: EducationalDataStateData,
-  removedRoom: Room
+  removedRoom: Room,
 ) {
   state.rooms = state.rooms.filter((r) => r._id !== removedRoom._id);
 }

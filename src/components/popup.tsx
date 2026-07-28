@@ -4,14 +4,14 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
+import React from "react";
 import {
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   Button,
-} from '@mui/material';
+} from "@mui/material";
 
 interface PopupProps {
   open: boolean;
@@ -21,14 +21,14 @@ interface PopupProps {
 const Popup: React.FC<PopupProps> = ({ open, onClose }) => {
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle style={{ textAlign: 'center' }}>
+      <DialogTitle style={{ textAlign: "center" }}>
         Owner Not Present
       </DialogTitle>
-      <DialogContent style={{ textAlign: 'center' }}>
+      <DialogContent style={{ textAlign: "center" }}>
         The owner of this room is not present. Please join an Active Room or
         create your own.
       </DialogContent>
-      <DialogActions style={{ justifyContent: 'center' }}>
+      <DialogActions style={{ justifyContent: "center" }}>
         <Button onClick={onClose} color="primary">
           Close
         </Button>

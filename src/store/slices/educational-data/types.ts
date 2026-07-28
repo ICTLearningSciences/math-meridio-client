@@ -4,10 +4,15 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { StaticGame } from '.';
-import { GamePhaseReflections } from '../../../types';
-import { Room } from '../game/types';
-import { Player } from '../player/types';
+
+import type { StaticGame } from ".";
+import type { GamePhaseReflections } from "../../../types";
+import type { Room } from "../game/types";
+import type { Player } from "../player/types";
+
+export type ClassMembershipStatus = "Member" | "Removed" | "Blocked" | "None";
+export type NotificationType =
+  "" | "JOIN" | "LEAVE" | "REPORT" | "REQUEST_HELP";
 
 export interface InviteCode {
   code: string;
@@ -43,13 +48,6 @@ export const classroomDataQuery = `
     startedAt
     archivedAt
   `;
-
-export enum ClassMembershipStatus {
-  MEMBER = 'Member',
-  REMOVED = 'Removed',
-  BLOCKED = 'Blocked',
-  NONE = 'None',
-}
 
 export interface ClassMembership {
   classId: string;
@@ -105,13 +103,6 @@ export interface RoomHeartBeat {
   lastHeartBeatAt: Date;
 }
 
-export enum NotificationType {
-  NONE = '',
-  JOIN = 'JOIN',
-  LEAVE = 'LEAVE',
-  REPORT = 'REPORT',
-  REQUEST_HELP = 'REQUEST_HELP',
-}
 export interface NotificationEvent {
   classId: string;
   roomId: string;

@@ -5,17 +5,18 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 // src/components/game/RoomDropdown.tsx
-import React from 'react';
+import React from "react";
 import {
   Card,
   CardActionArea,
   CardContent,
   Collapse,
   Typography,
-} from '@mui/material';
-import { ExpandLess, ExpandMore } from '@mui/icons-material';
-import { Room } from '../store/slices/game/types';
-import RoomCard from './game/room-card';
+} from "@mui/material";
+import { ExpandLess, ExpandMore } from "@mui/icons-material";
+import type { Room } from "../store/slices/game/types";
+import RoomCard from "./game/room-card";
+
 interface RoomDropdownProps {
   title: string;
   rooms: Room[];
@@ -36,13 +37,13 @@ const RoomDropdown: React.FC<RoomDropdownProps> = ({
   ownerPresent,
 }) => {
   return (
-    <Card style={{ width: '100%', marginBottom: 20 }}>
+    <Card style={{ width: "100%", marginBottom: 20 }}>
       <CardActionArea onClick={() => setExpanded(!expanded)}>
         <CardContent
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
           }}
         >
           <Typography variant="h6">{title}</Typography>

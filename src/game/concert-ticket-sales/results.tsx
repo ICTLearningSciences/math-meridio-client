@@ -4,7 +4,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Stack,
   Typography,
@@ -16,9 +16,9 @@ import {
   ListItem,
   ListItemAvatar,
   LinearProgress,
-} from '@mui/material';
-import { BarChart } from '@mui/x-charts/BarChart';
-import { ConcertTicketSalesSimulationData } from './SimulationScene';
+} from "@mui/material";
+import { BarChart } from "@mui/x-charts/BarChart";
+import type { ConcertTicketSalesSimulationData } from "./SimulationScene";
 import {
   VIP_TICKET_PRICE,
   RESERVED_TICKET_PRICE,
@@ -29,31 +29,31 @@ import {
   GENERAL_ADMISSION_TICKET_CONVERSION_RATE,
   RESERVED_TICKET_CONVERSION_RATE,
   VIP_TICKET_CONVERSION_RATE,
-} from '.';
-import { GameData } from '../../store/slices/game/types';
-import AvatarSprite from '../../components/avatar-sprite';
-import { EmojiEvents } from '@mui/icons-material';
-import { useAppSelector } from '../../store/hooks';
+} from ".";
+import type { GameData } from "../../store/slices/game/types";
+import AvatarSprite from "../../components/avatar-sprite";
+import { EmojiEvents } from "@mui/icons-material";
+import { useAppSelector } from "../../store/hooks";
 
 export function Leaderboard(props: {
   gameData: GameData;
   simData: Record<string, ConcertTicketSalesSimulationData>;
-}): JSX.Element {
+}): React.ReactNode {
   const { gameData, simData } = props;
   const me = useAppSelector((state) => state.playerData.player);
   const data = Object.values(simData).sort(
-    (a, b) => b.totalProfit - a.totalProfit
+    (a, b) => b.totalProfit - a.totalProfit,
   );
   const topScore = data[0]?.totalProfit;
 
   return (
     <div className="column spacing">
-      <Typography fontWeight="bold">Leaderboard</Typography>
+      <Typography style={{ fontWeight: "bold" }}>Leaderboard</Typography>
       <List>
         {data.map((data, i) => {
           const player = gameData.players.find((p) => p._id === data.player);
           const isTop = data.totalProfit === topScore;
-          const color = isTop ? 'gold' : i === 1 ? '#CD7F32' : '';
+          const color = isTop ? "gold" : i === 1 ? "#CD7F32" : "";
           return (
             <ListItem key={i} className="row">
               <ListItemAvatar
@@ -61,13 +61,19 @@ export function Leaderboard(props: {
                 style={{ marginRight: 10 }}
               >
                 <Avatar sx={{ width: 24, height: 24, backgroundColor: color }}>
-                  <Typography fontSize={12}>{i + 1}</Typography>
+                  <Typography
+                    style={{
+                      fontSize: 12,
+                    }}
+                  >
+                    {i + 1}
+                  </Typography>
                 </Avatar>
-                <AvatarSprite bgColor={'rgb(217, 217, 217)'} player={player} />
+                <AvatarSprite bgColor={"rgb(217, 217, 217)"} player={player} />
               </ListItemAvatar>
               <div style={{ flexGrow: 1, marginRight: 5 }}>
-                <Typography fontWeight="bold">
-                  {player?.name} {me?._id === player?._id ? ' (Me) ' : ''}
+                <Typography style={{ fontWeight: "bold" }}>
+                  {player?.name} {me?._id === player?._id ? " (Me) " : ""}
                 </Typography>
                 <LinearProgress
                   variant="determinate"
@@ -84,7 +90,7 @@ export function Leaderboard(props: {
                 </Typography>
               </div>
               <EmojiEvents
-                sx={{ color: color, visibility: isTop ? '' : 'hidden' }}
+                sx={{ color: color, visibility: isTop ? "" : "hidden" }}
               />
             </ListItem>
           );
@@ -94,7 +100,9 @@ export function Leaderboard(props: {
   );
 }
 
-export function ResultComponent(props: { uiGameData: GameData }): JSX.Element {
+export function ResultComponent(props: {
+  uiGameData: GameData;
+}): React.ReactNode {
   const { uiGameData } = props;
   const [simulationData, setSimulationData] = React.useState<
     Record<string, ConcertTicketSalesSimulationData>
@@ -104,27 +112,6 @@ export function ResultComponent(props: { uiGameData: GameData }): JSX.Element {
   const resultsWidth = window.innerWidth / 2 - 100;
   const scoreChartWidth = resultsWidth;
   const ticketsChartWidth = resultsWidth / uiGameData.players.length;
-
-  interface ChartData {
-    profitFromVipTickets: number[];
-    profitFromReservedTickets: number[];
-    profitFromGeneralAdmissionTickets: number[];
-
-    player1Data: number[];
-    player1MissedData: number[];
-
-    player2Data: number[];
-    player2MissedData: number[];
-
-    player3Data: number[];
-    player3MissedData: number[];
-
-    player4Data: number[];
-    player4MissedData: number[];
-
-    playerLabels: string[];
-  }
-
   const initialChartData: ChartData = {
     profitFromVipTickets: [],
     profitFromReservedTickets: [],
@@ -139,54 +126,55 @@ export function ResultComponent(props: { uiGameData: GameData }): JSX.Element {
     player4MissedData: [],
     playerLabels: [],
   };
-
   const [myChartData, setMyChartData] = useState<ChartData>(initialChartData);
-
-  const ticketLabels = ['VIP', 'Reserved', 'General Admission'];
-
+  const ticketLabels = ["VIP", "Reserved", "General Admission"];
   const [tabValue, setTabValue] = useState(0);
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  interface ChartData {
+    profitFromVipTickets: number[];
+    profitFromReservedTickets: number[];
+    profitFromGeneralAdmissionTickets: number[];
+    player1Data: number[];
+    player1MissedData: number[];
+    player2Data: number[];
+    player2MissedData: number[];
+    player3Data: number[];
+    player3MissedData: number[];
+    player4Data: number[];
+    player4MissedData: number[];
+    playerLabels: string[];
+  }
+
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
 
   function simulationEnded(data: ConcertTicketSalesSimulationData): void {
-    simulationData[data.player] = data;
-    setSimulationData({ ...simulationData });
-    let profitFromVipTickets: number[] = [];
-    let profitFromReservedTickets: number[] = [];
-    let profitFromGeneralAdmissionTickets: number[] = [];
-
+    const simData = { ...simulationData };
+    simData[data.player] = data;
     let player1Data: number[] = [];
     let player1MissedData: number[] = [];
-
     let player2Data: number[] = [];
     let player2MissedData: number[] = [];
-
     let player3Data: number[] = [];
     let player3MissedData: number[] = [];
-
     let player4Data: number[] = [];
     let player4MissedData: number[] = [];
-
-    let playerLabels: string[] = [];
-
     for (let index = 0; index < uiGameData.players.length; index++) {
       const player = uiGameData.players[index];
       const playerMade = [
-        simulationData[player._id]?.vipTicketsSold,
-        simulationData[player._id]?.reservedTicketsSold,
-        simulationData[player._id]?.generalAdmissionTicketsSold,
+        simData[player._id]?.vipTicketsSold,
+        simData[player._id]?.reservedTicketsSold,
+        simData[player._id]?.generalAdmissionTicketsSold,
       ];
       const playerMissed = [
-        simulationData[player._id]?.vipTicketsUpForSale -
-          simulationData[player._id]?.vipTicketsSold,
-        simulationData[player._id]?.reservedTicketsUpForSale -
-          simulationData[player._id]?.reservedTicketsSold,
-        simulationData[player._id]?.generalAdmissionTicketsUpForSale -
-          simulationData[player._id]?.generalAdmissionTicketsSold,
+        simData[player._id]?.vipTicketsUpForSale -
+          simData[player._id]?.vipTicketsSold,
+        simData[player._id]?.reservedTicketsUpForSale -
+          simData[player._id]?.reservedTicketsSold,
+        simData[player._id]?.generalAdmissionTicketsUpForSale -
+          simData[player._id]?.generalAdmissionTicketsSold,
       ];
-
       switch (index) {
         case 0:
           player1Data = playerMade;
@@ -206,62 +194,56 @@ export function ResultComponent(props: { uiGameData: GameData }): JSX.Element {
           break;
       }
     }
-    profitFromVipTickets = uiGameData.players.map(
-      (player) =>
-        (simulationData[player._id]?.vipTicketsSold || 0) * VIP_TICKET_PRICE
-    );
-
-    profitFromReservedTickets = uiGameData.players.map(
-      (player) =>
-        (simulationData[player._id]?.reservedTicketsSold || 0) *
-        RESERVED_TICKET_PRICE
-    );
-
-    profitFromGeneralAdmissionTickets = uiGameData.players.map(
-      (player) =>
-        (simulationData[player._id]?.generalAdmissionTicketsSold || 0) *
-        GENERAL_ADMISSION_TICKET_PRICE
-    );
-    playerLabels = uiGameData.players.map((player) => player.name);
-    setMyChartData({
-      profitFromVipTickets: profitFromVipTickets,
-      profitFromReservedTickets: profitFromReservedTickets,
-      profitFromGeneralAdmissionTickets: profitFromGeneralAdmissionTickets,
-      player1Data: player1Data,
-      player1MissedData: player1MissedData,
-      player2Data: player2Data,
-      player2MissedData: player2MissedData,
-      player3Data: player3Data,
-      player3MissedData: player3MissedData,
-      player4Data: player4Data,
-      player4MissedData: player4MissedData,
-      playerLabels: playerLabels,
-    });
+    const playerLabels = uiGameData.players.map((player) => player.name);
+    const chartData = {
+      profitFromVipTickets: uiGameData.players.map(
+        (player) =>
+          (simData[player._id]?.vipTicketsSold || 0) * VIP_TICKET_PRICE,
+      ),
+      profitFromReservedTickets: uiGameData.players.map(
+        (player) =>
+          (simData[player._id]?.reservedTicketsSold || 0) *
+          RESERVED_TICKET_PRICE,
+      ),
+      profitFromGeneralAdmissionTickets: uiGameData.players.map(
+        (player) =>
+          (simData[player._id]?.generalAdmissionTicketsSold || 0) *
+          GENERAL_ADMISSION_TICKET_PRICE,
+      ),
+      player1Data,
+      player1MissedData,
+      player2Data,
+      player2MissedData,
+      player3Data,
+      player3MissedData,
+      player4Data,
+      player4MissedData,
+      playerLabels,
+    };
+    setMyChartData(chartData);
+    setSimulationData({ ...simData });
   }
 
   function GetChartFor(
     playerData: number[],
     playerMissedData: number[],
     playerName: string,
-    bHideLegend: boolean,
-    index: number
+    index: number,
   ) {
     return (
-      <Stack key={index} direction="column" alignItems="center">
+      <Stack key={index} direction="column" style={{ alignItems: "center" }}>
         <BarChart
-          barLabel="value"
           width={ticketsChartWidth}
           height={chartHeight}
           series={[
-            { data: playerData, label: 'sold', stack: 'tickets' },
+            { data: playerData, label: "sold", stack: "tickets" },
             {
               data: playerMissedData,
-              label: 'unsold',
-              stack: 'tickets',
+              label: "unsold",
+              stack: "tickets",
             },
           ]}
-          slotProps={{ legend: { hidden: bHideLegend } }}
-          xAxis={[{ data: ticketLabels, scaleType: 'band' }]}
+          xAxis={[{ data: ticketLabels, scaleType: "band" }]}
         />
         <Typography variant="subtitle1">{playerName}</Typography>
       </Stack>
@@ -277,13 +259,13 @@ export function ResultComponent(props: { uiGameData: GameData }): JSX.Element {
         psd[GENERAL_ADMISSION_TICKET_PERCENT_KEY] || 0;
       const generalAdmissionTicketsSold = Math.round(
         generalAdmissionTicketsUpForSale *
-          GENERAL_ADMISSION_TICKET_CONVERSION_RATE
+          GENERAL_ADMISSION_TICKET_CONVERSION_RATE,
       );
       const reservedTicketsSold = Math.round(
-        reservedTicketsUpForSale * RESERVED_TICKET_CONVERSION_RATE
+        reservedTicketsUpForSale * RESERVED_TICKET_CONVERSION_RATE,
       );
       const vipTicketsSold = Math.round(
-        vipTicketsUpForSale * VIP_TICKET_CONVERSION_RATE
+        vipTicketsUpForSale * VIP_TICKET_CONVERSION_RATE,
       );
       const total =
         generalAdmissionTicketsSold * GENERAL_ADMISSION_TICKET_PRICE +
@@ -300,54 +282,53 @@ export function ResultComponent(props: { uiGameData: GameData }): JSX.Element {
         vipTicketsSold,
         totalProfit: total,
       };
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       simulationEnded(simData);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.uiGameData.playersGameStateData, props.uiGameData.players]);
 
   return (
     <Stack
-      sx={{ width: resultsWidth }}
       direction="column"
-      alignItems="center"
-      width={resultsWidth}
+      style={{ alignItems: "center", width: resultsWidth }}
     >
       <Tabs value={tabValue} onChange={handleTabChange}>
         <Tab label="Profits" />
         <Tab label="Tickets Sold" />
       </Tabs>
-      <Box sx={{ width: '100%', height: '100%', mt: 2 }}>
+      <Box sx={{ width: "100%", height: "100%", mt: 2 }}>
         {tabValue === 0 && (
-          <Stack direction="column" alignItems="center">
+          <Stack direction="column" style={{ alignItems: "center" }}>
             <BarChart
-              barLabel="value"
               width={scoreChartWidth}
               height={chartHeight}
               series={[
                 {
                   data: myChartData.profitFromVipTickets,
-                  label: 'VIP',
-                  stack: 'profit',
-                  color: 'rgb(150,221,242)',
+                  label: "VIP",
+                  stack: "profit",
+                  color: "rgb(150,221,242)",
                 },
                 {
                   data: myChartData.profitFromReservedTickets,
-                  label: 'Reserved',
-                  stack: 'profit',
-                  color: 'rgb(245,152,160)',
+                  label: "Reserved",
+                  stack: "profit",
+                  color: "rgb(245,152,160)",
                 },
                 {
                   data: myChartData.profitFromGeneralAdmissionTickets,
-                  label: 'General Admission',
-                  stack: 'profit',
-                  color: 'rgb(151,118,109)',
+                  label: "General Admission",
+                  stack: "profit",
+                  color: "rgb(151,118,109)",
                 },
               ]}
-              xAxis={[{ data: myChartData.playerLabels, scaleType: 'band' }]}
+              xAxis={[{ data: myChartData.playerLabels, scaleType: "band" }]}
             />
           </Stack>
         )}
         {tabValue === 1 && (
-          <Stack direction="row" alignItems="center">
+          <Stack direction="row" style={{ alignItems: "center" }}>
             {uiGameData.players.map((player, index) => (
               <>
                 {index === 0 &&
@@ -355,39 +336,35 @@ export function ResultComponent(props: { uiGameData: GameData }): JSX.Element {
                     myChartData.player1Data,
                     myChartData.player1MissedData,
                     player.name,
-                    true,
-                    index
+                    index,
                   )}
                 {index === 1 &&
                   GetChartFor(
                     myChartData.player2Data,
                     myChartData.player2MissedData,
                     player.name,
-                    true,
-                    index
+                    index,
                   )}
                 {index === 2 &&
                   GetChartFor(
                     myChartData.player3Data,
                     myChartData.player3MissedData,
                     player.name,
-                    true,
-                    index
+                    index,
                   )}
                 {index === 3 &&
                   GetChartFor(
                     myChartData.player4Data,
                     myChartData.player4MissedData,
                     player.name,
-                    true,
-                    index
+                    index,
                   )}
               </>
             ))}
           </Stack>
         )}
       </Box>
-      <Box sx={{ width: '100%', height: '100%', mt: 2 }}>
+      <Box sx={{ width: "100%", height: "100%", mt: 2 }}>
         <Leaderboard gameData={uiGameData} simData={simulationData} />
       </Box>
     </Stack>

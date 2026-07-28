@@ -5,9 +5,12 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 
-import { AzureOpenAiStepDataType, isAzureOpenAiData } from './azure-ai-service';
-import { GeminiStepDataType, isGeminiData } from './gemini-ai-service';
-import { isOpenAiData, OpenAiStepDataType } from './open-ai-service';
+import {
+  type AzureOpenAiStepDataType,
+  isAzureOpenAiData,
+} from "./azure-ai-service";
+import { type GeminiStepDataType, isGeminiData } from "./gemini-ai-service";
+import { isOpenAiData, type OpenAiStepDataType } from "./open-ai-service";
 
 export interface AiStepData<ReqType, ResType> {
   aiServiceRequestParams: ReqType; // OpenAI.Chat.Completions.ChatCompletionCreateParams for OpenAi
@@ -30,25 +33,23 @@ export interface AiJobStatusType<ServiceResponseType> {
  */
 
 export type AiServiceStepDataTypes =
-  | OpenAiStepDataType
-  | GeminiStepDataType
-  | AzureOpenAiStepDataType;
+  OpenAiStepDataType | GeminiStepDataType | AzureOpenAiStepDataType;
 export type AiServicesResponseTypes = AiResponseType<AiServiceStepDataTypes>;
 export type AiServicesJobStatusResponseTypes =
   AiJobStatusType<AiServicesResponseTypes>;
 
 export function extractServiceStepResponse(
   aiServiceResponse: AiServicesResponseTypes,
-  stepNumber: number
+  stepNumber: number,
 ): string {
   const currentStep = aiServiceResponse.aiAllStepsData[stepNumber];
   if (isAzureOpenAiData(currentStep)) {
-    return currentStep.aiServiceResponse.output_text || '';
+    return currentStep.aiServiceResponse.output_text || "";
   } else if (isOpenAiData(currentStep)) {
-    return currentStep.aiServiceResponse.output_text || '';
+    return currentStep.aiServiceResponse.output_text || "";
   } else if (isGeminiData(currentStep)) {
-    return currentStep.aiServiceResponse.text || '';
+    return currentStep.aiServiceResponse.text || "";
   } else {
-    throw new Error('Invalid step data');
+    throw new Error("Invalid step data");
   }
 }

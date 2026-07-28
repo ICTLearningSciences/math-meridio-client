@@ -4,45 +4,46 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { useAppDispatch, useAppSelector } from '../../hooks';
-import { fetchAbeConfig, toggleMute } from '.';
-import { AiServiceNames, TargetAiModelServiceType } from '../../../types';
+
+import { useAppDispatch, useAppSelector } from "../../hooks";
+import { fetchAbeConfig, toggleMute } from ".";
+import type { TargetAiModelServiceType } from "../../../types";
 
 export function useWithConfig() {
   const dispatch = useAppDispatch();
   const isMuted = useAppSelector((state) => state.config.isMuted);
   const abeConfig = useAppSelector((state) => state.config.abeConfig);
   const abeConfigLoadStatus = useAppSelector(
-    (state) => state.config.abeConfigLoadStatus
+    (state) => state.config.abeConfigLoadStatus,
   );
 
   function loadAbeConfig() {
-    console.log('loading abe config');
+    console.log("loading abe config");
     dispatch(fetchAbeConfig());
   }
 
   function firstAvailableAzureServiceModel(): TargetAiModelServiceType {
     const openAiModels = abeConfig.aiServiceModelConfigs.find(
-      (config) => config.serviceName === AiServiceNames.OPEN_AI
+      (config) => config.serviceName === "OPEN_AI",
     );
     if (!openAiModels) {
-      throw new Error('No OpenAI service found');
+      throw new Error("No OpenAI service found");
     }
     if (openAiModels.modelList.length === 0) {
-      throw new Error('No OpenAI service models found');
+      throw new Error("No OpenAI service models found");
     }
 
     const has4oMini = openAiModels.modelList.find(
-      (model) => model.name === 'gpt-4o-mini'
+      (model) => model.name === "gpt-4o-mini",
     );
     if (has4oMini) {
       return {
-        serviceName: AiServiceNames.OPEN_AI,
-        model: 'gpt-4o-mini',
+        serviceName: "OPEN_AI",
+        model: "gpt-4o-mini",
       };
     }
     return {
-      serviceName: AiServiceNames.OPEN_AI,
+      serviceName: "OPEN_AI",
       model: openAiModels.modelList[0].name,
     };
   }

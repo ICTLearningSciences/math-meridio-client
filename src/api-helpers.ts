@@ -5,23 +5,24 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 
-import axios, {
+import axios from "axios";
+import type {
   AxiosRequestConfig,
   Method,
   AxiosResponse,
   AxiosInstance,
-} from 'axios';
+} from "axios";
 
 export interface AxiosMiddleware {
   (axiosInstance: AxiosInstance): void;
 }
 const GRAPHQL_ENDPOINT =
-  process.env.REACT_APP_GRAPHQL_ENDPOINT || '/graphql/graphql';
+  import.meta.env.VITE_GRAPHQL_ENDPOINT || "/graphql/graphql";
 
 const REQUEST_TIMEOUT_GRAPHQL_DEFAULT = 30000;
 
 // https://github.com/axios/axios/issues/4193#issuecomment-1158137489
-interface MyAxiosRequestConfig extends Omit<AxiosRequestConfig, 'headers'> {
+interface MyAxiosRequestConfig extends Omit<AxiosRequestConfig, "headers"> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   headers?: any; // this was "any" at v0.21.1 but now broken between 0.21.4 >= 0.27.2
 }
@@ -50,7 +51,7 @@ interface HttpRequestConfig {
 export async function execHttp<T>(
   method: Method,
   query: string,
-  opts?: HttpRequestConfig
+  opts?: HttpRequestConfig,
 ): Promise<T> {
   const optsEffective: HttpRequestConfig = opts || {};
   const axiosConfig = opts?.axiosConfig || {};
@@ -89,15 +90,15 @@ function getDataFromAxiosResponse(res: AxiosResponse, path: string | string[]) {
   }
   const dataPath = Array.isArray(path)
     ? path
-    : typeof path === 'string'
-    ? [path]
-    : [];
+    : typeof path === "string"
+      ? [path]
+      : [];
   dataPath.forEach((pathPart) => {
     if (!data) {
       throw new Error(
         `unexpected response data shape for dataPath ${JSON.stringify(
-          dataPath
-        )} and request ${res.request} : ${res.data}`
+          dataPath,
+        )} and request ${res.request} : ${res.data}`,
       );
     }
     data = data[pathPart];
@@ -107,9 +108,9 @@ function getDataFromAxiosResponse(res: AxiosResponse, path: string | string[]) {
 
 export async function execGql<T>(
   query: GQLQuery,
-  opts?: HttpRequestConfig
+  opts?: HttpRequestConfig,
 ): Promise<T> {
-  return execHttp<T>('POST', opts?.gqlEndpoint || GRAPHQL_ENDPOINT, {
+  return execHttp<T>("POST", opts?.gqlEndpoint || GRAPHQL_ENDPOINT, {
     // axiosMiddleware: applyAppTokenRefreshInterceptor,
     ...(opts || {}),
     axiosConfig: {

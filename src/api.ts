@@ -4,74 +4,78 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { CancelToken } from 'axios';
-import { AiServicesJobStatusResponseTypes } from './ai-services/ai-service-types';
-import { execGql, execHttp } from './api-helpers';
-import {
+
+import type { CancelToken } from "axios";
+import type { AiServicesJobStatusResponseTypes } from "./ai-services/ai-service-types";
+import { execGql, execHttp } from "./api-helpers";
+import type {
   DiscussionStage,
   DiscussionStageGQL,
-  DiscussionStageStepType,
   PromptStageStepGql,
-} from './components/discussion-stage-builder/types';
-import { Connection, GenericLlmRequest } from './types';
-import { EducationalRole, Player, UserRole } from './store/slices/player/types';
-import { ChatMessage, Room } from './store/slices/game/types';
-import { extractErrorMessageFromError } from './helpers';
-import { Config } from './store/slices/config';
-import { userDataQuery } from './store/slices/player/api';
-import { ACCESS_TOKEN_KEY, localStorageGet } from './store/local-storage';
+} from "./components/discussion-stage-builder/types";
+import type { Connection, GenericLlmRequest } from "./types";
+import type {
+  EducationalRole,
+  Player,
+  UserRole,
+} from "./store/slices/player/types";
+import type { ChatMessage, Room } from "./store/slices/game/types";
+import { extractErrorMessageFromError } from "./helpers";
+import type { Config } from "./store/slices/config";
+import { userDataQuery } from "./store/slices/player/api";
+import { ACCESS_TOKEN_KEY, localStorageGet } from "./store/local-storage";
 
 type OpenAiJobId = string;
 export const LLM_API_ENDPOINT =
-  process.env.REACT_APP_LLM_API_ENDPOINT || '/docs';
+  import.meta.env.VITE_LLM_API_ENDPOINT || "/docs";
 export async function asyncLlmRequest(
   llmRequest: GenericLlmRequest,
-  cancelToken?: CancelToken
+  cancelToken?: CancelToken,
 ): Promise<OpenAiJobId> {
   const res = await execHttp<OpenAiJobId>(
-    'POST',
+    "POST",
     `${LLM_API_ENDPOINT}/generic_llm_request/?api-version=2025-03-01-preview`,
     {
-      dataPath: ['response', 'jobId'],
+      dataPath: ["response", "jobId"],
       axiosConfig: {
         data: {
           llmRequest,
         },
         cancelToken: cancelToken,
       },
-    }
+    },
   );
   return res;
 }
 
 export async function asyncLlmRequestStatus(
   jobId: string,
-  cancelToken?: CancelToken
+  cancelToken?: CancelToken,
 ): Promise<AiServicesJobStatusResponseTypes> {
   let res: AiServicesJobStatusResponseTypes;
   do {
     try {
       res = await execHttp<AiServicesJobStatusResponseTypes>(
-        'POST',
+        "POST",
         `${LLM_API_ENDPOINT}/generic_llm_request_status/?jobId=${jobId}&api-version=2025-03-01-preview`,
         {
-          dataPath: ['response'],
+          dataPath: ["response"],
           axiosConfig: { cancelToken: cancelToken },
-        }
+        },
       );
     } catch (e) {
       console.error(
-        'Error during job status polling:',
-        extractErrorMessageFromError(e)
+        "Error during job status polling:",
+        extractErrorMessageFromError(e),
       );
       throw e;
     }
 
     // Wait 2 seconds before polling again if the job is still in progress.
-    if (res.jobStatus === 'IN_PROGRESS') {
+    if (res.jobStatus === "IN_PROGRESS") {
       await new Promise((resolve) => setTimeout(resolve, 2000));
     }
-  } while (res.jobStatus === 'IN_PROGRESS');
+  } while (res.jobStatus === "IN_PROGRESS");
 
   return res;
 }
@@ -272,12 +276,12 @@ export const fullRoomQueryData = `
 `;
 
 export function convertDiscussionStageToGQl(
-  stage: DiscussionStage
+  stage: DiscussionStage,
 ): DiscussionStageGQL {
   const copy: DiscussionStageGQL = JSON.parse(JSON.stringify(stage));
   copy.flowsList.forEach((flow) => {
     flow.steps.forEach((step) => {
-      if (step.stepType === DiscussionStageStepType.PROMPT) {
+      if (step.stepType === "PROMPT") {
         const _step = step as PromptStageStepGql;
         for (const prompt of _step.prompts) {
           if (prompt.jsonResponseData) {
@@ -291,17 +295,17 @@ export function convertDiscussionStageToGQl(
 }
 
 export function convertGqlToDiscussionStage(
-  stage: DiscussionStageGQL
+  stage: DiscussionStageGQL,
 ): DiscussionStage {
   const copy: DiscussionStage = JSON.parse(JSON.stringify(stage));
   copy.flowsList.forEach((flow) => {
     flow.steps.forEach((step) => {
-      if (step.stepType === DiscussionStageStepType.PROMPT) {
+      if (step.stepType === "PROMPT") {
         const _step = step as unknown as PromptStageStepGql;
         for (const prompt of _step.prompts) {
-          if (typeof prompt.jsonResponseData === 'string') {
+          if (typeof prompt.jsonResponseData === "string") {
             prompt.jsonResponseData = JSON.parse(
-              prompt.jsonResponseData as string
+              prompt.jsonResponseData as string,
             );
           }
         }
@@ -313,7 +317,7 @@ export function convertGqlToDiscussionStage(
 
 export async function addOrUpdateDiscussionStage(
   stage: DiscussionStage,
-  password: string
+  password: string,
 ): Promise<DiscussionStage> {
   const res = await execGql<DiscussionStageGQL>(
     {
@@ -327,9 +331,9 @@ export async function addOrUpdateDiscussionStage(
       },
     },
     {
-      dataPath: 'addOrUpdateDiscussionStage',
+      dataPath: "addOrUpdateDiscussionStage",
       accessToken: password,
-    }
+    },
   );
   return convertGqlToDiscussionStage(res);
 }
@@ -344,8 +348,8 @@ export async function fetchDiscussionStages(): Promise<DiscussionStage[]> {
       }`,
     },
     {
-      dataPath: 'fetchDiscussionStages',
-    }
+      dataPath: "fetchDiscussionStages",
+    },
   );
   return res.map(convertGqlToDiscussionStage);
 }
@@ -364,8 +368,8 @@ export async function fetchPlayer(id: string): Promise<Player> {
       },
     },
     {
-      dataPath: 'fetchPlayer',
-    }
+      dataPath: "fetchPlayer",
+    },
   );
   return data;
 }
@@ -392,8 +396,8 @@ export async function fetchPlayers(ids?: string[]): Promise<Player[]> {
       },
     },
     {
-      dataPath: 'fetchPlayers',
-    }
+      dataPath: "fetchPlayers",
+    },
   );
   return data.edges.map((edge) => edge.node);
 }
@@ -411,7 +415,7 @@ export const updatePlayerRoleMutation = `
 export async function updatePlayerRole(
   playerId: string,
   userRole?: UserRole,
-  educationalRole?: EducationalRole
+  educationalRole?: EducationalRole,
 ): Promise<Player> {
   const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
   const data = await execGql<{ admin: { updatePlayerRole: Player } }>(
@@ -424,16 +428,16 @@ export async function updatePlayerRole(
       },
     },
     {
-      dataPath: '',
+      dataPath: "",
       accessToken: accessToken || undefined,
-    }
+    },
   );
   return data.admin.updatePlayerRole;
 }
 
 export async function addOrUpdatePlayer(
   playerId: string,
-  playerFieldsToUpdate: Partial<Player>
+  playerFieldsToUpdate: Partial<Player>,
 ): Promise<Player> {
   const data = await execGql<Player>(
     {
@@ -449,8 +453,8 @@ export async function addOrUpdatePlayer(
       },
     },
     {
-      dataPath: 'addOrUpdatePlayer',
-    }
+      dataPath: "addOrUpdatePlayer",
+    },
   );
   return data;
 }
@@ -469,8 +473,8 @@ export async function fetchRooms(game: string): Promise<Room[]> {
       },
     },
     {
-      dataPath: 'fetchRooms',
-    }
+      dataPath: "fetchRooms",
+    },
   );
   return data;
 }
@@ -490,16 +494,16 @@ export async function fetchRoom(roomId: string): Promise<Room> {
       },
     },
     {
-      dataPath: 'fetchRoom',
+      dataPath: "fetchRoom",
       accessToken: accessToken || undefined,
-    }
+    },
   );
   return data;
 }
 
 export async function renameGameRoom(
   name: string,
-  roomId: string
+  roomId: string,
 ): Promise<Room> {
   const data = await execGql<Room>(
     {
@@ -515,8 +519,8 @@ export async function renameGameRoom(
       },
     },
     {
-      dataPath: 'renameRoom',
-    }
+      dataPath: "renameRoom",
+    },
   );
   return data;
 }
@@ -536,15 +540,15 @@ export async function deleteRoom(roomId: string): Promise<Room> {
       },
     },
     {
-      dataPath: 'deleteRoom',
-    }
+      dataPath: "deleteRoom",
+    },
   );
   return data;
 }
 
 export async function sendMessage(
   roomId: string,
-  msg: ChatMessage
+  msg: ChatMessage,
 ): Promise<Room> {
   const data = await execGql<Room>(
     {
@@ -560,15 +564,15 @@ export async function sendMessage(
       },
     },
     {
-      dataPath: 'sendMessage',
-    }
+      dataPath: "sendMessage",
+    },
   );
   return data;
 }
 
 export async function fetchAbeConfig(): Promise<Config> {
   const abeEndpoint =
-    process.env.REACT_APP_ABE_GQL_ENDPOINT || '/graphql/graphql';
+    import.meta.env.VITE_ABE_GQL_ENDPOINT || "/graphql/graphql";
   const data = await execGql<Config>(
     {
       query: `
@@ -586,16 +590,16 @@ export async function fetchAbeConfig(): Promise<Config> {
         }`,
     },
     {
-      dataPath: 'fetchConfig',
+      dataPath: "fetchConfig",
       gqlEndpoint: abeEndpoint,
-    }
+    },
   );
   return data;
 }
 
 export async function testLlmRequest(): Promise<string> {
   const gqlEndpoint =
-    process.env.REACT_APP_GRAPHQL_ENDPOINT || '/graphql/graphql';
+    import.meta.env.VITE_GRAPHQL_ENDPOINT || "/graphql/graphql";
   const data = await execGql<string>(
     {
       query: `
@@ -604,9 +608,9 @@ export async function testLlmRequest(): Promise<string> {
         }`,
     },
     {
-      dataPath: 'fetchConfig',
+      dataPath: "fetchConfig",
       gqlEndpoint: gqlEndpoint,
-    }
+    },
   );
   return data;
 }

@@ -4,7 +4,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React, { useEffect } from 'react';
+import React, { useEffect } from "react";
 import {
   FormControl,
   InputLabel,
@@ -13,8 +13,8 @@ import {
   Checkbox,
   Select,
   MenuItem,
-} from '@mui/material';
-import { useDebouncedCallback } from '../../../hooks/use-debounced-callback';
+} from "@mui/material";
+import { useDebouncedCallback } from "../../../hooks/use-debounced-callback";
 
 export function InputField(props: {
   label: string;
@@ -23,20 +23,21 @@ export function InputField(props: {
   onFocus?: () => void;
   width?: string;
   maxRows?: number;
-}): JSX.Element {
+}): React.ReactNode {
   const [localValue, setLocalValue] = React.useState(props.value);
   const debounceOnChange = useDebouncedCallback((v: string) => {
     props.onChange(v);
   }, 500);
 
   useEffect(() => {
-    debounceOnChange(localValue);
+    debounceOnChange.current(localValue);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [localValue]);
 
   return (
     <FormControl
       variant="standard"
-      sx={{ m: 1, minWidth: 120, width: props.width || '80%' }}
+      sx={{ m: 1, minWidth: 120, width: props.width || "80%" }}
     >
       <InputLabel>{props.label}</InputLabel>
       <Input
@@ -56,7 +57,7 @@ export function CheckBoxInput(props: {
   label: string;
   value: boolean;
   onChange: (value: boolean) => void;
-}): JSX.Element {
+}): React.ReactNode {
   return (
     <FormControlLabel
       label={props.label}
@@ -81,11 +82,11 @@ export function SelectInputField(props: {
   value: string;
   options: string[];
   onChange: (value: string) => void;
-}): JSX.Element {
+}): React.ReactNode {
   const { label, options, onChange, value } = props;
   return (
     <FormControl variant="standard" sx={{ m: 1, minWidth: 120 }}>
-      <InputLabel id={'select-field-label'}>{label}</InputLabel>
+      <InputLabel id={"select-field-label"}>{label}</InputLabel>
       <Select
         labelId="demo-simple-select-standard-label"
         id="demo-simple-select-standard"

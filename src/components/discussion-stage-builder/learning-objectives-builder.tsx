@@ -4,13 +4,8 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-/*
-This software is Copyright ©️ 2020 The University of Southern California. All Rights Reserved.
-Permission to use, copy, modify, and distribute this software and its documentation for educational, research and non-profit purposes, without fee, and without a written agreement is hereby granted, provided that the above copyright notice and subject to the full license file found in the root of this software deliverable. Permission to make commercial use of this software may be obtained by contacting:  USC Stevens Center for Innovation University of Southern California 1150 S. Olive Street, Suite 2300, Los Angeles, CA 90115, USA Email: accounting@stevens.usc.edu
 
-The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
-*/
-import React from 'react';
+import React from "react";
 import {
   Box,
   Button,
@@ -18,24 +13,26 @@ import {
   CardContent,
   TextField,
   Typography,
-} from '@mui/material';
-import { useWithEducationalData } from '../../store/slices/educational-data/use-with-educational-data';
-import { LearningObjective } from '../../store/slices/game/types';
+} from "@mui/material";
+import { useWithEducationalData } from "../../store/slices/educational-data/use-with-educational-data";
+import type { LearningObjective } from "../../store/slices/game/types";
 
 interface LearningObjectiveCardProps {
   learningObjective: LearningObjective;
   onSave: (
     learningObjectiveId: string,
-    updates: Omit<LearningObjective, '_id'>
+    updates: Omit<LearningObjective, "_id">,
   ) => Promise<void>;
 }
 
-function LearningObjectiveCard(props: LearningObjectiveCardProps): JSX.Element {
+function LearningObjectiveCard(
+  props: LearningObjectiveCardProps,
+): React.ReactNode {
   const { learningObjective, onSave } = props;
   const [title, setTitle] = React.useState(learningObjective.title);
   const [criteria, setCriteria] = React.useState(learningObjective.criteria);
   const [variableName, setVariableName] = React.useState(
-    learningObjective.variableName
+    learningObjective.variableName,
   );
   const [isSaving, setIsSaving] = React.useState(false);
 
@@ -55,7 +52,7 @@ function LearningObjectiveCard(props: LearningObjectiveCardProps): JSX.Element {
   return (
     <Card sx={{ mb: 2 }}>
       <CardContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
           <TextField
             label="Title"
             variant="outlined"
@@ -83,9 +80,9 @@ function LearningObjectiveCard(props: LearningObjectiveCardProps): JSX.Element {
             variant="contained"
             onClick={handleSave}
             disabled={isSaving}
-            sx={{ alignSelf: 'flex-end' }}
+            sx={{ alignSelf: "flex-end" }}
           >
-            {isSaving ? 'Saving...' : 'Save'}
+            {isSaving ? "Saving..." : "Save"}
           </Button>
         </Box>
       </CardContent>
@@ -93,26 +90,18 @@ function LearningObjectiveCard(props: LearningObjectiveCardProps): JSX.Element {
   );
 }
 
-export function LearningObjectivesBuilder(): JSX.Element {
-  const {
-    educationalData,
-    createLearningObjective,
-    updateLearningObjective,
-    fetchLearningObjectives,
-  } = useWithEducationalData();
+export function LearningObjectivesBuilder(): React.ReactNode {
+  const { educationalData, createLearningObjective, updateLearningObjective } =
+    useWithEducationalData();
   const [isCreating, setIsCreating] = React.useState(false);
-
-  React.useEffect(() => {
-    fetchLearningObjectives();
-  }, []);
 
   const handleCreateNew = async () => {
     setIsCreating(true);
     try {
       await createLearningObjective({
-        title: 'New Learning Objective',
-        criteria: '',
-        variableName: '',
+        title: "New Learning Objective",
+        criteria: "",
+        variableName: "",
       });
     } finally {
       setIsCreating(false);
@@ -121,13 +110,13 @@ export function LearningObjectivesBuilder(): JSX.Element {
 
   const handleSave = async (
     learningObjectiveId: string,
-    updates: Omit<LearningObjective, '_id'>
+    updates: Omit<LearningObjective, "_id">,
   ) => {
     await updateLearningObjective(learningObjectiveId, updates);
   };
 
   return (
-    <Box sx={{ p: 3, maxWidth: 800, mx: 'auto' }}>
+    <Box sx={{ p: 3, maxWidth: 800, mx: "auto" }}>
       <Typography variant="h4" sx={{ mb: 3 }}>
         Learning Objectives
       </Typography>
@@ -145,7 +134,7 @@ export function LearningObjectivesBuilder(): JSX.Element {
         fullWidth
         sx={{ mt: 2 }}
       >
-        {isCreating ? 'Creating...' : '+ New Learning Objective'}
+        {isCreating ? "Creating..." : "+ New Learning Objective"}
       </Button>
     </Box>
   );

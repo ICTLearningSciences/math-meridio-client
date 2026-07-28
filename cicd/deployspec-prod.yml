@@ -3,14 +3,14 @@ version: 0.2
 env:
   variables:
     STAGE: 'prod'
-    REACT_APP_GRAPHQL_ENDPOINT: "https://api.meridiomath.org/graphql/graphql"
-    REACT_APP_ABE_GQL_ENDPOINT: "https://api.abewriting.org/graphql/graphql"
-    REACT_APP_LLM_API_ENDPOINT: "https://api.abewriting.org/docs"
+    VITE_GRAPHQL_ENDPOINT: "https://api.meridiomath.org/graphql/graphql"
+    VITE_ABE_GQL_ENDPOINT: "https://api.abewriting.org/graphql/graphql"
+    VITE_LLM_API_ENDPOINT: "https://api.abewriting.org/docs"
   parameter-store:
     S3_DEPLOY_BUCKET_PROD: "/mathm/prod/s3-websites/NAME"
     CDN_ID_PROD: "/mathm/prod/CLOUDFRONT_DISTRIBUTION_ID"
-    REACT_APP_GQL_SECRET: "/mathmeridio/prod/gql_secret"
-    REACT_APP_GOOGLE_CLIENT_ID: "/mathmeridio/shared/google_client_id"
+    VITE_GQL_SECRET: "/mathmeridio/prod/gql_secret"
+    VITE_GOOGLE_CLIENT_ID: "/mathmeridio/shared/google_client_id"
 
 phases:
   install:
@@ -21,5 +21,5 @@ phases:
     commands:
       - npm run build
       - echo Deploying to $S3_DEPLOY_BUCKET_PROD
-      - aws s3 sync ./build s3://$S3_DEPLOY_BUCKET_PROD/
+      - aws s3 sync ./dist s3://$S3_DEPLOY_BUCKET_PROD/
       - aws cloudfront create-invalidation --distribution-id $CDN_ID_PROD --paths "/*"

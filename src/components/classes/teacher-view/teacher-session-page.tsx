@@ -4,38 +4,38 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { makeStyles } from 'tss-react/mui';
-import { ChevronRight, Search } from '@mui/icons-material';
-import { Button, Grid, TextField, Typography } from '@mui/material';
+import React from "react";
+import { useSearchParams } from "react-router-dom";
+import { makeStyles } from "tss-react/mui";
+import { ChevronRight, Search } from "@mui/icons-material";
+import { Button, Grid, TextField, Typography } from "@mui/material";
 
-import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
-import PhaseProgressBar from '../../phase-progress-bar';
-import RoomCard from './teacher-room-card';
-import { NeedsHelp, SkillsPracticed, TroubleSpots } from './skill-card';
-import { Classroom } from '../../../store/slices/educational-data/types';
-import { GamesDropdown } from '../../button';
-import { useSearchParams } from 'react-router-dom';
-import { useWithWindow } from '../../../hooks/use-with-window';
+import { useWithEducationalData } from "../../../store/slices/educational-data/use-with-educational-data";
+import PhaseProgressBar from "../../phase-progress-bar";
+import RoomCard from "./teacher-room-card";
+import { NeedsHelp, SkillsPracticed, TroubleSpots } from "./skill-card";
+import type { Classroom } from "../../../store/slices/educational-data/types";
+import { GamesDropdown } from "../../button";
+import { useWithWindow } from "../../../hooks/use-with-window";
 
 const styles = makeStyles()(() => ({
   card: {
     borderRadius: 10,
   },
   header: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginTop: 10,
   },
   headerText: {
-    color: 'black',
-    fontWeight: 'bold',
+    color: "black",
+    fontWeight: "bold",
     marginBottom: 10,
   },
 }));
 
 export default function ActiveSessionView(props: {
   classroom: Classroom;
-}): JSX.Element {
+}): React.ReactNode {
   const { classroom } = props;
   const { classes } = styles();
   const { educationalData } = useWithEducationalData();
@@ -45,25 +45,25 @@ export default function ActiveSessionView(props: {
   const searchParams = useSearchParams();
 
   const gameRooms = educationalData.rooms.filter(
-    (r) => r.classId === classroom._id && (!game || r.gameData.gameId === game)
+    (r) => r.classId === classroom._id && (!game || r.gameData.gameId === game),
   );
   const students = educationalData.students.filter((s) =>
-    gameRooms.find((r) => r.gameData.players.find((p) => p._id === s._id))
+    gameRooms.find((r) => r.gameData.players.find((p) => p._id === s._id)),
   );
 
   return (
     <div className="dashboard" style={{ minHeight: windowHeight - 250 }}>
-      <div className="row" style={{ justifyContent: 'space-between' }}>
-        <Typography variant="h5" fontWeight="bold">
-          {classroom.archivedAt ? 'ARCHIVED' : 'ACTIVE'} SESSION
+      <div className="row" style={{ justifyContent: "space-between" }}>
+        <Typography variant="h5" style={{ fontWeight: "bold" }}>
+          {classroom.archivedAt ? "ARCHIVED" : "ACTIVE"} SESSION
         </Typography>
         <GamesDropdown
           game={game}
           setGame={(id: string) => setGame(id)}
           buttonStyle={{
-            color: 'white',
-            borderColor: 'white',
-            marginLeft: '10px',
+            color: "white",
+            borderColor: "white",
+            marginLeft: "10px",
           }}
         />
       </div>
@@ -81,13 +81,13 @@ export default function ActiveSessionView(props: {
         <div
           className="row center-div"
           style={{
-            backgroundColor: 'rgb(217, 217, 217)',
+            backgroundColor: "rgb(217, 217, 217)",
             borderRadius: 60,
             height: 40,
             paddingLeft: 15,
           }}
         >
-          <Search style={{ color: 'rgb(137, 137, 137)' }} />
+          <Search style={{ color: "rgb(137, 137, 137)" }} />
           <TextField
             variant="standard"
             label="Student Search"
@@ -107,12 +107,12 @@ export default function ActiveSessionView(props: {
             .filter((room) => {
               if (!studentSearch) return true;
               return room.gameData.players.find((p) =>
-                p.name.toLowerCase().includes(studentSearch.toLowerCase())
+                p.name.toLowerCase().includes(studentSearch.toLowerCase()),
               );
             })
             .map((room, idx) => {
               return (
-                <Grid item xs={6} md={4} lg={3} key={`room-${idx}`}>
+                <Grid size={{ xs: 6, md: 4, lg: 3 }} key={`room-${idx}`}>
                   <RoomCard
                     room={room}
                     classroom={classroom}
@@ -126,16 +126,16 @@ export default function ActiveSessionView(props: {
 
       <div className="column spacing" style={{ marginTop: 10 }}>
         <Grid container spacing={2}>
-          <Grid item xs={6}>
-            <div className="row" style={{ justifyContent: 'space-between' }}>
+          <Grid size={6}>
+            <div className="row" style={{ justifyContent: "space-between" }}>
               <Typography className={classes.header}>
                 Skills Practiced
               </Typography>
               <Button
                 color="inherit"
-                style={{ alignSelf: 'end' }}
+                style={{ alignSelf: "end" }}
                 endIcon={<ChevronRight />}
-                onClick={() => searchParams[1]({ tab: '1', report: '0' })}
+                onClick={() => searchParams[1]({ tab: "1", report: "0" })}
               >
                 View Report
               </Button>
@@ -146,14 +146,14 @@ export default function ActiveSessionView(props: {
               noHeader
             />
           </Grid>
-          <Grid item xs={6}>
-            <div className="row" style={{ justifyContent: 'space-between' }}>
+          <Grid size={6}>
+            <div className="row" style={{ justifyContent: "space-between" }}>
               <Typography className={classes.header}>Trouble Spots</Typography>
               <Button
                 color="inherit"
-                style={{ alignSelf: 'end' }}
+                style={{ alignSelf: "end" }}
                 endIcon={<ChevronRight />}
-                onClick={() => searchParams[1]({ tab: '1', report: '1' })}
+                onClick={() => searchParams[1]({ tab: "1", report: "1" })}
               >
                 Monitor Students
               </Button>

@@ -4,22 +4,12 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import {
-  ColumnCenterDiv,
-  ColumnDiv,
-  RoundedBorderDiv,
-  RowDiv,
-  TopLeftText,
-} from '../../../../styled-components';
-import {
-  CheckBoxInput,
-  InputField,
-  SelectInputField,
-} from '../../shared/input-components';
-import { FlowStepSelector } from '../../shared/flow-step-selector';
+
+import React from "react";
+import { v4 as uuid } from "uuid";
 import {
   Button,
+  Collapse,
   IconButton,
   Select,
   MenuItem,
@@ -27,60 +17,54 @@ import {
   InputLabel,
   Chip,
   Box,
-} from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import { v4 as uuid } from 'uuid';
-import { Delete, Add } from '@mui/icons-material';
-import { JumpToAlternateStep } from '../../shared/jump-to-alternate-step';
-import Collapse from '@mui/material/Collapse';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+} from "@mui/material";
+import { Delete, Add, ExpandLess, ExpandMore } from "@mui/icons-material";
+
 import {
+  ColumnCenterDiv,
+  ColumnDiv,
+  RoundedBorderDiv,
+  RowDiv,
+  TopLeftText,
+} from "../../../../styled-components";
+import {
+  CheckBoxInput,
+  InputField,
+  SelectInputField,
+} from "../../shared/input-components";
+import { FlowStepSelector } from "../../shared/flow-step-selector";
+import { JumpToAlternateStep } from "../../shared/jump-to-alternate-step";
+import type {
   DiscussionStage,
-  DiscussionStageStepType,
   FlowItem,
   PredefinedResponse,
   RequestUserInputStageStep,
-  RequireInputType,
-} from '../../types';
-import { useWithEducationalData } from '../../../../store/slices/educational-data/use-with-educational-data';
-export function getDefaultRequestUserInputBuilder(): RequestUserInputStageStep {
-  return {
-    stepId: uuid(),
-    lastStep: false,
-    stepType: DiscussionStageStepType.REQUEST_USER_INPUT,
-    message: '',
-    saveResponseVariableName: '',
-    disableFreeInput: false,
-    predefinedResponses: [],
-    requireInputType: RequireInputType.SINGLE_RESPONSE_REQUIRED,
-    learningObjectives: [],
-  };
-}
+} from "../../types";
+import { useWithEducationalData } from "../../../../store/slices/educational-data/use-with-educational-data";
 
 function PredefinedResponseUpdater(props: {
   predefinedResponse: PredefinedResponse;
   updateResponse: (
     updatedResponse: Partial<PredefinedResponse>,
-    clientId: string
+    clientId: string,
   ) => void;
   deleteResponse: () => void;
   flowsList: FlowItem[];
-}): JSX.Element {
+}): React.ReactNode {
   const { predefinedResponse, updateResponse, flowsList, deleteResponse } =
     props;
   return (
     <RowDiv
       style={{
         // alignItems: 'center',
-        borderTop: '1px dotted black',
-        width: '100%',
-        justifyContent: 'space-between',
+        borderTop: "1px dotted black",
+        width: "100%",
+        justifyContent: "space-between",
       }}
     >
       <ColumnDiv
         style={{
-          width: '60%',
+          width: "60%",
         }}
       >
         <InputField
@@ -92,20 +76,20 @@ function PredefinedResponseUpdater(props: {
               {
                 message: e,
               },
-              predefinedResponse.clientId
+              predefinedResponse.clientId,
             );
           }}
         />
         <InputField
           label="Response Weight (Optional)"
           width="100%"
-          value={predefinedResponse.responseWeight || ''}
+          value={predefinedResponse.responseWeight || ""}
           onChange={(e) => {
             props.updateResponse(
               {
                 responseWeight: e,
               },
-              predefinedResponse.clientId
+              predefinedResponse.clientId,
             );
           }}
         />
@@ -117,7 +101,7 @@ function PredefinedResponseUpdater(props: {
               {
                 isArray: e,
               },
-              predefinedResponse.clientId
+              predefinedResponse.clientId,
             );
           }}
         />
@@ -135,7 +119,7 @@ function PredefinedResponseUpdater(props: {
                 ...predefinedResponse,
                 jumpToStepId: stepId,
               },
-              predefinedResponse.clientId
+              predefinedResponse.clientId,
             );
           }}
         />
@@ -144,7 +128,7 @@ function PredefinedResponseUpdater(props: {
           onClick={deleteResponse}
           color="primary"
         >
-          <DeleteIcon />
+          <Delete />
         </IconButton>
       </RowDiv>
     </RowDiv>
@@ -155,13 +139,13 @@ function PredefinedResponsesUpdater(props: {
   step: RequestUserInputStageStep;
   updatePredefinedResponse: (
     updatedResponse: Partial<PredefinedResponse>,
-    clientId: string
+    clientId: string,
   ) => void;
   addNewPredefinedResponse: () => void;
   deletePredefinedResponse: (clientId: string) => void;
   flowsList: FlowItem[];
   width?: string;
-}): JSX.Element {
+}): React.ReactNode {
   const {
     step,
     updatePredefinedResponse,
@@ -171,14 +155,14 @@ function PredefinedResponsesUpdater(props: {
   return (
     <ColumnCenterDiv
       style={{
-        width: props.width || '100%',
-        border: '1px solid black',
-        alignSelf: 'center',
-        justifyContent: 'center',
+        width: props.width || "100%",
+        border: "1px solid black",
+        alignSelf: "center",
+        justifyContent: "center",
         padding: 10,
       }}
     >
-      <span style={{ fontWeight: 'bold' }}>Custom Response Buttons</span>
+      <span style={{ fontWeight: "bold" }}>Custom Response Buttons</span>
 
       {step.predefinedResponses?.length &&
         step.predefinedResponses.map((response, index) => (
@@ -207,15 +191,15 @@ export function RequestUserInputStepBuilder(props: {
   stepIndex: number;
   width?: string;
   height?: string;
-}): JSX.Element {
+}): React.ReactNode {
   const { step, stepIndex, updateLocalStage } = props;
   const [collapsed, setCollapsed] = React.useState<boolean>(false);
   const { educationalData } = useWithEducationalData();
-  const [selectedLoId, setSelectedLoId] = React.useState<string>('');
+  const [selectedLoId, setSelectedLoId] = React.useState<string>("");
 
   function updateField(
     field: string,
-    value: string | boolean | PredefinedResponse[] | string[]
+    value: string | boolean | PredefinedResponse[] | string[],
   ) {
     updateLocalStage((prevValue) => {
       return {
@@ -240,7 +224,7 @@ export function RequestUserInputStepBuilder(props: {
 
   function updatePredefinedResponse(
     updatedResponse: Partial<PredefinedResponse>,
-    clientId: string
+    clientId: string,
   ) {
     updateLocalStage((prevValue) => {
       return {
@@ -274,63 +258,63 @@ export function RequestUserInputStepBuilder(props: {
   }
 
   function addNewPredefinedResponse() {
-    updateField('predefinedResponses', [
+    updateField("predefinedResponses", [
       ...step.predefinedResponses,
       {
         clientId: uuid(),
-        message: '',
-        responseWeight: '0',
+        message: "",
+        responseWeight: "0",
       },
     ]);
   }
 
   function deletePredefinedResponse(clientId: string) {
     updateField(
-      'predefinedResponses',
-      step.predefinedResponses.filter((r) => r.clientId !== clientId)
+      "predefinedResponses",
+      step.predefinedResponses.filter((r) => r.clientId !== clientId),
     );
   }
 
   const availableLearningObjectives = educationalData.learningObjectives.filter(
-    (lo) => !step.learningObjectives?.includes(lo._id)
+    (lo) => !step.learningObjectives?.includes(lo._id),
   );
 
   const selectedLearningObjectives = educationalData.learningObjectives.filter(
-    (lo) => step.learningObjectives?.includes(lo._id)
+    (lo) => step.learningObjectives?.includes(lo._id),
   );
 
   const handleAddLearningObjective = () => {
     if (selectedLoId && !step.learningObjectives?.includes(selectedLoId)) {
-      updateField('learningObjectives', [
+      updateField("learningObjectives", [
         ...(step.learningObjectives || []),
         selectedLoId,
       ]);
-      setSelectedLoId('');
+      setSelectedLoId("");
     }
   };
 
   const handleRemoveLearningObjective = (loId: string) => {
     updateField(
-      'learningObjectives',
-      (step.learningObjectives || []).filter((id) => id !== loId)
+      "learningObjectives",
+      (step.learningObjectives || []).filter((id) => id !== loId),
     );
   };
 
   return (
     <RoundedBorderDiv
       style={{
-        width: props.width || '100%',
-        height: props.height || '100%',
-        display: 'flex',
-        position: 'relative',
-        flexDirection: 'column',
+        width: props.width || "100%",
+        height: props.height || "100%",
+        display: "flex",
+        position: "relative",
+        flexDirection: "column",
         padding: 10,
       }}
     >
       <TopLeftText>{`Step ${stepIndex + 1}`}</TopLeftText>
       <IconButton
         style={{
-          position: 'absolute',
+          position: "absolute",
           right: 10,
           top: 10,
         }}
@@ -340,44 +324,48 @@ export function RequestUserInputStepBuilder(props: {
       </IconButton>
       <IconButton
         style={{
-          width: 'fit-content',
-          position: 'absolute',
+          width: "fit-content",
+          position: "absolute",
           left: 10,
           top: 40,
         }}
         onClick={() => setCollapsed(!collapsed)}
       >
-        {collapsed ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+        {collapsed ? <ExpandLess /> : <ExpandMore />}
       </IconButton>
-      <h4 style={{ alignSelf: 'center' }}>Request User Input</h4>
+      <h4 style={{ alignSelf: "center" }}>Request User Input</h4>
       <Collapse in={!collapsed}>
         <InputField
           label="Request Message (Optional)"
           value={step.message}
           onChange={(e) => {
-            updateField('message', e);
+            updateField("message", e);
           }}
         />
         <InputField
           label="Save Response As"
           value={step.saveResponseVariableName}
           onChange={(e) => {
-            updateField('saveResponseVariableName', e);
+            updateField("saveResponseVariableName", e);
           }}
         />
         <SelectInputField
           label="Student Input Requirements"
           value={step.requireInputType}
-          options={[...Object.values(RequireInputType)]}
+          options={[
+            "SINGLE_RESPONSE_REQUIRED",
+            "ALL_USER_RESPONSES_REQUIRED_FREE_FOR_ALL",
+            "ALL_REQUIRED_IN_ORDER",
+          ]}
           onChange={(e) => {
-            updateField('requireInputType', e);
+            updateField("requireInputType", e);
           }}
         />
         <CheckBoxInput
           label="Disable Text Input? (requires predefined responses)"
           value={step.disableFreeInput}
           onChange={(e) => {
-            updateField('disableFreeInput', e);
+            updateField("disableFreeInput", e);
           }}
         />
         <PredefinedResponsesUpdater
@@ -389,11 +377,11 @@ export function RequestUserInputStepBuilder(props: {
           flowsList={props.flowsList}
         />
 
-        <Box sx={{ mt: 2, width: '90%', alignSelf: 'center' }}>
+        <Box sx={{ mt: 2, width: "90%", alignSelf: "center" }}>
           <h5 style={{ marginBottom: 10 }}>Learning Objectives</h5>
 
           {selectedLearningObjectives.length > 0 && (
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}>
               {selectedLearningObjectives.map((lo) => (
                 <Chip
                   key={lo._id}
@@ -406,7 +394,7 @@ export function RequestUserInputStepBuilder(props: {
           )}
 
           {availableLearningObjectives.length > 0 && (
-            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
               <FormControl fullWidth size="small">
                 <InputLabel>Add Learning Objective</InputLabel>
                 <Select
@@ -436,14 +424,14 @@ export function RequestUserInputStepBuilder(props: {
           label="Is final step (discussion finished)?"
           value={step.lastStep}
           onChange={(e) => {
-            updateField('lastStep', e);
+            updateField("lastStep", e);
           }}
         />
         <JumpToAlternateStep
           step={step}
           flowsList={props.flowsList}
           onNewStepSelected={(stepId) => {
-            updateField('jumpToStepId', stepId);
+            updateField("jumpToStepId", stepId);
           }}
         />
       </Collapse>

@@ -4,18 +4,18 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { Button, CircularProgress, Typography } from '@mui/material';
-import { useAppSelector } from '../../../store/hooks';
-import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
-import { LoadStatus } from '../../../types';
 
-export default function TeacherLoading(): JSX.Element {
+import React from "react";
+import { Button, CircularProgress, Typography } from "@mui/material";
+import { useAppSelector } from "../../../store/hooks";
+import { useWithEducationalData } from "../../../store/slices/educational-data/use-with-educational-data";
+
+export default function TeacherLoading(): React.ReactNode {
   const { player } = useAppSelector((state) => state.playerData);
   const { educationalData, createClassroom } = useWithEducationalData();
   const [creating, setCreating] = React.useState(false);
   const myClasses = educationalData.classes.filter(
-    (c) => c.teacherId === player?._id
+    (c) => c.teacherId === player?._id,
   );
 
   const handleCreateClass = async () => {
@@ -23,7 +23,7 @@ export default function TeacherLoading(): JSX.Element {
     try {
       await createClassroom();
     } catch (err) {
-      console.error('Failed to create classroom', err);
+      console.error("Failed to create classroom", err);
     } finally {
       setCreating(false);
     }
@@ -34,14 +34,13 @@ export default function TeacherLoading(): JSX.Element {
       <img height={100} src="/logo.png" alt="image" />
       <Typography
         variant="h4"
-        fontWeight="bold"
         color="rgb(65, 32, 116)"
-        style={{ marginTop: 20, marginBottom: 20 }}
+        style={{ marginTop: 20, marginBottom: 20, fontWeight: "bold" }}
       >
-        Welcome, {player?.name || 'Teacher Name'}
+        Welcome, {player?.name || "Teacher Name"}
       </Typography>
 
-      {educationalData.hydrationLoadStatus.status !== LoadStatus.DONE ? (
+      {educationalData.hydrationLoadStatus.status !== 2 ? (
         <CircularProgress />
       ) : myClasses.length === 0 ? (
         <div>
@@ -56,7 +55,7 @@ export default function TeacherLoading(): JSX.Element {
             onClick={handleCreateClass}
             style={{ marginTop: 20 }}
           >
-            {creating ? 'Creating...' : 'Create New Class'}
+            {creating ? "Creating..." : "Create New Class"}
           </Button>
         </div>
       ) : (

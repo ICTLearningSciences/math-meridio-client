@@ -4,24 +4,24 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Badge, Typography } from '@mui/material';
-import { Archive, ContentCopy, Mail, Unarchive } from '@mui/icons-material';
 
-import { useAppSelector } from '../../../store/hooks';
-import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
-import { ClassDropdown, OutlinedButton } from '../../button';
-import { LoadStatus } from '../../../types';
-import { Tabs } from '../../tab';
-import TeacherLoading from './teacher-loading-page';
-import TeacherHome from './teacher-home-page';
-import TeacherReports from './teacher-reports-page';
-import TeacherManageClass from './teacher-manage-class';
-import TeacherEvents from './teacher-events-page';
-import { Classroom } from '../../../store/slices/educational-data/types';
+import React from "react";
+import { useSearchParams } from "react-router-dom";
+import { Badge, Typography } from "@mui/material";
+import { Archive, ContentCopy, Mail, Unarchive } from "@mui/icons-material";
 
-export default function TeacherLandingPage(): JSX.Element {
+import { useAppSelector } from "../../../store/hooks";
+import { useWithEducationalData } from "../../../store/slices/educational-data/use-with-educational-data";
+import { ClassDropdown, OutlinedButton } from "../../button";
+import { Tabs } from "../../tab";
+import TeacherLoading from "./teacher-loading-page";
+import TeacherHome from "./teacher-home-page";
+import TeacherReports from "./teacher-reports-page";
+import TeacherManageClass from "./teacher-manage-class";
+import TeacherEvents from "./teacher-events-page";
+import type { Classroom } from "../../../store/slices/educational-data/types";
+
+export default function TeacherLandingPage(): React.ReactNode {
   const {
     educationalData,
     adjustClassroomArchiveStatus,
@@ -32,13 +32,14 @@ export default function TeacherLandingPage(): JSX.Element {
   const [searchParams, setSearchParams] = useSearchParams();
   const [loaded, setLoaded] = React.useState<boolean>(false);
 
-  const tab = Number.parseInt(searchParams.get('tab') || '0');
+  const tab = Number.parseInt(searchParams.get("tab") || "0");
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const myClasses =
     educationalData?.classes
       ?.filter((c) => c.teacherId === player?._id)
       .sort(
         (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       ) || [];
   const myClass = myClasses.find((c) => c._id === classId);
   const myRooms =
@@ -54,16 +55,18 @@ export default function TeacherLandingPage(): JSX.Element {
 
   React.useEffect(() => {
     if (loaded) return;
-    if (educationalData.hydrationLoadStatus.status === LoadStatus.DONE) {
+    if (educationalData.hydrationLoadStatus.status === 2) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLoaded(true);
     }
-  }, [educationalData.hydrationLoadStatus.status]);
+  }, [loaded, educationalData.hydrationLoadStatus.status]);
 
   React.useEffect(() => {
     if (!classId && myClasses.length > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setClassId(myClasses.find((c) => !c.archivedAt)?._id);
     }
-  }, [myClasses]);
+  }, [classId, myClasses]);
 
   function onArchive(c: Classroom): void {
     adjustClassroomArchiveStatus(c._id, !c.archivedAt);
@@ -82,19 +85,19 @@ export default function TeacherLandingPage(): JSX.Element {
     <div
       className="column"
       style={{
-        width: '100%',
-        height: '100%',
+        width: "100%",
+        height: "100%",
       }}
     >
       <div className="row spacing center-div" style={{ padding: 20 }}>
-        <Typography fontSize={18} fontWeight="bold">
+        <Typography style={{ fontSize: 18, fontWeight: "bold" }}>
           {tab === 0
-            ? 'Teacher Home'
+            ? "Teacher Home"
             : tab === 1
-            ? 'Reports'
-            : tab === 2
-            ? 'Manage Class'
-            : 'Notifications'}
+              ? "Reports"
+              : tab === 2
+                ? "Manage Class"
+                : "Notifications"}
         </Typography>
         <ClassDropdown
           myClass={myClass}
@@ -108,7 +111,7 @@ export default function TeacherLandingPage(): JSX.Element {
             onClick={() => onArchive(myClass)}
             icon={myClass.archivedAt ? <Unarchive /> : <Archive />}
           >
-            {myClass.archivedAt ? 'Unarchive Class' : 'Archive Class'}
+            {myClass.archivedAt ? "Unarchive Class" : "Archive Class"}
           </OutlinedButton>
         )}
         {myClass && (
@@ -125,26 +128,26 @@ export default function TeacherLandingPage(): JSX.Element {
         selectedTab={tab}
         onSelectTab={(t) => setSearchParams({ ...searchParams, tab: `${t}` })}
         tabsStyle={{
-          position: 'absolute',
-          top: '20px',
-          left: '150px',
+          position: "absolute",
+          top: "20px",
+          left: "150px",
         }}
         tabs={[
           {
-            name: 'HOME',
+            name: "HOME",
             element: <TeacherHome classroom={myClass} />,
           },
           {
-            name: 'REPORTS',
+            name: "REPORTS",
             element: <TeacherReports classroom={myClass} />,
             disabled: myRooms.length === 0,
           },
           {
-            name: 'MANAGE CLASS',
+            name: "MANAGE CLASS",
             element: <TeacherManageClass classroom={myClass} />,
           },
           {
-            name: 'NOTIFICATIONS',
+            name: "NOTIFICATIONS",
             tabIcon:
               myNotifs.length > 0 ? (
                 <Badge badgeContent={myNotifs.length} color="success">

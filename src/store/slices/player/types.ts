@@ -5,6 +5,10 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 
+export type UserRole = "USER" | "ADMIN";
+export type EducationalRole = "STUDENT" | "INSTRUCTOR";
+export type LoginService = "GOOGLE";
+
 export interface Avatar {
   type: string;
   id: string;
@@ -26,22 +30,8 @@ export interface Player {
   avatar: Avatar[];
 }
 
-export enum UserRole {
-  USER = 'USER',
-  ADMIN = 'ADMIN',
-}
-
-export enum EducationalRole {
-  STUDENT = 'STUDENT',
-  INSTRUCTOR = 'INSTRUCTOR',
-}
-
 export interface UserAccessToken {
   user: Player;
   accessToken: string;
   expirationDate: string;
-}
-
-export enum LoginService {
-  GOOGLE = 'GOOGLE',
 }

@@ -4,16 +4,16 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { Tooltip } from '@mui/material';
-import InfoIcon from '@mui/icons-material/Info';
+import React from "react";
+import { Tooltip } from "@mui/material";
+import InfoIcon from "@mui/icons-material/Info";
 
-export function InfoTooltip(props: { title: string }): JSX.Element {
+export function InfoTooltip(props: { title: string }): React.ReactNode {
   return (
     <Tooltip title={props.title}>
       <InfoIcon
         style={{
-          color: 'grey',
+          color: "grey",
           width: 20,
           height: 20,
           padding: 5,

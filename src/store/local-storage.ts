@@ -4,10 +4,12 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-export const SESSION_ID = '@sessionId';
-export const ACCESS_TOKEN_KEY = '@accessToken';
+
+export const SESSION_ID = "@sessionId";
+export const ACCESS_TOKEN_KEY = "@accessToken";
+
 export function localStorageGet<T>(key: string): T | null {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return null;
   }
   const item = localStorage.getItem(key);
@@ -17,6 +19,7 @@ export function localStorageGet<T>(key: string): T | null {
   try {
     return JSON.parse(item) as T;
   } catch (err) {
+    console.error(err);
     return item as T;
   }
 }
@@ -30,15 +33,15 @@ export function requireLocalStorageGet<T>(key: string): T {
 }
 
 export function localStorageStore(key: string, value: unknown): void {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return;
   }
-  const val = typeof value === 'string' ? value : JSON.stringify(value);
+  const val = typeof value === "string" ? value : JSON.stringify(value);
   localStorage.setItem(key, val);
 }
 
 export function localStorageClear(key: string): void {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return;
   }
   localStorage.removeItem(key);

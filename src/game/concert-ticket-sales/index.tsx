@@ -4,53 +4,53 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { Game } from '../types';
-import { SimulationScene } from './SimulationScene';
+import Phaser from "phaser";
+import type { Game } from "../types";
+import { SimulationScene } from "./SimulationScene";
 
-import { ProblemComponent } from './problem';
-import { SolutionComponent } from './solution';
-import { PlayerStrategy, SimulationComponent } from './simulation';
-import { ResultComponent } from './results';
-import {
+import { ProblemComponent } from "./problem";
+import { SolutionComponent } from "./solution";
+import { PlayerStrategy, SimulationComponent } from "./simulation";
+import { ResultComponent } from "./results";
+import type {
   GameData,
   GameStateData,
   PlayerStateData,
   Room,
-} from '../../store/slices/game/types';
-import { Player } from '../../store/slices/player/types';
+} from "../../store/slices/game/types";
+import type { Player } from "../../store/slices/player/types";
 
-export const UNDERSTANDS_ALGORITHM_KEY = 'understands_algorithm';
-export const UNDERSTANDS_MULTIPLICATION_KEY = 'understands_multiplication';
-export const UNDERSTANDS_ADDITION_KEY = 'understands_addition';
-export const UNDERSTANDS_CONVERSION_RATE_KEY = 'understands_conversion_rate';
-export const UNDERSTANDS_TICKET_PRICES_KEY = 'understands_ticket_prices';
-export const BEST_STRATEGY_FOUND_KEY = 'best_strategy_found';
+export const UNDERSTANDS_ALGORITHM_KEY = "understands_algorithm";
+export const UNDERSTANDS_MULTIPLICATION_KEY = "understands_multiplication";
+export const UNDERSTANDS_ADDITION_KEY = "understands_addition";
+export const UNDERSTANDS_CONVERSION_RATE_KEY = "understands_conversion_rate";
+export const UNDERSTANDS_TICKET_PRICES_KEY = "understands_ticket_prices";
+export const BEST_STRATEGY_FOUND_KEY = "best_strategy_found";
 
-export const VIP_TICKET_PERCENT_KEY = 'vip_ticket_percent';
+export const VIP_TICKET_PERCENT_KEY = "vip_ticket_percent";
 export const VIP_TICKET_PRICE = 75;
 export const VIP_TICKET_CONVERSION_RATE = 0.36;
 
-export const RESERVED_TICKET_PERCENT_KEY = 'reserved_ticket_percent';
+export const RESERVED_TICKET_PERCENT_KEY = "reserved_ticket_percent";
 export const RESERVED_TICKET_PRICE = 50;
 export const RESERVED_TICKET_CONVERSION_RATE = 0.4;
 
 export const GENERAL_ADMISSION_TICKET_PERCENT_KEY =
-  'general_admission_ticket_percent';
+  "general_admission_ticket_percent";
 export const GENERAL_ADMISSION_TICKET_PRICE = 45;
 export const GENERAL_ADMISSION_TICKET_CONVERSION_RATE = 0.6;
 
 export const TOTAL_NUMBER_OF_TICKETS = 100;
 
 const ConcertTicketSalesGame: Game = {
-  id: 'concert-ticket-sales',
-  name: 'Concert Ticket Management',
+  id: "concert-ticket-sales",
+  name: "Concert Ticket Management",
   problem: `Our concert venue isn't meeting its profit goals, and we need your help to fix it. You and the sales team must figure out what's wrong with our current ticket strategy and how to adjust it to maximize revenue. For each show, we can sell 100 tickets. VIP tickets earn the most but are hardest to sell, while Reserved and General Admission earn less but sell more easily.`,
   minProblem:
-    'Of 100 tickets, how many of each should be sold to maximize profits? VIP earn the most but are hardest to sell, while Reserved and General Admission earn less but sell more easily.',
+    "Of 100 tickets, how many of each should be sold to maximize profits? VIP earn the most but are hardest to sell, while Reserved and General Admission earn less but sell more easily.",
   config: {
     type: Phaser.CANVAS,
-    backgroundColor: '#282c34',
+    backgroundColor: "#282c34",
     width: 1280,
     height: 720,
     scale: {
@@ -70,9 +70,9 @@ const ConcertTicketSalesGame: Game = {
     player: Player,
     updatePlayerStateData: (
       newPlayerStateData: GameStateData,
-      playerId: string
+      playerId: string,
     ) => void,
-    minimize?: boolean
+    minimize?: boolean,
   ) => {
     return (
       <SolutionComponent
@@ -89,7 +89,7 @@ const ConcertTicketSalesGame: Game = {
   showPlayerStrategy: (
     player: Player,
     playersGameStateData: PlayerStateData,
-    room: Room
+    room: Room,
   ) => {
     return (
       <PlayerStrategy
