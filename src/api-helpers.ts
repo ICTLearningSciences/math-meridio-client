@@ -16,8 +16,6 @@ import type {
 export interface AxiosMiddleware {
   (axiosInstance: AxiosInstance): void;
 }
-const GRAPHQL_ENDPOINT =
-  import.meta.env.VITE_GRAPHQL_ENDPOINT || "/graphql/graphql";
 
 const REQUEST_TIMEOUT_GRAPHQL_DEFAULT = 30000;
 
@@ -110,13 +108,19 @@ export async function execGql<T>(
   query: GQLQuery,
   opts?: HttpRequestConfig,
 ): Promise<T> {
-  return execHttp<T>("POST", opts?.gqlEndpoint || GRAPHQL_ENDPOINT, {
-    // axiosMiddleware: applyAppTokenRefreshInterceptor,
-    ...(opts || {}),
-    axiosConfig: {
-      timeout: REQUEST_TIMEOUT_GRAPHQL_DEFAULT, // default timeout can be overriden by passed-in config
-      ...(opts?.axiosConfig || {}),
-      data: query,
+  return execHttp<T>(
+    "POST",
+    opts?.gqlEndpoint ||
+      import.meta.env.VITE_GRAPHQL_ENDPOINT ||
+      "/graphql/graphql",
+    {
+      // axiosMiddleware: applyAppTokenRefreshInterceptor,
+      ...(opts || {}),
+      axiosConfig: {
+        timeout: REQUEST_TIMEOUT_GRAPHQL_DEFAULT, // default timeout can be overriden by passed-in config
+        ...(opts?.axiosConfig || {}),
+        data: query,
+      },
     },
-  });
+  );
 }

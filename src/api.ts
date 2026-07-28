@@ -26,15 +26,14 @@ import { userDataQuery } from "./store/slices/player/api";
 import { ACCESS_TOKEN_KEY, localStorageGet } from "./store/local-storage";
 
 type OpenAiJobId = string;
-export const LLM_API_ENDPOINT =
-  import.meta.env.VITE_LLM_API_ENDPOINT || "/docs";
+
 export async function asyncLlmRequest(
   llmRequest: GenericLlmRequest,
   cancelToken?: CancelToken,
 ): Promise<OpenAiJobId> {
   const res = await execHttp<OpenAiJobId>(
     "POST",
-    `${LLM_API_ENDPOINT}/generic_llm_request/?api-version=2025-03-01-preview`,
+    `${import.meta.env.VITE_LLM_API_ENDPOINT || "/docs"}/generic_llm_request/?api-version=2025-03-01-preview`,
     {
       dataPath: ["response", "jobId"],
       axiosConfig: {
@@ -57,7 +56,7 @@ export async function asyncLlmRequestStatus(
     try {
       res = await execHttp<AiServicesJobStatusResponseTypes>(
         "POST",
-        `${LLM_API_ENDPOINT}/generic_llm_request_status/?jobId=${jobId}&api-version=2025-03-01-preview`,
+        `${import.meta.env.VITE_LLM_API_ENDPOINT || "/docs"}/generic_llm_request_status/?jobId=${jobId}&api-version=2025-03-01-preview`,
         {
           dataPath: ["response"],
           axiosConfig: { cancelToken: cancelToken },

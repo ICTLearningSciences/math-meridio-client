@@ -16,10 +16,26 @@ export function RefreshRequestButton(props: { autoRefreshTime?: number }) {
     useWithEducationalData();
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const { pathname, search } = useLocation();
+  const isCalledRef = useRef(false);
 
   const pingTime =
     props.autoRefreshTime ||
     (player?.educationalRole === "INSTRUCTOR" ? 60 : 30);
+
+  useEffect(() => {
+    if (!isCalledRef.current) {
+      isCalledRef.current = true;
+      if (player?.educationalRole === "INSTRUCTOR") {
+        fetchInstructorDataHydration();
+      } else if (player?.educationalRole === "STUDENT") {
+        fetchStudentDataHydration();
+      }
+    }
+  }, [
+    fetchInstructorDataHydration,
+    fetchStudentDataHydration,
+    player?.educationalRole,
+  ]);
 
   const pollingRef = useRef<number>(undefined);
   useEffect(() => {
@@ -30,7 +46,6 @@ export function RefreshRequestButton(props: { autoRefreshTime?: number }) {
         }
       }, pingTime * 1000);
     };
-    refresh();
     startPolling();
     return () => {
       clearInterval(pollingRef.current);
