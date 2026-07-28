@@ -4,53 +4,55 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { Box, Button, Modal, Theme } from '@mui/material';
-import { makeStyles } from 'tss-react/mui';
-import { useState } from 'react';
-import { JsonView, allExpanded, defaultStyles } from 'react-json-view-lite';
-import 'react-json-view-lite/dist/index.css';
-import { AiServiceStepDataTypes } from '../../../ai-services/ai-service-types';
-import { ColumnDiv, JsonDisplay } from '../../../styled-components';
+
+import React, { useState } from "react";
+import { JsonView, allExpanded, defaultStyles } from "react-json-view-lite";
+import { makeStyles } from "tss-react/mui";
+import { Box, Button, Modal, type Theme } from "@mui/material";
+
+import type { AiServiceStepDataTypes } from "../../../ai-services/ai-service-types";
+import { ColumnDiv, JsonDisplay } from "../../../styled-components";
+
+import "react-json-view-lite/dist/index.css";
 
 const useStyles = makeStyles({ name: { ViewPreviousRunModal } })(
   (theme: Theme) => ({
     inputField: {
-      width: '100%',
+      width: "100%",
       margin: 10,
     },
     modal: {},
     paper: {
       backgroundColor: theme.palette.background.paper,
-      border: '2px solid #000',
+      border: "2px solid #000",
       boxShadow: theme.shadows[5],
       padding: theme.spacing(2, 4, 3),
-      maxWidth: '50%',
+      maxWidth: "50%",
     },
-  })
+  }),
 );
 
 export default function ViewPreviousRunModal(props: {
   previousRunStepData?: AiServiceStepDataTypes[];
   open: boolean;
   close: () => void;
-}): JSX.Element {
+}): React.ReactNode {
   const { previousRunStepData, open, close } = props;
   const { classes } = useStyles();
   const [showJsonAsText, setShowJsonAsText] = useState(false);
   const style = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: '90%',
-    height: '80%',
-    bgcolor: 'background.paper',
-    border: '2px solid #000',
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: "90%",
+    height: "80%",
+    bgcolor: "background.paper",
+    border: "2px solid #000",
     boxShadow: 24,
     p: 4,
-    display: 'flex',
-    flexDirection: 'column',
+    display: "flex",
+    flexDirection: "column",
   };
 
   if (!previousRunStepData) {
@@ -60,15 +62,15 @@ export default function ViewPreviousRunModal(props: {
     <div>
       <Modal open={Boolean(open)} className={classes.modal}>
         <Box sx={style}>
-          <div style={{ overflow: 'auto' }}>
+          <div style={{ overflow: "auto" }}>
             {previousRunStepData.map((promptStep, index) => {
               const responseMessage = promptStep.aiServiceResponse;
 
               return (
                 <ColumnDiv key={index}>
-                  <h2 style={{ alignSelf: 'center' }}>{`Step ${index + 1}`}</h2>
+                  <h2 style={{ alignSelf: "center" }}>{`Step ${index + 1}`}</h2>
                   <div>Prompt</div>
-                  <div style={{ border: '1px solid black' }}>
+                  <div style={{ border: "1px solid black" }}>
                     <JsonView
                       data={promptStep.aiServiceRequestParams}
                       shouldExpandNode={allExpanded}
@@ -77,7 +79,7 @@ export default function ViewPreviousRunModal(props: {
                   </div>
                   <br />
                   <div>Response</div>
-                  <div style={{ border: '1px solid black' }}>
+                  <div style={{ border: "1px solid black" }}>
                     {!showJsonAsText ? (
                       <div>
                         <JsonView
@@ -99,7 +101,7 @@ export default function ViewPreviousRunModal(props: {
                       setShowJsonAsText(!showJsonAsText);
                     }}
                   >
-                    {showJsonAsText ? 'Show as JSON' : 'Show as Text'}
+                    {showJsonAsText ? "Show as JSON" : "Show as Text"}
                   </Button>
                 </ColumnDiv>
               );

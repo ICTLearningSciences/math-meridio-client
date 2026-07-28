@@ -4,16 +4,16 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
 export function useNavigateWithParams() {
   const navigate = useNavigate();
-  const search = typeof window === 'undefined' ? '' : window.location.search;
+  const search = typeof window === "undefined" ? "" : window.location.search;
   const searchParams = new URLSearchParams(search);
 
   const navigateWithParams = (path: string, options = {}) => {
     // Build the new URL with all existing parameters
-    const origin = typeof window === 'undefined' ? '' : window.location.origin;
+    const origin = typeof window === "undefined" ? "" : window.location.origin;
     const url = new URL(path, origin);
     searchParams.forEach((value, key) => {
       url.searchParams.set(key, value);
@@ -21,8 +21,8 @@ export function useNavigateWithParams() {
 
     // Navigate to the new URL
     console.log(
-      'navigating from navigate-with-params to',
-      `${url.pathname}${url.search}`
+      "navigating from navigate-with-params to",
+      `${url.pathname}${url.search}`,
     );
     navigate(`${url.pathname}${url.search}`, options);
   };

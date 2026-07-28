@@ -10,48 +10,50 @@ import {
   Select,
   MenuItem,
   Button,
-} from '@mui/material';
-import React, { useEffect } from 'react';
-import { FlowItem } from '../types';
-import { getFlowForStepId } from '../helpers';
+} from "@mui/material";
+import React, { useEffect } from "react";
+import type { FlowItem } from "../types";
+import { getFlowForStepId } from "../helpers";
 
 export function FlowStepSelector(props: {
   flowsList: FlowItem[];
   currentJumpToStepId?: string;
   onStepSelected: (stepId: string) => void;
-  rowOrColumn?: 'row' | 'column';
+  rowOrColumn?: "row" | "column";
   disableStepsList?: string[];
   width?: string;
   title?: string;
-}): JSX.Element {
+}): React.ReactNode {
   const { flowsList, onStepSelected, currentJumpToStepId } = props;
-  const [selectedFlowId, setSelectedFlowId] = React.useState<string>('');
-  const [selectedStepId, setSelectedStepId] = React.useState<string>('');
+  const [selectedFlowId, setSelectedFlowId] = React.useState<string>("");
+  const [selectedStepId, setSelectedStepId] = React.useState<string>("");
+
   useEffect(() => {
     if (currentJumpToStepId) {
       const flow = getFlowForStepId(flowsList, currentJumpToStepId);
       if (!flow) {
         return;
       }
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedFlowId(flow.clientId);
       setSelectedStepId(currentJumpToStepId);
     }
-  }, [currentJumpToStepId]);
+  }, [currentJumpToStepId, flowsList]);
 
   return (
     <div
       style={{
-        display: 'flex',
+        display: "flex",
         flex: 1,
-        width: props.width || '100%',
-        maxWidth: props.width || '100%',
-        flexDirection: 'column',
+        width: props.width || "100%",
+        maxWidth: props.width || "100%",
+        flexDirection: "column",
       }}
     >
       {props.title && (
         <span
           style={{
-            alignSelf: 'center',
+            alignSelf: "center",
             margin: 0,
             padding: 0,
           }}
@@ -61,9 +63,9 @@ export function FlowStepSelector(props: {
       )}
       <div
         style={{
-          width: '100%',
-          display: 'flex',
-          flexDirection: props.rowOrColumn || 'column',
+          width: "100%",
+          display: "flex",
+          flexDirection: props.rowOrColumn || "column",
         }}
       >
         <FormControl variant="standard" sx={{ minWidth: 120 }}>
@@ -74,7 +76,7 @@ export function FlowStepSelector(props: {
             onChange={(e) => {
               if (selectedFlowId !== e.target.value) {
                 setSelectedFlowId(e.target.value);
-                setSelectedStepId('');
+                setSelectedStepId("");
               }
             }}
             label="Output Data Type"
@@ -124,9 +126,9 @@ export function FlowStepSelector(props: {
           }}
           disabled={!selectedFlowId && !selectedStepId}
           onClick={() => {
-            setSelectedFlowId('');
-            setSelectedStepId('');
-            onStepSelected('');
+            setSelectedFlowId("");
+            setSelectedStepId("");
+            onStepSelected("");
           }}
         >
           Clear

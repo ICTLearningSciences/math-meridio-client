@@ -4,24 +4,23 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { Card, CardActionArea, CardContent, Typography } from '@mui/material';
-import {
+
+import React from "react";
+import { Card, CardActionArea, CardContent, Typography } from "@mui/material";
+import type {
   ClassMembership,
-  ClassMembershipStatus,
   Classroom,
-} from '../../../store/slices/educational-data/types';
-import { useNavigate } from 'react-router-dom';
+} from "../../../store/slices/educational-data/types";
+import { useNavigate } from "react-router-dom";
 
 export function StudentClassroomCard(props: {
   classroom: Classroom;
   classMemberships: ClassMembership[];
-}): JSX.Element {
+}): React.ReactNode {
   const navigate = useNavigate();
   const { classroom, classMemberships } = props;
   const studentCount = classMemberships.filter(
-    (cm) =>
-      cm.classId === classroom._id && cm.status === ClassMembershipStatus.MEMBER
+    (cm) => cm.classId === classroom._id && cm.status === "Member",
   ).length;
 
   const handleClassClick = (classId: string) => {
@@ -32,7 +31,7 @@ export function StudentClassroomCard(props: {
       data-cy={`student-classroom-card-${classroom._id}`}
       key={classroom._id}
       style={{
-        width: '100%',
+        width: "100%",
       }}
     >
       <CardActionArea onClick={() => handleClassClick(classroom._id)}>
@@ -40,8 +39,8 @@ export function StudentClassroomCard(props: {
           <div
             className="row"
             style={{
-              justifyContent: 'space-between',
-              alignItems: 'center',
+              justifyContent: "space-between",
+              alignItems: "center",
             }}
           >
             <div>
@@ -52,9 +51,9 @@ export function StudentClassroomCard(props: {
                 </Typography>
               )}
             </div>
-            <div style={{ textAlign: 'right' }}>
+            <div style={{ textAlign: "right" }}>
               <Typography variant="body2" color="text.secondary">
-                {studentCount} {studentCount === 1 ? 'student' : 'students'}
+                {studentCount} {studentCount === 1 ? "student" : "students"}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Created: {new Date(classroom.createdAt).toLocaleDateString()}

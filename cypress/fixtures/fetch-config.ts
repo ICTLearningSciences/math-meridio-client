@@ -4,7 +4,6 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { AiServiceNames } from "../../src/types";
 import { Config } from "../../src/store/slices/config";
 
 
@@ -12,7 +11,7 @@ export const fetchConfigResponse: { fetchConfig: Config } = {
     "fetchConfig": {
         "aiServiceModelConfigs": [
             {
-                "serviceName": AiServiceNames.OPEN_AI,
+                "serviceName": 'OPEN_AI',
                 "modelList": [
                     {
                         "name": "gpt-4",
@@ -37,7 +36,7 @@ export const fetchConfigResponse: { fetchConfig: Config } = {
                 ]
             },
             {
-                "serviceName": AiServiceNames.AZURE,
+                "serviceName": 'AZURE_OPEN_AI',
                 "modelList": [
                     {
                         "name": "ABE-gpt-4o",
@@ -52,7 +51,7 @@ export const fetchConfigResponse: { fetchConfig: Config } = {
                 ]
             },
             {
-                "serviceName": AiServiceNames.GEMINI,
+                "serviceName": 'GEMINI',
                 "modelList": [
                     {
                         "name": "gemini-2.0-flash",
@@ -67,7 +66,7 @@ export const fetchConfigResponse: { fetchConfig: Config } = {
                 ]
             },
             {
-                "serviceName": AiServiceNames.ASK_SAGE,
+                "serviceName": 'ASK_SAGE',
                 "modelList": [
                     {
                         "name": "gpt-4o-mini-gov",
@@ -92,7 +91,7 @@ export const fetchConfigResponse: { fetchConfig: Config } = {
                 ]
             },
             {
-                "serviceName": AiServiceNames.ANTHROPIC,
+                "serviceName": 'ANTHROPIC',
                 "modelList": [
                     {
                         "name": "claude-3-5-sonnet-latest",
@@ -117,7 +116,7 @@ export const fetchConfigResponse: { fetchConfig: Config } = {
                 ]
             },
             {
-                "serviceName": AiServiceNames.CAMO_GPT,
+                "serviceName": 'CAMO_GPT',
                 "modelList": [
                     {
                         "name": "Mistral7B",

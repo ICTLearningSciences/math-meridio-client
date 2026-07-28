@@ -4,8 +4,8 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import React from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   Button,
   IconButton,
@@ -13,16 +13,15 @@ import {
   MenuItem,
   Tooltip,
   Typography,
-} from '@mui/material';
-import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { clearPlayer } from '../store/slices/player';
-import AvatarSprite from './avatar-sprite';
-import { UseWithLogin } from '../store/slices/player/use-with-login';
-import { useWithEducationalData } from '../store/slices/educational-data/use-with-educational-data';
-import { HelpRequestButton } from './help-request-button';
-import { RefreshRequestButton } from './refresh-request-button';
-import { EducationalRole, UserRole } from '../store/slices/player/types';
-import { Logout } from '@mui/icons-material';
+} from "@mui/material";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { clearPlayer } from "../store/slices/player";
+import AvatarSprite from "./avatar-sprite";
+import type { UseWithLogin } from "../store/slices/player/use-with-login";
+import { useWithEducationalData } from "../store/slices/educational-data/use-with-educational-data";
+import { HelpRequestButton } from "./help-request-button";
+import { RefreshRequestButton } from "./refresh-request-button";
+import { Logout } from "@mui/icons-material";
 
 export function Header(props: { useLogin: UseWithLogin }) {
   const dispatch = useAppDispatch();
@@ -36,13 +35,13 @@ export function Header(props: { useLogin: UseWithLogin }) {
 
   const room = educationalData.rooms.find((r) => r._id === roomId);
   const classroom = educationalData.classes.find(
-    (c) => c._id === room?.classId
+    (c) => c._id === room?.classId,
   );
   const myStatusInRoom =
     player?._id && room
       ? room?.gameData.playersStatusRecord[player?._id]
       : undefined;
-  const isTeacher = player?.educationalRole === EducationalRole.INSTRUCTOR;
+  const isTeacher = player?.educationalRole === "INSTRUCTOR";
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
@@ -51,7 +50,7 @@ export function Header(props: { useLogin: UseWithLogin }) {
   };
 
   function homeButtonClick() {
-    navigate('/classes');
+    navigate("/classes");
   }
 
   if (!player) {
@@ -60,7 +59,7 @@ export function Header(props: { useLogin: UseWithLogin }) {
         className="header row center-div"
         style={{
           height: 80,
-          justifyContent: 'space-between',
+          justifyContent: "space-between",
           paddingLeft: 20,
           paddingRight: 20,
         }}
@@ -74,7 +73,7 @@ export function Header(props: { useLogin: UseWithLogin }) {
     <header className="column header" style={{ height: 80 }}>
       <div
         className="row center-div"
-        style={{ justifyContent: 'space-between' }}
+        style={{ justifyContent: "space-between" }}
       >
         <div style={{ width: 300 }}>
           <IconButton onClick={homeButtonClick}>
@@ -85,12 +84,12 @@ export function Header(props: { useLogin: UseWithLogin }) {
         <div className="row center-div spacing" style={{ flexGrow: 1 }}>
           <Typography variant="h5">{room?.name}</Typography>
           <Typography variant="h5" color="red">
-            {classroom?.archivedAt ? ' (Archived)' : ''}
+            {classroom?.archivedAt ? " (Archived)" : ""}
           </Typography>
         </div>
         <div
           className="row center-div spacing"
-          style={{ justifyContent: 'flex-end', marginRight: 10 }}
+          style={{ justifyContent: "flex-end", marginRight: 10 }}
         >
           <RefreshRequestButton />
           {!isTeacher && (
@@ -99,12 +98,12 @@ export function Header(props: { useLogin: UseWithLogin }) {
               setPlayerNeedsHelpInRoom={setPlayerNeedsHelpInRoom}
             />
           )}
-          {pathname.includes('/room/') && (
+          {pathname.includes("/room/") && (
             <Tooltip title="Leave Room">
               <IconButton
                 disabled={!player || !room}
-                style={{ color: 'white' }}
-                onClick={() => navigate('/classes')}
+                style={{ color: "white" }}
+                onClick={() => navigate("/classes")}
               >
                 <Logout />
               </IconButton>
@@ -130,8 +129,8 @@ export function Header(props: { useLogin: UseWithLogin }) {
                 >
                   Logout
                 </MenuItem>
-                {player.userRole === UserRole.ADMIN && (
-                  <MenuItem onClick={() => navigate('/admin')}>Admin</MenuItem>
+                {player.userRole === "ADMIN" && (
+                  <MenuItem onClick={() => navigate("/admin")}>Admin</MenuItem>
                 )}
               </Menu>
             </div>

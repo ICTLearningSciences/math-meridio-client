@@ -4,33 +4,33 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import {
   ArrowForward,
   BackHand,
-  CheckCircleOutline,
+  CheckCircleOutlined,
   WarningAmberOutlined,
-} from '@mui/icons-material';
+} from "@mui/icons-material";
 import {
   Card,
   CardContent,
   IconButton,
   Tooltip,
   Typography,
-} from '@mui/material';
+} from "@mui/material";
 
-import { Room } from '../../../store/slices/game/types';
-import { GAMES } from '../../../game/types';
-import { PlayerActivitySprite } from '../../avatar-sprite';
-import PhaseProgressBar from '../../phase-progress-bar';
-import { Classroom } from '../../../store/slices/educational-data/types';
+import type { Room } from "../../../store/slices/game/types";
+import { GAMES } from "../../../game/types";
+import { PlayerActivitySprite } from "../../avatar-sprite";
+import PhaseProgressBar from "../../phase-progress-bar";
+import type { Classroom } from "../../../store/slices/educational-data/types";
 
 export default function RoomCard(props: {
   classroom: Classroom;
   room: Room;
   classes: Record<string, string>;
-}): JSX.Element {
+}): React.ReactNode {
   const { room, classroom, classes } = props;
   const navigate = useNavigate();
 
@@ -40,7 +40,7 @@ export default function RoomCard(props: {
     .filter((s) => s !== undefined)
     .filter((s) => s.pausedByAdmin || s.reportedAwayStatus.isAway);
   const needsHelp = room.gameData.players.filter(
-    (p) => room.gameData.playersStatusRecord[p._id]?.needsHelpInRoom
+    (p) => room.gameData.playersStatusRecord[p._id]?.needsHelpInRoom,
   );
 
   const enterRoom = () => {
@@ -52,14 +52,14 @@ export default function RoomCard(props: {
       <Card className={classes.card}>
         <CardContent
           className="column spacing"
-          style={{ position: 'relative' }}
+          style={{ position: "relative" }}
         >
-          <div className="row" style={{ justifyContent: 'space-between' }}>
+          <div className="row" style={{ justifyContent: "space-between" }}>
             <Typography
               style={{
-                whiteSpace: 'nowrap',
-                overflowX: 'scroll',
-                scrollbarWidth: 'none',
+                whiteSpace: "nowrap",
+                overflowX: "scroll",
+                scrollbarWidth: "none",
               }}
               className={classes.headerText}
             >
@@ -67,7 +67,7 @@ export default function RoomCard(props: {
             </Typography>
             {needsHelp.length > 0 ? (
               <Tooltip
-                title={`${needsHelp.map((p) => p.name).join(', ')} needs help`}
+                title={`${needsHelp.map((p) => p.name).join(", ")} needs help`}
               >
                 <BackHand color="error" />
               </Tooltip>
@@ -76,15 +76,15 @@ export default function RoomCard(props: {
                 <WarningAmberOutlined color="warning" />
               </Tooltip>
             ) : (
-              <CheckCircleOutline color="success" />
+              <CheckCircleOutlined color="success" />
             )}
           </div>
           <div
             className="row center-div"
             style={{
-              justifyContent: 'space-evenly',
-              overflowX: 'scroll',
-              scrollbarWidth: 'none',
+              justifyContent: "space-evenly",
+              overflowX: "scroll",
+              scrollbarWidth: "none",
             }}
           >
             {room.gameData.players.map((player) => (
@@ -102,7 +102,7 @@ export default function RoomCard(props: {
           <Tooltip title="Enter room">
             <IconButton
               size="small"
-              style={{ position: 'absolute', bottom: 5, right: 5 }}
+              style={{ position: "absolute", bottom: 5, right: 5 }}
               onClick={enterRoom}
             >
               <ArrowForward />

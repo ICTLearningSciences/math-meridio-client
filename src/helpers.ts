@@ -5,29 +5,28 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 
-import { ChatMessage } from './store/slices/game/types';
-import axios from 'axios';
-import {
+import type { ChatMessage } from "./store/slices/game/types";
+import axios from "axios";
+import type {
   DiscussionStageStep,
-  DiscussionStageStepType,
   IStage,
   StartOfPhaseStep,
-} from './components/discussion-stage-builder/types';
-import { DiscussionStage } from './components/discussion-stage-builder/types';
-import { isDiscussionStage } from './components/discussion-stage-builder/types';
-import { Avatar } from './store/slices/player/types';
+} from "./components/discussion-stage-builder/types";
+import type { DiscussionStage } from "./components/discussion-stage-builder/types";
+import { isDiscussionStage } from "./components/discussion-stage-builder/types";
+import type { Avatar } from "./store/slices/player/types";
 import {
   SPRITE_BODY,
   SPRITE_CLOTHES,
   SPRITE_HAIR,
-} from './store/slices/player/use-with-player-state';
-import { SolutionGameStateData } from './types';
+} from "./store/slices/player/use-with-player-state";
+import type { SolutionGameStateData } from "./types";
 
-export const SIMULTAION_VIEWED_KEY = 'viewed-simulation';
+export const SIMULTAION_VIEWED_KEY = "viewed-simulation";
 
 export function calculateMedian(values: number[]): number {
   if (values.length === 0) {
-    throw new Error('Input array is empty');
+    throw new Error("Input array is empty");
   }
   // Sorting values, preventing original array
   // from being mutated.
@@ -49,7 +48,7 @@ export function calculateAverage(values: number[]): number {
 }
 
 export function calculatePercentSkillsMet(
-  mathStandardsCompleted: Record<string, boolean>
+  mathStandardsCompleted: Record<string, boolean>,
 ): number {
   if (Object.values(mathStandardsCompleted).length === 0) return 0;
   let numMet = 0;
@@ -62,7 +61,7 @@ export function calculatePercentSkillsMet(
 }
 
 export function getPercentString(num: number): string {
-  if (Number.isNaN(num)) return '0%';
+  if (Number.isNaN(num)) return "0%";
   return `${Math.round(num * 100)}%`;
 }
 
@@ -70,24 +69,23 @@ export function getLastActivityString(date: Date): string {
   const currentDate = new Date().getTime();
   const lastActivityAt = new Date(date).getTime();
   const minsSince = Math.floor(
-    Math.abs(currentDate - lastActivityAt) / (1000 * 60)
+    Math.abs(currentDate - lastActivityAt) / (1000 * 60),
   );
   const activityStr =
     minsSince < 60
       ? `${minsSince} MINS AGO`
       : minsSince < 60 * 24
-      ? `${Math.floor(minsSince / 60)} HOURS AGO`
-      : `${Math.floor(minsSince / (60 * 24))} DAYS AGO`;
+        ? `${Math.floor(minsSince / 60)} HOURS AGO`
+        : `${Math.floor(minsSince / (60 * 24))} DAYS AGO`;
   return activityStr;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function equals<T>(val1: T, val2: T): boolean {
   return JSON.stringify(val1) === JSON.stringify(val2);
 }
 
 export function chatLogToString(chatLog: ChatMessage[]) {
-  let chatLogString = '';
+  let chatLogString = "";
 
   for (let i = 0; i < chatLog.length; i++) {
     const msg = chatLog[i];
@@ -100,7 +98,7 @@ export function isJsonString(str: string): boolean {
   try {
     JSON.parse(str);
   } catch (e) {
-    console.log(`Error parsing string: ${str}`);
+    console.log(`Error parsing string: ${str}: ${e}`);
     return false;
   }
   return true;
@@ -112,7 +110,7 @@ export function arrayNRandom(arr: any[], n: number): any[] {
   const result = new Array(n),
     taken = new Array(len);
   if (n > len)
-    throw new RangeError('getRandom: more elements taken than available');
+    throw new RangeError("getRandom: more elements taken than available");
   while (n--) {
     const x = Math.floor(Math.random() * len);
     result[n] = arr[x in taken ? taken[x] : x];
@@ -155,7 +153,7 @@ export function extractErrorMessageFromError(err: any | unknown): string {
   } else if (err.message) {
     try {
       const message = err.message;
-      return message['errors in response'];
+      return message["errors in response"];
     } catch {
       return err.message;
     }
@@ -164,14 +162,14 @@ export function extractErrorMessageFromError(err: any | unknown): string {
       const error = JSON.stringify(err);
       return error;
     } catch (err) {
-      return 'Cannot stringify error, unknown error structure';
+      return "Cannot stringify error, unknown error structure: " + err;
     }
   }
 }
 
 export function didGameStateDataChange(
   prevGameStateData: SolutionGameStateData,
-  newGameStateData: SolutionGameStateData
+  newGameStateData: SolutionGameStateData,
 ): boolean {
   return JSON.stringify(prevGameStateData) !== JSON.stringify(newGameStateData);
 }
@@ -184,7 +182,7 @@ export function getFirstStepId(stage: IStage): string {
 }
 
 export function requireEnv(key: string): string {
-  const value = process.env[key];
+  const value = import.meta.env[key];
   if (!value) {
     throw new Error(`Environment variable ${key} is not set`);
   }
@@ -200,15 +198,16 @@ export function getRandomAvatar() {
   }
   const top = arrayGetRandom<Avatar>(
     SPRITE_CLOTHES.filter(
-      (s) => s.type.endsWith('clothes_top') || s.type.endsWith('clothes_outfit')
-    )
+      (s) =>
+        s.type.endsWith("clothes_top") || s.type.endsWith("clothes_outfit"),
+    ),
   );
   if (top) {
     top.variant = top.variants ? randomInt(top.variants.length) : undefined;
     avatar.push(top);
-    if (top.type.endsWith('_top')) {
+    if (top.type.endsWith("_top")) {
       const bottom = arrayGetRandom<Avatar>(
-        SPRITE_CLOTHES.filter((s) => s.type.endsWith('clothes_bottom'))
+        SPRITE_CLOTHES.filter((s) => s.type.endsWith("clothes_bottom")),
       );
       if (bottom) {
         bottom.variant = bottom.variants
@@ -234,38 +233,36 @@ export function copyAndSet<T>(array: T[], idx: number, value: T): T[] {
 }
 
 export type GameIdentifier =
-  | 'Basketball'
-  | 'Concert Ticket Sales'
-  | 'Test Base';
+  "Basketball" | "Concert Ticket Sales" | "Test Base";
 export type AllStartOfPhaseSteps = Record<GameIdentifier, StartOfPhaseStep[]>;
 
 export function getAllStartOfPhaseSteps(
-  stages: DiscussionStage[]
+  stages: DiscussionStage[],
 ): AllStartOfPhaseSteps {
   const startOfPhaseSteps: AllStartOfPhaseSteps = stages.reduce(
     (acc, stage) => {
       const thisStagesSteps: DiscussionStageStep[] = stage.flowsList.flatMap(
-        (flow) => flow.steps
+        (flow) => flow.steps,
       );
       const targetGameIdentifier = getGameIdentifierFromStageTitle(stage.title);
       if (!acc[targetGameIdentifier]) {
         acc[targetGameIdentifier] = [];
       }
       const thisStagesStartOfPhaseSteps = thisStagesSteps.filter(
-        (step) => step.stepType === DiscussionStageStepType.START_OF_PHASE
+        (step) => step.stepType === "START_OF_PHASE",
       ) as StartOfPhaseStep[];
       acc[targetGameIdentifier].push(...thisStagesStartOfPhaseSteps);
       return acc;
     },
-    {} as AllStartOfPhaseSteps
+    {} as AllStartOfPhaseSteps,
   );
   return startOfPhaseSteps;
 }
 
 export function getGameIdentifierFromStageTitle(title: string): GameIdentifier {
-  return title.includes('Basketball')
-    ? 'Basketball'
-    : title.includes('Concert')
-    ? 'Concert Ticket Sales'
-    : 'Test Base';
+  return title.includes("Basketball")
+    ? "Basketball"
+    : title.includes("Concert")
+      ? "Concert Ticket Sales"
+      : "Test Base";
 }

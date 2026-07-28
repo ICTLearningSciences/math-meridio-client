@@ -4,11 +4,9 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { Room, RoomPhase, SenderType } from "../../src/store/slices/game/types";
+import { Room } from "../../src/store/slices/game/types";
 import { Player } from "../../src/store/slices/player/types";
 import { v4 as uuidv4 } from 'uuid';
-import { RequireInputType } from "../../src/components/discussion-stage-builder/types";
-
 
 export interface CreateAndJoinRoomResponse {
     createAndJoinRoom: Room;
@@ -20,7 +18,7 @@ export function defaultNbaStarterRoomData(classId: string, user: Player): Room {
         "name": "NBA Starter Room",
         "classId": classId,
         "groupId": undefined,
-        "phase": RoomPhase.PROCESSING,
+        "phase": 'PROCESSING',
         "gameData": {
             "mathStandardsCompleted": {},
             "phaseProgression": {
@@ -34,7 +32,7 @@ export function defaultNbaStarterRoomData(classId: string, user: Player): Room {
             "playersStatusRecord": {},
             "gameId": "basketball",
             "curGameState": {
-                "curState": RequireInputType.SINGLE_RESPONSE_REQUIRED,
+                "curState": 'SINGLE_RESPONSE_REQUIRED',
                 "playersLeftToRespond": [],
                 "studentReadyToContinue": false
             },
@@ -44,7 +42,7 @@ export function defaultNbaStarterRoomData(classId: string, user: Player): Room {
             "chat": [
                 {
                     messageId: uuidv4(),
-                    sender: SenderType.SYSTEM,
+                    sender: 'SYSTEM',
                     message: `We're currently losing, and we can't change our players—but we can change our strategy. What combination of shot types will help us close the gap and come out on top?`,
                     sessionId: "test-session-id",
                     phaseId: "",

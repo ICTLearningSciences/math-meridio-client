@@ -4,28 +4,35 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { IconButton, Button } from '@mui/material';
-import { useState } from 'react';
-import { DiscussionStageStepType } from '../types';
-import AddCircleIcon from '@mui/icons-material/AddCircle';
-import CloseIcon from '@mui/icons-material/Close';
-import { RowDiv } from '../../../styled-components';
+import React from "react";
+import { IconButton, Button } from "@mui/material";
+import { AddCircle, Close } from "@mui/icons-material";
+
+import { useState } from "react";
+import type { DiscussionStageStepType } from "../types";
+import { RowDiv } from "../../../styled-components";
 
 export function AddNewDiscussionStageButton(props: {
   insertNewStageStep: (stepType: DiscussionStageStepType) => void;
-}): JSX.Element {
-  const options = Object.values(DiscussionStageStepType);
+}): React.ReactNode {
+  const options: DiscussionStageStepType[] = [
+    "SYSTEM_MESSAGE",
+    "REQUEST_USER_INPUT",
+    "START_OF_PHASE",
+    "END_OF_PHASE_REFLECTION",
+    "PROMPT",
+    "CONDITIONAL",
+  ];
   const [displayOptions, setDisplayOptions] = useState<boolean>(false);
   return (
     <div
       style={{
-        width: 'fit-content',
+        width: "fit-content",
       }}
     >
       {!displayOptions && (
         <IconButton onClick={() => setDisplayOptions(true)}>
-          <AddCircleIcon />
+          <AddCircle />
         </IconButton>
       )}
 
@@ -50,7 +57,7 @@ export function AddNewDiscussionStageButton(props: {
             );
           })}
           <IconButton onClick={() => setDisplayOptions(false)}>
-            <CloseIcon />
+            <Close />
           </IconButton>
         </RowDiv>
       )}

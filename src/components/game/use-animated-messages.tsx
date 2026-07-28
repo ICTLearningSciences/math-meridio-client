@@ -4,19 +4,13 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-/*
-This software is Copyright ©️ 2020 The University of Southern California. All Rights Reserved.
-Permission to use, copy, modify, and distribute this software and its documentation for educational, research and non-profit purposes, without fee, and without a written agreement is hereby granted, provided that the above copyright notice and subject to the full license file found in the root of this software deliverable. Permission to make commercial use of this software may be obtained by contacting:  USC Stevens Center for Innovation University of Southern California 1150 S. Olive Street, Suite 2300, Los Angeles, CA 90115, USA Email: accounting@stevens.usc.edu
-
-The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
-*/
-import { useState, useEffect, useRef } from 'react';
-import { ChatMessage, SenderType } from '../../store/slices/game/types';
+import { useState, useEffect, useRef } from "react";
+import type { ChatMessage } from "../../store/slices/game/types";
 
 export function useAnimatedMessages(messages: ChatMessage[]) {
   const [displayedMessages, setDisplayedMessages] = useState<ChatMessage[]>([]);
   const [isAnimating, setIsAnimating] = useState(false);
-  const animationIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const animationIntervalRef = useRef<number>(null);
   const previousMessagesRef = useRef<ChatMessage[]>([]);
 
   useEffect(() => {
@@ -43,6 +37,7 @@ export function useAnimatedMessages(messages: ChatMessage[]) {
     }
 
     if (messages.length === 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDisplayedMessages([]);
       setIsAnimating(false);
       return;
@@ -51,7 +46,7 @@ export function useAnimatedMessages(messages: ChatMessage[]) {
     const lastMessage = messages[messages.length - 1];
 
     // If last message is from a player, display all instantly
-    if (lastMessage.sender === SenderType.PLAYER) {
+    if (lastMessage.sender === "PLAYER") {
       setDisplayedMessages(messages);
       setIsAnimating(false);
       return;
@@ -61,7 +56,7 @@ export function useAnimatedMessages(messages: ChatMessage[]) {
     // Find all consecutive system messages at the end (up to most recent user message)
     let systemMessageStartIndex = messages.length - 1;
     for (let i = messages.length - 1; i >= 0; i--) {
-      if (messages[i].sender === SenderType.SYSTEM) {
+      if (messages[i].sender === "SYSTEM") {
         systemMessageStartIndex = i;
       } else {
         break;

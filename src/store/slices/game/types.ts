@@ -4,19 +4,19 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { CurGameState } from '../../../components/discussion-stage-builder/types';
-import { Player } from '../player/types';
+import type { CurGameState } from "../../../components/discussion-stage-builder/types";
+import type { Player } from "../player/types";
 
-export enum SenderType {
-  PLAYER = 'PLAYER',
-  INSTRUCTOR = 'INSTRUCTOR',
-  SYSTEM = 'SYSTEM',
-}
-
-export enum MessageDisplayType {
-  TEXT = 'TEXT',
-  PENDING_MESSAGE = 'PENDING_MESSAGE',
-}
+export type SenderType = "PLAYER" | "INSTRUCTOR" | "SYSTEM";
+export type MessageDisplayType = "TEXT" | "PENDING_MESSAGE";
+export type RoomPhase = "PROCESSING" | "NO_ACTIVE_PROCESSING";
+export type PlayerComputedState =
+  | "NEVER_ACCESSED_ACTIVITY"
+  | "PAUSED_BY_ADMIN"
+  | "REPORTED_AWAY_BY_OTHER_PLAYER"
+  | "REPORTED_AWAY_BY_FRONTEND_DETECTION"
+  | "INACTIVE"
+  | "ACTIVE";
 
 export interface ChatMessage {
   messageId: string;
@@ -31,11 +31,6 @@ export interface ChatMessage {
   mcqChoices?: string[];
 }
 
-export enum RoomPhase {
-  PROCESSING = 'PROCESSING',
-  NO_ACTIVE_PROCESSING = 'NO_ACTIVE_PROCESSING',
-}
-
 export interface Room {
   _id: string;
   name: string;
@@ -45,19 +40,10 @@ export interface Room {
   gameData: GameData;
 }
 
-export enum PlayerComputedState {
-  NEVER_ACCESSED_ACTIVITY = 'NEVER_ACCESSED_ACTIVITY', // no heartebeat ever recorded
-  PAUSED_BY_ADMIN = 'PAUSED_BY_ADMIN', // paused by admin
-  REPORTED_AWAY_BY_OTHER_PLAYER = 'REPORTED_AWAY_BY_OTHER_PLAYER',
-  REPORTED_AWAY_BY_FRONTEND_DETECTION = 'REPORTED_AWAY_BY_FRONTEND_DETECTION',
-  INACTIVE = 'INACTIVE', // no heartbeat in the last 15 seconds
-  ACTIVE = 'ACTIVE', // has active heartbeats in the last 15 seconds
-}
-
 export interface ReportedAwayStatus {
   isAway: boolean;
   reportedAwayAt?: Date;
-  reportedBy?: 'STUDENT' | 'FRONTEND_SYSTEM';
+  reportedBy?: "STUDENT" | "FRONTEND_SYSTEM";
 }
 
 export type PhaseStepId = string;
@@ -108,7 +94,7 @@ export interface GameData {
   phaseProgression: PhaseProgression;
 }
 
-export interface GameDataGQL extends Omit<GameData, 'players'> {
+export interface GameDataGQL extends Omit<GameData, "players"> {
   players: string[];
 }
 

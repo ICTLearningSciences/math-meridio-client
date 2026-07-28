@@ -1,34 +1,75 @@
- # Math Meridio Client
- 
+# React + TypeScript + Vite
 
-Project Requirements:
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-- [Make](https://askubuntu.com/questions/161104/how-do-i-install-make)
-- [nvm](https://github.com/nvm-sh/nvm) (to manage node versions)
-- node version 18.17.1 (
-    - verify using $ node --version 
+Currently, two official plugins are available:
 
-## Local Development:
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-Required: Create a `.env.development` file in the root directory that contains the required environment variables.
+## React Compiler
 
-1. Start the local server:
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+
+## Expanding the ESLint configuration
+
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+
+```js
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+
+      // Remove tseslint.configs.recommended and replace with this
+      tseslint.configs.recommendedTypeChecked,
+      // Alternatively, use this for stricter rules
+      tseslint.configs.strictTypeChecked,
+      // Optionally, add this for stylistic rules
+      tseslint.configs.stylisticTypeChecked,
+
+      // Other configs...
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
+
 ```
-$ npm ci
-$ make develop
+
+You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
+
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+      // Enable lint rules for React
+      reactX.configs['recommended-typescript'],
+      // Enable lint rules for React DOM
+      reactDom.configs.recommended,
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
+
 ```
-2. Visit: http://localhost:3001/
-
-## Integration Testing:
-We use [Cypress](https://www.cypress.io/) for integration tests.
-- Open 2 terminals
-- In terminal 1: $ make develop
-- In terminal 2: $ make cypress
-- Cypress will open in separate window
-
-## Pushing code changes
-
-- Before pushing your changes to github, run `make format` and `make test-all` to confirm all tests pass.
-- ALWAYS push your changes to a separate branch and open a PR when your changes are ready to be reviewed.
-- Request a review from a team member.
-- Once the PR is approved, merge into main.

@@ -4,15 +4,16 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import Validator, { Schema } from 'jsonschema';
-import { GenericLlmRequest } from '../types';
-import { syncLlmRequest } from '../hooks/use-with-synchronous-polling';
-import { CancelToken } from 'axios';
+
+import type { CancelToken } from "axios";
+import Validator, { type Schema } from "jsonschema";
+import type { GenericLlmRequest } from "../types";
+import { syncLlmRequest } from "../hooks/use-with-synchronous-polling";
 
 export async function jsonLlmRequest<T>(
   llmRequest: GenericLlmRequest,
   jsonSchema: Schema,
-  cancelToken?: CancelToken
+  cancelToken?: CancelToken,
 ): Promise<T> {
   const res = await syncLlmRequest(llmRequest, cancelToken);
   const v = new Validator.Validator();
@@ -21,8 +22,8 @@ export async function jsonLlmRequest<T>(
   if (validationResult.errors.length > 0) {
     throw new Error(
       `Response does not match expected schema: ${JSON.stringify(
-        validationResult.errors
-      )}`
+        validationResult.errors,
+      )}`,
     );
   }
   return resJson;

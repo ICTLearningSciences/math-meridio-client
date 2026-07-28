@@ -4,7 +4,8 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { Schema } from 'jsonschema';
+
+import type { Schema } from "jsonschema";
 
 export interface GameObjects {
   clientId: string;
@@ -16,9 +17,9 @@ export interface IRemoveItem {
 }
 
 export const removeItemSchema: Schema = {
-  type: 'object',
+  type: "object",
   properties: {
-    clientId: { type: 'string' },
+    clientId: { type: "string" },
   },
-  required: ['clientId'],
+  required: ["clientId"],
 };

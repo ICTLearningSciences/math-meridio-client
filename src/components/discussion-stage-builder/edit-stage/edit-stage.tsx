@@ -4,24 +4,42 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React, { useEffect } from 'react';
-import { StageFlowContainer } from './stage-flow-container';
+
+import React, { useEffect } from "react";
+import { v4 as uuidv4 } from "uuid";
 import {
   Button,
   CircularProgress,
   IconButton,
+  styled,
   Typography,
-} from '@mui/material';
-import { InputField } from '../shared/input-components';
-import { v4 as uuidv4 } from 'uuid';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { equals } from '../../../helpers';
-import { DiscussionStage, FlowItem } from '../types';
-import { ColumnDiv, RowDiv } from '../../../styled-components';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import { AllStartOfPhaseSteps } from '../../../helpers';
-import { Download, Save, Upload } from '@mui/icons-material';
-import { VisuallyHiddenInput } from '../../button';
+} from "@mui/material";
+import {
+  Download,
+  Save,
+  Upload,
+  ArrowBack,
+  ContentCopy,
+} from "@mui/icons-material";
+
+import { InputField } from "../shared/input-components";
+import { equals } from "../../../helpers";
+import type { DiscussionStage, FlowItem } from "../types";
+import { ColumnDiv, RowDiv } from "../../../styled-components";
+import type { AllStartOfPhaseSteps } from "../../../helpers";
+import { StageFlowContainer } from "./stage-flow-container";
+
+const VisuallyHiddenInput = styled("input")({
+  clip: "rect(0 0 0 0)",
+  clipPath: "inset(50%)",
+  height: 1,
+  overflow: "hidden",
+  position: "absolute",
+  bottom: 0,
+  left: 0,
+  whiteSpace: "nowrap",
+  width: 1,
+});
 
 export function EditDiscussionStage(props: {
   goToStage: (stage: DiscussionStage) => void;
@@ -29,7 +47,7 @@ export function EditDiscussionStage(props: {
   saveStage: (stage: DiscussionStage) => Promise<DiscussionStage>;
   returnTo: () => void;
   gameIdentifierToStartOfPhaseSteps: AllStartOfPhaseSteps;
-}): JSX.Element {
+}): React.ReactNode {
   const {
     stage,
     saveStage: _saveStage,
@@ -38,13 +56,14 @@ export function EditDiscussionStage(props: {
   } = props;
 
   const [localStageCopy, setLocalStageCopy] = React.useState<DiscussionStage>(
-    JSON.parse(JSON.stringify(stage))
+    JSON.parse(JSON.stringify(stage)),
   );
   const [saveInProgress, setSaveInProgress] = React.useState<boolean>(false);
   const [uploadInProgress, setUploadInProgress] =
     React.useState<boolean>(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLocalStageCopy(JSON.parse(JSON.stringify(stage)));
   }, [stage]);
 
@@ -65,7 +84,7 @@ export function EditDiscussionStage(props: {
       setUploadInProgress(true);
       const file = e.target.files[0];
       const fileReader = new FileReader();
-      fileReader.readAsText(file, 'UTF-8');
+      fileReader.readAsText(file, "UTF-8");
       fileReader.onload = (e) => {
         if (e.target?.result) {
           setLocalStageCopy({
@@ -77,6 +96,7 @@ export function EditDiscussionStage(props: {
         setUploadInProgress(false);
       };
     } catch (e) {
+      console.error(e);
       setUploadInProgress(false);
     }
   }
@@ -84,7 +104,7 @@ export function EditDiscussionStage(props: {
   function addNewFlow() {
     const emptyFlow: FlowItem = {
       clientId: uuidv4(),
-      name: '',
+      name: "",
       steps: [],
     };
     setLocalStageCopy((prevValue) => {
@@ -98,29 +118,29 @@ export function EditDiscussionStage(props: {
   return (
     <ColumnDiv
       style={{
-        width: '100%',
-        height: '100%',
-        overflowY: 'auto',
-        position: 'relative',
+        width: "100%",
+        height: "100%",
+        overflowY: "auto",
+        position: "relative",
       }}
     >
       <IconButton
         onClick={returnTo}
         style={{
-          position: 'absolute',
+          position: "absolute",
           top: 0,
           left: 0,
           zIndex: 100,
-          color: '#1976d2',
+          color: "#1976d2",
         }}
       >
-        <ArrowBackIcon />
+        <ArrowBack />
       </IconButton>
       <ColumnDiv
         data-cy="edit-stage-header"
         style={{
-          alignSelf: 'center',
-          alignItems: 'center',
+          alignSelf: "center",
+          alignItems: "center",
         }}
       >
         <InputField
@@ -138,7 +158,7 @@ export function EditDiscussionStage(props: {
         />
         <RowDiv>
           <Button
-            style={{ marginRight: '10px' }}
+            style={{ marginRight: "10px" }}
             variant="outlined"
             disabled={saveInProgress || equals(localStageCopy, stage)}
             endIcon={saveInProgress ? <CircularProgress /> : <Save />}
@@ -148,12 +168,12 @@ export function EditDiscussionStage(props: {
           </Button>
           <Button
             style={{
-              marginRight: '10px',
+              marginRight: "10px",
             }}
             variant="outlined"
             endIcon={<Download />}
             href={`data:text/json;charset=utf-8,${encodeURIComponent(
-              JSON.stringify(stage)
+              JSON.stringify(stage),
             )}`}
             download={`${stage.clientId}.json`}
           >
@@ -165,7 +185,7 @@ export function EditDiscussionStage(props: {
             tabIndex={-1}
             endIcon={saveInProgress ? <CircularProgress /> : <Upload />}
             style={{
-              marginRight: '10px',
+              marginRight: "10px",
             }}
           >
             Load
@@ -182,7 +202,7 @@ export function EditDiscussionStage(props: {
         </RowDiv>
         {/* Stage Id */}
         <Typography
-          style={{ position: 'absolute', top: 0, right: 0 }}
+          style={{ position: "absolute", top: 0, right: 0 }}
           variant="caption"
         >
           <b>Stage Id:</b> {stage.clientId}
@@ -191,9 +211,9 @@ export function EditDiscussionStage(props: {
               navigator.clipboard.writeText(stage.clientId);
             }}
           >
-            <ContentCopyIcon
+            <ContentCopy
               style={{
-                fontSize: '16px',
+                fontSize: "16px",
               }}
             />
           </IconButton>

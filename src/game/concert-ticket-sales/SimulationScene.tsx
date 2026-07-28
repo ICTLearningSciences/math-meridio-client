@@ -4,7 +4,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import GameScene, { gameObjects } from '../game-scene';
+import GameScene, { gameObjects } from "../game-scene";
 import {
   addBackground,
   addSprite,
@@ -12,8 +12,8 @@ import {
   addTween,
   playSound,
   scaleText,
-} from '../phaser-helpers';
-import EventSystem from '../event-system';
+} from "../phaser-helpers";
+import EventSystem from "../event-system";
 import {
   VIP_TICKET_CONVERSION_RATE,
   RESERVED_TICKET_CONVERSION_RATE,
@@ -22,16 +22,15 @@ import {
   GENERAL_ADMISSION_TICKET_PRICE,
   RESERVED_TICKET_PRICE,
   VIP_TICKET_PRICE,
-} from '.';
-import { SenderType } from '../../store/slices/game/types';
-import { localStorageGet, SESSION_ID } from '../../store/local-storage';
-import { Avatar, Player } from '../../store/slices/player/types';
+} from ".";
+import { localStorageGet, SESSION_ID } from "../../store/local-storage";
+import type { Avatar, Player } from "../../store/slices/player/types";
 import {
   arrayNRandom,
   getRandomAvatar,
   getRandomNumber,
   randomInt,
-} from '../../helpers';
+} from "../../helpers";
 
 export interface ConcertTicketSalesSimulationData {
   player: string;
@@ -49,7 +48,7 @@ export interface ConcertTicketSalesSimulationData {
 }
 
 export interface ConcertTicketSaleAttempt {
-  ticketType: 'generalAdmission' | 'reserved' | 'vip';
+  ticketType: "generalAdmission" | "reserved" | "vip";
   avatar: Avatar[];
   success: boolean;
 }
@@ -70,7 +69,7 @@ export class SimulationScene extends GameScene {
   door?: Phaser.GameObjects.Sprite;
 
   constructor() {
-    super('Simulation');
+    super("Simulation");
     this.simulation = undefined;
     this.tickets = [];
     this.curTicket = 0;
@@ -83,58 +82,58 @@ export class SimulationScene extends GameScene {
   preload() {
     super.preload();
     // Load the assets for the game
-    this.load.setPath('/assets/concert');
-    this.load.image('money', 'money.png');
-    this.load.image('bg_tickets', 'map_tickets.png');
-    this.load.image('bg_concert', 'map_concert.png');
-    this.load.image('seat_vip', 'seat_vip.png');
-    this.load.image('seat_reserved', 'seat_reserved.png');
-    this.load.image('seat_general', 'seat_general.png');
-    this.load.spritesheet('doors', 'doors.png', {
+    this.load.setPath("/assets/concert");
+    this.load.image("money", "money.png");
+    this.load.image("bg_tickets", "map_tickets.png");
+    this.load.image("bg_concert", "map_concert.png");
+    this.load.image("seat_vip", "seat_vip.png");
+    this.load.image("seat_reserved", "seat_reserved.png");
+    this.load.image("seat_general", "seat_general.png");
+    this.load.spritesheet("doors", "doors.png", {
       frameWidth: 64,
       frameHeight: 64,
     });
-    this.load.spritesheet('lights', 'lights.png', {
+    this.load.spritesheet("lights", "lights.png", {
       frameWidth: 608,
       frameHeight: 336,
     });
-    this.load.spritesheet('lights_on', 'lights_on.png', {
+    this.load.spritesheet("lights_on", "lights_on.png", {
       frameWidth: 608,
       frameHeight: 336,
     });
-    this.load.spritesheet('lights_bright', 'lights_bright.png', {
+    this.load.spritesheet("lights_bright", "lights_bright.png", {
       frameWidth: 608,
       frameHeight: 336,
     });
-    this.load.spritesheet('emotes', 'emotes.png', {
+    this.load.spritesheet("emotes", "emotes.png", {
       frameWidth: 48,
       frameHeight: 48,
     });
-    this.load.audio('wrong', ['wrong.mp3']);
-    this.load.audio('right', ['right.wav']);
-    this.load.audio('applause', ['applause.wav']);
-    this.load.audio('cheers', ['cheers.wav']);
-    this.load.audio('music0', ['music_1.mp3']);
-    this.load.audio('music1', ['music_2.mp3']);
-    this.load.audio('music2', ['music_3.wav']);
-    this.load.audio('music3', ['music_4.wav']);
-    this.load.audio('music4', ['music_5.mp3']);
-    this.load.audio('music5', ['music_6.wav']);
+    this.load.audio("wrong", ["wrong.mp3"]);
+    this.load.audio("right", ["right.wav"]);
+    this.load.audio("applause", ["applause.wav"]);
+    this.load.audio("cheers", ["cheers.wav"]);
+    this.load.audio("music0", ["music_1.mp3"]);
+    this.load.audio("music1", ["music_2.mp3"]);
+    this.load.audio("music2", ["music_3.wav"]);
+    this.load.audio("music3", ["music_4.wav"]);
+    this.load.audio("music4", ["music_5.mp3"]);
+    this.load.audio("music5", ["music_6.wav"]);
   }
 
   create() {
     super.create();
-    EventSystem.on('simulate', this.simulate, this);
+    EventSystem.on("simulate", this.simulate, this);
     EventSystem.on(
-      'setMuted',
+      "setMuted",
       (isMuted: boolean) => {
         this.game.sound.mute = isMuted;
       },
-      this
+      this,
     );
     this.anims.create({
-      key: 'door_open',
-      frames: this.anims.generateFrameNumbers('doors', {
+      key: "door_open",
+      frames: this.anims.generateFrameNumbers("doors", {
         start: 0,
         end: 6,
       }),
@@ -142,32 +141,32 @@ export class SimulationScene extends GameScene {
       repeat: 0,
     });
     this.anims.create({
-      key: 'lights_off',
-      frames: this.anims.generateFrameNumbers('lights', {
+      key: "lights_off",
+      frames: this.anims.generateFrameNumbers("lights", {
         frames: [0, 1, 2, 1],
       }),
       frameRate: 3,
       repeat: -1,
     });
     this.anims.create({
-      key: 'lights_on',
-      frames: this.anims.generateFrameNumbers('lights_on', {
+      key: "lights_on",
+      frames: this.anims.generateFrameNumbers("lights_on", {
         frames: [0, 1, 2, 1],
       }),
       frameRate: 3,
       repeat: -1,
     });
     this.anims.create({
-      key: 'lights_bright',
-      frames: this.anims.generateFrameNumbers('lights_bright', {
+      key: "lights_bright",
+      frames: this.anims.generateFrameNumbers("lights_bright", {
         frames: [0, 1],
       }),
       frameRate: 3,
       repeat: -1,
     });
     this.anims.create({
-      key: 'emote_angry',
-      frames: this.anims.generateFrameNumbers('emotes', {
+      key: "emote_angry",
+      frames: this.anims.generateFrameNumbers("emotes", {
         start: 8 * 4,
         end: 8 * 5,
       }),
@@ -175,8 +174,8 @@ export class SimulationScene extends GameScene {
       repeat: -1,
     });
     this.anims.create({
-      key: 'emote_music',
-      frames: this.anims.generateFrameNumbers('emotes', {
+      key: "emote_music",
+      frames: this.anims.generateFrameNumbers("emotes", {
         start: 8 * 2,
         end: 8 * 3,
       }),
@@ -194,14 +193,14 @@ export class SimulationScene extends GameScene {
     this.destroySprite(this.mySprite);
     this.bg?.destroy();
 
-    this.bg = addBackground(this, 'bg_tickets');
+    this.bg = addBackground(this, "bg_tickets");
     this.chatWindow?.setY(this.bg.displayHeight / 2);
     this.addChatMessage({
-      messageId: '',
-      sender: SenderType.SYSTEM,
-      message: 'Select a strategy first to see simulation',
+      messageId: "",
+      sender: "SYSTEM",
+      message: "Select a strategy first to see simulation",
       sessionId: localStorageGet(SESSION_ID) as string,
-      phaseId: '',
+      phaseId: "",
     });
     super.createScene();
   }
@@ -223,12 +222,12 @@ export class SimulationScene extends GameScene {
       i <
       Math.ceil(
         simulation.generalAdmissionTicketsUpForSale /
-          (TOTAL_NUMBER_OF_TICKETS / 10)
+          (TOTAL_NUMBER_OF_TICKETS / 10),
       );
       i++
     ) {
       this.tickets.push({
-        ticketType: 'generalAdmission',
+        ticketType: "generalAdmission",
         success: Math.random() <= GENERAL_ADMISSION_TICKET_CONVERSION_RATE,
         avatar: getRandomAvatar(),
       });
@@ -237,12 +236,12 @@ export class SimulationScene extends GameScene {
       let i = 0;
       i <
       Math.ceil(
-        simulation.reservedTicketsUpForSale / (TOTAL_NUMBER_OF_TICKETS / 10)
+        simulation.reservedTicketsUpForSale / (TOTAL_NUMBER_OF_TICKETS / 10),
       );
       i++
     ) {
       this.tickets.push({
-        ticketType: 'reserved',
+        ticketType: "reserved",
         success: Math.random() <= RESERVED_TICKET_CONVERSION_RATE,
         avatar: getRandomAvatar(),
       });
@@ -251,12 +250,12 @@ export class SimulationScene extends GameScene {
       let i = 0;
       i <
       Math.ceil(
-        simulation.vipTicketsUpForSale / (TOTAL_NUMBER_OF_TICKETS / 10)
+        simulation.vipTicketsUpForSale / (TOTAL_NUMBER_OF_TICKETS / 10),
       );
       i++
     ) {
       this.tickets.push({
-        ticketType: 'vip',
+        ticketType: "vip",
         success: Math.random() <= VIP_TICKET_CONVERSION_RATE,
         avatar: getRandomAvatar(),
       });
@@ -296,7 +295,7 @@ export class SimulationScene extends GameScene {
     const gameWidth = this.bg!.displayWidth;
     const ticket = this.tickets[this.curTicket];
     const type = ticket.ticketType;
-    const xOffset = type === 'vip' ? 0.235 : type === 'reserved' ? 0.345 : 0.45;
+    const xOffset = type === "vip" ? 0.235 : type === "reserved" ? 0.345 : 0.45;
     const sprite = this.renderSpriteAvatar(ticket.avatar, {
       x: gameWidth * xOffset,
       y: gameHeight,
@@ -309,7 +308,7 @@ export class SimulationScene extends GameScene {
       y: gameHeight * 0.35,
       duration: 500,
       onComplete: () => {
-        const bubble = addSprite(this, 'emotes', 0, {
+        const bubble = addSprite(this, "emotes", 0, {
           x: sprite[0].x,
           y: sprite[0].y - 30,
           heightRel: 0.1,
@@ -317,20 +316,20 @@ export class SimulationScene extends GameScene {
         bubble.setDepth(1000);
         // bought ticket
         if (ticket.success) {
-          if (type === 'vip')
+          if (type === "vip")
             scaleText(this, this.vipText!, `${++this.numVip}`);
-          else if (type === 'reserved')
+          else if (type === "reserved")
             scaleText(this, this.reservedText!, `${++this.numReserved}`);
           else scaleText(this, this.generalText!, `${++this.numGeneral}`);
-          playSound(this, 'right', { volume: 0.8 });
-          this.playSpriteAnim(sprite, 'walk_right');
+          playSound(this, "right", { volume: 0.8 });
+          this.playSpriteAnim(sprite, "walk_right");
 
-          addSprite(this, 'money', 0, {
+          addSprite(this, "money", 0, {
             x: getRandomNumber(gameWidth * 0.65, gameWidth * 0.85),
             y: getRandomNumber(gameHeight * 0.7, gameHeight * 0.9),
             heightRel: 0.1,
           });
-          bubble.play('emote_music');
+          bubble.play("emote_music");
           addTween(this, {
             targets: bubble,
             x: gameWidth * 0.8,
@@ -346,16 +345,16 @@ export class SimulationScene extends GameScene {
             duration: 500,
             delay: 100,
             onComplete: () => {
-              this.door?.play('door_open');
+              this.door?.play("door_open");
               this.playSpriteAnim(sprite, `walk`);
-              if (type === 'vip') this.profit += VIP_TICKET_PRICE;
-              else if (type === 'reserved')
+              if (type === "vip") this.profit += VIP_TICKET_PRICE;
+              else if (type === "reserved")
                 this.profit += RESERVED_TICKET_PRICE;
               else this.profit += GENERAL_ADMISSION_TICKET_PRICE;
               scaleText(
                 this,
                 this.profitText!,
-                `Today's Sales:\n $${this.profit}`
+                `Today's Sales:\n $${this.profit}`,
               );
               this.curTicket++;
               this.destroySprite(sprite);
@@ -365,9 +364,9 @@ export class SimulationScene extends GameScene {
         }
         // didn't buy ticket
         else {
-          playSound(this, 'wrong', { volume: 2 });
-          this.playSpriteAnim(sprite, 'walk_left');
-          bubble.play('emote_angry');
+          playSound(this, "wrong", { volume: 2 });
+          this.playSpriteAnim(sprite, "walk_left");
+          bubble.play("emote_angry");
           addTween(this, {
             targets: bubble,
             x: -100,
@@ -395,7 +394,7 @@ export class SimulationScene extends GameScene {
 
   joinConcert() {
     if (this.curTicket >= this.tickets.length) {
-      EventSystem.emit('simulationEnded', this.simulation);
+      EventSystem.emit("simulationEnded", this.simulation);
       return;
     }
     const gameHeight = this.bg!.displayHeight;
@@ -415,14 +414,14 @@ export class SimulationScene extends GameScene {
     this.playSpriteAnim(sprite, `walk`);
 
     const y =
-      gameHeight * (type === 'vip' ? 0.7 : type === 'reserved' ? 0.8 : 0.9);
+      gameHeight * (type === "vip" ? 0.7 : type === "reserved" ? 0.8 : 0.9);
     addTween(this, {
       targets: sprite,
       y: y,
       duration: 500,
       onComplete: () => {
-        let x = 0;
-        if (type === 'vip') {
+        let x: number;
+        if (type === "vip") {
           x = gameWidth * 0.3 + gameWidth * 0.05 * this.numVip;
           this.numVip++;
           this.playSpriteAnim(
@@ -430,10 +429,10 @@ export class SimulationScene extends GameScene {
             this.numVip < 5
               ? `walk_left`
               : this.numVip > 5
-              ? 'walk_right'
-              : 'walk'
+                ? "walk_right"
+                : "walk",
           );
-        } else if (type === 'reserved') {
+        } else if (type === "reserved") {
           x = gameWidth * 0.3 + gameWidth * 0.05 * this.numReserved;
           this.numReserved++;
           this.playSpriteAnim(
@@ -441,8 +440,8 @@ export class SimulationScene extends GameScene {
             this.numReserved < 5
               ? `walk_left`
               : this.numReserved > 5
-              ? 'walk_right'
-              : 'walk'
+                ? "walk_right"
+                : "walk",
           );
         } else {
           x = gameWidth * 0.3 + gameWidth * 0.05 * this.numGeneral;
@@ -452,8 +451,8 @@ export class SimulationScene extends GameScene {
             this.numGeneral < 5
               ? `walk_left`
               : this.numGeneral > 5
-              ? 'walk_right'
-              : 'walk'
+                ? "walk_right"
+                : "walk",
           );
         }
         addTween(this, {
@@ -480,7 +479,7 @@ export class SimulationScene extends GameScene {
   _createTicketScene() {
     this.destroySprite(this.mySprite);
     this.bg?.destroy();
-    this.bg = addBackground(this, 'bg_tickets');
+    this.bg = addBackground(this, "bg_tickets");
     const bg = this.bg;
     this.vipText?.destroy();
     this.reservedText?.destroy();
@@ -518,12 +517,12 @@ export class SimulationScene extends GameScene {
       y: bg!.displayHeight * -0.35,
       maxFontSize: 78,
       textStyle: {
-        align: 'center',
+        align: "center",
       },
     });
     this.profitText.setDepth(1000);
 
-    this.door = addSprite(this, 'doors', 0, {
+    this.door = addSprite(this, "doors", 0, {
       heightRel: 0.2,
       x: this.bg!.displayWidth * 0.79,
       y: this.bg!.displayHeight * 0.39,
@@ -532,9 +531,9 @@ export class SimulationScene extends GameScene {
 
   _createConcertScene() {
     this.bg?.destroy();
-    this.bg = addBackground(this, 'bg_concert');
+    this.bg = addBackground(this, "bg_concert");
 
-    const lights = addSprite(this, 'lights', 0, {
+    const lights = addSprite(this, "lights", 0, {
       x: this.bg.displayWidth / 2,
       y: this.bg.displayHeight / 2,
       width: this.bg.displayWidth,
@@ -543,14 +542,14 @@ export class SimulationScene extends GameScene {
     const totalProfit = this.simulation!.totalProfit;
     if (totalProfit > 2400) {
       lights.setY(lights.y - 80);
-      lights.play('lights_bright');
-      playSound(this, 'cheers');
+      lights.play("lights_bright");
+      playSound(this, "cheers");
     } else if (totalProfit > 2200) {
       lights.setY(lights.y - 80);
-      lights.play('lights_on');
-      playSound(this, 'applause');
+      lights.play("lights_on");
+      playSound(this, "applause");
     } else {
-      lights.play('lights_off');
+      lights.play("lights_off");
     }
 
     playSound(this, `music${randomInt(6)}`, { loop: true, volume: 0.5 });
@@ -593,9 +592,9 @@ export class SimulationScene extends GameScene {
         y: this.bg.displayHeight * -0.33,
         maxFontSize: 78,
         textStyle: {
-          align: 'center',
+          align: "center",
         },
-      }
+      },
     );
     this.profitText.setDepth(1000);
 
@@ -610,13 +609,13 @@ export class SimulationScene extends GameScene {
       scale: 0.2,
     });
 
-    const bubble = addSprite(this, 'emotes', 0, {
+    const bubble = addSprite(this, "emotes", 0, {
       x: this.mySprite[0].x,
       y: this.mySprite[0].y - 40,
       heightRel: 0.1,
     });
     bubble.setDepth(1000);
-    bubble.play('emote_music');
+    bubble.play("emote_music");
 
     this.time.addEvent({
       delay: 500,
@@ -625,7 +624,7 @@ export class SimulationScene extends GameScene {
         const rand = randomInt(3);
         this.playSpriteAnim(
           this.mySprite,
-          rand === 0 ? 'walk' : rand === 1 ? 'walk_left' : 'walk_right'
+          rand === 0 ? "walk" : rand === 1 ? "walk_left" : "walk_right",
         );
       },
       callbackScope: this,
@@ -635,15 +634,15 @@ export class SimulationScene extends GameScene {
       numReserved = 0,
       numGeneral = 0;
     for (const ticket of this.tickets) {
-      if (ticket.ticketType === 'vip') {
-        addSprite(this, 'seat_vip', 0, {
+      if (ticket.ticketType === "vip") {
+        addSprite(this, "seat_vip", 0, {
           x:
             this.bg.displayWidth * 0.3 + this.bg.displayWidth * 0.05 * numVip++,
           y: this.bg.displayHeight * 0.75,
           heightRel: 0.1,
         });
-      } else if (ticket.ticketType === 'reserved') {
-        addSprite(this, 'seat_reserved', 0, {
+      } else if (ticket.ticketType === "reserved") {
+        addSprite(this, "seat_reserved", 0, {
           x:
             this.bg.displayWidth * 0.3 +
             this.bg.displayWidth * 0.05 * numReserved++,
@@ -651,7 +650,7 @@ export class SimulationScene extends GameScene {
           heightRel: 0.1,
         });
       } else {
-        addSprite(this, 'seat_general', 0, {
+        addSprite(this, "seat_general", 0, {
           x:
             this.bg.displayWidth * 0.3 +
             this.bg.displayWidth * 0.05 * numGeneral++,

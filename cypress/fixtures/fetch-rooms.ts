@@ -25,7 +25,7 @@ export function freshRoomData(attendingRoomOwner: Player): Room {
         "name": "Concert Ticket Management Solution Space 4",
         "classId": "697d7ba20e83375926c1241b",
         "groupId": undefined,
-        "phase": RoomPhase.NO_ACTIVE_PROCESSING,
+        "phase": 'NO_ACTIVE_PROCESSING',
         "gameData": {
             "mathStandardsCompleted": {},
             "phaseProgression": {
@@ -39,7 +39,7 @@ export function freshRoomData(attendingRoomOwner: Player): Room {
             "gameId": "concert-ticket-sales",
             "playersStatusRecord": {},
             "curGameState": {
-                "curState": RequireInputType.SINGLE_RESPONSE_REQUIRED,
+                "curState": 'SINGLE_RESPONSE_REQUIRED',
                 "playersLeftToRespond": [],
                 "studentReadyToContinue": false
             },

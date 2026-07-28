@@ -4,29 +4,29 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { Typography } from '@mui/material';
+import React from "react";
+import { Typography } from "@mui/material";
 
 export function OverlayBox(props: {
   message: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   styles?: Record<string, any>;
-}): JSX.Element {
+}): React.ReactNode {
   return (
     <div
       className="column center-div"
       style={{
-        position: 'absolute',
+        position: "absolute",
         top: 0,
-        left: '50%',
-        transform: 'translate(-50%, 50%)',
+        left: "50%",
+        transform: "translate(-50%, 50%)",
         width: 300,
         height: 60,
-        backgroundColor: 'white',
-        textAlign: 'center',
-        border: '1px solid lightgrey',
-        padding: '20px',
-        boxShadow: '-5px 5px 10px 0px rgba(0,0,0,0.75)',
+        backgroundColor: "white",
+        textAlign: "center",
+        border: "1px solid lightgrey",
+        padding: "20px",
+        boxShadow: "-5px 5px 10px 0px rgba(0,0,0,0.75)",
         ...props.styles,
       }}
     >

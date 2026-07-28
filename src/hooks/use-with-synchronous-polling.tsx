@@ -4,20 +4,21 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { CancelToken } from 'axios';
-import { GenericLlmRequest, JobStatus } from '../types';
-import { asyncLlmRequest, asyncLlmRequestStatus } from '../api';
-import {
+
+import type { CancelToken } from "axios";
+import type { GenericLlmRequest } from "../types";
+import { asyncLlmRequest, asyncLlmRequestStatus } from "../api";
+import type {
   AiServicesJobStatusResponseTypes,
   AiServicesResponseTypes,
-} from '../ai-services/ai-service-types';
+} from "../ai-services/ai-service-types";
 
 /**
  * Executes the llm request and handles polling until the job is complete.
  */
 export async function syncLlmRequest(
   llmRequest: GenericLlmRequest,
-  cancelToken?: CancelToken
+  cancelToken?: CancelToken,
 ): Promise<AiServicesResponseTypes> {
   const openAiJobId = await asyncLlmRequest(llmRequest, cancelToken);
   const pollFunction = () => {
@@ -26,13 +27,13 @@ export async function syncLlmRequest(
   const res = await pollUntilTrue<AiServicesJobStatusResponseTypes>(
     pollFunction,
     (res: AiServicesJobStatusResponseTypes) => {
-      if (res.jobStatus === JobStatus.FAILED) {
+      if (res.jobStatus === "FAILED") {
         throw new Error(`LLM request failed: ${res.apiError}`);
       }
-      return res.jobStatus === JobStatus.COMPLETE;
+      return res.jobStatus === "COMPLETE";
     },
     1000,
-    180 * 1000
+    180 * 1000,
   );
   return res.aiServiceResponse;
 }
@@ -41,7 +42,7 @@ export function pollUntilTrue<T>(
   pollFunction: () => Promise<T>,
   endPollCondition: (res: T) => boolean,
   interval: number,
-  timeout = 0
+  timeout = 0,
 ) {
   const startTime = Date.now();
 
@@ -52,7 +53,7 @@ export function pollUntilTrue<T>(
     }
 
     if (timeout && Date.now() - startTime > timeout) {
-      throw new Error('Polling timed out');
+      throw new Error("Polling timed out");
     }
 
     await new Promise((resolve) => setTimeout(resolve, interval));

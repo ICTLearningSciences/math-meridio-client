@@ -5,8 +5,8 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 
-import React from 'react';
-import { useNavigate } from 'react-router';
+import React from "react";
+import { useNavigate } from "react-router";
 import {
   Card,
   CardContent,
@@ -18,17 +18,16 @@ import {
   TableHead,
   TableRow,
   Typography,
-} from '@mui/material';
-import { NotificationType } from '../../../store/slices/educational-data/types';
-import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
+} from "@mui/material";
+import { useWithEducationalData } from "../../../store/slices/educational-data/use-with-educational-data";
 import {
-  ErrorOutline,
+  ErrorOutlined,
   NewReleasesOutlined,
   WarningAmberOutlined,
-} from '@mui/icons-material';
-import { useWithWindow } from '../../../hooks/use-with-window';
+} from "@mui/icons-material";
+import { useWithWindow } from "../../../hooks/use-with-window";
 
-export default function TeacherEvents(): JSX.Element {
+export default function TeacherEvents(): React.ReactNode {
   const { educationalData, dismissNotifications } = useWithEducationalData();
   const { windowHeight } = useWithWindow();
   const navigate = useNavigate();
@@ -36,18 +35,19 @@ export default function TeacherEvents(): JSX.Element {
 
   React.useEffect(() => {
     dismissNotifications();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <div className="dashboard" style={{ minHeight: windowHeight - 250 }}>
       <div className="column spacing">
-        <Typography fontSize={16} fontWeight="bold">
+        <Typography style={{ fontSize: 16, fontWeight: "bold" }}>
           NOTIFICATIONS
         </Typography>
         <Card style={{ borderRadius: 10 }}>
           <CardContent
             className="column spacing"
-            style={{ position: 'relative', padding: 20 }}
+            style={{ position: "relative", padding: 20 }}
           >
             {notifications.length === 0 ? (
               <Typography variant="body2" color="error">
@@ -63,14 +63,14 @@ export default function TeacherEvents(): JSX.Element {
                 <Table>
                   <TableHead>
                     <TableRow>
-                      <TableCell style={{ fontWeight: 'bold' }}>Date</TableCell>
-                      <TableCell style={{ fontWeight: 'bold' }}>
+                      <TableCell style={{ fontWeight: "bold" }}>Date</TableCell>
+                      <TableCell style={{ fontWeight: "bold" }}>
                         Event
                       </TableCell>
-                      <TableCell style={{ fontWeight: 'bold' }}>
+                      <TableCell style={{ fontWeight: "bold" }}>
                         Student
                       </TableCell>
-                      <TableCell style={{ fontWeight: 'bold' }}>
+                      <TableCell style={{ fontWeight: "bold" }}>
                         Classroom
                       </TableCell>
                     </TableRow>
@@ -78,14 +78,14 @@ export default function TeacherEvents(): JSX.Element {
                   <TableBody>
                     {[...notifications].reverse().map((event, idx) => {
                       const player = educationalData.students.find(
-                        (p) => p._id === event.userId
+                        (p) => p._id === event.userId,
                       );
                       const room = educationalData.rooms.find(
-                        (r) => r._id === event.roomId
+                        (r) => r._id === event.roomId,
                       );
                       const classroom = educationalData.classes.find(
                         (p) =>
-                          p._id === event.classId || p._id === room?.classId
+                          p._id === event.classId || p._id === room?.classId,
                       );
                       return (
                         <TableRow key={`event-${idx}`}>
@@ -94,20 +94,19 @@ export default function TeacherEvents(): JSX.Element {
                           </TableCell>
                           <TableCell>
                             <div className="row">
-                              {event.eventType === NotificationType.REPORT ? (
-                                <ErrorOutline
+                              {event.eventType === "REPORT" ? (
+                                <ErrorOutlined
                                   fontSize="small"
                                   color="error"
                                   style={{ marginRight: 5 }}
                                 />
-                              ) : event.eventType ===
-                                NotificationType.REQUEST_HELP ? (
+                              ) : event.eventType === "REQUEST_HELP" ? (
                                 <WarningAmberOutlined
                                   fontSize="small"
                                   color="warning"
                                   style={{ marginRight: 5 }}
                                 />
-                              ) : event.eventType === NotificationType.JOIN ? (
+                              ) : event.eventType === "JOIN" ? (
                                 <NewReleasesOutlined
                                   fontSize="small"
                                   color="success"
@@ -118,7 +117,7 @@ export default function TeacherEvents(): JSX.Element {
                                 <Link
                                   onClick={() =>
                                     navigate(
-                                      `/classes/${classroom._id}/room/${room._id}`
+                                      `/classes/${classroom._id}/room/${room._id}`,
                                     )
                                   }
                                 >

@@ -4,7 +4,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
+import React from "react";
 import {
   Button,
   Card,
@@ -12,24 +12,24 @@ import {
   Collapse,
   IconButton,
   Typography,
-} from '@mui/material';
-import { ExpandLess, ExpandMore } from '@mui/icons-material';
-import { Room } from '../../store/slices/game/types';
+} from "@mui/material";
+import { ExpandLess, ExpandMore } from "@mui/icons-material";
+import type { Room } from "../../store/slices/game/types";
 
 export default function RoomCard(props: {
   room: Room;
   join: (id: string) => void;
   delete: (id: string) => void;
   ownerPresent: boolean;
-}): JSX.Element {
+}): React.ReactNode {
   const { room, ownerPresent } = props;
   const [expanded, setIsExpanded] = React.useState<boolean>(false);
   return (
     <Card
       className="list-item"
       style={{
-        width: '100%',
-        boxSizing: 'border-box',
+        width: "100%",
+        boxSizing: "border-box",
         opacity: ownerPresent ? 1 : 0.5,
       }}
     >
@@ -41,8 +41,8 @@ export default function RoomCard(props: {
           className="row"
           style={{
             flexGrow: 1,
-            justifyContent: 'space-between',
-            alignItems: 'center',
+            justifyContent: "space-between",
+            alignItems: "center",
           }}
         >
           <Typography style={{ flexGrow: 1 }}>{room.name}</Typography>
@@ -59,7 +59,7 @@ export default function RoomCard(props: {
         </div>
       </CardContent>
       <Collapse in={expanded} timeout="auto" unmountOnExit>
-        <CardContent style={{ backgroundColor: '#fcfcfc' }}>
+        <CardContent style={{ backgroundColor: "#fcfcfc" }}>
           <Typography variant="body2" color="text.secondary">
             Game: {room.gameData.gameId}
           </Typography>
@@ -67,7 +67,7 @@ export default function RoomCard(props: {
             Current Phase: {room.gameData.globalStateData.curStageId}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Players: {room.gameData.players.map((p) => p.name).join(', ')}
+            Players: {room.gameData.players.map((p) => p.name).join(", ")}
           </Typography>
           <Button
             variant="contained"

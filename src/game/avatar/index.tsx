@@ -4,11 +4,12 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { AvatarCreator } from './AvatarCreator';
+import { AvatarCreator } from "./AvatarCreator";
+import Phaser from "phaser";
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.CANVAS,
-  backgroundColor: '#282c34',
+  backgroundColor: "#282c34",
   width: 1280,
   height: 720,
   scale: {

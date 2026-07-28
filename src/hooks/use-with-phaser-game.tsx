@@ -6,12 +6,13 @@ The full terms of this copyright and license should always be found in the root 
 */
 /* eslint-disable */
 
-import React, { useEffect, useState } from 'react';
-import EventSystem from '../game/event-system';
-import { useAppSelector } from '../store/hooks';
+import React, { useEffect, useState } from "react";
+import Phaser from "phaser";
+import EventSystem from "../game/event-system";
+import { useAppSelector } from "../store/hooks";
 
 export function useWithPhaserGame(
-  gameContainerRef: React.MutableRefObject<HTMLDivElement | null>
+  gameContainerRef: React.MutableRefObject<HTMLDivElement | null>,
 ) {
   const { player } = useAppSelector((state) => state.playerData);
   const [game, setGame] = useState<Phaser.Types.Core.GameConfig>();
@@ -27,7 +28,7 @@ export function useWithPhaserGame(
     const config = {
       ...game,
       type: Phaser.CANVAS,
-      backgroundColor: '#f1f1f1',
+      backgroundColor: "#f1f1f1",
       width: 1280,
       height: 720,
       scale: {
@@ -37,10 +38,10 @@ export function useWithPhaserGame(
       parent: gameContainerRef.current as HTMLElement,
     };
     const pg = new Phaser.Game(config);
-    pg.scene.start(scene || 'Boot', { player });
+    pg.scene.start(scene || "Boot", { player });
     setPhaserGame(pg);
     // listeners
-    EventSystem.on('sceneCreated', onSceneStarted);
+    EventSystem.on("sceneCreated", onSceneStarted);
     // deconstructor
     return () => {
       destroyPhaserGame(pg);
@@ -57,7 +58,7 @@ export function useWithPhaserGame(
 
   function startPhaserGame(
     game: Phaser.Types.Core.GameConfig,
-    scene?: string
+    scene?: string,
   ): void {
     if (phaserGame) {
       destroyPhaserGame(phaserGame);
@@ -84,7 +85,7 @@ export function useWithPhaserGame(
       gameContainerRef.current.children.length > 0
     ) {
       gameContainerRef.current.removeChild(
-        gameContainerRef.current.children[0]
+        gameContainerRef.current.children[0],
       );
     }
   }

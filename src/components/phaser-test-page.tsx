@@ -4,10 +4,10 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { useWithPhaserGame } from '../hooks/use-with-phaser-game';
-import { useAppSelector } from '../store/hooks';
-import BasketballGame from '../game/basketball';
+import React from "react";
+import { useWithPhaserGame } from "../hooks/use-with-phaser-game";
+import { useAppSelector } from "../store/hooks";
+import BasketballGame from "../game/basketball";
 import ConcertGame, {
   GENERAL_ADMISSION_TICKET_CONVERSION_RATE,
   GENERAL_ADMISSION_TICKET_PRICE,
@@ -15,32 +15,23 @@ import ConcertGame, {
   RESERVED_TICKET_PRICE,
   VIP_TICKET_CONVERSION_RATE,
   VIP_TICKET_PRICE,
-} from '../game/concert-ticket-sales';
-import withAuthorizationOnly from '../wrap-with-authorization-only';
-import EventSystem from '../game/event-system';
-import { getRandomNumber } from '../helpers';
+} from "../game/concert-ticket-sales";
+import withAuthorizationOnly from "../wrap-with-authorization-only";
+import EventSystem from "../game/event-system";
+import { getRandomNumber } from "../helpers";
 
-function PhaserTestPage(): JSX.Element {
+function PhaserTestPage(): React.ReactNode {
   const { player } = useAppSelector((state) => state.playerData);
   const gameContainerRef = React.useRef<HTMLDivElement | null>(null);
-  const [game] = React.useState<string>('concert');
+  const [game] = React.useState<string>("concert");
   const { startPhaserGame } = useWithPhaserGame(gameContainerRef);
 
-  React.useEffect(() => {
-    if (game === 'basketball') {
-      startPhaserGame(BasketballGame.config, 'Simulation');
-    } else {
-      startPhaserGame(ConcertGame.config, 'Simulation');
-    }
-    EventSystem.on('sceneCreated', sceneCreated);
-  }, []);
-
   function sceneCreated() {
-    if (game === 'basketball') {
+    if (game === "basketball") {
       const outside = getRandomNumber(10, 50);
       const mid = getRandomNumber(10, 50);
       const inside = 100 - outside - mid;
-      EventSystem.emit('simulate', {
+      EventSystem.emit("simulate", {
         player: player?._id,
         playerAvatar: player,
         insideShots: inside,
@@ -58,14 +49,14 @@ function PhaserTestPage(): JSX.Element {
       const vipSold = Math.round(vip * VIP_TICKET_CONVERSION_RATE);
       const reserved = getRandomNumber(0, 50);
       const reservedSold = Math.round(
-        reserved * RESERVED_TICKET_CONVERSION_RATE
+        reserved * RESERVED_TICKET_CONVERSION_RATE,
       );
       const general = 100 - vip - reserved;
       const generalSold = Math.round(
-        general * GENERAL_ADMISSION_TICKET_CONVERSION_RATE
+        general * GENERAL_ADMISSION_TICKET_CONVERSION_RATE,
       );
 
-      EventSystem.emit('simulate', {
+      EventSystem.emit("simulate", {
         player: player?._id,
         playerAvatar: player,
         generalAdmissionTicketsUpForSale: general,
@@ -82,6 +73,16 @@ function PhaserTestPage(): JSX.Element {
     }
   }
 
+  React.useEffect(() => {
+    if (game === "basketball") {
+      startPhaserGame(BasketballGame.config, "Simulation");
+    } else {
+      startPhaserGame(ConcertGame.config, "Simulation");
+    }
+    EventSystem.on("sceneCreated", sceneCreated);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [game]);
+
   return (
     <>
       <div
@@ -96,4 +97,5 @@ function PhaserTestPage(): JSX.Element {
   );
 }
 
-export default withAuthorizationOnly(PhaserTestPage);
+const Page = withAuthorizationOnly(PhaserTestPage);
+export default Page;

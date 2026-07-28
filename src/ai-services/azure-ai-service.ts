@@ -4,16 +4,17 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import {
+
+import type {
+  ResponseCreateParamsNonStreaming,
+  Response,
+} from "openai/resources/responses/responses";
+import type {
   AiResponseType,
   AiJobStatusType,
   AiStepData,
   AiServiceStepDataTypes,
-} from './ai-service-types';
-import {
-  ResponseCreateParamsNonStreaming,
-  Response,
-} from 'openai/resources/responses/responses';
+} from "./ai-service-types";
 
 export type AzureOpenAiReqType = ResponseCreateParamsNonStreaming;
 
@@ -34,7 +35,7 @@ export type AzureOpenAiServiceJobStatusResponseType =
   AiJobStatusType<AzureOpenAiServiceResponse>;
 
 export function isAzureOpenAiData(
-  stepData: AiServiceStepDataTypes
+  stepData: AiServiceStepDataTypes,
 ): stepData is AzureOpenAiStepDataType {
-  return 'output_text' in stepData.aiServiceResponse;
+  return "output_text" in stepData.aiServiceResponse;
 }

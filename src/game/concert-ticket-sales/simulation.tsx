@@ -4,13 +4,13 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
+import React from "react";
 
-import { useWithPhaserGame } from '../../hooks/use-with-phaser-game';
-import { GameStateData, Room } from '../../store/slices/game/types';
-import EventSystem from '../event-system';
-import { Typography } from '@mui/material';
-import { ConcertTicketSalesSimulationData } from './SimulationScene';
+import { useWithPhaserGame } from "../../hooks/use-with-phaser-game";
+import type { GameStateData, Room } from "../../store/slices/game/types";
+import EventSystem from "../event-system";
+import { Typography } from "@mui/material";
+import type { ConcertTicketSalesSimulationData } from "./SimulationScene";
 import {
   VIP_TICKET_PERCENT_KEY,
   RESERVED_TICKET_PERCENT_KEY,
@@ -22,17 +22,17 @@ import {
   GENERAL_ADMISSION_TICKET_PRICE,
   VIP_TICKET_PRICE,
   RESERVED_TICKET_PRICE,
-} from '.';
-import { Player } from '../../store/slices/player/types';
-import { Game } from '../types';
-import { viewGameRoomSimulation } from '../../hooks/game-rooms/game-room-api';
-import { useWithPlayer } from '../../store/slices/player/use-with-player-state';
+} from ".";
+import type { Player } from "../../store/slices/player/types";
+import type { Game } from "../types";
+import { viewGameRoomSimulation } from "../../hooks/game-room-api";
+import { useWithPlayer } from "../../store/slices/player/use-with-player-state";
 
 export function PlayerStrategy(props: {
   playersGameStateData: GameStateData;
   player: Player;
   room: Room;
-}): JSX.Element {
+}): React.ReactNode {
   const psd = props.playersGameStateData;
   const vipTicketsUpForSale = psd[VIP_TICKET_PERCENT_KEY] || 0;
   const reservedTicketsUpForSale = psd[RESERVED_TICKET_PERCENT_KEY] || 0;
@@ -44,7 +44,7 @@ export function PlayerStrategy(props: {
     parseInt(vipTicketsUpForSale) +
       parseInt(reservedTicketsUpForSale) +
       parseInt(generalAdmissionTicketsUpForSale) ===
-      TOTAL_NUMBER_OF_TICKETS
+    TOTAL_NUMBER_OF_TICKETS,
   );
 
   function simulate(): void {
@@ -55,15 +55,15 @@ export function PlayerStrategy(props: {
       generalAdmissionTicketsUpForSale: generalAdmissionTicketsUpForSale,
       generalAdmissionTicketsSold: Math.round(
         generalAdmissionTicketsUpForSale *
-          GENERAL_ADMISSION_TICKET_CONVERSION_RATE
+          GENERAL_ADMISSION_TICKET_CONVERSION_RATE,
       ),
       reservedTicketsUpForSale: reservedTicketsUpForSale,
       reservedTicketsSold: Math.round(
-        reservedTicketsUpForSale * RESERVED_TICKET_CONVERSION_RATE
+        reservedTicketsUpForSale * RESERVED_TICKET_CONVERSION_RATE,
       ),
       vipTicketsUpForSale: vipTicketsUpForSale,
       vipTicketsSold: Math.round(
-        vipTicketsUpForSale * VIP_TICKET_CONVERSION_RATE
+        vipTicketsUpForSale * VIP_TICKET_CONVERSION_RATE,
       ),
       totalProfit: 0,
     };
@@ -71,8 +71,8 @@ export function PlayerStrategy(props: {
       simData.generalAdmissionTicketsSold * GENERAL_ADMISSION_TICKET_PRICE +
       simData.vipTicketsSold * VIP_TICKET_PRICE +
       simData.reservedTicketsSold * RESERVED_TICKET_PRICE;
-    EventSystem.emit('destroy');
-    EventSystem.emit('simulate', simData);
+    EventSystem.emit("destroy");
+    EventSystem.emit("simulate", simData);
     viewGameRoomSimulation(props.room._id);
   }
 
@@ -80,32 +80,33 @@ export function PlayerStrategy(props: {
     <div
       onClick={simulate}
       style={{
-        width: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
       }}
     >
-      <Typography style={{ fontWeight: 'bold' }}>
-        {player?._id === props.player?._id ? 'My ' : `${props.player?.name}'s`}{' '}
+      <Typography style={{ fontWeight: "bold" }}>
+        {player?._id === props.player?._id ? "My " : `${props.player?.name}'s`}{" "}
         strategy:
       </Typography>
       <Typography>
-        {vipTicketsUpForSale} vip, {reservedTicketsUpForSale} reserved,{' '}
+        {vipTicketsUpForSale} vip, {reservedTicketsUpForSale} reserved,{" "}
         {generalAdmissionTicketsUpForSale} general admission
       </Typography>
     </div>
   );
 }
 
-export function SimulationComponent(props: { game: Game }): JSX.Element {
+export function SimulationComponent(props: { game: Game }): React.ReactNode {
   const { game } = props;
   const gameContainerRef = React.useRef<HTMLDivElement | null>(null);
   const { startPhaserGame } = useWithPhaserGame(gameContainerRef);
 
   React.useEffect(() => {
-    startPhaserGame(game.config, 'Simulation');
+    startPhaserGame(game.config, "Simulation");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [game.config]);
 
   return (
@@ -113,7 +114,7 @@ export function SimulationComponent(props: { game: Game }): JSX.Element {
       <div
         id="game-container"
         ref={gameContainerRef}
-        style={{ height: '100%' }}
+        style={{ height: "100%" }}
       />
     </>
   );

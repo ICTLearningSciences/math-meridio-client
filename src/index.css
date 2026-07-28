@@ -127,3 +127,8 @@ body {
   /* background-color: #65AFE9; */
   color: white;
 }
+
+.carousel {
+  /* width: 100px; */
+  height: 90%;
+}

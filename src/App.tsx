@@ -4,27 +4,27 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { Provider } from 'react-redux';
-import { RouterProvider, createBrowserRouter, Outlet } from 'react-router-dom';
 
-import { Header } from './components/header';
-import AvatarPage from './components/avatar-page';
-import PhaserTestPage from './components/phaser-test-page';
-import { StageBuilderPage } from './components/discussion-stage-builder/stage-builder-page';
-import GoogleLoginPage from './components/google_login/login';
+import { Provider } from "react-redux";
+import { RouterProvider, createBrowserRouter, Outlet } from "react-router-dom";
+
+import { Header } from "./components/header";
+import AvatarPage from "./components/avatar-page";
+import PhaserTestPage from "./components/phaser-test-page";
+import { StageBuilderPage } from "./components/discussion-stage-builder/stage-builder-page";
+import GoogleLoginPage from "./components/google_login/login";
 import {
   ClassesPage,
   SelectedClassPage,
   RoomViewPage,
-} from './components/classes';
+} from "./components/classes";
 
-import { store } from './store';
-import { useWithHydrateRedux } from './store/use-with-hydrate-redux';
-import { useWithLogin } from './store/slices/player/use-with-login';
-import { GoogleOAuthProvider } from '@react-oauth/google';
-import { useWithEducationalData } from './store/slices/educational-data/use-with-educational-data';
-import AdminPage from './components/admin';
+import { store } from "./store";
+import { useWithHydrateRedux } from "./store/use-with-hydrate-redux";
+import { useWithLogin } from "./store/slices/player/use-with-login";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+import { useWithEducationalData } from "./store/slices/educational-data/use-with-educational-data";
+import AdminPage from "./components/admin";
 
 // Layout component that provides useLogin to all routes
 function RootLayout() {
@@ -58,15 +58,15 @@ const router = createBrowserRouter([
     element: <RootLayout />,
     children: [
       {
-        path: '/',
+        path: "/",
         element: <GoogleLoginPageWrapper />,
       },
       {
-        path: '/avatar-creator',
+        path: "/avatar-creator",
         element: <AvatarPage />,
       },
       {
-        path: '/classes',
+        path: "/classes",
         element: <GameLayout />,
         children: [
           {
@@ -74,32 +74,32 @@ const router = createBrowserRouter([
             element: <ClassesPage />,
           },
           {
-            path: ':classId',
+            path: ":classId",
             element: <SelectedClassPage />,
           },
           {
-            path: ':classId/room/:roomId',
+            path: ":classId/room/:roomId",
             element: <RoomViewPage />,
           },
         ],
       },
       {
-        path: '/admin',
+        path: "/admin",
         element: <AdminPage />,
       },
       {
-        path: '/discussion-builder',
+        path: "/discussion-builder",
         element: (
           <StageBuilderPage
             goToStage={() => {
-              console.log('');
+              console.log("");
             }}
           />
         ),
       },
       // test stuff only remove later
       {
-        path: '/phaser',
+        path: "/phaser",
         element: <PhaserTestPage />,
       },
     ],
@@ -111,12 +111,12 @@ function MainApp() {
   return <RouterProvider router={router} />;
 }
 
-function App(): JSX.Element {
-  const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '123';
+function App(): React.ReactNode {
+  const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "123";
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <Provider store={store}>
-        <div style={{ height: '100vh' }}>
+        <div style={{ height: "100vh" }}>
           <MainApp />
         </div>
       </Provider>

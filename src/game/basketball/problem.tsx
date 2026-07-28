@@ -4,21 +4,23 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { Typography } from '@mui/material';
-import Game from '.';
-import shotChart from './shot-chart.png';
+import React from "react";
+import { Typography } from "@mui/material";
+import Game from ".";
+import shotChart from "./shot-chart.png";
 
-export function ProblemComponent(props: { minimize?: boolean }): JSX.Element {
+export function ProblemComponent(props: {
+  minimize?: boolean;
+}): React.ReactNode {
   return (
     <div>
       {props.minimize ? undefined : (
         <img
           style={{
-            width: '50%',
-            height: 'auto',
-            float: 'right',
-            marginLeft: '10px',
+            width: "50%",
+            height: "auto",
+            float: "right",
+            marginLeft: "10px",
           }}
           src={shotChart}
         ></img>

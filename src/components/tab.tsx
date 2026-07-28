@@ -4,15 +4,15 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { AnimatePresence } from 'motion/react';
-import * as motion from 'motion/react-client';
-import { CSS } from 'styled-components/dist/types';
-import { ContainedButton, OutlinedButton } from './button';
+import React from "react";
+import { AnimatePresence } from "motion/react";
+import * as motion from "motion/react-client";
+import type { CSS } from "styled-components/dist/types";
+import { ContainedButton, OutlinedButton } from "./button";
 
 export interface Tab {
   name: string;
-  tabIcon?: JSX.Element;
+  tabIcon?: React.ReactNode;
   element: React.ReactNode;
   disabled?: boolean;
 }
@@ -22,18 +22,18 @@ export function TabButton(props: {
   index: number;
   children: React.ReactNode;
   disabled?: boolean;
-  icon?: JSX.Element;
+  icon?: React.ReactNode;
   onClick: (idx: number) => void;
-}): JSX.Element {
+}): React.ReactNode {
   const { value, index } = props;
   if (value === index) {
     return (
       <OutlinedButton
         style={{
-          backgroundColor: value === index ? 'white' : 'rgb(218, 183, 250)',
+          backgroundColor: value === index ? "white" : "rgb(218, 183, 250)",
           opacity: props.disabled ? 0.5 : 1,
-          border: '1px solid black',
-          color: 'black',
+          border: "1px solid black",
+          color: "black",
         }}
         disabled={props.disabled}
         onClick={() => props.onClick(index)}
@@ -46,9 +46,9 @@ export function TabButton(props: {
   return (
     <ContainedButton
       style={{
-        backgroundColor: value === index ? 'white' : 'rgb(218, 183, 250)',
+        backgroundColor: value === index ? "white" : "rgb(218, 183, 250)",
         opacity: props.disabled ? 0.5 : 1,
-        color: 'black',
+        color: "black",
       }}
       disabled={props.disabled}
       onClick={() => props.onClick(index)}
@@ -63,7 +63,7 @@ export function TabItem(props: {
   value: number;
   index: number;
   children: React.ReactNode;
-}): JSX.Element {
+}): React.ReactNode {
   const { value, index } = props;
   return (
     <div hidden={value !== index}>{value === index && props.children}</div>
@@ -76,19 +76,11 @@ export function Tabs(props: {
   tabViewStyle?: CSS.Properties;
   selectedTab?: number;
   onSelectTab?: (t: number) => void;
-}): JSX.Element {
+}): React.ReactNode {
   const { tabs } = props;
-  const [selectedTab, setSelectedTab] = React.useState<number>(
-    props.selectedTab || 0
-  );
+  const selectedTab = props.selectedTab || 0;
   const tab = tabs[selectedTab];
-
-  React.useEffect(() => {
-    setSelectedTab(props.selectedTab || 0);
-  }, [props.selectedTab]);
-
   const handleSelectTab = (n: number) => {
-    setSelectedTab(n);
     if (props.onSelectTab) {
       props.onSelectTab(n);
     }
@@ -113,7 +105,7 @@ export function Tabs(props: {
       </div>
       <AnimatePresence mode="wait">
         <motion.div
-          key={tab ? tab.name : 'empty'}
+          key={tab ? tab.name : "empty"}
           initial={tab.disabled ? {} : { y: 10, opacity: 0 }}
           animate={tab.disabled ? {} : { y: 0, opacity: 1 }}
           exit={tab.disabled ? {} : { y: -10, opacity: 0 }}

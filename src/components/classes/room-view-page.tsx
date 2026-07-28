@@ -5,14 +5,15 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 
-import React from 'react';
-import GamePage from '../game/game-page';
-import withAuthorizationOnly from '../../wrap-with-authorization-only';
-import { useWithPollActiveRoom } from '../../store/slices/educational-data/use-with-poll-active-room';
+import React from "react";
+import GamePage from "../game/game-page";
+import withAuthorizationOnly from "../../wrap-with-authorization-only";
+import { useWithPollActiveRoom } from "../../store/slices/educational-data/use-with-poll-active-room";
 
-function RoomViewPage(): JSX.Element {
+function RoomViewPage(): React.ReactNode {
   useWithPollActiveRoom();
   return <GamePage />;
 }
 
-export default withAuthorizationOnly(RoomViewPage);
+const Page = withAuthorizationOnly(RoomViewPage);
+export default Page;

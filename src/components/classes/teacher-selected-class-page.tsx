@@ -4,8 +4,9 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { useParams } from 'react-router-dom';
+
+import React from "react";
+import { useParams } from "react-router-dom";
 import {
   Button,
   Card,
@@ -23,14 +24,12 @@ import {
   TableRow,
   TextField,
   Typography,
-} from '@mui/material';
-import { Chat } from '@mui/icons-material';
-import { useWithEducationalData } from '../../store/slices/educational-data/use-with-educational-data';
-import { LoadStatus } from '../../types';
-import { ClassMembershipStatus } from '../../store/slices/educational-data/types';
-import { Room } from '../../store/slices/game/types';
+} from "@mui/material";
+import { Chat } from "@mui/icons-material";
+import { useWithEducationalData } from "../../store/slices/educational-data/use-with-educational-data";
+import type { Room } from "../../store/slices/game/types";
 
-export default function TeacherSelectedClassPage(): JSX.Element {
+export default function TeacherSelectedClassPage(): React.ReactNode {
   const { classId } = useParams<{ classId: string }>();
   const {
     createNewClassInviteCode,
@@ -41,27 +40,28 @@ export default function TeacherSelectedClassPage(): JSX.Element {
 
   const [inviteDialogOpen, setInviteDialogOpen] = React.useState(false);
   const [editDialogOpen, setEditDialogOpen] = React.useState(false);
-  const [validUntil, setValidUntil] = React.useState('');
-  const [numUses, setNumUses] = React.useState('10');
+  const [validUntil, setValidUntil] = React.useState("");
+  const [numUses, setNumUses] = React.useState("10");
   const [creating, setCreating] = React.useState(false);
-  const [className, setClassName] = React.useState('');
-  const [classDescription, setClassDescription] = React.useState('');
+  const [className, setClassName] = React.useState("");
+  const [classDescription, setClassDescription] = React.useState("");
   const [updating, setUpdating] = React.useState(false);
   const [chatDialogRoom, setChatDialogRoom] = React.useState<Room | null>(null);
 
   const classroom = educationalData.classes.find((c) => c._id === classId);
   const classRooms = educationalData.rooms.filter((r) => r.classId === classId);
   const studentMemberships = educationalData.classMemberships.filter(
-    (cm) => cm.classId === classId && cm.status === ClassMembershipStatus.MEMBER
+    (cm) => cm.classId === classId && cm.status === "Member",
   );
   const students = educationalData.students.filter((s) =>
-    studentMemberships.some((sm) => sm.userId === s._id)
+    studentMemberships.some((sm) => sm.userId === s._id),
   );
 
   React.useEffect(() => {
     if (classroom) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setClassName(classroom.name);
-      setClassDescription(classroom.description || '');
+      setClassDescription(classroom.description || "");
     }
   }, [classroom]);
 
@@ -72,13 +72,13 @@ export default function TeacherSelectedClassPage(): JSX.Element {
       await createNewClassInviteCode(
         classId,
         new Date(validUntil),
-        parseInt(numUses)
+        parseInt(numUses),
       );
       setInviteDialogOpen(false);
-      setValidUntil('');
-      setNumUses('10');
+      setValidUntil("");
+      setNumUses("10");
     } catch (err) {
-      console.error('Failed to create invite code', err);
+      console.error("Failed to create invite code", err);
     } finally {
       setCreating(false);
     }
@@ -89,7 +89,7 @@ export default function TeacherSelectedClassPage(): JSX.Element {
     try {
       await revokeClassInviteCode(classId, code);
     } catch (err) {
-      console.error('Failed to revoke invite code', err);
+      console.error("Failed to revoke invite code", err);
     }
   };
 
@@ -100,7 +100,7 @@ export default function TeacherSelectedClassPage(): JSX.Element {
       await updateClassNameDescription(classId, className, classDescription);
       setEditDialogOpen(false);
     } catch (err) {
-      console.error('Failed to update class', err);
+      console.error("Failed to update class", err);
     } finally {
       setUpdating(false);
     }
@@ -114,7 +114,7 @@ export default function TeacherSelectedClassPage(): JSX.Element {
     setChatDialogRoom(null);
   };
 
-  if (educationalData.hydrationLoadStatus.status === LoadStatus.IN_PROGRESS) {
+  if (educationalData.hydrationLoadStatus.status === 1) {
     return (
       <div className="root center-div">
         <CircularProgress />
@@ -136,19 +136,19 @@ export default function TeacherSelectedClassPage(): JSX.Element {
     <div
       className="column"
       style={{
-        width: '100%',
-        height: '100%',
-        alignItems: 'center',
+        width: "100%",
+        height: "100%",
+        alignItems: "center",
         padding: 20,
-        overflowY: 'auto',
+        overflowY: "auto",
       }}
     >
       <div
         className="row"
         style={{
-          width: '90%',
+          width: "90%",
           maxWidth: 1000,
-          justifyContent: 'space-between',
+          justifyContent: "space-between",
           marginBottom: 20,
         }}
       >
@@ -167,13 +167,13 @@ export default function TeacherSelectedClassPage(): JSX.Element {
         </Button>
       </div>
 
-      <div className="column" style={{ width: '90%', maxWidth: 1000, gap: 30 }}>
+      <div className="column" style={{ width: "90%", maxWidth: 1000, gap: 30 }}>
         {/* Invite Codes Section */}
         <Card>
           <CardContent>
             <div
               className="row"
-              style={{ justifyContent: 'space-between', marginBottom: 15 }}
+              style={{ justifyContent: "space-between", marginBottom: 15 }}
             >
               <Typography variant="h6">Invite Codes</Typography>
               <Button
@@ -204,11 +204,11 @@ export default function TeacherSelectedClassPage(): JSX.Element {
                     <TableRow key={inviteCode.code}>
                       <TableCell>{inviteCode.code}</TableCell>
                       <TableCell>{inviteCode.uses}</TableCell>
-                      <TableCell>{inviteCode.maxUses || 'Unlimited'}</TableCell>
+                      <TableCell>{inviteCode.maxUses || "Unlimited"}</TableCell>
                       <TableCell>
                         {inviteCode.validUntil
                           ? new Date(inviteCode.validUntil).toLocaleDateString()
-                          : 'No expiration'}
+                          : "No expiration"}
                       </TableCell>
                       <TableCell>
                         <Button
@@ -243,7 +243,7 @@ export default function TeacherSelectedClassPage(): JSX.Element {
               classRooms.map((room) => {
                 // Active students currently in the room
                 const activeRoomStudents = room.gameData.players.filter((p) =>
-                  students.some((s) => s._id === p._id)
+                  students.some((s) => s._id === p._id),
                 );
 
                 // All students who have ever sent messages in the room
@@ -251,8 +251,8 @@ export default function TeacherSelectedClassPage(): JSX.Element {
                   room.gameData.chat
                     .map((msg) => msg.senderId)
                     .filter((senderId) =>
-                      students.some((s) => s._id === senderId)
-                    )
+                      students.some((s) => s._id === senderId),
+                    ),
                 );
                 const totalStudents = allRoomStudentIds.size;
                 const activeStudents = activeRoomStudents.length;
@@ -267,8 +267,8 @@ export default function TeacherSelectedClassPage(): JSX.Element {
                       <div
                         className="row"
                         style={{
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
+                          justifyContent: "space-between",
+                          alignItems: "center",
                         }}
                       >
                         <div style={{ flex: 1 }}>
@@ -277,23 +277,23 @@ export default function TeacherSelectedClassPage(): JSX.Element {
                             Game: {room.gameData.gameId}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
-                            Current Phase:{' '}
-                            {room.gameData.globalStateData.curStageId || 'N/A'}
+                            Current Phase:{" "}
+                            {room.gameData.globalStateData.curStageId || "N/A"}
                           </Typography>
                           <Typography
                             variant="body2"
                             color="text.secondary"
                             style={{ marginTop: 5 }}
                           >
-                            {totalStudents} students ({activeStudents} active) |{' '}
+                            {totalStudents} students ({activeStudents} active) |{" "}
                             {room.gameData.chat.length} messages
                           </Typography>
                         </div>
                         <div
                           style={{
-                            display: 'flex',
+                            display: "flex",
                             gap: 10,
-                            alignItems: 'center',
+                            alignItems: "center",
                           }}
                         >
                           <Button
@@ -362,7 +362,6 @@ export default function TeacherSelectedClassPage(): JSX.Element {
             type="date"
             value={validUntil}
             onChange={(e) => setValidUntil(e.target.value)}
-            InputLabelProps={{ shrink: true }}
             style={{ marginTop: 10, marginBottom: 20 }}
           />
           <TextField
@@ -385,7 +384,7 @@ export default function TeacherSelectedClassPage(): JSX.Element {
             variant="contained"
             disabled={creating || !validUntil || !numUses}
           >
-            {creating ? 'Creating...' : 'Create'}
+            {creating ? "Creating..." : "Create"}
           </Button>
         </DialogActions>
       </Dialog>
@@ -422,7 +421,7 @@ export default function TeacherSelectedClassPage(): JSX.Element {
             variant="contained"
             disabled={updating || !className}
           >
-            {updating ? 'Updating...' : 'Update'}
+            {updating ? "Updating..." : "Update"}
           </Button>
         </DialogActions>
       </Dialog>
@@ -448,18 +447,18 @@ export default function TeacherSelectedClassPage(): JSX.Element {
           ) : (
             <div
               style={{
-                display: 'flex',
-                flexDirection: 'column',
+                display: "flex",
+                flexDirection: "column",
                 gap: 10,
                 maxHeight: 500,
-                overflowY: 'auto',
+                overflowY: "auto",
               }}
             >
               {chatDialogRoom?.gameData.chat.map((msg, index) => {
                 const sender = chatDialogRoom.gameData.players.find(
-                  (p) => p._id === msg.senderId
+                  (p) => p._id === msg.senderId,
                 );
-                const isSystem = msg.sender === 'SYSTEM';
+                const isSystem = msg.sender === "SYSTEM";
 
                 return (
                   <Paper
@@ -467,20 +466,23 @@ export default function TeacherSelectedClassPage(): JSX.Element {
                     elevation={1}
                     style={{
                       padding: 10,
-                      backgroundColor: isSystem ? '#f5f5f5' : '#fff',
+                      backgroundColor: isSystem ? "#f5f5f5" : "#fff",
                     }}
                   >
                     <div
                       className="row"
                       style={{
-                        justifyContent: 'space-between',
+                        justifyContent: "space-between",
                         marginBottom: 5,
                       }}
                     >
-                      <Typography variant="body2" fontWeight="bold">
+                      <Typography
+                        variant="body2"
+                        style={{ fontWeight: "bold" }}
+                      >
                         {isSystem
-                          ? 'System'
-                          : sender?.name || msg.senderName || 'Unknown'}
+                          ? "System"
+                          : sender?.name || msg.senderName || "Unknown"}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
                         {msg.sender}
@@ -490,7 +492,7 @@ export default function TeacherSelectedClassPage(): JSX.Element {
                     {msg.mcqChoices && msg.mcqChoices.length > 0 && (
                       <div style={{ marginTop: 5 }}>
                         <Typography variant="caption" color="text.secondary">
-                          Choices: {msg.mcqChoices.join(', ')}
+                          Choices: {msg.mcqChoices.join(", ")}
                         </Typography>
                       </div>
                     )}

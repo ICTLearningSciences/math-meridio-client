@@ -4,24 +4,23 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { useAppSelector, useAppDispatch } from '../../hooks';
-import * as loginActions from './index';
-import { useEffect } from 'react';
+import { useAppSelector, useAppDispatch } from "../../hooks";
+import * as loginActions from "./index";
+import { useEffect } from "react";
 import {
   ACCESS_TOKEN_KEY,
   localStorageClear,
   localStorageGet,
-} from '../../local-storage';
-import { EducationalRole, UserAccessToken } from './types';
-import { PlayerStateData } from './index';
-import { LoadStatus } from '../../../types';
+} from "../../local-storage";
+import type { EducationalRole, UserAccessToken } from "./types";
+import type { PlayerStateData } from "./index";
 
 export interface UseWithLogin {
   state: PlayerStateData;
   logout: () => Promise<void>;
   loginWithGoogle: (
     googleAccessToken: string,
-    educationalLoginRole: EducationalRole
+    educationalLoginRole: EducationalRole,
   ) => Promise<UserAccessToken | undefined>;
   refreshAccessToken: () => void;
   setViewingAs: (educationalRole: EducationalRole) => void;
@@ -33,20 +32,23 @@ export function useWithLogin(): UseWithLogin {
   const state: PlayerStateData = useAppSelector((state) => state.playerData);
 
   useEffect(() => {
-    if (
-      state.loginStatus.status === LoadStatus.DONE ||
-      state.loginStatus.status === LoadStatus.IN_PROGRESS
-    ) {
+    if (state.loginStatus.status === 2 || state.loginStatus.status === 1) {
       return;
     }
     const token = localStorageGet(ACCESS_TOKEN_KEY);
     if (token) {
-      refreshAccessToken();
+      if (
+        state.loginStatus.status === 0 ||
+        state.loginStatus.status === 4 ||
+        state.loginStatus.status === 3
+      ) {
+        dispatch(loginActions.refreshAccessToken());
+      }
     } else {
-      console.log('logging out');
+      console.log("logging out");
       dispatch(loginActions.logout());
     }
-  }, [state.loginStatus.status]);
+  }, [state.loginStatus.status, dispatch]);
 
   function setViewingAs(educationalRole: EducationalRole) {
     dispatch(loginActions.setViewingAs(educationalRole));
@@ -54,27 +56,27 @@ export function useWithLogin(): UseWithLogin {
 
   async function loginWithGoogle(
     googleAccessToken: string,
-    educationalLoginRole: EducationalRole
+    educationalLoginRole: EducationalRole,
   ) {
     if (
-      state.loginStatus.status === LoadStatus.NONE ||
-      state.loginStatus.status === LoadStatus.NOT_LOGGED_IN ||
-      state.loginStatus.status === LoadStatus.FAILED
+      state.loginStatus.status === 0 ||
+      state.loginStatus.status === 4 ||
+      state.loginStatus.status === 3
     ) {
       return await dispatch(
         loginActions.login({
           accessToken: googleAccessToken,
           educationalLoginRole: educationalLoginRole,
-        })
+        }),
       ).unwrap();
     }
   }
 
   function refreshAccessToken() {
     if (
-      state.loginStatus.status === LoadStatus.NONE ||
-      state.loginStatus.status === LoadStatus.NOT_LOGGED_IN ||
-      state.loginStatus.status === LoadStatus.FAILED
+      state.loginStatus.status === 0 ||
+      state.loginStatus.status === 4 ||
+      state.loginStatus.status === 3
     ) {
       dispatch(loginActions.refreshAccessToken());
     }

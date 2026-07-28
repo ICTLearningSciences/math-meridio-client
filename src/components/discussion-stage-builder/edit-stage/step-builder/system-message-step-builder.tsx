@@ -4,31 +4,20 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { v4 as uuid } from 'uuid';
-import { IconButton } from '@mui/material';
-import { Delete } from '@mui/icons-material';
-import { RoundedBorderDiv, TopLeftText } from '../../../../styled-components';
-import { CheckBoxInput, InputField } from '../../shared/input-components';
-import { JumpToAlternateStep } from '../../shared/jump-to-alternate-step';
-import Collapse from '@mui/material/Collapse';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import {
+
+import React from "react";
+import { IconButton, Collapse } from "@mui/material";
+import { Delete, ExpandMore, ExpandLess } from "@mui/icons-material";
+
+import { RoundedBorderDiv, TopLeftText } from "../../../../styled-components";
+import { CheckBoxInput, InputField } from "../../shared/input-components";
+import { JumpToAlternateStep } from "../../shared/jump-to-alternate-step";
+import type {
   DiscussionStage,
-  DiscussionStageStepType,
   FlowItem,
   SystemMessageStageStep,
-} from '../../types';
-export function getDefaultSystemMessage(): SystemMessageStageStep {
-  return {
-    stepId: uuid(),
-    lastStep: false,
-    stepType: DiscussionStageStepType.SYSTEM_MESSAGE,
-    message: '',
-    jumpToStepId: '',
-  };
-}
+} from "../../types";
+
 export function SystemMessageStepBuilder(props: {
   step: SystemMessageStageStep;
   updateLocalStage: React.Dispatch<React.SetStateAction<DiscussionStage>>;
@@ -38,7 +27,7 @@ export function SystemMessageStepBuilder(props: {
   stepIndex: number;
   width?: string;
   height?: string;
-}): JSX.Element {
+}): React.ReactNode {
   const { step, stepIndex, updateLocalStage } = props;
   const [collapsed, setCollapsed] = React.useState<boolean>(false);
 
@@ -67,18 +56,18 @@ export function SystemMessageStepBuilder(props: {
   return (
     <RoundedBorderDiv
       style={{
-        width: props.width || '100%',
-        height: props.height || '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'relative',
+        width: props.width || "100%",
+        height: props.height || "100%",
+        display: "flex",
+        flexDirection: "column",
+        position: "relative",
         padding: 10,
       }}
     >
       <TopLeftText>{`Step ${stepIndex + 1}`}</TopLeftText>
       <IconButton
         style={{
-          position: 'absolute',
+          position: "absolute",
           right: 10,
           top: 10,
         }}
@@ -88,22 +77,22 @@ export function SystemMessageStepBuilder(props: {
       </IconButton>
       <IconButton
         style={{
-          width: 'fit-content',
-          position: 'absolute',
+          width: "fit-content",
+          position: "absolute",
           left: 10,
           top: 40,
         }}
         onClick={() => setCollapsed(!collapsed)}
       >
-        {collapsed ? <ExpandMoreIcon /> : <ExpandLessIcon />}
+        {collapsed ? <ExpandMore /> : <ExpandLess />}
       </IconButton>
-      <h4 style={{ alignSelf: 'center' }}>System Message</h4>
+      <h4 style={{ alignSelf: "center" }}>System Message</h4>
       <Collapse in={!collapsed}>
         <InputField
           label="Message"
           value={step.message}
           onChange={(e) => {
-            updateField('message', e);
+            updateField("message", e);
           }}
         />
 
@@ -111,14 +100,14 @@ export function SystemMessageStepBuilder(props: {
           label="Is final step (discussion finished)?"
           value={step.lastStep}
           onChange={(e) => {
-            updateField('lastStep', e);
+            updateField("lastStep", e);
           }}
         />
         <JumpToAlternateStep
           step={step}
           flowsList={props.flowsList}
           onNewStepSelected={(stepId) => {
-            updateField('jumpToStepId', stepId);
+            updateField("jumpToStepId", stepId);
           }}
         />
       </Collapse>

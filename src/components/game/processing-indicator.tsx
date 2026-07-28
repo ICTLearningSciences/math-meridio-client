@@ -4,39 +4,38 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { Stack, Typography, Paper } from '@mui/material';
-import { FadingText } from '../animated-text';
+import React from "react";
+import { Stack, Typography, Paper } from "@mui/material";
+import { FadingText } from "../animated-text";
 
-export function ProcessingIndicator(): JSX.Element {
+export function ProcessingIndicator(): React.ReactNode {
   return (
     <Stack
       direction="row-reverse"
       key={`fading-text`}
-      sx={{ p: 1 }}
+      sx={{ p: 1, justifyContent: "right" }}
       spacing={2}
-      justifyContent="right"
     >
       <Paper
         square
         elevation={0}
         sx={{
           p: 3,
-          whiteSpace: 'normal',
-          wordWrap: 'break-word',
-          backgroundColor: 'text.secondary',
-          paddingLeft: '5%',
-          paddingRight: '10%',
+          whiteSpace: "normal",
+          wordWrap: "break-word",
+          backgroundColor: "text.secondary",
+          paddingLeft: "5%",
+          paddingRight: "10%",
           clipPath:
-            'polygon(0% 0%, 100% 0%, calc(100% - 1em) calc(0% + 1em), calc(100% - 1em) 100%, 0% 100%, 0% 0%)',
-          borderBottomLeftRadius: '1em',
-          borderTopLeftRadius: '1em',
+            "polygon(0% 0%, 100% 0%, calc(100% - 1em) calc(0% + 1em), calc(100% - 1em) 100%, 0% 100%, 0% 0%)",
+          borderBottomLeftRadius: "1em",
+          borderTopLeftRadius: "1em",
         }}
       >
-        {' '}
-        <Typography color={'white'}>
+        {" "}
+        <Typography color={"white"}>
           <FadingText
-            strings={['Thinking...', 'Strategizing...', 'Analyzing...']}
+            strings={["Thinking...", "Strategizing...", "Analyzing..."]}
           />
         </Typography>
       </Paper>

@@ -4,13 +4,17 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import {
+  createAsyncThunk,
+  createSlice,
+  type PayloadAction,
+} from "@reduxjs/toolkit";
 import {
   addOrUpdateDiscussionStage as _addOrUpdateDiscussionStage,
   fetchDiscussionStages as _fetchDiscussionStages,
-} from '../../../api';
-import { DiscussionStage } from '../../../components/discussion-stage-builder/types';
-import { LoadStatus } from '../../../types';
+} from "../../../api";
+import type { DiscussionStage } from "../../../components/discussion-stage-builder/types";
+import type { LoadStatus } from "../../../types";
 
 export interface Stages {
   discussionStages: DiscussionStage[];
@@ -20,36 +24,36 @@ export interface Stages {
 
 const initialState: Stages = {
   discussionStages: [],
-  loadStagesStatus: LoadStatus.NONE,
-  addOrUpdateStatus: LoadStatus.NONE,
+  loadStagesStatus: 0,
+  addOrUpdateStatus: 0,
 };
 
 export const addOrUpdateDiscussionStage = createAsyncThunk(
-  'stages/addOrUpdateDiscussionStage',
+  "stages/addOrUpdateDiscussionStage",
   async (args: {
     stage: DiscussionStage;
     password: string;
   }): Promise<DiscussionStage> => {
     const res = await _addOrUpdateDiscussionStage(args.stage, args.password);
     return res;
-  }
+  },
 );
 
 export const fetchDiscussionStages = createAsyncThunk(
-  'stages/fetchDiscussionStages',
+  "stages/fetchDiscussionStages",
   async (): Promise<DiscussionStage[]> => {
     const res = await _fetchDiscussionStages();
     return res;
-  }
+  },
 );
 
 export const dataSlice = createSlice({
-  name: 'gameData',
+  name: "gameData",
   initialState: initialState,
   reducers: {
     addNewLocalDiscussionStage: (
       state,
-      action: PayloadAction<DiscussionStage>
+      action: PayloadAction<DiscussionStage>,
     ) => {
       state.discussionStages.push(action.payload);
     },
@@ -57,27 +61,27 @@ export const dataSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(addOrUpdateDiscussionStage.pending, (state) => {
-        state.addOrUpdateStatus = LoadStatus.IN_PROGRESS;
+        state.addOrUpdateStatus = 1;
       })
       .addCase(addOrUpdateDiscussionStage.rejected, (state) => {
-        state.addOrUpdateStatus = LoadStatus.FAILED;
+        state.addOrUpdateStatus = 3;
       })
       .addCase(addOrUpdateDiscussionStage.fulfilled, (state, action) => {
         state.discussionStages = state.discussionStages.filter(
-          (s) => s.clientId !== action.payload.clientId
+          (s) => s.clientId !== action.payload.clientId,
         );
         state.discussionStages.push(action.payload);
-        state.addOrUpdateStatus = LoadStatus.DONE;
+        state.addOrUpdateStatus = 2;
       })
       .addCase(fetchDiscussionStages.fulfilled, (state, action) => {
         state.discussionStages = action.payload;
-        state.loadStagesStatus = LoadStatus.DONE;
+        state.loadStagesStatus = 2;
       })
       .addCase(fetchDiscussionStages.pending, (state) => {
-        state.loadStagesStatus = LoadStatus.IN_PROGRESS;
+        state.loadStagesStatus = 1;
       })
       .addCase(fetchDiscussionStages.rejected, (state) => {
-        state.loadStagesStatus = LoadStatus.FAILED;
+        state.loadStagesStatus = 3;
       });
   },
 });

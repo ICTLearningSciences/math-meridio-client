@@ -4,20 +4,21 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { Typography } from '@mui/material';
-import { Classroom } from '../../../store/slices/educational-data/types';
-import ActiveSessionView from './teacher-session-page';
-import { RoomSetupView } from './teacher-room-setup';
-import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
+
+import React from "react";
+import { Typography } from "@mui/material";
+import type { Classroom } from "../../../store/slices/educational-data/types";
+import ActiveSessionView from "./teacher-session-page";
+import { RoomSetupView } from "./teacher-room-setup";
+import { useWithEducationalData } from "../../../store/slices/educational-data/use-with-educational-data";
 
 export default function TeacherHome(props: {
   classroom?: Classroom;
-}): JSX.Element {
+}): React.ReactNode {
   const { classroom } = props;
   const { educationalData } = useWithEducationalData();
   const rooms = educationalData.rooms.filter(
-    (r) => r.classId === classroom?._id
+    (r) => r.classId === classroom?._id,
   );
 
   if (!classroom) {

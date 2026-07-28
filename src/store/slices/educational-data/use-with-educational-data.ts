@@ -4,21 +4,23 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { useAppDispatch, useAppSelector } from '../../hooks';
-import { GameStateData, LearningObjective, Room } from '../game/types';
-import * as educationalDataActions from './index';
-import {
+
+import { useMemo } from "react";
+import { useParams } from "react-router-dom";
+
+import { useAppDispatch, useAppSelector } from "../../hooks";
+import type { GameStateData, LearningObjective, Room } from "../game/types";
+import * as educationalDataActions from "./index";
+import type {
   ClassMembership,
   Classroom,
   FetchEducationalDataHydrationResponse,
   JoinClassroomResponse,
   NotificationEvent,
-} from './types';
-import * as gameRoomApi from '../../../hooks/game-rooms/game-room-api';
-import { useParams } from 'react-router-dom';
-import { useMemo } from 'react';
-import { Game, GAMES } from '../../../game/types';
-import { AssignClassGroupsAndStartResponse } from './api';
+} from "./types";
+import * as gameRoomApi from "../../../hooks/game-room-api";
+import { type Game, GAMES } from "../../../game/types";
+import type { AssignClassGroupsAndStartResponse } from "./api";
 
 export interface UseWithEducationalData {
   educationalData: educationalDataActions.EducationalDataStateData;
@@ -28,46 +30,46 @@ export interface UseWithEducationalData {
   createNewClassInviteCode: (
     classId: string,
     validUntil: Date,
-    numUses: number
+    numUses: number,
   ) => Promise<Classroom>;
   revokeClassInviteCode: (
     classId: string,
-    classroomCode: string
+    classroomCode: string,
   ) => Promise<Classroom>;
   joinClassroom: (inviteCode: string) => Promise<JoinClassroomResponse>;
   leaveClassroom: (classId: string) => Promise<ClassMembership>;
   removeStudentFromClass: (
     studentId: string,
-    classId: string
+    classId: string,
   ) => Promise<ClassMembership>;
   blockStudentFromClass: (
     studentId: string,
-    classId: string
+    classId: string,
   ) => Promise<ClassMembership>;
   unblockStudentFromClass: (
     studentId: string,
-    classId: string
+    classId: string,
   ) => Promise<ClassMembership>;
   assignStudentToGroup: (
     studentId: string,
     classId: string,
-    groupId: number
+    groupId: number,
   ) => Promise<ClassMembership>;
   assignClassGroupsAndStart: (
     classId: string,
-    groups: ClassMembership[]
+    groups: ClassMembership[],
   ) => Promise<AssignClassGroupsAndStartResponse>;
   copyAndArchiveClassroom: (
-    classId: string
+    classId: string,
   ) => Promise<AssignClassGroupsAndStartResponse>;
   adjustClassroomArchiveStatus: (
     classId: string,
-    setArchived: boolean
+    setArchived: boolean,
   ) => Promise<Classroom>;
   updateClassNameDescription: (
     classId: string,
     name: string,
-    description: string
+    description: string,
   ) => Promise<Classroom>;
   joinGameRoom: (gameRoomId: string) => Promise<Room>;
   leaveGameRoom: (gameRoomId: string) => Promise<Room>;
@@ -78,7 +80,7 @@ export interface UseWithEducationalData {
   createNewGameRoom: (
     gameId: string,
     gameName: string,
-    classId?: string
+    classId?: string,
   ) => Promise<Room>;
   pingGameRoomProcess: (gameRoomId: string) => Promise<void>;
   ownerIsPresent: boolean;
@@ -88,26 +90,26 @@ export interface UseWithEducationalData {
   curGame: Game | undefined;
   togglePlayerPausedInRoomStatus: (
     roomId: string,
-    userIdToPause: string
+    userIdToPause: string,
   ) => Promise<Room>;
   reportPlayerAway: (userIdToReportAway: string) => Promise<Room>;
   shareClassroomWithInstructor: (
     classId: string,
-    instructorId: string
+    instructorId: string,
   ) => Promise<Classroom>;
   assignGameToGameRoom: (roomId: string, gameId: string) => Promise<Room>;
   setPlayerNeedsHelpInRoom: (needsHelp: boolean) => Promise<Room>;
   dismissPlayerNeedsHelpInRoom: (
     roomId: string,
-    userId: string
+    userId: string,
   ) => Promise<Room>;
   fetchLearningObjectives: () => Promise<LearningObjective[]>;
   createLearningObjective: (
-    learningObjective: Omit<LearningObjective, '_id'>
+    learningObjective: Omit<LearningObjective, "_id">,
   ) => Promise<LearningObjective>;
   updateLearningObjective: (
     learningObjectiveId: string,
-    learningObjective: Omit<LearningObjective, '_id'>
+    learningObjective: Omit<LearningObjective, "_id">,
   ) => Promise<LearningObjective>;
   dismissNotifications: () => Promise<NotificationEvent[]>;
 }
@@ -115,25 +117,28 @@ export interface UseWithEducationalData {
 export function useWithEducationalData(rId?: string): UseWithEducationalData {
   const dispatch = useAppDispatch();
   const state = useAppSelector((state) => state.educationalData);
-  const { roomId } = rId ? { roomId: rId } : useParams<{ roomId: string }>();
+  let { roomId } = useParams<{ roomId: string }>();
+  if (rId) {
+    roomId = rId;
+  }
   const { player } = useAppSelector((state) => state.playerData);
   const room = state.rooms.find((r) => r._id === roomId);
   const ownerIsPresent = room?.gameData.players.some(
-    (p) => p._id === player?._id
+    (p) => p._id === player?._id,
   );
   const curGame = useMemo(() => {
     return GAMES.find((g) => g.id === room?.gameData.gameId);
-  }, [room, state.gameList]);
+  }, [room]);
 
   async function fetchInstructorDataHydration(): Promise<FetchEducationalDataHydrationResponse> {
     return await dispatch(
-      educationalDataActions.fetchInstructorDataHydration()
+      educationalDataActions.fetchInstructorDataHydration(),
     ).unwrap();
   }
 
   async function fetchStudentDataHydration(): Promise<FetchEducationalDataHydrationResponse> {
     return await dispatch(
-      educationalDataActions.fetchStudentDataHydration()
+      educationalDataActions.fetchStudentDataHydration(),
     ).unwrap();
   }
 
@@ -144,159 +149,159 @@ export function useWithEducationalData(rId?: string): UseWithEducationalData {
   async function createNewClassInviteCode(
     classId: string,
     validUntil: Date,
-    numUses: number
+    numUses: number,
   ): Promise<Classroom> {
     return await dispatch(
       educationalDataActions.createNewClassInviteCode({
         classId,
         validUntil,
         numUses,
-      })
+      }),
     ).unwrap();
   }
 
   async function revokeClassInviteCode(
     classId: string,
-    classroomCode: string
+    classroomCode: string,
   ): Promise<Classroom> {
     return await dispatch(
-      educationalDataActions.revokeClassInviteCode({ classId, classroomCode })
+      educationalDataActions.revokeClassInviteCode({ classId, classroomCode }),
     ).unwrap();
   }
 
   async function joinClassroom(
-    inviteCode: string
+    inviteCode: string,
   ): Promise<JoinClassroomResponse> {
     return await dispatch(
-      educationalDataActions.joinClassroom({ inviteCode })
+      educationalDataActions.joinClassroom({ inviteCode }),
     ).unwrap();
   }
 
   async function leaveClassroom(classId: string): Promise<ClassMembership> {
     return await dispatch(
-      educationalDataActions.leaveClassroom({ classId })
+      educationalDataActions.leaveClassroom({ classId }),
     ).unwrap();
   }
 
   async function removeStudentFromClass(
     studentId: string,
-    classId: string
+    classId: string,
   ): Promise<ClassMembership> {
     return await dispatch(
-      educationalDataActions.removeStudentFromClass({ studentId, classId })
+      educationalDataActions.removeStudentFromClass({ studentId, classId }),
     ).unwrap();
   }
 
   async function blockStudentFromClass(
     studentId: string,
-    classId: string
+    classId: string,
   ): Promise<ClassMembership> {
     return await dispatch(
-      educationalDataActions.blockStudentFromClass({ studentId, classId })
+      educationalDataActions.blockStudentFromClass({ studentId, classId }),
     ).unwrap();
   }
 
   async function unblockStudentFromClass(
     studentId: string,
-    classId: string
+    classId: string,
   ): Promise<ClassMembership> {
     return await dispatch(
-      educationalDataActions.unblockStudentFromClass({ studentId, classId })
+      educationalDataActions.unblockStudentFromClass({ studentId, classId }),
     ).unwrap();
   }
 
   async function assignStudentToGroup(
     studentId: string,
     classId: string,
-    groupId: number
+    groupId: number,
   ): Promise<ClassMembership> {
     return await dispatch(
       educationalDataActions.assignStudentToGroup({
         studentId,
         classId,
         groupId,
-      })
+      }),
     ).unwrap();
   }
 
   async function assignClassGroupsAndStart(
     classId: string,
-    groups: ClassMembership[]
+    groups: ClassMembership[],
   ): Promise<AssignClassGroupsAndStartResponse> {
     return await dispatch(
       educationalDataActions.assignClassGroupsAndStart({
         classId,
         groups,
-      })
+      }),
     ).unwrap();
   }
 
   async function copyAndArchiveClassroom(
-    classId: string
+    classId: string,
   ): Promise<AssignClassGroupsAndStartResponse> {
     return await dispatch(
       educationalDataActions.copyAndArchiveClassroom({
         classId,
-      })
+      }),
     ).unwrap();
   }
 
   async function adjustClassroomArchiveStatus(
     classId: string,
-    setArchived: boolean
+    setArchived: boolean,
   ): Promise<Classroom> {
     return await dispatch(
       educationalDataActions.adjustClassroomArchiveStatus({
         classId,
         setArchived,
-      })
+      }),
     ).unwrap();
   }
 
   async function updateClassNameDescription(
     classId: string,
     name: string,
-    description: string
+    description: string,
   ): Promise<Classroom> {
     return await dispatch(
       educationalDataActions.updateClassNameDescription({
         classId,
         name,
         description,
-      })
+      }),
     ).unwrap();
   }
 
   async function joinGameRoom(gameRoomId: string): Promise<Room> {
     return await dispatch(
-      educationalDataActions.joinGameRoom({ gameRoomId })
+      educationalDataActions.joinGameRoom({ gameRoomId }),
     ).unwrap();
   }
 
   async function leaveGameRoom(gameRoomId: string): Promise<Room> {
     return await dispatch(
-      educationalDataActions.leaveGameRoom({ gameRoomId })
+      educationalDataActions.leaveGameRoom({ gameRoomId }),
     ).unwrap();
   }
 
   async function deleteGameRoom(gameRoomId: string): Promise<Room> {
     return await dispatch(
-      educationalDataActions.deleteGameRoom({ gameRoomId })
+      educationalDataActions.deleteGameRoom({ gameRoomId }),
     ).unwrap();
   }
 
   async function renameGameRoom(
     gameRoomId: string,
-    name: string
+    name: string,
   ): Promise<Room> {
     return await dispatch(
-      educationalDataActions.renameGameRoom({ gameRoomId, name })
+      educationalDataActions.renameGameRoom({ gameRoomId, name }),
     ).unwrap();
   }
 
   async function fetchRoom(roomId: string): Promise<Room> {
     return await dispatch(
-      educationalDataActions.fetchRoom({ roomId })
+      educationalDataActions.fetchRoom({ roomId }),
     ).unwrap();
   }
 
@@ -307,10 +312,10 @@ export function useWithEducationalData(rId?: string): UseWithEducationalData {
   async function createNewGameRoom(
     gameId: string,
     gameName: string,
-    classId?: string
+    classId?: string,
   ): Promise<Room> {
     return await dispatch(
-      educationalDataActions.createNewGameRoom({ gameId, gameName, classId })
+      educationalDataActions.createNewGameRoom({ gameId, gameName, classId }),
     ).unwrap();
   }
 
@@ -320,38 +325,38 @@ export function useWithEducationalData(rId?: string): UseWithEducationalData {
 
   async function sendMessageToGameRoom(message: string): Promise<Room> {
     if (!roomId) {
-      throw new Error('No game room found for message');
+      throw new Error("No game room found for message");
     }
     return await dispatch(
-      educationalDataActions.sendMessageToGameRoom({ roomId, message })
+      educationalDataActions.sendMessageToGameRoom({ roomId, message }),
     ).unwrap();
   }
 
   async function updateMyRoomGameStateData(
-    gameStateData: GameStateData
+    gameStateData: GameStateData,
   ): Promise<Room> {
     if (!roomId) {
-      throw new Error('Room ID is required to update player game state data');
+      throw new Error("Room ID is required to update player game state data");
     }
     if (!player?._id) {
-      throw new Error('Player ID is required to update player game state data');
+      throw new Error("Player ID is required to update player game state data");
     }
     return await dispatch(
       educationalDataActions.updatePlayerGameStateData({
         roomId,
         playerId: player?._id,
         gameStateData,
-      })
+      }),
     ).unwrap();
   }
 
   async function togglePlayerPausedInRoomStatus(
     roomId: string,
-    userIdToPause: string
+    userIdToPause: string,
   ): Promise<Room> {
     const targetRoom = state.rooms.find((r) => r._id === roomId);
     if (!targetRoom) {
-      throw new Error('Room not found');
+      throw new Error("Room not found");
     }
     const currentPauseStatus =
       targetRoom?.gameData.playersStatusRecord[userIdToPause]?.pausedByAdmin;
@@ -360,90 +365,90 @@ export function useWithEducationalData(rId?: string): UseWithEducationalData {
         roomId,
         playerId: userIdToPause,
         isPaused: !currentPauseStatus,
-      })
+      }),
     ).unwrap();
   }
 
   async function reportPlayerAway(userIdToReportAway: string): Promise<Room> {
     if (!roomId) {
-      throw new Error('Room ID is required to report player away');
+      throw new Error("Room ID is required to report player away");
     }
     return await gameRoomApi.reportPlayerAway(roomId, userIdToReportAway);
   }
 
   async function shareClassroomWithInstructor(
     classId: string,
-    instructorId: string
+    instructorId: string,
   ): Promise<Classroom> {
     return await dispatch(
       educationalDataActions.shareClassroomWithInstructor({
         classId,
         instructorId,
-      })
+      }),
     ).unwrap();
   }
 
   async function assignGameToGameRoom(
     roomId: string,
-    gameId: string
+    gameId: string,
   ): Promise<Room> {
     return await dispatch(
-      educationalDataActions.assignGameToGameRoom({ roomId, gameId })
+      educationalDataActions.assignGameToGameRoom({ roomId, gameId }),
     ).unwrap();
   }
 
   async function setPlayerNeedsHelpInRoom(needsHelp: boolean): Promise<Room> {
     if (!roomId) {
-      throw new Error('Room ID is required to set player needs help in room');
+      throw new Error("Room ID is required to set player needs help in room");
     }
     return await dispatch(
-      educationalDataActions.setPlayerNeedsHelpInRoom({ roomId, needsHelp })
+      educationalDataActions.setPlayerNeedsHelpInRoom({ roomId, needsHelp }),
     ).unwrap();
   }
 
   async function dismissPlayerNeedsHelpInRoom(
     roomId: string,
-    userId: string
+    userId: string,
   ): Promise<Room> {
     if (!roomId || !userId) {
       throw new Error(
-        'Room ID and User ID is required to set player needs help in room'
+        "Room ID and User ID is required to set player needs help in room",
       );
     }
     return await dispatch(
-      educationalDataActions.dismissPlayerNeedsHelpInRoom({ roomId, userId })
+      educationalDataActions.dismissPlayerNeedsHelpInRoom({ roomId, userId }),
     ).unwrap();
   }
 
   async function fetchLearningObjectives(): Promise<LearningObjective[]> {
     return await dispatch(
-      educationalDataActions.fetchLearningObjectives()
+      educationalDataActions.fetchLearningObjectives(),
     ).unwrap();
   }
 
   async function createLearningObjective(
-    learningObjective: Omit<LearningObjective, '_id'>
+    learningObjective: Omit<LearningObjective, "_id">,
   ): Promise<LearningObjective> {
     return await dispatch(
-      educationalDataActions.createLearningObjective({ learningObjective })
+      educationalDataActions.createLearningObjective({ learningObjective }),
     ).unwrap();
   }
 
   async function updateLearningObjective(
     learningObjectiveId: string,
-    learningObjective: Omit<LearningObjective, '_id'>
+    learningObjective: Omit<LearningObjective, "_id">,
   ): Promise<LearningObjective> {
     return await dispatch(
       educationalDataActions.updateLearningObjective({
         learningObjectiveId,
         learningObjective,
-      })
+      }),
     ).unwrap();
   }
 
   async function dismissNotifications(): Promise<NotificationEvent[]> {
     return await dispatch(
-      educationalDataActions.dismissNotifications()
+      educationalDataActions.dismissNotifications(),
     ).unwrap();
   }
 

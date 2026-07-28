@@ -4,10 +4,10 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { CircularProgress, IconButton, Tooltip } from '@mui/material';
-import { PlayerStatusData, Room } from '../store/slices/game/types';
-import { BackHand, DoDisturb } from '@mui/icons-material';
+import React from "react";
+import { CircularProgress, IconButton, Tooltip } from "@mui/material";
+import type { PlayerStatusData, Room } from "../store/slices/game/types";
+import { BackHand, DoDisturb } from "@mui/icons-material";
 
 interface HelpRequestButtonProps {
   myStatusInRoom: PlayerStatusData | undefined;
@@ -23,7 +23,7 @@ export function HelpRequestButton(props: HelpRequestButtonProps) {
     try {
       await setPlayerNeedsHelpInRoom(needsHelp);
     } catch (error) {
-      console.error('Error setting help request:', error);
+      console.error("Error setting help request:", error);
     } finally {
       setIsLoading(false);
     }
@@ -34,28 +34,28 @@ export function HelpRequestButton(props: HelpRequestButtonProps) {
   }
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
       {isLoading ? (
-        <CircularProgress size={24} style={{ color: 'white' }} />
+        <CircularProgress size={24} style={{ color: "white" }} />
       ) : (
         <Tooltip
           title={
             myStatusInRoom.needsHelpInRoom
-              ? 'Cancel Help Request'
-              : 'Request Help'
+              ? "Cancel Help Request"
+              : "Request Help"
           }
         >
           <IconButton
             onClick={() => {
               handleHelpRequest(!myStatusInRoom.needsHelpInRoom);
             }}
-            style={{ color: 'white' }}
+            style={{ color: "white" }}
           >
             <BackHand />
             {myStatusInRoom.needsHelpInRoom && (
               <div
                 className="row center-div"
-                style={{ color: 'red', position: 'absolute', right: 1 }}
+                style={{ color: "red", position: "absolute", right: 1 }}
               >
                 <DoDisturb fontSize="large" />
               </div>

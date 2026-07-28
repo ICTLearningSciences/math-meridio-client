@@ -4,17 +4,17 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { useParams } from 'react-router-dom';
-import { Card, CardActionArea, CardContent, Typography } from '@mui/material';
-import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
-import { useAppSelector } from '../../../store/hooks';
-import { GAMES, Game } from '../../../game/types';
-import { StudentRoomCard } from './student-room-card';
-import { ClassMembershipStatus } from '../../../store/slices/educational-data/types';
-import AvatarSprite from '../../avatar-sprite';
 
-export default function StudentSelectedClassPage(): JSX.Element {
+import React from "react";
+import { useParams } from "react-router-dom";
+import { Card, CardActionArea, CardContent, Typography } from "@mui/material";
+import { useWithEducationalData } from "../../../store/slices/educational-data/use-with-educational-data";
+import { useAppSelector } from "../../../store/hooks";
+import { GAMES, type Game } from "../../../game/types";
+import { StudentRoomCard } from "./student-room-card";
+import AvatarSprite from "../../avatar-sprite";
+
+export default function StudentSelectedClassPage(): React.ReactNode {
   const { classId } = useParams<{ classId: string }>();
   const { educationalData } = useWithEducationalData();
   const { player } = useAppSelector((state) => state.playerData);
@@ -22,14 +22,14 @@ export default function StudentSelectedClassPage(): JSX.Element {
 
   const classroom = educationalData.classes.find((c) => c._id === classId);
   const studentMemberships = educationalData.classMemberships.filter(
-    (c) => c.classId === classId && c.status === ClassMembershipStatus.MEMBER
+    (c) => c.classId === classId && c.status === "Member",
   );
   const myGroup = studentMemberships.find((c) => c.userId === player?._id);
   const gameRoom = myGroup
     ? educationalData.rooms.find(
         (r) =>
           r.classId === classId &&
-          r.gameData.players.find((p) => p._id === player?._id)
+          r.gameData.players.find((p) => p._id === player?._id),
       )
     : undefined;
 
@@ -69,9 +69,9 @@ export default function StudentSelectedClassPage(): JSX.Element {
     <div
       className="column"
       style={{
-        width: '100%',
-        height: '100%',
-        alignItems: 'center',
+        width: "100%",
+        height: "100%",
+        alignItems: "center",
         padding: 20,
       }}
     >
@@ -90,7 +90,7 @@ export default function StudentSelectedClassPage(): JSX.Element {
 
       <div
         className="column"
-        style={{ width: '90%', maxWidth: 800, marginBottom: 40 }}
+        style={{ width: "90%", maxWidth: 800, marginBottom: 40 }}
       >
         <Typography variant="h5" style={{ marginBottom: 15 }}>
           My Assigned Group
@@ -104,21 +104,24 @@ export default function StudentSelectedClassPage(): JSX.Element {
         ) : (
           <div
             className="row list center-div"
-            style={{ justifyContent: 'space-evenly' }}
+            style={{ justifyContent: "space-evenly" }}
           >
             {studentMemberships
               .filter((m) => m.groupId === myGroup.groupId)
               .map((m) => {
                 const p = educationalData.students.find(
-                  (s) => s._id === m.userId
+                  (s) => s._id === m.userId,
                 );
                 return (
                   <div key={m.userId} className="column center-div">
                     <AvatarSprite
                       player={p || player}
-                      bgColor={p ? '' : 'rgb(218, 183, 250)'}
+                      bgColor={p ? "" : "rgb(218, 183, 250)"}
                     />
-                    <Typography variant="body2" fontSize={12} align="center">
+                    <Typography
+                      variant="body2"
+                      style={{ fontSize: 12, textAlign: "center" }}
+                    >
                       {p?.name || `ME: ${player.name}`}
                     </Typography>
                   </div>
@@ -131,7 +134,7 @@ export default function StudentSelectedClassPage(): JSX.Element {
       {gameRoom && !gameRoom.gameData.gameId && (
         <div
           className="column"
-          style={{ width: '90%', maxWidth: 800, marginBottom: 40 }}
+          style={{ width: "90%", maxWidth: 800, marginBottom: 40 }}
         >
           <Typography variant="h5" style={{ marginBottom: 15 }}>
             Select a Game
@@ -146,7 +149,7 @@ export default function StudentSelectedClassPage(): JSX.Element {
                   marginLeft: 5,
                   marginRight: 5,
                   backgroundColor:
-                    selectedGame?.id === game.id ? '#D2EBFE' : '',
+                    selectedGame?.id === game.id ? "#D2EBFE" : "",
                 }}
               >
                 <CardActionArea onClick={() => handleSelectGame(game)}>
@@ -155,7 +158,9 @@ export default function StudentSelectedClassPage(): JSX.Element {
                       gutterBottom
                       variant="h6"
                       component="div"
-                      textAlign="center"
+                      style={{
+                        textAlign: "center",
+                      }}
                     >
                       {game.name}
                     </Typography>
@@ -170,7 +175,7 @@ export default function StudentSelectedClassPage(): JSX.Element {
         </div>
       )}
 
-      <div className="column" style={{ width: '90%', maxWidth: 800, gap: 15 }}>
+      <div className="column" style={{ width: "90%", maxWidth: 800, gap: 15 }}>
         <Typography variant="h5" style={{ marginBottom: 10 }}>
           Game Room
         </Typography>

@@ -4,44 +4,26 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { v4 as uuid } from 'uuid';
-import { Button, IconButton } from '@mui/material';
-import { Delete } from '@mui/icons-material';
+import React from "react";
+import { Button, Collapse, IconButton } from "@mui/material";
+import { AddCircle, Delete, ExpandMore, ExpandLess } from "@mui/icons-material";
 import {
   ColumnCenterDiv,
   RoundedBorderDiv,
   RowDiv,
   TopLeftText,
-} from '../../../../styled-components';
-import { InputField, SelectInputField } from '../../shared/input-components';
-import { JumpToAlternateStep } from '../../shared/jump-to-alternate-step';
-import AddCircleIcon from '@mui/icons-material/AddCircle';
-import {
+} from "../../../../styled-components";
+import { InputField, SelectInputField } from "../../shared/input-components";
+import { JumpToAlternateStep } from "../../shared/jump-to-alternate-step";
+import type { Checking, NumericOperations } from "../../types";
+import type {
   FlowItem,
   LogicStepConditional,
   ConditionalActivityStep,
-  Checking,
-  NumericOperations,
-  DiscussionStageStepType,
   DiscussionStage,
-} from '../../types';
-import Collapse from '@mui/material/Collapse';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import { FlowStepSelector } from '../../shared/flow-step-selector';
-import { InfoTooltip } from './info-tooltip';
-
-export function getDefaultConditionalStep(): ConditionalActivityStep {
-  return {
-    stepId: uuid(),
-    stepType: DiscussionStageStepType.CONDITIONAL,
-    targetStepId: '',
-    jumpToStepId: '',
-    conditionalsToMeet: [],
-    lastStep: false,
-  };
-}
+} from "../../types";
+import { FlowStepSelector } from "../../shared/flow-step-selector";
+import { InfoTooltip } from "./info-tooltip";
 
 export function ConditionalStepBuilder(props: {
   step: ConditionalActivityStep;
@@ -51,13 +33,13 @@ export function ConditionalStepBuilder(props: {
   stepIndex: number;
   width?: string;
   height?: string;
-}): JSX.Element {
+}): React.ReactNode {
   const { step, stepIndex, updateLocalActivity } = props;
   const [collapsed, setCollapsed] = React.useState<boolean>(false);
 
   function updateField(
     field: string,
-    value: string | boolean | LogicStepConditional[]
+    value: string | boolean | LogicStepConditional[],
   ) {
     updateLocalActivity((prevValue) => {
       return {
@@ -83,7 +65,7 @@ export function ConditionalStepBuilder(props: {
   function updateConditionalField(
     index: number,
     field: string,
-    value: string | boolean
+    value: string | boolean,
   ) {
     updateLocalActivity((prevValue) => {
       return {
@@ -118,18 +100,18 @@ export function ConditionalStepBuilder(props: {
   return (
     <RoundedBorderDiv
       style={{
-        width: props.width || '100%',
-        height: props.height || '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'relative',
+        width: props.width || "100%",
+        height: props.height || "100%",
+        display: "flex",
+        flexDirection: "column",
+        position: "relative",
         padding: 10,
       }}
     >
       <TopLeftText>{`Step ${stepIndex + 1}`}</TopLeftText>
       <IconButton
         style={{
-          position: 'absolute',
+          position: "absolute",
           right: 10,
           top: 10,
         }}
@@ -139,20 +121,20 @@ export function ConditionalStepBuilder(props: {
       </IconButton>
       <IconButton
         style={{
-          width: 'fit-content',
-          position: 'absolute',
+          width: "fit-content",
+          position: "absolute",
           left: 10,
           top: 40,
         }}
         onClick={() => setCollapsed(!collapsed)}
       >
-        {collapsed ? <ExpandMoreIcon /> : <ExpandLessIcon />}
+        {collapsed ? <ExpandMore /> : <ExpandLess />}
       </IconButton>
 
       <h4
-        style={{ alignSelf: 'center', display: 'flex', alignItems: 'center' }}
+        style={{ alignSelf: "center", display: "flex", alignItems: "center" }}
       >
-        Conditionals{' '}
+        Conditionals{" "}
         <InfoTooltip title="Define conditions that will trigger the flow to jump to a specific step." />
       </h4>
       <Collapse in={!collapsed}>
@@ -162,10 +144,10 @@ export function ConditionalStepBuilder(props: {
               <ColumnCenterDiv
                 key={`${conditional.stateDataKey}-${index}-${conditional.checking}-${conditional.expectedValue}`}
                 style={{
-                  border: '1px solid black',
-                  position: 'relative',
-                  borderRadius: '10px',
-                  width: '90%',
+                  border: "1px solid black",
+                  position: "relative",
+                  borderRadius: "10px",
+                  width: "90%",
                   marginTop: 5,
                   marginBottom: 5,
                 }}
@@ -177,29 +159,29 @@ export function ConditionalStepBuilder(props: {
                     onChange={(v) => {
                       const newConditionals = [...step.conditionalsToMeet];
                       newConditionals[index].stateDataKey = v;
-                      updateConditionalField(index, 'stateDataKey', v);
+                      updateConditionalField(index, "stateDataKey", v);
                     }}
                   />
                   <SelectInputField
                     label="Checking"
                     value={conditional.checking}
-                    options={Object.values(Checking)}
+                    options={["LENGTH", "VALUE", "CONTAINS"]}
                     onChange={(v) => {
                       const newConditionals = [...step.conditionalsToMeet];
                       newConditionals[index].checking = v as Checking;
-                      updateConditionalField(index, 'checking', v);
+                      updateConditionalField(index, "checking", v);
                     }}
                   />
-                  {conditional.checking !== Checking.CONTAINS && (
+                  {conditional.checking !== "CONTAINS" && (
                     <SelectInputField
                       label="Operation"
                       value={conditional.operation}
-                      options={Object.values(NumericOperations)}
+                      options={[">", "<", "==", "!=", ">=", "<="]}
                       onChange={(v) => {
                         const newConditionals = [...step.conditionalsToMeet];
                         newConditionals[index].operation =
                           v as NumericOperations;
-                        updateConditionalField(index, 'operation', v);
+                        updateConditionalField(index, "operation", v);
                       }}
                     />
                   )}
@@ -209,7 +191,7 @@ export function ConditionalStepBuilder(props: {
                     onChange={(v) => {
                       const newConditionals = [...step.conditionalsToMeet];
                       newConditionals[index].expectedValue = v;
-                      updateConditionalField(index, 'expectedValue', v);
+                      updateConditionalField(index, "expectedValue", v);
                     }}
                   />
                   <IconButton
@@ -227,7 +209,7 @@ export function ConditionalStepBuilder(props: {
                                     ...step,
                                     conditionalsToMeet:
                                       step.conditionalsToMeet.filter(
-                                        (c, i) => i !== index
+                                        (_c, i) => i !== index,
                                       ),
                                   };
                                 }
@@ -253,24 +235,24 @@ export function ConditionalStepBuilder(props: {
             currentJumpToStepId={step.targetStepId}
             rowOrColumn="column"
             onStepSelected={(stepId) => {
-              updateField('targetStepId', stepId);
+              updateField("targetStepId", stepId);
             }}
           />
 
           <Button
             variant="outlined"
             onClick={() => {
-              updateField('conditionalsToMeet', [
+              updateField("conditionalsToMeet", [
                 ...step.conditionalsToMeet,
                 {
-                  stateDataKey: '',
-                  operation: NumericOperations.EQUALS,
-                  checking: Checking.VALUE,
-                  expectedValue: '',
+                  stateDataKey: "",
+                  operation: "==",
+                  checking: "VALUE",
+                  expectedValue: "",
                 } as LogicStepConditional,
               ]);
             }}
-            startIcon={<AddCircleIcon />}
+            startIcon={<AddCircle />}
           >
             New Conditional
           </Button>
@@ -280,7 +262,7 @@ export function ConditionalStepBuilder(props: {
           step={step}
           flowsList={props.flowsList}
           onNewStepSelected={(stepId) => {
-            updateField('jumpToStepId', stepId);
+            updateField("jumpToStepId", stepId);
           }}
         />
       </Collapse>

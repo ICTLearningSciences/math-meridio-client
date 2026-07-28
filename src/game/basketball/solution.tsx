@@ -4,8 +4,8 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React, { useEffect, useRef } from 'react';
-import { TransformComponent, useControls } from 'react-zoom-pan-pinch';
+import React, { useRef } from "react";
+import { TransformComponent, useControls } from "react-zoom-pan-pinch";
 import {
   Button,
   Card,
@@ -15,42 +15,111 @@ import {
   DialogTitle,
   TextField,
   Typography,
-} from '@mui/material';
-import { GameData, GameStateData } from '../../store/slices/game/types';
-import { makeStyles } from 'tss-react/mui';
-import { Player } from '../../store/slices/player/types';
-import { checkGameAndPlayerStateForValue } from '../../components/discussion-stage-builder/helpers';
-import { EditableVariable } from '../../components/editable-variable';
+} from "@mui/material";
+import type { GameData, GameStateData } from "../../store/slices/game/types";
+import { makeStyles } from "tss-react/mui";
+import type { Player } from "../../store/slices/player/types";
+import { checkGameAndPlayerStateForValue } from "../../components/discussion-stage-builder/helpers";
+import { EditableVariable } from "../../components/editable-variable";
 
 export const NUMBER_OF_SHOTS = 100;
-export const INSIDE_SHOT_PERCENT = 'inside_shot_percent';
+export const INSIDE_SHOT_PERCENT = "inside_shot_percent";
 export const INSIDE_SHOT_POINTS_VALUE = 2;
 export const INSIDE_SHOT_SUCCESS_VALUE = 0.5;
 
-export const MID_SHOT_PERCENT = 'middle_shot_percent';
+export const MID_SHOT_PERCENT = "middle_shot_percent";
 export const MID_SHOT_POINTS_VALUE = 2;
 export const MID_SHOT_SUCCESS_VALUE = 0.4;
 
-export const OUTSIDE_SHOT_PERCENT = 'outside_shot_percent';
+export const OUTSIDE_SHOT_PERCENT = "outside_shot_percent";
 export const OUTSIDE_SHOT_POINTS_VALUE = 3;
 export const OUTSIDE_SHOT_SUCCESS_VALUE = 0.36;
 
-export const UNDERSTANDS_SUCCESS_SHOTS = 'understands_success_shots';
-export const UNDERSTANDS_SHOT_POINTS = 'understands_shot_points';
-export const UNDERSTANDS_MULTIPLICATION = 'understands_multiplication';
-export const UNDERSTANDS_ADDITION = 'understands_addition';
+export const UNDERSTANDS_SUCCESS_SHOTS = "understands_success_shots";
+export const UNDERSTANDS_SHOT_POINTS = "understands_shot_points";
+export const UNDERSTANDS_MULTIPLICATION = "understands_multiplication";
+export const UNDERSTANDS_ADDITION = "understands_addition";
 
-import courtBg from './court.png';
+import courtBg from "./court.png";
+
+function Variable(props: {
+  dataKey: string;
+  title: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  isEnabled: (value: any) => boolean;
+  value?: string;
+  forceShow?: boolean;
+  prefix?: string;
+  backgroundColor?: string;
+  globalGameStateDataRecord: GameStateData;
+  playerGameStateDataRecord: GameStateData;
+}): React.ReactNode {
+  const { isEnabled, globalGameStateDataRecord, playerGameStateDataRecord } =
+    props;
+  const { classes } = useStyles();
+  const data =
+    globalGameStateDataRecord?.[props.dataKey] ||
+    playerGameStateDataRecord?.[props.dataKey];
+  const value =
+    props.value ||
+    globalGameStateDataRecord?.[props.dataKey] ||
+    playerGameStateDataRecord?.[props.dataKey];
+
+  return (
+    <Card
+      className={classes.box}
+      style={{
+        display: props.forceShow || (data && isEnabled(data)) ? "" : "none",
+        backgroundColor: "#e3a363",
+      }}
+    >
+      <Typography className={classes.text}>{props.title}</Typography>
+      <Typography className={classes.boxText} style={{ color: "white" }}>
+        {value}
+      </Typography>
+    </Card>
+  );
+}
+
+/**
+ * A component that will reveal the icon when reveal is true, and never hide it again.
+ */
+function RevealingIcon(props: {
+  reveal: boolean;
+  icon: React.ReactNode;
+}): React.ReactNode {
+  const { reveal, icon } = props;
+  const { classes } = useStyles();
+
+  return (
+    <Card
+      className={classes.box}
+      style={{
+        backgroundColor: "#E3A363",
+        borderColor: "#C96049",
+        padding: 0,
+        width: 50,
+        height: 50,
+        minWidth: 50,
+        minHeight: 50,
+        borderRadius: 50,
+        display: reveal ? "" : "none",
+      }}
+    >
+      <Typography className={classes.boxText}>{icon}</Typography>
+    </Card>
+  );
+}
 
 export function SolutionComponent(props: {
   uiGameData: GameData;
   player: Player;
   updatePlayerStateData: (
     newPlayerStateData: GameStateData,
-    playerId: string
+    playerId: string,
   ) => void;
   minimize?: boolean;
-}): JSX.Element {
+}): React.ReactNode {
   const { uiGameData, player, updatePlayerStateData } = props;
   const { classes } = useStyles();
   const { zoomIn, zoomOut } = useControls();
@@ -59,16 +128,38 @@ export function SolutionComponent(props: {
     uiGameData.playersGameStateData[player._id];
   const globalGameStateDataRecord: GameStateData =
     uiGameData.globalStateData.gameStateData;
-  const [understandsPoints, setUnderstandsPoints] = React.useState(false);
-  const [understandsSuccess, setUnderstandsSuccess] = React.useState(false);
-  const [understandsMultiplication, setUnderstandsMultiplication] =
-    React.useState(false);
-  const [understandsAddition, setUnderstandsAddition] = React.useState(false);
   const [editing, setEditing] = React.useState<{
     inside: number;
     mid: number;
     outside: number;
   }>();
+
+  const curPlayerStateData = uiGameData.playersGameStateData[player._id];
+  const globalGameStateData = uiGameData.globalStateData.gameStateData;
+  const understandsPoints = checkGameAndPlayerStateForValue(
+    globalGameStateData,
+    curPlayerStateData,
+    UNDERSTANDS_SHOT_POINTS,
+    "true",
+  );
+  const understandsSuccess = checkGameAndPlayerStateForValue(
+    globalGameStateData,
+    curPlayerStateData,
+    UNDERSTANDS_SUCCESS_SHOTS,
+    "true",
+  );
+  const understandsMultiplication = checkGameAndPlayerStateForValue(
+    globalGameStateData,
+    curPlayerStateData,
+    UNDERSTANDS_MULTIPLICATION,
+    "true",
+  );
+  const understandsAddition = checkGameAndPlayerStateForValue(
+    globalGameStateData,
+    curPlayerStateData,
+    UNDERSTANDS_ADDITION,
+    "true",
+  );
 
   const ref = useRef<HTMLDivElement | null>(null);
   const [width, setWidth] = React.useState<number>(0);
@@ -89,51 +180,7 @@ export function SolutionComponent(props: {
     } else {
       zoomIn(1);
     }
-  }, [width, height]);
-
-  React.useEffect(() => {
-    const curPlayerStateData = uiGameData.playersGameStateData[player._id];
-    const globalGameStateData = uiGameData.globalStateData.gameStateData;
-    !understandsPoints &&
-      setUnderstandsPoints(
-        checkGameAndPlayerStateForValue(
-          globalGameStateData,
-          curPlayerStateData,
-          UNDERSTANDS_SHOT_POINTS,
-          'true'
-        )
-      );
-    !understandsSuccess &&
-      setUnderstandsSuccess(
-        checkGameAndPlayerStateForValue(
-          globalGameStateData,
-          curPlayerStateData,
-          UNDERSTANDS_SUCCESS_SHOTS,
-          'true'
-        )
-      );
-    !understandsMultiplication &&
-      setUnderstandsMultiplication(
-        checkGameAndPlayerStateForValue(
-          globalGameStateData,
-          curPlayerStateData,
-          UNDERSTANDS_MULTIPLICATION,
-          'true'
-        )
-      );
-    !understandsAddition &&
-      setUnderstandsAddition(
-        checkGameAndPlayerStateForValue(
-          globalGameStateData,
-          curPlayerStateData,
-          UNDERSTANDS_ADDITION,
-          'true'
-        )
-      );
-  }, [
-    uiGameData.globalStateData.gameStateData,
-    uiGameData.playersGameStateData,
-  ]);
+  }, [width, height, zoomIn, zoomOut]);
 
   React.useEffect(() => {
     if (!playerGameStateDataRecord) return;
@@ -157,10 +204,10 @@ export function SolutionComponent(props: {
           [MID_SHOT_PERCENT]: mid,
           [INSIDE_SHOT_PERCENT]: inside,
         },
-        player._id
+        player._id,
       );
     }
-  }, [playerGameStateDataRecord]);
+  }, [playerGameStateDataRecord, player._id, updatePlayerStateData]);
 
   function onClickEdit(): void {
     if (editing) {
@@ -176,104 +223,24 @@ export function SolutionComponent(props: {
     }
   }
 
-  function Variable(props: {
-    dataKey: string;
-    title: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    isEnabled: (value: any) => boolean;
-    value?: string;
-    forceShow?: boolean;
-  }): JSX.Element {
-    const { isEnabled } = props;
-    const data =
-      globalGameStateDataRecord?.[props.dataKey] ||
-      playerGameStateDataRecord?.[props.dataKey];
-    const [revealed, setRevealed] = React.useState(data && isEnabled(data));
-    const value =
-      props.value ||
-      globalGameStateDataRecord?.[props.dataKey] ||
-      playerGameStateDataRecord?.[props.dataKey];
-
-    useEffect(() => {
-      if (revealed) {
-        return;
-      }
-      if (props.forceShow || (data && isEnabled(data))) {
-        setRevealed(true);
-      }
-    }, [data, isEnabled]);
-
-    return (
-      <Card
-        className={classes.box}
-        style={{
-          display: props.forceShow || (data && isEnabled(data)) ? '' : 'none',
-          backgroundColor: '#e3a363',
-        }}
-      >
-        <Typography className={classes.text}>{props.title}</Typography>
-        <Typography className={classes.boxText} style={{ color: 'white' }}>
-          {value}
-        </Typography>
-      </Card>
-    );
-  }
-
-  /**
-   * A component that will reveal the icon when reveal is true, and never hide it again.
-   */
-  function RevealingIcon(props: {
-    reveal: boolean;
-    icon: JSX.Element;
-  }): JSX.Element {
-    const { reveal, icon } = props;
-    const [revealed, setRevealed] = React.useState(reveal);
-
-    useEffect(() => {
-      if (reveal) {
-        setRevealed(true);
-      }
-    }, [reveal]);
-
-    return (
-      <Card
-        className={classes.box}
-        style={{
-          backgroundColor: '#E3A363',
-          borderColor: '#C96049',
-          padding: 0,
-          width: 50,
-          height: 50,
-          minWidth: 50,
-          minHeight: 50,
-          borderRadius: 50,
-          display: revealed ? '' : 'none',
-        }}
-      >
-        <Typography className={classes.boxText}>{icon}</Typography>
-      </Card>
-    );
-  }
-
   if (props.minimize) {
     return (
       <div
         className="row spacing"
-        style={{ alignItems: 'center', overflowX: 'auto' }}
+        style={{ alignItems: "center", overflowX: "auto" }}
       >
-        <Typography style={{ whiteSpace: 'nowrap' }}>Points =</Typography>
+        <Typography style={{ whiteSpace: "nowrap" }}>Points =</Typography>
         <div className="column center-div">
           <Typography
-            fontSize={10}
-            style={{ whiteSpace: 'nowrap', color: 'blue' }}
+            style={{ whiteSpace: "nowrap", color: "blue", fontSize: 10 }}
           >
-            {understandsPoints ? 'Inside points' : ''}
+            {understandsPoints ? "Inside points" : ""}
           </Typography>
           <div className="row center-div spacing">
             <Typography
               style={{
-                whiteSpace: 'nowrap',
-                backgroundColor: 'lightblue',
+                whiteSpace: "nowrap",
+                backgroundColor: "lightblue",
                 padding: 5,
               }}
             >
@@ -281,13 +248,13 @@ export function SolutionComponent(props: {
                 ? `${String(INSIDE_SHOT_POINTS_VALUE)} points`
                 : `?`}
             </Typography>
-            <Typography style={{ backgroundColor: 'lightblue', padding: 5 }}>
-              {understandsMultiplication ? 'X' : '?'}
+            <Typography style={{ backgroundColor: "lightblue", padding: 5 }}>
+              {understandsMultiplication ? "X" : "?"}
             </Typography>
             <Typography
               style={{
-                whiteSpace: 'nowrap',
-                backgroundColor: 'lightblue',
+                whiteSpace: "nowrap",
+                backgroundColor: "lightblue",
                 padding: 5,
               }}
             >
@@ -296,16 +263,16 @@ export function SolutionComponent(props: {
                   ...globalGameStateDataRecord,
                   ...playerGameStateDataRecord,
                 }[INSIDE_SHOT_PERCENT]
-              }{' '}
+              }{" "}
               Inside Shots
             </Typography>
-            <Typography style={{ backgroundColor: 'lightblue', padding: 5 }}>
-              {understandsMultiplication ? 'X' : '?'}
+            <Typography style={{ backgroundColor: "lightblue", padding: 5 }}>
+              {understandsMultiplication ? "X" : "?"}
             </Typography>
             <Typography
               style={{
-                whiteSpace: 'nowrap',
-                backgroundColor: 'lightblue',
+                whiteSpace: "nowrap",
+                backgroundColor: "lightblue",
                 padding: 5,
               }}
             >
@@ -315,22 +282,21 @@ export function SolutionComponent(props: {
             </Typography>
           </div>
         </div>
-        <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
-          {understandsAddition ? '+' : '?'}
+        <Typography style={{ backgroundColor: "#ddd", padding: 5 }}>
+          {understandsAddition ? "+" : "?"}
         </Typography>
 
         <div className="column center-div">
           <Typography
-            fontSize={10}
-            style={{ whiteSpace: 'nowrap', color: 'red' }}
+            style={{ whiteSpace: "nowrap", color: "red", fontSize: 10 }}
           >
-            {understandsPoints ? 'Midlane points' : ''}
+            {understandsPoints ? "Midlane points" : ""}
           </Typography>
           <div className="row center-div spacing">
             <Typography
               style={{
-                whiteSpace: 'nowrap',
-                backgroundColor: 'pink',
+                whiteSpace: "nowrap",
+                backgroundColor: "pink",
                 padding: 5,
               }}
             >
@@ -338,13 +304,13 @@ export function SolutionComponent(props: {
                 ? `${String(MID_SHOT_POINTS_VALUE)} points`
                 : `?`}
             </Typography>
-            <Typography style={{ backgroundColor: 'pink', padding: 5 }}>
-              {understandsMultiplication ? 'X' : '?'}
+            <Typography style={{ backgroundColor: "pink", padding: 5 }}>
+              {understandsMultiplication ? "X" : "?"}
             </Typography>
             <Typography
               style={{
-                whiteSpace: 'nowrap',
-                backgroundColor: 'pink',
+                whiteSpace: "nowrap",
+                backgroundColor: "pink",
                 padding: 5,
               }}
             >
@@ -353,33 +319,32 @@ export function SolutionComponent(props: {
                   ...globalGameStateDataRecord,
                   ...playerGameStateDataRecord,
                 }[MID_SHOT_PERCENT]
-              }{' '}
+              }{" "}
               Midlane Shots
             </Typography>
-            <Typography style={{ backgroundColor: 'pink', padding: 5 }}>
-              {understandsMultiplication ? 'X' : '?'}
+            <Typography style={{ backgroundColor: "pink", padding: 5 }}>
+              {understandsMultiplication ? "X" : "?"}
             </Typography>
-            <Typography style={{ backgroundColor: 'pink', padding: 5 }}>
+            <Typography style={{ backgroundColor: "pink", padding: 5 }}>
               {understandsSuccess ? `${String(MID_SHOT_SUCCESS_VALUE)}%` : `?`}
             </Typography>
           </div>
         </div>
-        <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
-          {understandsAddition ? '+' : '?'}
+        <Typography style={{ backgroundColor: "#ddd", padding: 5 }}>
+          {understandsAddition ? "+" : "?"}
         </Typography>
 
         <div className="column center-div">
           <Typography
-            fontSize={10}
-            style={{ whiteSpace: 'nowrap', color: 'brown' }}
+            style={{ whiteSpace: "nowrap", color: "brown", fontSize: 10 }}
           >
-            {understandsPoints ? 'Outside points' : ''}
+            {understandsPoints ? "Outside points" : ""}
           </Typography>
           <div className="row center-div spacing">
             <Typography
               style={{
-                whiteSpace: 'nowrap',
-                backgroundColor: 'tan',
+                whiteSpace: "nowrap",
+                backgroundColor: "tan",
                 padding: 5,
               }}
             >
@@ -387,13 +352,13 @@ export function SolutionComponent(props: {
                 ? `${String(OUTSIDE_SHOT_POINTS_VALUE)} points`
                 : `?`}
             </Typography>
-            <Typography style={{ backgroundColor: 'tan', padding: 5 }}>
-              {understandsMultiplication ? 'X' : '?'}
+            <Typography style={{ backgroundColor: "tan", padding: 5 }}>
+              {understandsMultiplication ? "X" : "?"}
             </Typography>
             <Typography
               style={{
-                whiteSpace: 'nowrap',
-                backgroundColor: 'tan',
+                whiteSpace: "nowrap",
+                backgroundColor: "tan",
                 padding: 5,
               }}
             >
@@ -402,13 +367,13 @@ export function SolutionComponent(props: {
                   ...globalGameStateDataRecord,
                   ...playerGameStateDataRecord,
                 }[OUTSIDE_SHOT_PERCENT]
-              }{' '}
+              }{" "}
               Outside Shots
             </Typography>
-            <Typography style={{ backgroundColor: 'tan', padding: 5 }}>
-              {understandsMultiplication ? 'X' : '?'}
+            <Typography style={{ backgroundColor: "tan", padding: 5 }}>
+              {understandsMultiplication ? "X" : "?"}
             </Typography>
-            <Typography style={{ backgroundColor: 'tan', padding: 5 }}>
+            <Typography style={{ backgroundColor: "tan", padding: 5 }}>
               {understandsSuccess
                 ? `${String(OUTSIDE_SHOT_SUCCESS_VALUE)}%`
                 : `?`}
@@ -427,11 +392,11 @@ export function SolutionComponent(props: {
       ref={ref}
       className="column center-div"
       style={{
-        height: '100%',
-        width: '100%',
+        height: "100%",
+        width: "100%",
         backgroundImage: `url(${courtBg})`,
-        backgroundSize: 'cover',
-        backgroundRepeat: 'no-repeat',
+        backgroundSize: "cover",
+        backgroundRepeat: "no-repeat",
       }}
     >
       <TransformComponent>
@@ -442,6 +407,8 @@ export function SolutionComponent(props: {
             isEnabled={() => true}
             value={String(NUMBER_OF_SHOTS)}
             forceShow={true}
+            playerGameStateDataRecord={playerGameStateDataRecord}
+            globalGameStateDataRecord={globalGameStateDataRecord}
           />
           <div className="row center-div">
             <Variable
@@ -449,16 +416,18 @@ export function SolutionComponent(props: {
               isEnabled={() => understandsPoints}
               title="Points per inside shot"
               value={String(INSIDE_SHOT_POINTS_VALUE)}
+              playerGameStateDataRecord={playerGameStateDataRecord}
+              globalGameStateDataRecord={globalGameStateDataRecord}
             />
             <RevealingIcon
               reveal={understandsMultiplication}
               icon={
                 <Typography
                   className={classes.boxText}
-                  style={{ color: '#C96049' }}
+                  style={{ color: "#C96049" }}
                 >
-                  {' '}
-                  x{' '}
+                  {" "}
+                  x{" "}
                 </Typography>
               }
             />
@@ -476,10 +445,10 @@ export function SolutionComponent(props: {
               icon={
                 <Typography
                   className={classes.boxText}
-                  style={{ color: '#C96049' }}
+                  style={{ color: "#C96049" }}
                 >
-                  {' '}
-                  x{' '}
+                  {" "}
+                  x{" "}
                 </Typography>
               }
             />
@@ -488,6 +457,8 @@ export function SolutionComponent(props: {
               isEnabled={() => understandsSuccess}
               title="Success% of inside shots"
               value={String(INSIDE_SHOT_SUCCESS_VALUE)}
+              playerGameStateDataRecord={playerGameStateDataRecord}
+              globalGameStateDataRecord={globalGameStateDataRecord}
             />
           </div>
           <RevealingIcon
@@ -495,10 +466,10 @@ export function SolutionComponent(props: {
             icon={
               <Typography
                 className={classes.boxText}
-                style={{ color: '#C96049' }}
+                style={{ color: "#C96049" }}
               >
-                {' '}
-                +{' '}
+                {" "}
+                +{" "}
               </Typography>
             }
           />
@@ -508,16 +479,18 @@ export function SolutionComponent(props: {
               dataKey={UNDERSTANDS_SHOT_POINTS}
               title="Points per mid shot"
               value={String(MID_SHOT_POINTS_VALUE)}
+              playerGameStateDataRecord={playerGameStateDataRecord}
+              globalGameStateDataRecord={globalGameStateDataRecord}
             />
             <RevealingIcon
               reveal={understandsMultiplication}
               icon={
                 <Typography
                   className={classes.boxText}
-                  style={{ color: '#C96049' }}
+                  style={{ color: "#C96049" }}
                 >
-                  {' '}
-                  x{' '}
+                  {" "}
+                  x{" "}
                 </Typography>
               }
             />
@@ -535,10 +508,10 @@ export function SolutionComponent(props: {
               icon={
                 <Typography
                   className={classes.boxText}
-                  style={{ color: '#C96049' }}
+                  style={{ color: "#C96049" }}
                 >
-                  {' '}
-                  x{' '}
+                  {" "}
+                  x{" "}
                 </Typography>
               }
             />
@@ -547,6 +520,8 @@ export function SolutionComponent(props: {
               dataKey={UNDERSTANDS_SUCCESS_SHOTS}
               title="Success% of mid shots"
               value={String(MID_SHOT_SUCCESS_VALUE)}
+              playerGameStateDataRecord={playerGameStateDataRecord}
+              globalGameStateDataRecord={globalGameStateDataRecord}
             />
           </div>
           <RevealingIcon
@@ -554,10 +529,10 @@ export function SolutionComponent(props: {
             icon={
               <Typography
                 className={classes.boxText}
-                style={{ color: '#C96049' }}
+                style={{ color: "#C96049" }}
               >
-                {' '}
-                +{' '}
+                {" "}
+                +{" "}
               </Typography>
             }
           />
@@ -567,16 +542,18 @@ export function SolutionComponent(props: {
               isEnabled={() => understandsPoints}
               title="Points per outside shot"
               value={String(OUTSIDE_SHOT_POINTS_VALUE)}
+              playerGameStateDataRecord={playerGameStateDataRecord}
+              globalGameStateDataRecord={globalGameStateDataRecord}
             />
             <RevealingIcon
               reveal={understandsMultiplication}
               icon={
                 <Typography
                   className={classes.boxText}
-                  style={{ color: '#C96049' }}
+                  style={{ color: "#C96049" }}
                 >
-                  {' '}
-                  x{' '}
+                  {" "}
+                  x{" "}
                 </Typography>
               }
             />
@@ -594,10 +571,10 @@ export function SolutionComponent(props: {
               icon={
                 <Typography
                   className={classes.boxText}
-                  style={{ color: '#C96049' }}
+                  style={{ color: "#C96049" }}
                 >
-                  {' '}
-                  x{' '}
+                  {" "}
+                  x{" "}
                 </Typography>
               }
             />
@@ -606,6 +583,8 @@ export function SolutionComponent(props: {
               isEnabled={() => understandsSuccess}
               title="Success% of outside shots"
               value={String(OUTSIDE_SHOT_SUCCESS_VALUE)}
+              playerGameStateDataRecord={playerGameStateDataRecord}
+              globalGameStateDataRecord={globalGameStateDataRecord}
             />
           </div>
         </div>
@@ -613,7 +592,7 @@ export function SolutionComponent(props: {
 
       {editing && (
         <Dialog open={Boolean(editing)} onClose={onClickEdit}>
-          <DialogTitle style={{ textAlign: 'center' }}>My Strategy</DialogTitle>
+          <DialogTitle style={{ textAlign: "center" }}>My Strategy</DialogTitle>
           <DialogContent style={{ paddingTop: 10 }}>
             <TextField
               label="Number of Inside Shots"
@@ -623,18 +602,25 @@ export function SolutionComponent(props: {
               style={{ marginBottom: 10 }}
               sx={{
                 input: {
-                  color: '#c96049',
+                  color: "#c96049",
                   fontSize: 40,
-                  fontFamily: 'SigmarOne',
-                  textAlign: 'center',
-                  backgroundColor: '#fff8db',
+                  fontFamily: "SigmarOne",
+                  textAlign: "center",
+                  backgroundColor: "#fff8db",
                 },
-                '& .MuiInput-underline:before': {
-                  borderBottomColor: '#c96049',
+                "& .MuiInput-underline:before": {
+                  borderBottomColor: "#c96049",
                 },
-                '& .MuiInput-underline:after': { borderBottomColor: '#c96049' },
+                "& .MuiInput-underline:after": { borderBottomColor: "#c96049" },
               }}
-              InputProps={{ inputProps: { min: 0, max: 100 } }}
+              slotProps={{
+                input: {
+                  inputProps: {
+                    min: 0,
+                    max: 100,
+                  },
+                },
+              }}
               onChange={(e) => {
                 setEditing({ ...editing, inside: parseInt(e.target.value) });
               }}
@@ -647,18 +633,25 @@ export function SolutionComponent(props: {
               style={{ marginBottom: 10 }}
               sx={{
                 input: {
-                  color: '#c96049',
+                  color: "#c96049",
                   fontSize: 40,
-                  fontFamily: 'SigmarOne',
-                  textAlign: 'center',
-                  backgroundColor: '#fff8db',
+                  fontFamily: "SigmarOne",
+                  textAlign: "center",
+                  backgroundColor: "#fff8db",
                 },
-                '& .MuiInput-underline:before': {
-                  borderBottomColor: '#c96049',
+                "& .MuiInput-underline:before": {
+                  borderBottomColor: "#c96049",
                 },
-                '& .MuiInput-underline:after': { borderBottomColor: '#c96049' },
+                "& .MuiInput-underline:after": { borderBottomColor: "#c96049" },
               }}
-              InputProps={{ inputProps: { min: 0, max: 100 } }}
+              slotProps={{
+                input: {
+                  inputProps: {
+                    min: 0,
+                    max: 100,
+                  },
+                },
+              }}
               onChange={(e) => {
                 setEditing({ ...editing, mid: parseInt(e.target.value) });
               }}
@@ -673,29 +666,36 @@ export function SolutionComponent(props: {
               style={{ marginBottom: 10 }}
               sx={{
                 input: {
-                  color: '#c96049',
+                  color: "#c96049",
                   fontSize: 40,
-                  fontFamily: 'SigmarOne',
-                  textAlign: 'center',
-                  backgroundColor: '#fff8db',
+                  fontFamily: "SigmarOne",
+                  textAlign: "center",
+                  backgroundColor: "#fff8db",
                 },
-                '& .MuiInput-underline:before': {
-                  borderBottomColor: '#c96049',
+                "& .MuiInput-underline:before": {
+                  borderBottomColor: "#c96049",
                 },
-                '& .MuiInput-underline:after': { borderBottomColor: '#c96049' },
+                "& .MuiInput-underline:after": { borderBottomColor: "#c96049" },
               }}
-              InputProps={{ inputProps: { min: 0, max: 100 } }}
+              slotProps={{
+                input: {
+                  inputProps: {
+                    min: 0,
+                    max: 100,
+                  },
+                },
+              }}
               onChange={(e) => {
                 setEditing({ ...editing, outside: parseInt(e.target.value) });
               }}
             />
             {editing.outside + editing.mid + editing.inside !== 100 && (
-              <Typography color="error" textAlign="center">
+              <Typography color="error" style={{ textAlign: "center" }}>
                 Total must add up to 100
               </Typography>
             )}
           </DialogContent>
-          <DialogActions style={{ justifyContent: 'center' }}>
+          <DialogActions style={{ justifyContent: "center" }}>
             <Button onClick={onClickEdit} color="primary" variant="outlined">
               Close
             </Button>
@@ -710,7 +710,7 @@ export function SolutionComponent(props: {
                     [MID_SHOT_PERCENT]: editing.mid,
                     [INSIDE_SHOT_PERCENT]: editing.inside,
                   },
-                  player._id
+                  player._id,
                 );
                 onClickEdit();
               }}
@@ -726,36 +726,36 @@ export function SolutionComponent(props: {
 
 const useStyles = makeStyles()(() => ({
   grouping: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 'auto',
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "auto",
   },
   box: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
     padding: 10,
     borderRadius: 10,
     marginRight: 5,
     marginBottom: 10,
-    height: 'auto',
-    width: 'auto',
+    height: "auto",
+    width: "auto",
     minWidth: 100,
-    border: '1px solid lightgrey',
-    boxShadow: '-5px 5px 10px 0px rgba(0,0,0,0.75)',
+    border: "1px solid lightgrey",
+    boxShadow: "-5px 5px 10px 0px rgba(0,0,0,0.75)",
   },
   text: {
-    color: 'white',
+    color: "white",
     fontSize: 14,
     fontWeight: 600,
-    textAlign: 'center',
+    textAlign: "center",
   },
   boxText: {
-    color: 'white',
+    color: "white",
     fontSize: 40,
-    fontFamily: 'SigmarOne',
+    fontFamily: "SigmarOne",
   },
 }));

@@ -4,7 +4,8 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
+
+import React from "react";
 import {
   Box,
   Card,
@@ -13,71 +14,134 @@ import {
   Collapse,
   Grid,
   Typography,
-} from '@mui/material';
+} from "@mui/material";
+import {
+  AccessTime,
+  ErrorOutlined,
+  ExtensionOutlined,
+  PauseCircleOutlined,
+  PeopleSharp,
+  Person,
+} from "@mui/icons-material";
 
-import { Classroom } from '../../../store/slices/educational-data/types';
-import PhaseProgressBar, { PhaseSelector } from '../../phase-progress-bar';
+import type { Classroom } from "../../../store/slices/educational-data/types";
+import PhaseProgressBar, { PhaseSelector } from "../../phase-progress-bar";
 import {
   ChatLog,
   Contribution,
   KeyWords,
   NeedsHelp,
-  PlayerPhaseMetrics,
+  type PlayerPhaseMetrics,
   SkillsPracticed,
   TimeSpent,
   TroubleSpots,
-} from './skill-card';
-import { Room } from '../../../store/slices/game/types';
-import { useWithEducationalData } from '../../../store/slices/educational-data/use-with-educational-data';
-import { GAMES } from '../../../game/types';
-import { GamesDropdown } from '../../button';
-import { PlayerSprite } from '../../avatar-sprite';
-import {
-  AccessTime,
-  ErrorOutline,
-  ExtensionOutlined,
-  PauseCircleOutline,
-  PeopleSharp,
-  Person,
-} from '@mui/icons-material';
-import { SkillsMet } from '../../../types';
-import { calculateAverage } from '../../../helpers';
-import { Player } from '../../../store/slices/player/types';
+} from "./skill-card";
+import type { Room } from "../../../store/slices/game/types";
+import { useWithEducationalData } from "../../../store/slices/educational-data/use-with-educational-data";
+import { GAMES } from "../../../game/types";
+import { GamesDropdown } from "../../button";
+import { PlayerSprite } from "../../avatar-sprite";
+import type { SkillsMet } from "../../../types";
+import { calculateAverage } from "../../../helpers";
+import type { Player } from "../../../store/slices/player/types";
+
+function RoomCompletion(props: { phase: number; gameRooms: Room[] }) {
+  const { phase, gameRooms } = props;
+  if (phase === undefined) return <div />;
+  const avgRoomCompletion =
+    100 *
+    (gameRooms.filter(
+      (r) => r.gameData.phaseProgression.phasesCompleted.length > phase,
+    ).length /
+      gameRooms.length);
+  const completion = Number.isNaN(avgRoomCompletion) ? 0 : avgRoomCompletion;
+  return (
+    <Grid size={3}>
+      <Typography style={{ fontSize: 14, fontWeight: "bold" }}>
+        Avg Room Completion
+      </Typography>
+      <div
+        className="row center-div"
+        style={{
+          border: "1px solid black",
+          borderRadius: 10,
+          marginTop: 10,
+          height: 200,
+        }}
+      >
+        <Box sx={{ position: "relative", display: "inline-flex" }}>
+          <CircularProgress
+            variant="determinate"
+            value={100}
+            thickness={6}
+            style={{ width: 150, height: 150 }}
+            sx={{
+              position: "absolute",
+              color: "#e0e0e0", // Light gray color for uncompleted (remaining) portion
+            }}
+          />
+          <CircularProgress
+            variant="determinate"
+            value={completion}
+            thickness={6}
+            style={{ width: 150, height: 150 }}
+          />
+          <Box
+            sx={{
+              top: 0,
+              left: 0,
+              bottom: 0,
+              right: 0,
+              position: "absolute",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Typography style={{ fontWeight: "bold", fontSize: 16 }}>
+              {`${Math.round(completion)}%`}
+            </Typography>
+          </Box>
+        </Box>
+      </div>
+    </Grid>
+  );
+}
 
 export function SummaryReportCard(props: {
   classroom: Classroom;
-}): JSX.Element {
+}): React.ReactNode {
   const { classroom } = props;
   const { educationalData } = useWithEducationalData();
   const [game, setGame] = React.useState<string>();
 
   const gameRooms = educationalData.rooms.filter(
-    (r) => r.classId === classroom._id && (!game || r.gameData.gameId === game)
+    (r) => r.classId === classroom._id && (!game || r.gameData.gameId === game),
   );
   const students = educationalData.students.filter((s) =>
-    gameRooms.find((r) => r.gameData.players.find((p) => p._id === s._id))
+    gameRooms.find((r) => r.gameData.players.find((p) => p._id === s._id)),
   );
 
   return (
     <Card>
       <CardContent
         className="column spacing"
-        style={{ position: 'relative', padding: 20 }}
+        style={{ position: "relative", padding: 20 }}
       >
         <GamesDropdown
           game={game}
           setGame={(id: string) => setGame(id)}
-          buttonStyle={{ borderColor: 'black' }}
+          buttonStyle={{ borderColor: "black" }}
         />
         <PhaseProgressBar size="large" gameRooms={gameRooms} />
         <Grid container spacing={2} style={{ marginTop: 10 }}>
-          <Grid item xs={4}>
+          <Grid size={4}>
             <Contribution students={students} gameRooms={gameRooms} />
           </Grid>
-          <Grid item xs={3}>
+          <Grid size={3}>
             <TimeSpent gameRooms={gameRooms} />
           </Grid>
-          <Grid item xs={5}>
+          <Grid size={5}>
             <KeyWords gameRooms={gameRooms} />
           </Grid>
         </Grid>
@@ -89,16 +153,16 @@ export function SummaryReportCard(props: {
   );
 }
 
-export function PhaseReportCard(props: { classroom: Classroom }): JSX.Element {
+export function PhaseReportCard(props: {
+  classroom: Classroom;
+}): React.ReactNode {
   const { classroom } = props;
   const { educationalData } = useWithEducationalData();
   const [game, setGame] = React.useState<string>();
   const [phase, setPhase] = React.useState<number>();
-  const [skillsMet, setSkillsMet] = React.useState<number>(0);
-  const [timeSpent, setTimeSpent] = React.useState<number>(0);
 
   const gameRooms = educationalData.rooms.filter(
-    (r) => r.classId === classroom._id && (!game || r.gameData.gameId === game)
+    (r) => r.classId === classroom._id && (!game || r.gameData.gameId === game),
   );
   const students = gameRooms.reduce((students: Player[], room) => {
     students.push(...room.gameData.players);
@@ -121,137 +185,72 @@ export function PhaseReportCard(props: { classroom: Classroom }): JSX.Element {
     return students;
   }, []);
 
-  React.useEffect(() => {
-    const skills: Record<string, SkillsMet> = {};
-    for (const room of gameRooms) {
-      for (const standard of Object.entries(
-        room.gameData.mathStandardsCompleted
-      )) {
-        skills[standard[0]] = { playersMet: [], players: [] };
-        for (const student of room.gameData.players) {
-          if (standard[1]) {
-            skills[standard[0]].playersMet.push(student);
-          }
-          skills[standard[0]].players.push(student);
+  const metrics: PlayerPhaseMetrics[] = [];
+  for (const room of gameRooms) {
+    for (const student of room.gameData.players) {
+      const playerStatus = room.gameData.playersStatusRecord[student._id];
+      if (!playerStatus) continue;
+      const playerMetrics: PlayerPhaseMetrics = {
+        player: student,
+        room: room,
+        timeSpent: 0,
+        numWordsSent: 0,
+        totalWordsSent: 0,
+        contribution: 0,
+      };
+      const phases =
+        phase === undefined
+          ? room.gameData.phaseProgression.phasesCompleted
+          : [room.gameData.phaseProgression.phasesCompleted[phase]];
+      for (const p of phases) {
+        if (!playerStatus.phaseMetrics || !playerStatus.phaseMetrics[p]) {
+          continue;
         }
+        playerMetrics.timeSpent +=
+          playerStatus.phaseMetrics[p]?.timeSpentInPhase || 0;
+        playerMetrics.numWordsSent +=
+          playerStatus.phaseMetrics[p]?.numWordsSentInPhase || 0;
       }
+      playerMetrics.timeSpent = Math.round(playerMetrics.timeSpent / 60);
+      metrics.push(playerMetrics);
     }
-    const skillsMet = Object.entries(skills)
-      .sort((a, b) => {
-        return b[1].playersMet.length - a[1].playersMet.length;
-      })
-      .filter(
-        (skill) => skill[1].playersMet.length === skill[1].players.length
-      );
-    setSkillsMet(skillsMet.length);
-  }, [educationalData]);
-
-  React.useEffect(() => {
-    const metrics: PlayerPhaseMetrics[] = [];
-    for (const room of gameRooms) {
-      for (const student of room.gameData.players) {
-        const playerStatus = room.gameData.playersStatusRecord[student._id];
-        if (!playerStatus) continue;
-        const playerMetrics: PlayerPhaseMetrics = {
-          player: student,
-          room: room,
-          timeSpent: 0,
-          numWordsSent: 0,
-          totalWordsSent: 0,
-          contribution: 0,
-        };
-        const phases =
-          phase === undefined
-            ? room.gameData.phaseProgression.phasesCompleted
-            : [room.gameData.phaseProgression.phasesCompleted[phase]];
-        for (const p of phases) {
-          if (!playerStatus.phaseMetrics || !playerStatus.phaseMetrics[p]) {
-            continue;
-          }
-          playerMetrics.timeSpent +=
-            playerStatus.phaseMetrics[p]?.timeSpentInPhase || 0;
-          playerMetrics.numWordsSent +=
-            playerStatus.phaseMetrics[p]?.numWordsSentInPhase || 0;
-        }
-        playerMetrics.timeSpent = Math.round(playerMetrics.timeSpent / 60);
-        metrics.push(playerMetrics);
-      }
-    }
-    setTimeSpent(Math.round(calculateAverage(metrics.map((c) => c.timeSpent))));
-  }, [educationalData]);
-
-  function RoomCompletion() {
-    if (phase === undefined) return <div />;
-    const avgRoomCompletion =
-      100 *
-      (gameRooms.filter(
-        (r) => r.gameData.phaseProgression.phasesCompleted.length > phase
-      ).length /
-        gameRooms.length);
-    const completion = Number.isNaN(avgRoomCompletion) ? 0 : avgRoomCompletion;
-    return (
-      <Grid item xs={3}>
-        <Typography fontSize={14} fontWeight="bold">
-          Avg Room Completion
-        </Typography>
-        <div
-          className="row center-div"
-          style={{
-            border: '1px solid black',
-            borderRadius: 10,
-            marginTop: 10,
-            height: 200,
-          }}
-        >
-          <Box sx={{ position: 'relative', display: 'inline-flex' }}>
-            <CircularProgress
-              variant="determinate"
-              value={100}
-              thickness={6}
-              style={{ width: 150, height: 150 }}
-              sx={{
-                position: 'absolute',
-                color: '#e0e0e0', // Light gray color for uncompleted (remaining) portion
-              }}
-            />
-            <CircularProgress
-              variant="determinate"
-              value={completion}
-              thickness={6}
-              style={{ width: 150, height: 150 }}
-            />
-            <Box
-              sx={{
-                top: 0,
-                left: 0,
-                bottom: 0,
-                right: 0,
-                position: 'absolute',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Typography fontWeight="bold" fontSize={16}>
-                {`${Math.round(completion)}%`}
-              </Typography>
-            </Box>
-          </Box>
-        </div>
-      </Grid>
-    );
   }
+  const timeSpent = Math.round(
+    calculateAverage(metrics.map((c) => c.timeSpent)),
+  );
+
+  const skills: Record<string, SkillsMet> = {};
+  for (const room of gameRooms) {
+    for (const standard of Object.entries(
+      room.gameData.mathStandardsCompleted,
+    )) {
+      skills[standard[0]] = { playersMet: [], players: [] };
+      for (const student of room.gameData.players) {
+        if (standard[1]) {
+          skills[standard[0]].playersMet.push(student);
+        }
+        skills[standard[0]].players.push(student);
+      }
+    }
+  }
+  const skillsMet = Object.entries(skills)
+    .sort((a, b) => {
+      return b[1].playersMet.length - a[1].playersMet.length;
+    })
+    .filter(
+      (skill) => skill[1].playersMet.length === skill[1].players.length,
+    ).length;
 
   return (
     <Card>
       <CardContent
         className="column spacing"
-        style={{ position: 'relative', padding: 20 }}
+        style={{ position: "relative", padding: 20 }}
       >
         <GamesDropdown
           game={game}
           setGame={(id: string) => setGame(id)}
-          buttonStyle={{ borderColor: 'black' }}
+          buttonStyle={{ borderColor: "black" }}
         />
 
         <Grid
@@ -260,99 +259,120 @@ export function PhaseReportCard(props: { classroom: Classroom }): JSX.Element {
             marginTop: 10,
             marginBottom: 10,
             padding: 20,
-            border: 'solid 1px black',
+            border: "solid 1px black",
             borderRadius: 20,
           }}
         >
-          <Grid item xs={2}>
+          <Grid size={2}>
             <div
               className="column center-div"
-              style={{ borderRight: '1px solid black' }}
+              style={{ borderRight: "1px solid black" }}
             >
               <div className="row spacing center-div">
                 <Person />
-                <Typography variant="h4" fontWeight="bold">
+                <Typography variant="h4" style={{ fontWeight: "bold" }}>
                   {students.length}
                 </Typography>
               </div>
-              <Typography fontSize={12} fontWeight="light">
+              <Typography style={{ fontSize: 12, fontWeight: "light" }}>
                 TOTAL STUDENTS
               </Typography>
             </div>
           </Grid>
-          <Grid item xs={2}>
+          <Grid size={2}>
             <div
               className="column center-div"
-              style={{ borderRight: '1px solid black' }}
+              style={{ borderRight: "1px solid black" }}
             >
               <div className="row spacing center-div">
                 <PeopleSharp />
-                <Typography variant="h4" fontWeight="bold">
+                <Typography variant="h4" style={{ fontWeight: "bold" }}>
                   {gameRooms.length}
                 </Typography>
               </div>
-              <Typography fontSize={12} fontWeight="light">
+              <Typography style={{ fontSize: 12, fontWeight: "light" }}>
                 TOTAL ROOMS
               </Typography>
             </div>
           </Grid>
-          <Grid item xs={2}>
+          <Grid size={2}>
             <div
               className="column center-div"
-              style={{ borderRight: '1px solid black' }}
+              style={{ borderRight: "1px solid black" }}
             >
               <div className="row spacing center-div">
-                <PauseCircleOutline />
-                <Typography variant="h4" fontWeight="bold">
+                <PauseCircleOutlined />
+                <Typography variant="h4" style={{ fontWeight: "bold" }}>
                   {pausedStudents.length}
                 </Typography>
               </div>
-              <Typography fontSize={12} fontWeight="light">
+              <Typography style={{ fontSize: 12, fontWeight: "light" }}>
                 PAUSED STUDENTS
               </Typography>
             </div>
           </Grid>
-          <Grid item xs={2}>
+          <Grid size={2}>
             <div
               className="column center-div"
-              style={{ borderRight: '1px solid black' }}
+              style={{ borderRight: "1px solid black" }}
             >
               <div className="row spacing center-div">
-                <ErrorOutline color="error" />
-                <Typography variant="h4" fontWeight="bold" color="error">
+                <ErrorOutlined color="error" />
+                <Typography
+                  variant="h4"
+                  color="error"
+                  style={{ fontWeight: "bold" }}
+                >
                   {needsHelp.length}
                 </Typography>
               </div>
-              <Typography fontSize={12} fontWeight="light" color="error">
+              <Typography
+                color="error"
+                style={{ fontSize: 12, fontWeight: "light" }}
+              >
                 STUDENTS NEED HELP
               </Typography>
             </div>
           </Grid>
-          <Grid item xs={2}>
+          <Grid size={2}>
             <div
               className="column center-div"
-              style={{ borderRight: '1px solid black' }}
+              style={{ borderRight: "1px solid black" }}
             >
               <div className="row spacing center-div">
                 <ExtensionOutlined color="warning" />
-                <Typography variant="h4" fontWeight="bold" color="orange">
+                <Typography
+                  variant="h4"
+                  color="orange"
+                  style={{ fontWeight: "bold" }}
+                >
                   {skillsMet}
                 </Typography>
               </div>
-              <Typography fontSize={12} fontWeight="light" color="orange">
+              <Typography
+                color="orange"
+                style={{ fontSize: 12, fontWeight: "light" }}
+              >
                 SKILLS PRACTICED
               </Typography>
             </div>
           </Grid>
-          <Grid item xs={2}>
+          <Grid size={2}>
             <div className="column center-div">
               <div className="row spacing center-div">
                 <AccessTime color="success" />
-                <Typography variant="h4" fontWeight="bold" color="green">
+                <Typography
+                  variant="h4"
+                  color="green"
+                  style={{ fontWeight: "bold" }}
+                >
                   {timeSpent} min.
                 </Typography>
               </div>
-              <Typography fontSize={12} fontWeight="light" color="green">
+              <Typography
+                color="green"
+                style={{ fontSize: 12, fontWeight: "light" }}
+              >
                 AVERAGE ACTIVITY
               </Typography>
             </div>
@@ -366,14 +386,16 @@ export function PhaseReportCard(props: { classroom: Classroom }): JSX.Element {
         />
 
         <Grid container spacing={2} style={{ marginTop: 10 }}>
-          {phase !== undefined && <RoomCompletion />}
-          <Grid item xs={phase === undefined ? 4 : 3}>
+          {phase !== undefined && (
+            <RoomCompletion phase={phase} gameRooms={gameRooms} />
+          )}
+          <Grid size={phase === undefined ? 4 : 3}>
             <TimeSpent phase={phase} gameRooms={gameRooms} />
           </Grid>
-          <Grid item xs={phase === undefined ? 4 : 3}>
+          <Grid size={phase === undefined ? 4 : 3}>
             <KeyWords phase={phase} gameRooms={gameRooms} />
           </Grid>
-          <Grid item xs={phase === undefined ? 4 : 3}>
+          <Grid size={phase === undefined ? 4 : 3}>
             <Contribution
               phase={phase}
               students={students}
@@ -392,7 +414,7 @@ export function PhaseReportCard(props: { classroom: Classroom }): JSX.Element {
 export function IndividualReportCard(props: {
   classroom: Classroom;
   room: Room;
-}): JSX.Element {
+}): React.ReactNode {
   const { room } = props;
   const [expanded, setExpanded] = React.useState<boolean>(true);
   const [phase, setPhase] = React.useState<number>();
@@ -404,18 +426,20 @@ export function IndividualReportCard(props: {
       p.roomId === room._id &&
       (phase === undefined ||
         p.phaseId ===
-          room.gameData.phaseProgression.startingPhaseStepsOrdered[phase])
+          room.gameData.phaseProgression.startingPhaseStepsOrdered[phase]),
   );
 
   return (
     <Card>
       <CardContent
         className="column spacing"
-        style={{ position: 'relative', padding: 20 }}
+        style={{ position: "relative", padding: 20 }}
       >
         <Typography
-          fontSize={20}
-          fontWeight="bold"
+          style={{
+            fontSize: 20,
+            fontWeight: "bold",
+          }}
           onClick={() => setExpanded(!expanded)}
         >
           {room.name} - {game?.name}
@@ -423,23 +447,25 @@ export function IndividualReportCard(props: {
         <PhaseSelector gameRooms={[room]} phase={phase} setPhase={setPhase} />
         <Collapse in={expanded}>
           <Grid container spacing={2} style={{ marginTop: 10 }}>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <Contribution
                 phase={phase}
                 students={room.gameData.players}
                 gameRooms={[room]}
               />
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <TimeSpent phase={phase} gameRooms={[room]} />
             </Grid>
             {phaseReflections.length > 0 && (
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Typography
-                  fontSize={14}
-                  fontWeight="bold"
-                  flexGrow={1}
-                  style={{ marginBottom: 10 }}
+                  style={{
+                    marginBottom: 10,
+                    fontSize: 14,
+                    fontWeight: "bold",
+                    flexGrow: 1,
+                  }}
                 >
                   Class Reflections
                 </Typography>
@@ -448,16 +474,18 @@ export function IndividualReportCard(props: {
                     return (
                       <Card
                         key={`reflection-${idx}`}
-                        style={{ backgroundColor: 'rgb(231, 231, 231)' }}
+                        style={{ backgroundColor: "rgb(231, 231, 231)" }}
                         elevation={0}
                       >
                         <CardContent className="column spacing">
-                          <Typography fontSize={14} fontWeight="bold">
+                          <Typography
+                            style={{ fontSize: 14, fontWeight: "bold" }}
+                          >
                             {pr.question}
                           </Typography>
                           {Object.entries(pr.reflections).map((r) => {
                             const player = room.gameData.players.find(
-                              (p) => p._id === r[0]
+                              (p) => p._id === r[0],
                             );
                             if (!player) return <div key={r[0]} />;
                             return (
@@ -483,19 +511,19 @@ export function IndividualReportCard(props: {
                 </div>
               </Grid>
             )}
-            <Grid item xs={phaseReflections.length > 0 ? 6 : 12}>
+            <Grid size={phaseReflections.length > 0 ? 6 : 12}>
               <ChatLog phase={phase} gameRoom={room} />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <NeedsHelp students={room.gameData.players} gameRooms={[room]} />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <SkillsPracticed
                 students={room.gameData.players}
                 gameRooms={[room]}
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <TroubleSpots
                 students={room.gameData.players}
                 gameRooms={[room]}

@@ -32,7 +32,7 @@ export function defaultClassroomMembershipData(classroomId: string, groupId: num
         classId: classroomId,
         groupId: groupId,
         userId: userId,
-        status: ClassMembershipStatus.MEMBER,
+        status: 'Member',
     }
 }
 

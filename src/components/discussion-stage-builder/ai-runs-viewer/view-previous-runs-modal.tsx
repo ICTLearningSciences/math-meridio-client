@@ -4,27 +4,28 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { Box, Button, Modal, Theme } from '@mui/material';
-import { makeStyles } from 'tss-react/mui';
-import { AiServicesResponseTypes } from '../../../ai-services/ai-service-types';
-import { RowDivSB } from '../../../styled-components';
+
+import React from "react";
+import { makeStyles } from "tss-react/mui";
+import { Box, Button, Modal, type Theme } from "@mui/material";
+import type { AiServicesResponseTypes } from "../../../ai-services/ai-service-types";
+import { RowDivSB } from "../../../styled-components";
 
 const useStyles = makeStyles({ name: { ViewPreviousRunsModal } })(
   (theme: Theme) => ({
     inputField: {
-      width: '100%',
+      width: "100%",
       margin: 10,
     },
     modal: {},
     paper: {
       backgroundColor: theme.palette.background.paper,
-      border: '2px solid #000',
+      border: "2px solid #000",
       boxShadow: theme.shadows[5],
       padding: theme.spacing(2, 4, 3),
-      maxWidth: '50%',
+      maxWidth: "50%",
     },
-  })
+  }),
 );
 
 export default function ViewPreviousRunsModal(props: {
@@ -32,22 +33,22 @@ export default function ViewPreviousRunsModal(props: {
   open: boolean;
   close: () => void;
   setRunToView: (run?: AiServicesResponseTypes) => void;
-}): JSX.Element {
+}): React.ReactNode {
   const { previousRuns, open, close, setRunToView } = props;
   const { classes } = useStyles();
   const style = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: '30%',
-    height: 'fit-content',
-    bgcolor: 'background.paper',
-    border: '2px solid #000',
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: "30%",
+    height: "fit-content",
+    bgcolor: "background.paper",
+    border: "2px solid #000",
     boxShadow: 24,
     p: 4,
-    display: 'flex',
-    flexDirection: 'column',
+    display: "flex",
+    flexDirection: "column",
   };
 
   return (
@@ -56,17 +57,17 @@ export default function ViewPreviousRunsModal(props: {
         <Box sx={style}>
           <div
             style={{
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              height: '100%',
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              height: "100%",
             }}
           >
             {previousRuns.map((run, index) => (
               <RowDivSB
                 key={index}
                 style={{
-                  borderBottom: '1px solid black',
+                  borderBottom: "1px solid black",
                 }}
               >
                 <span>{`Run ${index + 1}`}</span>
@@ -82,7 +83,7 @@ export default function ViewPreviousRunsModal(props: {
           </div>
           <Button
             style={{
-              justifySelf: 'center',
+              justifySelf: "center",
             }}
             onClick={() => {
               setRunToView(undefined);

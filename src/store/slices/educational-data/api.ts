@@ -4,24 +4,28 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { execGql } from '../../../api-helpers';
+
+import { execGql } from "../../../api-helpers";
 import {
-  ClassMembership,
   classMembershipDataQuery,
-  Classroom,
   classroomDataQuery,
   notificationDataQuery,
+  phaseReflectionsDataQuery,
+} from "./types";
+import type {
+  ClassMembership,
+  Classroom,
   FetchEducationalDataHydrationResponse,
   JoinClassroomResponse,
-  phaseReflectionsDataQuery,
   NotificationEvent,
-} from './types';
-import { userDataQuery } from '../player/api';
-import { fullRoomQueryData } from '../../../api';
-import { requireLocalStorageGet as localStorageGet } from '../../local-storage';
-import { ACCESS_TOKEN_KEY } from '../../local-storage';
-import { LearningObjective, Room } from '../game/types';
-import { Connection } from '../../../types';
+} from "./types";
+
+import { userDataQuery } from "../player/api";
+import { fullRoomQueryData } from "../../../api";
+import { requireLocalStorageGet as localStorageGet } from "../../local-storage";
+import { ACCESS_TOKEN_KEY } from "../../local-storage";
+import type { LearningObjective, Room } from "../game/types";
+import type { Connection } from "../../../types";
 
 export async function createClassroom(): Promise<Classroom> {
   const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
@@ -36,16 +40,16 @@ export async function createClassroom(): Promise<Classroom> {
             `,
     },
     {
-      dataPath: 'createClassroom',
+      dataPath: "createClassroom",
       accessToken: accessToken,
-    }
+    },
   );
 }
 
 export async function updateClassNameDescription(
   classId: string,
   name: string,
-  description: string
+  description: string,
 ): Promise<Classroom> {
   const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
   return await execGql<Classroom>(
@@ -64,16 +68,16 @@ export async function updateClassNameDescription(
       },
     },
     {
-      dataPath: 'updateClassNameDescription',
+      dataPath: "updateClassNameDescription",
       accessToken: accessToken,
-    }
+    },
   );
 }
 
 export async function createNewClassInviteCode(
   classId: string,
   validUntil: Date,
-  numUses: number
+  numUses: number,
 ): Promise<Classroom> {
   const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
   return await execGql<Classroom>(
@@ -92,15 +96,15 @@ export async function createNewClassInviteCode(
       },
     },
     {
-      dataPath: 'createNewClassInviteCode',
+      dataPath: "createNewClassInviteCode",
       accessToken: accessToken,
-    }
+    },
   );
 }
 
 export async function revokeClassInviteCode(
   classId: string,
-  classroomCode: string
+  classroomCode: string,
 ): Promise<Classroom> {
   const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
   return await execGql<Classroom>(
@@ -118,14 +122,14 @@ export async function revokeClassInviteCode(
       },
     },
     {
-      dataPath: 'revokeClassInviteCode',
+      dataPath: "revokeClassInviteCode",
       accessToken: accessToken,
-    }
+    },
   );
 }
 
 export async function joinClassroom(
-  inviteCode: string
+  inviteCode: string,
 ): Promise<JoinClassroomResponse> {
   const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
   return await execGql<JoinClassroomResponse>(
@@ -145,14 +149,14 @@ export async function joinClassroom(
       },
     },
     {
-      dataPath: 'joinClassroom',
+      dataPath: "joinClassroom",
       accessToken: accessToken,
-    }
+    },
   );
 }
 
 export async function leaveClassroom(
-  classId: string
+  classId: string,
 ): Promise<ClassMembership> {
   const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
   return await execGql<ClassMembership>(
@@ -169,15 +173,15 @@ export async function leaveClassroom(
       },
     },
     {
-      dataPath: 'leaveClassroom',
+      dataPath: "leaveClassroom",
       accessToken: accessToken,
-    }
+    },
   );
 }
 
 export async function removeStudentFromClass(
   studentId: string,
-  classId: string
+  classId: string,
 ): Promise<ClassMembership> {
   const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
   return await execGql<ClassMembership>(
@@ -195,15 +199,15 @@ export async function removeStudentFromClass(
       },
     },
     {
-      dataPath: 'removeStudentFromClass',
+      dataPath: "removeStudentFromClass",
       accessToken: accessToken,
-    }
+    },
   );
 }
 
 export async function blockStudentFromClass(
   studentId: string,
-  classId: string
+  classId: string,
 ): Promise<ClassMembership> {
   const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
   return await execGql<ClassMembership>(
@@ -219,15 +223,15 @@ export async function blockStudentFromClass(
       },
     },
     {
-      dataPath: 'blockStudentFromClass',
+      dataPath: "blockStudentFromClass",
       accessToken: accessToken,
-    }
+    },
   );
 }
 
 export async function unblockStudentFromClass(
   studentId: string,
-  classId: string
+  classId: string,
 ): Promise<ClassMembership> {
   const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
   return await execGql<ClassMembership>(
@@ -243,16 +247,16 @@ export async function unblockStudentFromClass(
       },
     },
     {
-      dataPath: 'unblockStudentFromClass',
+      dataPath: "unblockStudentFromClass",
       accessToken: accessToken,
-    }
+    },
   );
 }
 
 export async function assignStudentToGroup(
   studentId: string,
   classId: string,
-  groupId: number
+  groupId: number,
 ): Promise<ClassMembership> {
   const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
   return await execGql<ClassMembership>(
@@ -269,9 +273,9 @@ export async function assignStudentToGroup(
       },
     },
     {
-      dataPath: 'assignStudentToGroup',
+      dataPath: "assignStudentToGroup",
       accessToken: accessToken,
-    }
+    },
   );
 }
 
@@ -282,7 +286,7 @@ export interface AssignClassGroupsAndStartResponse {
 
 export async function assignClassGroupsAndStart(
   classId: string,
-  groups: ClassMembership[]
+  groups: ClassMembership[],
 ): Promise<AssignClassGroupsAndStartResponse> {
   const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
   return await execGql<AssignClassGroupsAndStartResponse>(
@@ -303,14 +307,14 @@ export async function assignClassGroupsAndStart(
       },
     },
     {
-      dataPath: 'assignClassGroupsAndStart',
+      dataPath: "assignClassGroupsAndStart",
       accessToken: accessToken,
-    }
+    },
   );
 }
 
 export async function copyAndArchiveClassroom(
-  classId: string
+  classId: string,
 ): Promise<AssignClassGroupsAndStartResponse> {
   const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
   return await execGql<AssignClassGroupsAndStartResponse>(
@@ -330,15 +334,15 @@ export async function copyAndArchiveClassroom(
       },
     },
     {
-      dataPath: 'copyAndArchiveClassroom',
+      dataPath: "copyAndArchiveClassroom",
       accessToken: accessToken,
-    }
+    },
   );
 }
 
 export async function adjustClassroomArchiveStatus(
   classId: string,
-  setArchived: boolean
+  setArchived: boolean,
 ): Promise<Classroom> {
   const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
   return await execGql<Classroom>(
@@ -354,9 +358,9 @@ export async function adjustClassroomArchiveStatus(
       },
     },
     {
-      dataPath: 'adjustClassroomArchiveStatus',
+      dataPath: "adjustClassroomArchiveStatus",
       accessToken: accessToken,
-    }
+    },
   );
 }
 
@@ -375,9 +379,9 @@ export async function dismissNotifications(): Promise<NotificationEvent[]> {
       query: dismissNotificationsMutation,
     },
     {
-      dataPath: 'dismissNotifications',
+      dataPath: "dismissNotifications",
       accessToken: accessToken,
-    }
+    },
   );
 }
 
@@ -413,9 +417,9 @@ export async function fetchInstructorDataHydration(): Promise<FetchEducationalDa
     }`,
     },
     {
-      dataPath: 'fetchInstructorDataHydration',
+      dataPath: "fetchInstructorDataHydration",
       accessToken: accessToken,
-    }
+    },
   );
 }
 
@@ -441,9 +445,9 @@ export async function fetchStudentDataHydration(): Promise<FetchEducationalDataH
   }`,
     },
     {
-      dataPath: 'fetchStudentDataHydration',
+      dataPath: "fetchStudentDataHydration",
       accessToken: accessToken,
-    }
+    },
   );
 }
 
@@ -457,7 +461,7 @@ export const shareClassroomWithInstructorMutation = `
 
 export async function shareClassroomWithInstructor(
   classId: string,
-  instructorId: string
+  instructorId: string,
 ): Promise<Classroom> {
   const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
   return await execGql<Classroom>(
@@ -466,9 +470,9 @@ export async function shareClassroomWithInstructor(
       variables: { classId, instructorId },
     },
     {
-      dataPath: 'shareClassroomWithInstructor',
+      dataPath: "shareClassroomWithInstructor",
       accessToken: accessToken,
-    }
+    },
   );
 }
 
@@ -482,7 +486,7 @@ const assignGameToGameRoomMutation = `
 
 export async function assignGameToGameRoom(
   roomId: string,
-  gameId: string
+  gameId: string,
 ): Promise<Room> {
   const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
   return await execGql<Room>(
@@ -491,9 +495,9 @@ export async function assignGameToGameRoom(
       variables: { roomId, gameId },
     },
     {
-      dataPath: 'assignGameToGameRoom',
+      dataPath: "assignGameToGameRoom",
       accessToken: accessToken,
-    }
+    },
   );
 }
 
@@ -507,7 +511,7 @@ export const setPlayerNeedsHelpInRoomMutation = `
 
 export async function setPlayerNeedsHelpInRoom(
   roomId: string,
-  needsHelp: boolean
+  needsHelp: boolean,
 ): Promise<Room> {
   const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
   return await execGql<Room>(
@@ -516,9 +520,9 @@ export async function setPlayerNeedsHelpInRoom(
       variables: { roomId, needsHelp },
     },
     {
-      dataPath: 'setNeedsHelpInGameRoom',
+      dataPath: "setNeedsHelpInGameRoom",
       accessToken: accessToken,
-    }
+    },
   );
 }
 
@@ -532,7 +536,7 @@ export const dismissPlayerNeedsHelpInRoomMutation = `
 
 export async function dismissPlayerNeedsHelpInRoom(
   roomId: string,
-  userId: string
+  userId: string,
 ): Promise<Room> {
   const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
   return await execGql<Room>(
@@ -541,9 +545,9 @@ export async function dismissPlayerNeedsHelpInRoom(
       variables: { roomId, userId },
     },
     {
-      dataPath: 'dismissNeedsHelp',
+      dataPath: "dismissNeedsHelp",
       accessToken: accessToken,
-    }
+    },
   );
 }
 
@@ -563,7 +567,7 @@ export const createLearningObjectiveMutation = `
 `;
 
 export async function createLearningObjective(
-  learningObjective: Omit<LearningObjective, '_id'>
+  learningObjective: Omit<LearningObjective, "_id">,
 ): Promise<LearningObjective> {
   return await execGql<LearningObjective>(
     {
@@ -571,8 +575,8 @@ export async function createLearningObjective(
       variables: { learningObjective },
     },
     {
-      dataPath: 'createNewLearningObjective',
-    }
+      dataPath: "createNewLearningObjective",
+    },
   );
 }
 
@@ -586,7 +590,7 @@ export const updateLearningObjectiveMutation = `
 
 export async function updateLearningObjective(
   learningObjectiveId: string,
-  learningObjective: Omit<LearningObjective, '_id'>
+  learningObjective: Omit<LearningObjective, "_id">,
 ): Promise<LearningObjective> {
   return await execGql<LearningObjective>(
     {
@@ -594,8 +598,8 @@ export async function updateLearningObjective(
       variables: { learningObjectiveId, learningObjective },
     },
     {
-      dataPath: 'updateLearningObjective',
-    }
+      dataPath: "updateLearningObjective",
+    },
   );
 }
 
@@ -612,7 +616,7 @@ export const fetchLearningObjectivesQuery = `
 `;
 
 export async function fetchLearningObjectives(
-  limit = 9999
+  limit = 9999,
 ): Promise<LearningObjective[]> {
   const res = await execGql<Connection<LearningObjective>>(
     {
@@ -620,8 +624,8 @@ export async function fetchLearningObjectives(
       variables: { filter: JSON.stringify({}), limit },
     },
     {
-      dataPath: 'fetchLearningObjectives',
-    }
+      dataPath: "fetchLearningObjectives",
+    },
   );
   return res.edges.map((edge) => edge.node);
 }

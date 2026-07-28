@@ -4,47 +4,32 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { v4 as uuid } from 'uuid';
+import React from "react";
 import {
   Button,
+  Collapse,
   FormControl,
   InputLabel,
   MenuItem,
   Select,
   IconButton,
-} from '@mui/material';
-import { Delete } from '@mui/icons-material';
+} from "@mui/material";
+import { Delete, ExpandMore, ExpandLess } from "@mui/icons-material";
 import {
   ColumnDiv,
   RoundedBorderDiv,
   RowDiv,
   TopLeftText,
-} from '../../../../styled-components';
-import { CheckBoxInput, InputField } from '../../shared/input-components';
-import { JumpToAlternateStep } from '../../shared/jump-to-alternate-step';
-import Collapse from '@mui/material/Collapse';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import {
+} from "../../../../styled-components";
+import { CheckBoxInput, InputField } from "../../shared/input-components";
+import { JumpToAlternateStep } from "../../shared/jump-to-alternate-step";
+import type {
   DiscussionStage,
-  DiscussionStageStepType,
   EndOfPhaseReflectionStep,
   FlowItem,
   StartOfPhaseStep,
-} from '../../types';
-export function getDefaultEndOfPhaseReflection(): EndOfPhaseReflectionStep {
-  return {
-    stepId: uuid(),
-    lastStep: false,
-    stepType: DiscussionStageStepType.END_OF_PHASE_REFLECTION,
-    parentStartOfPhaseStepId: '',
-    skipReflectionCollection: false,
-    message: '',
-    questions: [''],
-    jumpToStepId: '',
-  };
-}
+} from "../../types";
+
 export function EndOfPhaseReflectionStepBuilder(props: {
   step: EndOfPhaseReflectionStep;
   updateLocalStage: React.Dispatch<React.SetStateAction<DiscussionStage>>;
@@ -55,7 +40,7 @@ export function EndOfPhaseReflectionStepBuilder(props: {
   startOfPhaseSteps: StartOfPhaseStep[];
   width?: string;
   height?: string;
-}): JSX.Element {
+}): React.ReactNode {
   const { step, stepIndex, updateLocalStage, startOfPhaseSteps } = props;
   const [collapsed, setCollapsed] = React.useState<boolean>(false);
 
@@ -84,18 +69,18 @@ export function EndOfPhaseReflectionStepBuilder(props: {
   return (
     <RoundedBorderDiv
       style={{
-        width: props.width || '100%',
-        height: props.height || '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'relative',
+        width: props.width || "100%",
+        height: props.height || "100%",
+        display: "flex",
+        flexDirection: "column",
+        position: "relative",
         padding: 10,
       }}
     >
       <TopLeftText>{`Step ${stepIndex + 1}`}</TopLeftText>
       <IconButton
         style={{
-          position: 'absolute',
+          position: "absolute",
           right: 10,
           top: 10,
         }}
@@ -105,25 +90,25 @@ export function EndOfPhaseReflectionStepBuilder(props: {
       </IconButton>
       <IconButton
         style={{
-          width: 'fit-content',
-          position: 'absolute',
+          width: "fit-content",
+          position: "absolute",
           left: 10,
           top: 40,
         }}
         onClick={() => setCollapsed(!collapsed)}
       >
-        {collapsed ? <ExpandMoreIcon /> : <ExpandLessIcon />}
+        {collapsed ? <ExpandMore /> : <ExpandLess />}
       </IconButton>
-      <h4 style={{ alignSelf: 'center' }}>End of Phase Reflection</h4>
+      <h4 style={{ alignSelf: "center" }}>End of Phase Reflection</h4>
       <Collapse in={!collapsed}>
         <FormControl variant="standard" sx={{ m: 1, minWidth: 120 }} fullWidth>
-          <InputLabel id={'select-field-label'}>Ending Phase</InputLabel>
+          <InputLabel id={"select-field-label"}>Ending Phase</InputLabel>
           <Select
             labelId="select-ending-phase-label"
             id="select-ending-phase"
             value={step.parentStartOfPhaseStepId}
             onChange={(e) => {
-              updateField('parentStartOfPhaseStepId', e.target.value as string);
+              updateField("parentStartOfPhaseStepId", e.target.value as string);
             }}
             label="Ending Phase"
           >
@@ -139,7 +124,7 @@ export function EndOfPhaseReflectionStepBuilder(props: {
           label="Message"
           value={step.message}
           onChange={(e) => {
-            updateField('message', e);
+            updateField("message", e);
           }}
         />
         <ColumnDiv>
@@ -151,8 +136,8 @@ export function EndOfPhaseReflectionStepBuilder(props: {
                 value={question}
                 onChange={(e) => {
                   updateField(
-                    'questions',
-                    step.questions.map((q, i) => (i === index ? e : q))
+                    "questions",
+                    step.questions.map((q, i) => (i === index ? e : q)),
                   );
                 }}
               />
@@ -160,8 +145,8 @@ export function EndOfPhaseReflectionStepBuilder(props: {
                 <IconButton
                   onClick={() => {
                     updateField(
-                      'questions',
-                      step.questions.filter((_, i) => i !== index)
+                      "questions",
+                      step.questions.filter((_, i) => i !== index),
                     );
                   }}
                 >
@@ -175,9 +160,9 @@ export function EndOfPhaseReflectionStepBuilder(props: {
           <Button
             variant="contained"
             color="primary"
-            style={{ width: 'fit-content', marginLeft: 10 }}
+            style={{ width: "fit-content", marginLeft: 10 }}
             onClick={() => {
-              updateField('questions', [...step.questions, '']);
+              updateField("questions", [...step.questions, ""]);
             }}
           >
             + Add Question
@@ -187,21 +172,21 @@ export function EndOfPhaseReflectionStepBuilder(props: {
           label="Skip Reflection Popup"
           value={step.skipReflectionCollection}
           onChange={(e) => {
-            updateField('skipReflectionCollection', e);
+            updateField("skipReflectionCollection", e);
           }}
         />
         <CheckBoxInput
           label="Is final step (discussion finished)?"
           value={step.lastStep}
           onChange={(e) => {
-            updateField('lastStep', e);
+            updateField("lastStep", e);
           }}
         />
         <JumpToAlternateStep
           step={step}
           flowsList={props.flowsList}
           onNewStepSelected={(stepId) => {
-            updateField('jumpToStepId', stepId);
+            updateField("jumpToStepId", stepId);
           }}
         />
       </Collapse>

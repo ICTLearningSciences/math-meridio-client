@@ -5,13 +5,9 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 
-import { gameObjects } from './game-scene';
+import { gameObjects } from "./game-scene";
 
-export enum Anchor {
-  center = 'center',
-  start = 'start',
-  end = 'end',
-}
+export type Anchor = "center" | "start" | "end";
 
 export interface ImageProps {
   bg?: Phaser.GameObjects.Image; // position and scale relative to this background
@@ -52,7 +48,7 @@ export function addTween(
     | Phaser.Types.Tweens.TweenBuilderConfig
     | Phaser.Types.Tweens.TweenChainBuilderConfig
     | Phaser.Tweens.Tween
-    | Phaser.Tweens.TweenChain
+    | Phaser.Tweens.TweenChain,
 ): void {
   const tween = scene.tweens.add(config);
   gameObjects.push(tween);
@@ -61,7 +57,7 @@ export function addTween(
 export function playSound(
   scene: Phaser.Scene,
   sound: string,
-  config?: Phaser.Types.Sound.SoundConfig
+  config?: Phaser.Types.Sound.SoundConfig,
 ) {
   scene.sound.play(sound, { ...config, volume: (config?.volume || 1) * 0.1 });
 }
@@ -72,7 +68,7 @@ export function addImage(
   scene: Phaser.Scene,
   texture: string,
   frame?: string,
-  props: ImageProps = {}
+  props: ImageProps = {},
 ): Phaser.GameObjects.Image {
   const image = scene.add.image(0, 0, texture, frame);
   scaleImage(scene, image, props);
@@ -84,7 +80,7 @@ export function addSprite(
   scene: Phaser.Scene,
   texture: string,
   frame?: string | number,
-  props: ImageProps = {}
+  props: ImageProps = {},
 ): Phaser.GameObjects.Sprite {
   const sprite = scene.add.sprite(0, 0, texture, frame);
   scaleImage(scene, sprite, props);
@@ -94,7 +90,7 @@ export function addSprite(
 
 export function addBackground(
   scene: Phaser.Scene,
-  texture: string
+  texture: string,
 ): Phaser.GameObjects.Image {
   const { width: gameWidth, height: gameHeight } = scene.cameras.main;
   const image = scene.add.image(0, 0, texture);
@@ -113,10 +109,10 @@ export function addBackground(
 export function scaleImage(
   scene: Phaser.Scene,
   image: Phaser.GameObjects.Image | Phaser.GameObjects.Sprite,
-  props: ImageProps = {}
+  props: ImageProps = {},
 ) {
-  props = { ...image.getData('prop'), ...props };
-  image.setData('props', props);
+  props = { ...image.getData("prop"), ...props };
+  image.setData("props", props);
   let { width: bgWidth, height: bgHeight, x: bgX, y: bgY } = scene.cameras.main;
   if (props.bg) {
     bgWidth = props.bg.displayWidth;
@@ -142,22 +138,20 @@ export function scaleImage(
     image.setScale(scale).setScrollFactor(0);
   }
 
-  const anchorX = props.xAnchor || Anchor.center;
-  const anchorY = props.yAnchor || Anchor.center;
+  const anchorX = props.xAnchor || "center";
+  const anchorY = props.yAnchor || "center";
   const x =
     bgX -
-    bgWidth *
-      (anchorX === Anchor.center ? 0 : anchorX === Anchor.start ? 0.5 : -0.5) +
+    bgWidth * (anchorX === "center" ? 0 : anchorX === "start" ? 0.5 : -0.5) +
     image.displayWidth *
-      (anchorX === Anchor.center ? 0 : anchorX === Anchor.start ? 0.5 : -0.5) +
+      (anchorX === "center" ? 0 : anchorX === "start" ? 0.5 : -0.5) +
     (props.x || 0) +
     bgWidth * (props.xRel || 0);
   const y =
     bgY -
-    bgHeight *
-      (anchorY === Anchor.center ? 0 : anchorY === Anchor.start ? 0.5 : -0.5) +
+    bgHeight * (anchorY === "center" ? 0 : anchorY === "start" ? 0.5 : -0.5) +
     image.displayHeight *
-      (anchorY === Anchor.center ? 0 : anchorY === Anchor.start ? 0.5 : -0.5) +
+      (anchorY === "center" ? 0 : anchorY === "start" ? 0.5 : -0.5) +
     (props.y || 0) +
     bgHeight * (props.yRel || 0);
   image.setX(x);
@@ -170,14 +164,14 @@ export function scaleImage(
 export function addText(
   scene: Phaser.Scene,
   str: string,
-  props: TextProps = {}
+  props: TextProps = {},
 ): Phaser.GameObjects.Text {
   const text = scene.add.text(0, 0, str, {
-    fontFamily: 'Arial',
-    color: '#ffffff',
-    fontStyle: 'bold',
+    fontFamily: "Arial",
+    color: "#ffffff",
+    fontStyle: "bold",
     shadow: {
-      color: '#000000',
+      color: "#000000",
       fill: true,
       offsetX: 2,
       offsetY: 2,
@@ -194,10 +188,10 @@ export function scaleText(
   scene: Phaser.Scene,
   text: Phaser.GameObjects.Text,
   str?: string,
-  props: TextProps = {}
+  props: TextProps = {},
 ) {
-  props = { ...text.getData('props'), ...props };
-  text.setData('props', props);
+  props = { ...text.getData("props"), ...props };
+  text.setData("props", props);
   let { width: bgWidth, height: bgHeight, x: bgX, y: bgY } = scene.cameras.main;
   if (props.bg) {
     bgWidth = props.bg.displayWidth;
@@ -232,28 +226,27 @@ export function scaleText(
         break;
       }
     }
-    text.setFontSize(--fontSize);
+    --fontSize;
+    text.setFontSize(fontSize);
   }
   while (props.maxHeight && text.displayHeight > props.maxHeight) {
     text.setText(`${text.text.substring(0, text.text.length - 5)}...`);
   }
 
-  const anchorX = props.xAnchor || Anchor.center;
-  const anchorY = props.yAnchor || Anchor.center;
+  const anchorX = props.xAnchor || "center";
+  const anchorY = props.yAnchor || "center";
   const x =
     bgX -
-    bgWidth *
-      (anchorX === Anchor.center ? 0 : anchorX === Anchor.start ? 0.5 : -0.5) +
+    bgWidth * (anchorX === "center" ? 0 : anchorX === "start" ? 0.5 : -0.5) +
     text.displayWidth *
-      (anchorX === Anchor.center ? 0 : anchorX === Anchor.start ? 0.5 : -0.5) +
+      (anchorX === "center" ? 0 : anchorX === "start" ? 0.5 : -0.5) +
     (props.x || 0) +
     bgWidth * (props.xRel || 0);
   const y =
     bgY -
-    bgHeight *
-      (anchorY === Anchor.center ? 0 : anchorY === Anchor.start ? 0.5 : -0.5) +
+    bgHeight * (anchorY === "center" ? 0 : anchorY === "start" ? 0.5 : -0.5) +
     text.displayHeight *
-      (anchorY === Anchor.center ? 0 : anchorY === Anchor.start ? 0.5 : -0.5) +
+      (anchorY === "center" ? 0 : anchorY === "start" ? 0.5 : -0.5) +
     (props.y || 0) +
     bgHeight * (props.yRel || 0);
   text.setX(x);
@@ -264,11 +257,11 @@ export function scaleText(
 export function animateText(target: Phaser.GameObjects.Text, speedInMs = 25) {
   // store original text
   const message = target.text;
-  const invisibleMessage = message.replace(/[^ ]/g, ' ');
+  const invisibleMessage = message.replace(/[^ ]/g, " ");
   // clear text on screen
-  target.text = '';
+  target.text = "";
   // mutable state for visible text
-  let visibleText = '';
+  let visibleText = "";
   // use a Promise to wait for the animation to complete
   return new Promise<void>((resolve) => {
     const timer = target.scene.time.addEvent({

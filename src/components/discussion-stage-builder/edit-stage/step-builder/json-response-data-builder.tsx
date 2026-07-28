@@ -4,20 +4,21 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { Delete } from '@mui/icons-material';
-import { IconButton, Button } from '@mui/material';
+
+import React from "react";
+import { IconButton, Button } from "@mui/material";
+import { Delete } from "@mui/icons-material";
 import {
   InputField,
   SelectInputField,
   CheckBoxInput,
-} from '../../shared/input-components';
-import { JsonResponseData, JsonResponseDataType } from '../../types';
+} from "../../shared/input-components";
+import type { JsonResponseData } from "../../types";
 import {
   ColumnCenterDiv,
   ColumnDiv,
   RowDiv,
-} from '../../../../styled-components';
+} from "../../../../styled-components";
 
 export function JsonResponseDataUpdater(props: {
   jsonResponseData: JsonResponseData[];
@@ -26,14 +27,14 @@ export function JsonResponseDataUpdater(props: {
     clientId: string,
     field: string,
     value: string | boolean,
-    parentJsonResponseDataIds: string[]
+    parentJsonResponseDataIds: string[],
   ) => void;
   deleteJsonResponseData: (
     clientId: string,
-    parentJsonResponseDataIds: string[]
+    parentJsonResponseDataIds: string[],
   ) => void;
   parentJsonResponseDataIds: string[];
-}): JSX.Element {
+}): React.ReactNode {
   const {
     jsonResponseData,
     editDataField,
@@ -43,15 +44,15 @@ export function JsonResponseDataUpdater(props: {
   } = props;
   const availableTypes =
     parentJsonResponseDataIds.length !== 2
-      ? [...Object.values(JsonResponseDataType)]
-      : [JsonResponseDataType.STRING, JsonResponseDataType.ARRAY];
+      ? ["string", "object", "array"]
+      : ["string", "array"];
 
   return (
     <ColumnCenterDiv
       style={{
-        border: '1px dotted grey',
-        marginBottom: '10px',
-        marginTop: '10px',
+        border: "1px dotted grey",
+        marginBottom: "10px",
+        marginTop: "10px",
         marginLeft: `${parentJsonResponseDataIds.length * 60}px`,
       }}
     >
@@ -61,15 +62,15 @@ export function JsonResponseDataUpdater(props: {
           <ColumnDiv
             key={index}
             style={{
-              border: '1px solid black',
-              position: 'relative',
-              width: '95%',
+              border: "1px solid black",
+              position: "relative",
+              width: "95%",
             }}
           >
             <RowDiv
               style={{
-                width: '100%',
-                justifyContent: 'space-between',
+                width: "100%",
+                justifyContent: "space-between",
               }}
             >
               <RowDiv>
@@ -79,9 +80,9 @@ export function JsonResponseDataUpdater(props: {
                   onChange={(e) => {
                     editDataField(
                       jsonResponseData.clientId,
-                      'name',
+                      "name",
                       e,
-                      parentJsonResponseDataIds
+                      parentJsonResponseDataIds,
                     );
                   }}
                 />
@@ -92,9 +93,9 @@ export function JsonResponseDataUpdater(props: {
                   onChange={(e) => {
                     editDataField(
                       jsonResponseData.clientId,
-                      'type',
+                      "type",
                       e,
-                      parentJsonResponseDataIds
+                      parentJsonResponseDataIds,
                     );
                   }}
                 />
@@ -104,9 +105,9 @@ export function JsonResponseDataUpdater(props: {
                   onChange={(e) => {
                     editDataField(
                       jsonResponseData.clientId,
-                      'isRequired',
+                      "isRequired",
                       e,
-                      parentJsonResponseDataIds
+                      parentJsonResponseDataIds,
                     );
                   }}
                 />
@@ -116,7 +117,7 @@ export function JsonResponseDataUpdater(props: {
                 onClick={() => {
                   deleteJsonResponseData(
                     jsonResponseData.clientId,
-                    parentJsonResponseDataIds
+                    parentJsonResponseDataIds,
                   );
                 }}
               >
@@ -126,17 +127,17 @@ export function JsonResponseDataUpdater(props: {
             <InputField
               label="Additional Info"
               maxRows={4}
-              value={jsonResponseData.additionalInfo || ''}
+              value={jsonResponseData.additionalInfo || ""}
               onChange={(e) => {
                 editDataField(
                   jsonResponseData.clientId,
-                  'additionalInfo',
+                  "additionalInfo",
                   e,
-                  parentJsonResponseDataIds
+                  parentJsonResponseDataIds,
                 );
               }}
             />
-            {jsonResponseData.type === JsonResponseDataType.OBJECT && (
+            {jsonResponseData.type === "object" && (
               <JsonResponseDataUpdater
                 jsonResponseData={jsonResponseData.subData || []}
                 editDataField={editDataField}

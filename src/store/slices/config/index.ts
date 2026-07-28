@@ -4,10 +4,11 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { fetchAbeConfig as _fetchAbeConfig } from '../../../api';
-import { AiServiceModelConfigs, LoadStatus } from '../../../types';
-import EventSystem from '../../../game/event-system';
+
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { fetchAbeConfig as _fetchAbeConfig } from "../../../api";
+import type { AiServiceModelConfigs, LoadStatus } from "../../../types";
+import EventSystem from "../../../game/event-system";
 
 export interface Config {
   aiServiceModelConfigs: AiServiceModelConfigs[];
@@ -24,37 +25,37 @@ const initialState: ConfigState = {
   abeConfig: {
     aiServiceModelConfigs: [],
   },
-  abeConfigLoadStatus: LoadStatus.NONE,
+  abeConfigLoadStatus: 0,
 };
 
 export const fetchAbeConfig = createAsyncThunk(
-  'config/fetchAbeConfig',
+  "config/fetchAbeConfig",
   async (): Promise<Config> => {
     const res = await _fetchAbeConfig();
     return res;
-  }
+  },
 );
 
 export const dataSlice = createSlice({
-  name: 'config',
+  name: "config",
   initialState: initialState,
   reducers: {
     toggleMute: (state) => {
       state.isMuted = !state.isMuted;
-      EventSystem.emit('setMuted', state.isMuted);
+      EventSystem.emit("setMuted", state.isMuted);
     },
   },
   extraReducers: (builder) => {
     builder
+      .addCase(fetchAbeConfig.pending, (state) => {
+        state.abeConfigLoadStatus = 1;
+      })
       .addCase(fetchAbeConfig.fulfilled, (state, action) => {
         state.abeConfig = action.payload;
-        state.abeConfigLoadStatus = LoadStatus.DONE;
-      })
-      .addCase(fetchAbeConfig.pending, (state) => {
-        state.abeConfigLoadStatus = LoadStatus.IN_PROGRESS;
+        state.abeConfigLoadStatus = 2;
       })
       .addCase(fetchAbeConfig.rejected, (state) => {
-        state.abeConfigLoadStatus = LoadStatus.FAILED;
+        state.abeConfigLoadStatus = 3;
       });
   },
 });

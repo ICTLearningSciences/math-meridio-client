@@ -4,21 +4,20 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { useAppSelector } from '../../store/hooks';
-import { EducationalRole } from '../../store/slices/player/types';
-import StudentLandingPage from './student-view/student-landing-page';
-import TeacherLandingPage from './teacher-view/teacher-landing-page';
-import withAuthorizationOnly from '../../wrap-with-authorization-only';
+import React from "react";
+import { useAppSelector } from "../../store/hooks";
+import StudentLandingPage from "./student-view/student-landing-page";
+import TeacherLandingPage from "./teacher-view/teacher-landing-page";
+import withAuthorizationOnly from "../../wrap-with-authorization-only";
 
-function ClassesPage(): JSX.Element {
+function ClassesPage(): React.ReactNode {
   const { player } = useAppSelector((state) => state.playerData);
 
-  if (player?.educationalRole === EducationalRole.INSTRUCTOR) {
+  if (player?.educationalRole === "INSTRUCTOR") {
     return <TeacherLandingPage />;
   }
 
-  if (player?.educationalRole === EducationalRole.STUDENT) {
+  if (player?.educationalRole === "STUDENT") {
     return <StudentLandingPage />;
   }
 
@@ -29,4 +28,5 @@ function ClassesPage(): JSX.Element {
   );
 }
 
-export default withAuthorizationOnly(ClassesPage);
+const Page = withAuthorizationOnly(ClassesPage);
+export default Page;

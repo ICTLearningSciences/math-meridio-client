@@ -130,7 +130,7 @@ export function cyMockLogin(cy: CypressGlobal): void {
 export function cyMockDefault(
   cy: CypressGlobal,
   args: {
-    userRole?: UserRole;  
+    userRole?: UserRole;
     userEducationalRole?: EducationalRole;
     gqlQueries?: MockGraphQLQuery[];
   } = {}
@@ -143,7 +143,7 @@ export function cyMockDefault(
     // Defaults
     mockGQL(
       'RefreshAccessToken',
-      refreshAccessTokenResponse(args.userRole || UserRole.USER, args.userEducationalRole || EducationalRole.STUDENT)
+      refreshAccessTokenResponse(args.userRole || 'USER', args.userEducationalRole || 'STUDENT')
     ),
     mockGQL('FetchDiscussionStages', fetchDiscussionStagesResponse),
     mockGQL('FetchConfig', fetchConfigResponse),

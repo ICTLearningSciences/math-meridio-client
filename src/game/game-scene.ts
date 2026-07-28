@@ -4,26 +4,26 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { Scene } from 'phaser';
-import EventSystem from './event-system';
-import { ChatMessage } from '../store/slices/game/types';
+
+import { Scene } from "phaser";
+import EventSystem from "./event-system";
+import type { ChatMessage } from "../store/slices/game/types";
 import {
-  Avatars,
+  type Avatars,
   SPRITE_ACCESSORY,
   SPRITE_BODY,
   SPRITE_CLOTHES,
   SPRITE_HAIR,
-} from '../store/slices/player/use-with-player-state';
+} from "../store/slices/player/use-with-player-state";
 import {
-  Anchor,
   addBackground,
   addImage,
   addSprite,
   addText,
   addTween,
   animateText,
-} from './phaser-helpers';
-import { Avatar } from '../store/slices/player/types';
+} from "./phaser-helpers";
+import type { Avatar } from "../store/slices/player/types";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const gameObjects: any[] = [];
@@ -57,12 +57,12 @@ export abstract class GameScene extends Scene {
 
   preload() {
     // Load the assets for the UI
-    this.load.setPath('/assets/wordui');
-    this.load.image('mic', 'icons/icons_256/microphone.png');
-    this.load.image('button', 'buttons/long_buttons/blue_button_complete.png');
+    this.load.setPath("/assets/wordui");
+    this.load.image("mic", "icons/icons_256/microphone.png");
+    this.load.image("button", "buttons/long_buttons/blue_button_complete.png");
 
     // Load the assets for the avatars
-    this.load.setPath('/assets/avatar/sprite');
+    this.load.setPath("/assets/avatar/sprite");
     for (const a of SPRITE_BODY) {
       this.loadSprite(a.id, `body/${a.id}.png`, 32, 32);
     }
@@ -88,7 +88,7 @@ export abstract class GameScene extends Scene {
         this.createSpriteAnim({
           name: a.id,
           variant: i,
-          anim: 'walk',
+          anim: "walk",
           numFrames: 8,
           frameOffset: 0,
           variants: a.variants?.length,
@@ -97,7 +97,7 @@ export abstract class GameScene extends Scene {
         this.createSpriteAnim({
           name: a.id,
           variant: i,
-          anim: 'walk_right',
+          anim: "walk_right",
           numFrames: 8,
           frameOffset: 2,
           variants: a.variants?.length,
@@ -106,7 +106,7 @@ export abstract class GameScene extends Scene {
         this.createSpriteAnim({
           name: a.id,
           variant: i,
-          anim: 'walk_left',
+          anim: "walk_left",
           numFrames: 8,
           frameOffset: 3,
           variants: a.variants?.length,
@@ -115,7 +115,7 @@ export abstract class GameScene extends Scene {
         this.createSpriteAnim({
           name: a.id,
           variant: i,
-          anim: 'jump',
+          anim: "jump",
           numFrames: 5,
           frameOffset: 4,
           variants: a.variants?.length,
@@ -123,7 +123,7 @@ export abstract class GameScene extends Scene {
         this.createSpriteAnim({
           name: a.id,
           variant: i,
-          anim: 'jump_right',
+          anim: "jump_right",
           numFrames: 5,
           frameOffset: 6,
           variants: a.variants?.length,
@@ -131,7 +131,7 @@ export abstract class GameScene extends Scene {
         this.createSpriteAnim({
           name: a.id,
           variant: i,
-          anim: 'jump_left',
+          anim: "jump_left",
           numFrames: 5,
           frameOffset: 7,
           variants: a.variants?.length,
@@ -139,7 +139,7 @@ export abstract class GameScene extends Scene {
         this.createSpriteAnim({
           name: a.id,
           variant: i,
-          anim: 'throw',
+          anim: "throw",
           numFrames: 5,
           frameOffset: 8,
           variants: a.variants?.length,
@@ -147,7 +147,7 @@ export abstract class GameScene extends Scene {
         this.createSpriteAnim({
           name: a.id,
           variant: i,
-          anim: 'throw_back',
+          anim: "throw_back",
           numFrames: 5,
           frameOffset: 9,
           variants: a.variants?.length,
@@ -155,7 +155,7 @@ export abstract class GameScene extends Scene {
         this.createSpriteAnim({
           name: a.id,
           variant: i,
-          anim: 'throw_right',
+          anim: "throw_right",
           numFrames: 5,
           frameOffset: 10,
           variants: a.variants?.length,
@@ -163,7 +163,7 @@ export abstract class GameScene extends Scene {
         this.createSpriteAnim({
           name: a.id,
           variant: i,
-          anim: 'throw_left',
+          anim: "throw_left",
           numFrames: 5,
           frameOffset: 11,
           variants: a.variants?.length,
@@ -171,7 +171,7 @@ export abstract class GameScene extends Scene {
       }
     }
 
-    this.bg = addBackground(this, 'background').setAlpha(0);
+    this.bg = addBackground(this, "background").setAlpha(0);
     this.chatWindow = this.add
       .rectangle(
         10,
@@ -179,30 +179,30 @@ export abstract class GameScene extends Scene {
         1260,
         this.bg.displayHeight * 0.1 - 5,
         0x6bffff,
-        1
+        1,
       )
       .setDepth(999)
       .setOrigin(0, 0);
     gameObjects.push(this.chatWindow);
 
-    this.systemMsgText = addText(this, '              ', {
+    this.systemMsgText = addText(this, "              ", {
       bg: this.bg,
-      yAnchor: Anchor.start,
+      yAnchor: "start",
     })
       .setDepth(1000)
       .setFontSize(48)
       .setWordWrapWidth(this.bg.displayWidth);
-    this.chatMsgText = addText(this, '              ', {
+    this.chatMsgText = addText(this, "              ", {
       bg: this.bg,
-      yAnchor: Anchor.end,
-      xAnchor: Anchor.center,
+      yAnchor: "end",
+      xAnchor: "center",
     })
       .setDepth(1000)
       .setFontSize(36);
-    EventSystem.on('startGame', this.startGame, this);
-    EventSystem.on('resetGame', this.resetGame, this);
-    EventSystem.on('addSystemMessage', this.addSystemMessage, this);
-    EventSystem.on('addChatMessage', this.addChatMessage, this);
+    EventSystem.on("startGame", this.startGame, this);
+    EventSystem.on("resetGame", this.resetGame, this);
+    EventSystem.on("addSystemMessage", this.addSystemMessage, this);
+    EventSystem.on("addChatMessage", this.addChatMessage, this);
   }
 
   update() {
@@ -213,19 +213,19 @@ export abstract class GameScene extends Scene {
   }
 
   createScene() {
-    EventSystem.emit('sceneCreated', this.sceneName);
+    EventSystem.emit("sceneCreated", this.sceneName);
   }
 
   updateScene() {
-    EventSystem.emit('sceneUpdated');
+    EventSystem.emit("sceneUpdated");
   }
 
   startGame() {
-    EventSystem.emit('gameStarted');
+    EventSystem.emit("gameStarted");
   }
 
   resetGame() {
-    EventSystem.emit('gameReset');
+    EventSystem.emit("gameReset");
   }
 
   /** shared functions */
@@ -249,7 +249,7 @@ export abstract class GameScene extends Scene {
     const frameOffset = props.frameOffset || 0;
     const variants = props.variants || 1;
     const frames = Array.from(Array(numFrames).keys()).map(
-      (n) => n + 8 * variant + 8 * frameOffset * variants
+      (n) => n + 8 * variant + 8 * frameOffset * variants,
     );
     this.anims.create({
       key: `${name}_${variant}_${anim}`,
@@ -263,7 +263,7 @@ export abstract class GameScene extends Scene {
 
   renderSpriteAvatar(
     avatar: Avatar[],
-    props: { x: number; y: number; scale?: number }
+    props: { x: number; y: number; scale?: number },
   ): Phaser.GameObjects.Sprite[] {
     const sprites: Phaser.GameObjects.Sprite[] = [];
     avatar
@@ -284,10 +284,10 @@ export abstract class GameScene extends Scene {
 
   renderChatAvatar(
     avatar: Avatar[],
-    props: { x?: number; y?: number } = {}
+    props: { x?: number; y?: number } = {},
   ): Phaser.GameObjects.Image[] {
     const { x, y } = props;
-    const head = avatar.find((a) => a.type === 'head')?.id || '';
+    const head = avatar.find((a) => a.type === "head")?.id || "";
     const headSprite = addImage(this, head, undefined, {
       bg: this.bg,
       heightRel: 0.2,
@@ -295,23 +295,23 @@ export abstract class GameScene extends Scene {
     headSprite.setX((x || 0) + headSprite.displayWidth / 2);
     headSprite.setY(y || this.chatWindow!.y);
 
-    const eyes = avatar.find((a) => a.type === 'eyes')?.id || '';
+    const eyes = avatar.find((a) => a.type === "eyes")?.id || "";
     const eyeSprite = addImage(this, eyes, undefined, {
       bg: headSprite,
       height: headSprite.displayHeight / 8,
     });
     eyeSprite.setY(headSprite.y - eyeSprite.displayHeight / 2);
 
-    const brows = avatar.find((a) => a.type === 'eyebrows')?.id || '';
+    const brows = avatar.find((a) => a.type === "eyebrows")?.id || "";
     const browSprite = addImage(this, brows, undefined, {
       bg: headSprite,
       width: eyeSprite.displayWidth * 1.1,
     });
     browSprite.setY(
-      eyeSprite.y - eyeSprite.displayHeight / 2 - browSprite.displayHeight / 2
+      eyeSprite.y - eyeSprite.displayHeight / 2 - browSprite.displayHeight / 2,
     );
 
-    const nose = avatar.find((a) => a.type === 'nose')?.id || '';
+    const nose = avatar.find((a) => a.type === "nose")?.id || "";
     const noseSprite = addImage(this, nose, undefined, {
       bg: headSprite,
       width: eyeSprite.displayWidth / 4,
@@ -319,17 +319,17 @@ export abstract class GameScene extends Scene {
     noseSprite.setY(
       eyeSprite.y +
         eyeSprite.displayHeight / 2 +
-        noseSprite.displayHeight * 0.75
+        noseSprite.displayHeight * 0.75,
     );
 
-    const mouth = avatar.find((a) => a.type === 'mouth')?.id || '';
+    const mouth = avatar.find((a) => a.type === "mouth")?.id || "";
     const mouthSprite = addImage(this, mouth, undefined, {
       bg: headSprite,
       width: eyeSprite.displayWidth / 2,
     });
     mouthSprite
       .setY(
-        noseSprite.y + noseSprite.displayHeight + mouthSprite.displayHeight / 2
+        noseSprite.y + noseSprite.displayHeight + mouthSprite.displayHeight / 2,
       )
       .setName(mouth);
 
@@ -341,7 +341,7 @@ export abstract class GameScene extends Scene {
       try {
         s.play(`${s.name}_${anim}`);
       } catch (err) {
-        console.log('could not play sprite animation');
+        console.log("could not play sprite animation: " + err);
       }
     });
   }
@@ -360,12 +360,12 @@ export abstract class GameScene extends Scene {
     if (!this.chatMsgText || !this.chatWindow) return;
     this.chatMsgText.setText(msg.message);
     this.curChatMessage = msg;
-    EventSystem.emit('chatMessageStart', msg);
+    EventSystem.emit("chatMessageStart", msg);
     this.chatMsgText.setY(
-      this.chatWindow.y + this.chatWindow.displayHeight / 2
+      this.chatWindow.y + this.chatWindow.displayHeight / 2,
     );
     animateText(this.chatMsgText).then(() => {
-      EventSystem.emit('chatMessageEnd', msg);
+      EventSystem.emit("chatMessageEnd", msg);
     });
   }
 
@@ -377,7 +377,7 @@ export abstract class GameScene extends Scene {
       alpha: { from: 1, to: 0 },
       duration: 100,
       onComplete: () => {
-        EventSystem.emit('systemMessageStart', msg);
+        EventSystem.emit("systemMessageStart", msg);
         msgRef.setText(msg.message);
         msgRef.setY(msgRef.displayHeight / 2);
         addTween(this, {

@@ -4,8 +4,8 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { v4 as uuid } from 'uuid';
+
+import React from "react";
 import {
   IconButton,
   Select,
@@ -14,28 +14,13 @@ import {
   InputLabel,
   Chip,
   Box,
-} from '@mui/material';
-import { Delete, Add } from '@mui/icons-material';
-import { RoundedBorderDiv, TopLeftText } from '../../../../styled-components';
-import { InputField } from '../../shared/input-components';
-import {
-  DiscussionStage,
-  DiscussionStageStepType,
-  FlowItem,
-  StartOfPhaseStep,
-} from '../../types';
-import { LearningObjective } from '../../../../store/slices/game/types';
-import { useWithEducationalData } from '../../../../store/slices/educational-data/use-with-educational-data';
-export function getDefaultStartOfPhase(): StartOfPhaseStep {
-  return {
-    stepId: uuid(),
-    lastStep: false,
-    stepType: DiscussionStageStepType.START_OF_PHASE,
-    phaseTitle: '',
-    jumpToStepId: '',
-    learningObjectives: [],
-  };
-}
+} from "@mui/material";
+import { Delete, Add } from "@mui/icons-material";
+import { RoundedBorderDiv, TopLeftText } from "../../../../styled-components";
+import { InputField } from "../../shared/input-components";
+import type { DiscussionStage, FlowItem, StartOfPhaseStep } from "../../types";
+import type { LearningObjective } from "../../../../store/slices/game/types";
+import { useWithEducationalData } from "../../../../store/slices/educational-data/use-with-educational-data";
 
 export function StartOfPhaseStepBuilder(props: {
   step: StartOfPhaseStep;
@@ -46,14 +31,14 @@ export function StartOfPhaseStepBuilder(props: {
   stepIndex: number;
   width?: string;
   height?: string;
-}): JSX.Element {
+}): React.ReactNode {
   const { step, stepIndex, updateLocalStage } = props;
   const { educationalData } = useWithEducationalData();
-  const [selectedLoId, setSelectedLoId] = React.useState<string>('');
+  const [selectedLoId, setSelectedLoId] = React.useState<string>("");
 
   function updateField(
     field: string,
-    value: string | boolean | string[] | LearningObjective[]
+    value: string | boolean | string[] | LearningObjective[],
   ) {
     updateLocalStage((prevValue) => {
       return {
@@ -77,45 +62,45 @@ export function StartOfPhaseStepBuilder(props: {
   }
 
   const availableLearningObjectives = educationalData.learningObjectives.filter(
-    (lo) => !step.learningObjectives.includes(lo._id)
+    (lo) => !step.learningObjectives.includes(lo._id),
   );
 
   const selectedLearningObjectives = educationalData.learningObjectives.filter(
-    (lo) => step.learningObjectives.includes(lo._id)
+    (lo) => step.learningObjectives.includes(lo._id),
   );
 
   const handleAddLearningObjective = () => {
     if (selectedLoId && !step.learningObjectives.includes(selectedLoId)) {
-      updateField('learningObjectives', [
+      updateField("learningObjectives", [
         ...step.learningObjectives,
         selectedLoId,
       ]);
-      setSelectedLoId('');
+      setSelectedLoId("");
     }
   };
 
   const handleRemoveLearningObjective = (loId: string) => {
     updateField(
-      'learningObjectives',
-      step.learningObjectives.filter((id) => id !== loId)
+      "learningObjectives",
+      step.learningObjectives.filter((id) => id !== loId),
     );
   };
 
   return (
     <RoundedBorderDiv
       style={{
-        width: props.width || '100%',
-        height: props.height || '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'relative',
+        width: props.width || "100%",
+        height: props.height || "100%",
+        display: "flex",
+        flexDirection: "column",
+        position: "relative",
         padding: 10,
       }}
     >
       <TopLeftText>{`Step ${stepIndex + 1}`}</TopLeftText>
       <IconButton
         style={{
-          position: 'absolute',
+          position: "absolute",
           right: 10,
           top: 10,
         }}
@@ -123,12 +108,12 @@ export function StartOfPhaseStepBuilder(props: {
       >
         <Delete />
       </IconButton>
-      <h4 style={{ alignSelf: 'center' }}>Start of Phase</h4>
+      <h4 style={{ alignSelf: "center" }}>Start of Phase</h4>
       <InputField
         label="Phase Title"
         value={step.phaseTitle}
         onChange={(e) => {
-          updateField('phaseTitle', e);
+          updateField("phaseTitle", e);
         }}
       />
 
@@ -136,7 +121,7 @@ export function StartOfPhaseStepBuilder(props: {
         <h5 style={{ marginBottom: 10 }}>Learning Objectives</h5>
 
         {selectedLearningObjectives.length > 0 && (
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}>
             {selectedLearningObjectives.map((lo) => (
               <Chip
                 key={lo._id}
@@ -149,7 +134,7 @@ export function StartOfPhaseStepBuilder(props: {
         )}
 
         {availableLearningObjectives.length > 0 && (
-          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
             <FormControl fullWidth size="small">
               <InputLabel>Add Learning Objective</InputLabel>
               <Select

@@ -4,34 +4,36 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import BasketballGame from './basketball';
-import ConcertTicketSalesGame from './concert-ticket-sales';
-import { GameData, GameStateData, Room } from '../store/slices/game/types';
-import { Player } from '../store/slices/player/types';
+
+import React from "react";
+import BasketballGame from "./basketball";
+import ConcertTicketSalesGame from "./concert-ticket-sales";
+import type { GameData, GameStateData, Room } from "../store/slices/game/types";
+import type { Player } from "../store/slices/player/types";
 
 export interface Game {
-  id: 'basketball' | 'concert-ticket-sales' | 'test-base';
+  id: "basketball" | "concert-ticket-sales";
   name: string;
   problem: string;
   minProblem?: string;
   config: Phaser.Types.Core.GameConfig;
-  showProblem: (minimize?: boolean) => JSX.Element;
+  showProblem: (minimize?: boolean) => React.ReactNode;
   showSolution: (
     uiGameData: GameData,
     player: Player,
     updatePlayerStateData: (
       newPlayerStateData: GameStateData,
-      playerId: string
+      playerId: string,
     ) => void,
-    minimize?: boolean
-  ) => JSX.Element;
-  showSimulation: (game: Game) => JSX.Element;
+    minimize?: boolean,
+  ) => React.ReactNode;
+  showSimulation: (game: Game) => React.ReactNode;
   showPlayerStrategy: (
     player: Player,
     playersGameStateData: GameStateData,
-    room: Room
-  ) => JSX.Element;
-  showResult: (uiGameData: GameData) => JSX.Element;
+    room: Room,
+  ) => React.ReactNode;
+  showResult: (uiGameData: GameData) => React.ReactNode;
 }
 
 export const GAMES: Game[] = [BasketballGame, ConcertTicketSalesGame];

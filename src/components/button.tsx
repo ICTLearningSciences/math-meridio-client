@@ -4,91 +4,76 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import * as motion from 'motion/react-client';
-import { CSS } from 'styled-components/dist/types';
-import { makeStyles } from 'tss-react/mui';
+
+import React from "react";
+import * as motion from "motion/react-client";
+import type { CSS } from "styled-components/dist/types";
+import { makeStyles } from "tss-react/mui";
 import {
   Button,
-  ButtonBaseProps,
+  type ButtonBaseProps,
   CircularProgress,
   Menu,
   MenuItem,
-  styled,
   Typography,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Archive,
   ArrowDropDown,
   Visibility,
   VisibilityOff,
-} from '@mui/icons-material';
-import { GAMES } from '../game/types';
-import {
-  ClassMembershipStatus,
-  Classroom,
-} from '../store/slices/educational-data/types';
-import { useWithEducationalData } from '../store/slices/educational-data/use-with-educational-data';
-import { useAppSelector } from '../store/hooks';
+} from "@mui/icons-material";
+import { GAMES } from "../game/types";
+import type { Classroom } from "../store/slices/educational-data/types";
+import { useWithEducationalData } from "../store/slices/educational-data/use-with-educational-data";
+import { useAppSelector } from "../store/hooks";
 
 const buttonStyles = makeStyles()(() => ({
   button: {
-    display: 'flex',
-    textTransform: 'none',
+    display: "flex",
+    textTransform: "none",
     fontSize: 12,
     borderRadius: 32,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   textButton: {
     fontSize: 12,
-    color: 'purple',
-    textDecoration: 'underline',
-    textDecorationColor: 'purple',
-    textTransform: 'none',
+    color: "purple",
+    textDecoration: "underline",
+    textDecorationColor: "purple",
+    textTransform: "none",
     minHeight: 0,
     minWidth: 0,
     padding: 0,
   },
 }));
 
-export const VisuallyHiddenInput = styled('input')({
-  clip: 'rect(0 0 0 0)',
-  clipPath: 'inset(50%)',
-  height: 1,
-  overflow: 'hidden',
-  position: 'absolute',
-  bottom: 0,
-  left: 0,
-  whiteSpace: 'nowrap',
-  width: 1,
-});
-
 interface MyButtonProps extends ButtonBaseProps {
   children: React.ReactNode;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onClick?: (e: any) => void;
-  icon?: JSX.Element;
-  endIcon?: JSX.Element;
+  icon?: React.ReactNode;
+  endIcon?: React.ReactNode;
   disabled?: boolean;
   loading?: boolean;
   color?:
-    | 'inherit'
-    | 'primary'
-    | 'secondary'
-    | 'success'
-    | 'error'
-    | 'info'
-    | 'warning';
+    | "inherit"
+    | "primary"
+    | "secondary"
+    | "success"
+    | "error"
+    | "info"
+    | "warning";
   tooltip?: string;
   style?: React.CSSProperties;
 }
 
-export function ContainedButton(props: MyButtonProps): JSX.Element {
+export function ContainedButton(props: MyButtonProps): React.ReactNode {
   const { classes } = buttonStyles();
   return (
     <motion.div
       whileHover={
-        props.disabled ? {} : { scale: 1.05, filter: 'brightness(0.8)' }
+        props.disabled ? {} : { scale: 1.05, filter: "brightness(0.8)" }
       }
     >
       <Button
@@ -115,12 +100,12 @@ export function ContainedButton(props: MyButtonProps): JSX.Element {
   );
 }
 
-export function OutlinedButton(props: MyButtonProps): JSX.Element {
+export function OutlinedButton(props: MyButtonProps): React.ReactNode {
   const { classes } = buttonStyles();
   return (
     <motion.div
       whileHover={
-        props.disabled ? {} : { scale: 1.05, filter: 'brightness(0.8)' }
+        props.disabled ? {} : { scale: 1.05, filter: "brightness(0.8)" }
       }
     >
       <Button
@@ -149,7 +134,7 @@ export function OutlinedButton(props: MyButtonProps): JSX.Element {
   );
 }
 
-export function TextButton(props: MyButtonProps): JSX.Element {
+export function TextButton(props: MyButtonProps): React.ReactNode {
   const { classes } = buttonStyles();
   return (
     <Button
@@ -160,8 +145,8 @@ export function TextButton(props: MyButtonProps): JSX.Element {
       disabled={props.disabled}
       onClick={props.onClick}
       style={{
-        color: props.color || 'purple',
-        textDecorationColor: props.color || 'purple',
+        color: props.color || "purple",
+        textDecorationColor: props.color || "purple",
         ...props.style,
       }}
     >
@@ -177,8 +162,8 @@ export function DropdownButton(props: {
   children?: React.ReactNode;
   buttonStyle?: CSS.Properties;
   onSelect: (v: string) => void;
-  renderItem?: (v: string) => JSX.Element | string;
-}): JSX.Element {
+  renderItem?: (v: string) => React.ReactNode | string;
+}): React.ReactNode {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
   const handleButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -195,9 +180,9 @@ export function DropdownButton(props: {
       <Button
         variant="outlined"
         style={{
-          border: '1px black solid',
-          color: 'black',
-          fontWeight: 'bold',
+          border: "1px black solid",
+          color: "black",
+          fontWeight: "bold",
           borderRadius: 30,
           ...props.buttonStyle,
         }}
@@ -210,9 +195,7 @@ export function DropdownButton(props: {
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={() => setAnchorEl(null)}
-        PaperProps={{
-          style: { width: '100%' },
-        }}
+        style={{ width: "100%" }}
       >
         {props.items.map((item) => {
           return (
@@ -235,7 +218,7 @@ export function ClassDropdown(props: {
   myClass?: Classroom;
   classId?: string;
   setClassId: (id: string) => void;
-}): JSX.Element {
+}): React.ReactNode {
   const { myClass, classId, setClassId } = props;
   const { player } = useAppSelector((state) => state.playerData);
   const { educationalData, createClassroom } = useWithEducationalData();
@@ -243,7 +226,7 @@ export function ClassDropdown(props: {
   const [viewArchived, setViewArchived] = React.useState(false);
 
   const myClasses = educationalData.classes.filter(
-    (c) => c.teacherId === player?._id
+    (c) => c.teacherId === player?._id,
   );
 
   const handleCreateClass = async () => {
@@ -252,7 +235,7 @@ export function ClassDropdown(props: {
       const newClass = await createClassroom();
       setClassId(newClass._id);
     } catch (err) {
-      console.error('Failed to create classroom', err);
+      console.error("Failed to create classroom", err);
     } finally {
       setCreating(false);
     }
@@ -260,7 +243,7 @@ export function ClassDropdown(props: {
 
   return (
     <DropdownButton
-      label={myClass?.name || 'My Class'}
+      label={myClass?.name || "My Class"}
       value={classId}
       items={myClasses
         .filter((c) => viewArchived || !c.archivedAt)
@@ -277,17 +260,15 @@ export function ClassDropdown(props: {
         const classroom = myClasses.find((c) => c._id === id);
         if (!classroom) return <></>;
         const studentCount = educationalData.classMemberships.filter(
-          (cm) =>
-            cm.classId === classroom?._id &&
-            cm.status === ClassMembershipStatus.MEMBER
+          (cm) => cm.classId === classroom?._id && cm.status === "Member",
         ).length;
         return (
           <div
             className="row"
             style={{
-              width: '100%',
-              justifyContent: 'space-between',
-              alignItems: 'center',
+              width: "100%",
+              justifyContent: "space-between",
+              alignItems: "center",
             }}
           >
             <div>
@@ -301,17 +282,17 @@ export function ClassDropdown(props: {
                 </Typography>
               )}
             </div>
-            <div style={{ textAlign: 'right' }}>
+            <div style={{ textAlign: "right" }}>
               <Typography variant="body2" color="text.secondary">
-                {studentCount} {studentCount === 1 ? 'student' : 'students'}
+                {studentCount} {studentCount === 1 ? "student" : "students"}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 {classroom.archivedAt
                   ? `Archived: ${new Date(
-                      classroom.archivedAt
+                      classroom.archivedAt,
                     ).toLocaleDateString()}`
                   : `Created: ${new Date(
-                      classroom.createdAt
+                      classroom.createdAt,
                     ).toLocaleDateString()}`}
               </Typography>
             </div>
@@ -326,7 +307,7 @@ export function ClassDropdown(props: {
           disabled={creating}
           onClick={handleCreateClass}
         >
-          {creating ? 'Creating...' : 'Create New Class'}
+          {creating ? "Creating..." : "Create New Class"}
         </Button>
         <Button
           variant="contained"
@@ -334,7 +315,7 @@ export function ClassDropdown(props: {
           onClick={() => setViewArchived(!viewArchived)}
           startIcon={viewArchived ? <VisibilityOff /> : <Visibility />}
         >
-          {viewArchived ? 'Hide' : 'View'} Archived
+          {viewArchived ? "Hide" : "View"} Archived
         </Button>
       </div>
     </DropdownButton>
@@ -345,18 +326,18 @@ export function GamesDropdown(props: {
   game?: string;
   setGame: (id: string) => void;
   buttonStyle?: CSS.Properties;
-}): JSX.Element {
+}): React.ReactNode {
   const { game, setGame } = props;
   return (
     <DropdownButton
-      label={GAMES.find((g) => g.id === game)?.name || 'All Games'}
+      label={GAMES.find((g) => g.id === game)?.name || "All Games"}
       value={game}
-      items={['', ...GAMES.map((g) => g.id)]}
+      items={["", ...GAMES.map((g) => g.id)]}
       onSelect={(id: string) => setGame(id)}
       renderItem={(id) => {
         return (
           <Typography>
-            {GAMES.find((g) => g.id === id)?.name || 'Show All'}
+            {GAMES.find((g) => g.id === id)?.name || "Show All"}
           </Typography>
         );
       }}

@@ -4,12 +4,11 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React from 'react';
-import { Button, CircularProgress } from '@mui/material';
-import { useAppSelector } from '../store/hooks';
-import { useWithEducationalData } from '../store/slices/educational-data/use-with-educational-data';
-import { EducationalRole } from '../store/slices/player/types';
-import { useLocation } from 'react-router-dom';
+import React, { useEffect, useRef } from "react";
+import { Button, CircularProgress } from "@mui/material";
+import { useAppSelector } from "../store/hooks";
+import { useWithEducationalData } from "../store/slices/educational-data/use-with-educational-data";
+import { useLocation } from "react-router-dom";
 
 export function RefreshRequestButton(props: { autoRefreshTime?: number }) {
   const { player } = useAppSelector((state) => state.playerData);
@@ -17,37 +16,50 @@ export function RefreshRequestButton(props: { autoRefreshTime?: number }) {
     useWithEducationalData();
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const { pathname, search } = useLocation();
+  const isCalledRef = useRef(false);
 
   const pingTime =
     props.autoRefreshTime ||
-    (player?.educationalRole === EducationalRole.INSTRUCTOR ? 60 : 30);
-  const [poll, setPoll] = React.useState<NodeJS.Timeout>();
+    (player?.educationalRole === "INSTRUCTOR" ? 60 : 30);
 
-  React.useEffect(() => {
-    if (poll) {
-      clearInterval(poll);
-      setPoll(undefined);
-    }
-    if (player && pingTime && !pathname.includes('/room/')) {
-      refresh();
-      const timeoutId = setInterval(refresh, pingTime * 1000);
-      setPoll(timeoutId);
-    }
-    return () => {
-      if (poll) {
-        clearInterval(poll);
-        setPoll(undefined);
+  useEffect(() => {
+    if (!isCalledRef.current) {
+      isCalledRef.current = true;
+      if (player?.educationalRole === "INSTRUCTOR") {
+        fetchInstructorDataHydration();
+      } else if (player?.educationalRole === "STUDENT") {
+        fetchStudentDataHydration();
       }
+    }
+  }, [
+    fetchInstructorDataHydration,
+    fetchStudentDataHydration,
+    player?.educationalRole,
+  ]);
+
+  const pollingRef = useRef<number>(undefined);
+  useEffect(() => {
+    const startPolling = () => {
+      pollingRef.current = setInterval(() => {
+        if (player && pingTime && !pathname.includes("/room/")) {
+          refresh();
+        }
+      }, pingTime * 1000);
     };
-  }, [player?._id, pathname, search]); // Only depend on playerId
+    startPolling();
+    return () => {
+      clearInterval(pollingRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [player?._id, pathname, search, pingTime]);
 
   async function refresh() {
     if (isLoading) return;
     setIsLoading(true);
     try {
-      if (player?.educationalRole === EducationalRole.INSTRUCTOR) {
+      if (player?.educationalRole === "INSTRUCTOR") {
         await fetchInstructorDataHydration();
-      } else if (player?.educationalRole === EducationalRole.STUDENT) {
+      } else if (player?.educationalRole === "STUDENT") {
         await fetchStudentDataHydration();
       }
     } catch (error) {
@@ -57,20 +69,20 @@ export function RefreshRequestButton(props: { autoRefreshTime?: number }) {
     }
   }
 
-  if (!player || !pingTime || pathname.includes('/room/')) {
+  if (!player || !pingTime || pathname.includes("/room/")) {
     return null;
   }
   return (
-    <div style={{ display: 'flex', alignItems: 'center' }}>
+    <div style={{ display: "flex", alignItems: "center" }}>
       {isLoading ? (
-        <CircularProgress size={24} style={{ color: 'white' }} />
+        <CircularProgress size={24} style={{ color: "white" }} />
       ) : (
         <Button
           variant="text"
           style={{
-            color: 'white',
+            color: "white",
             opacity: 0.9,
-            textTransform: 'none',
+            textTransform: "none",
           }}
           onClick={refresh}
         >

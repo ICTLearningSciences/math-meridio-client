@@ -4,9 +4,9 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { useEffect, useRef } from 'react';
-import { useOutletContext, useParams } from 'react-router-dom';
-import { UseWithEducationalData } from './use-with-educational-data';
+import { useEffect, useRef } from "react";
+import { useOutletContext, useParams } from "react-router-dom";
+import type { UseWithEducationalData } from "./use-with-educational-data";
 
 export function useWithPollActiveRoom() {
   const { roomId } = useParams<{ roomId: string }>();
@@ -38,7 +38,7 @@ export function useWithPollActiveRoom() {
         await Promise.all([pingRef.current(roomId), fetchRef.current(roomId)]);
       } catch (error) {
         // Continue polling even if there's an error
-        console.error('Polling error:', error);
+        console.error("Polling error:", error);
       }
 
       // Schedule next poll after 1 second, only if still active

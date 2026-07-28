@@ -5,7 +5,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 
-import { EducationalRole, LoginService, Player, UserAccessToken, UserRole } from "../../src/store/slices/player/types";
+import { EducationalRole, Player, UserAccessToken, UserRole } from "../../src/store/slices/player/types";
 
 export interface RefreshAccessTokenResponse {
     refreshAccessToken: UserAccessToken;
@@ -91,10 +91,10 @@ export const defaultUser: Player = {
             "variants": []
         }
     ],
-    "userRole": UserRole.USER,
-    "loginService": LoginService.GOOGLE,
+    "userRole": 'USER',
+    "loginService": 'GOOGLE',
     "lastLoginAt": new Date("2026-02-03T03:02:35.422Z"),
-    "educationalRole": EducationalRole.STUDENT
+    "educationalRole": 'STUDENT'
 }
 
 export function refreshAccessTokenResponse(userRole: UserRole, userEducationalRole: EducationalRole): RefreshAccessTokenResponse {

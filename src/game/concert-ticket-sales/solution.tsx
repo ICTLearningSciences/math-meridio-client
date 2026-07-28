@@ -4,8 +4,8 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import React, { useEffect, useRef } from 'react';
-import { TransformComponent, useControls } from 'react-zoom-pan-pinch';
+import React, { useRef } from "react";
+import { TransformComponent, useControls } from "react-zoom-pan-pinch";
 import {
   Button,
   Card,
@@ -15,14 +15,14 @@ import {
   DialogTitle,
   TextField,
   Typography,
-} from '@mui/material';
+} from "@mui/material";
 
-import { GameStateData, GameData } from '../../store/slices/game/types';
-import { makeStyles } from 'tss-react/mui';
-import { Player } from '../../store/slices/player/types';
-import { checkGameAndPlayerStateForValue } from '../../components/discussion-stage-builder/helpers';
+import type { GameStateData, GameData } from "../../store/slices/game/types";
+import { makeStyles } from "tss-react/mui";
+import type { Player } from "../../store/slices/player/types";
+import { checkGameAndPlayerStateForValue } from "../../components/discussion-stage-builder/helpers";
 
-import stageBg from './stage.jpg';
+import stageBg from "./stage.jpg";
 import {
   VIP_TICKET_PERCENT_KEY,
   VIP_TICKET_PRICE,
@@ -38,18 +38,88 @@ import {
   UNDERSTANDS_MULTIPLICATION_KEY,
   UNDERSTANDS_TICKET_PRICES_KEY,
   UNDERSTANDS_CONVERSION_RATE_KEY,
-} from '.';
-import { EditableVariable } from '../../components/editable-variable';
+} from ".";
+import { EditableVariable } from "../../components/editable-variable";
+
+function Variable(props: {
+  dataKey: string;
+  title: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  isEnabled: (value: any) => boolean;
+  value?: string;
+  forceShow?: boolean;
+  prefix?: string;
+  backgroundColor?: string;
+  globalGameStateDataRecord: GameStateData;
+  playerGameStateDataRecord: GameStateData;
+}): React.ReactNode {
+  const { isEnabled, globalGameStateDataRecord, playerGameStateDataRecord } =
+    props;
+  const { classes } = useStyles();
+  const data =
+    globalGameStateDataRecord?.[props.dataKey] ||
+    playerGameStateDataRecord?.[props.dataKey];
+  const value =
+    props.value ||
+    globalGameStateDataRecord?.[props.dataKey] ||
+    playerGameStateDataRecord?.[props.dataKey];
+
+  return (
+    <Card
+      className={classes.box}
+      style={{
+        display: props.forceShow || (data && isEnabled(data)) ? "" : "none",
+        backgroundColor: props.backgroundColor || "#301934",
+      }}
+    >
+      <Typography className={classes.text}>{props.title}</Typography>
+      <Typography className={classes.boxText} style={{ color: "white" }}>
+        {props.prefix || ""}
+        {value}
+      </Typography>
+    </Card>
+  );
+}
+
+/**
+ * A component that will reveal the icon when reveal is true, and never hide it again.
+ */
+function RevealingIcon(props: {
+  reveal: boolean;
+  icon: React.ReactNode;
+}): React.ReactNode {
+  const { reveal, icon } = props;
+  const { classes } = useStyles();
+
+  return (
+    <Card
+      className={classes.box}
+      style={{
+        backgroundColor: "#301934",
+        borderColor: "#fff",
+        padding: 0,
+        width: 50,
+        height: 50,
+        minWidth: 50,
+        minHeight: 50,
+        borderRadius: 50,
+        display: reveal ? "" : "none",
+      }}
+    >
+      <Typography className={classes.boxText}>{icon}</Typography>
+    </Card>
+  );
+}
 
 export function SolutionComponent(props: {
   uiGameData: GameData;
   player: Player;
   updatePlayerStateData: (
     newPlayerStateData: GameStateData,
-    playerId: string
+    playerId: string,
   ) => void;
   minimize?: boolean;
-}): JSX.Element {
+}): React.ReactNode {
   const { uiGameData, player, minimize, updatePlayerStateData } = props;
   const { classes } = useStyles();
   const { zoomIn, zoomOut } = useControls();
@@ -59,13 +129,6 @@ export function SolutionComponent(props: {
   const globalGameStateDataRecord: GameStateData =
     uiGameData.globalStateData.gameStateData;
 
-  const [understandsTicketPrices, setUnderstandsTicketPrices] =
-    React.useState(false);
-  const [understandsSellThroughRates, setUnderstandsSellThroughRates] =
-    React.useState(false);
-  const [understandsMultiplication, setUnderstandsMultiplication] =
-    React.useState(false);
-  const [understandsAddition, setUnderstandsAddition] = React.useState(false);
   const [editing, setEditing] = React.useState<{
     general: number;
     reserved: number;
@@ -75,6 +138,34 @@ export function SolutionComponent(props: {
   const ref = useRef<HTMLDivElement | null>(null);
   const [width, setWidth] = React.useState<number>(0);
   const [height, setHeight] = React.useState<number>(0);
+
+  const curPlayerStateData = uiGameData.playersGameStateData[player._id];
+  const globalGameStateData = uiGameData.globalStateData.gameStateData;
+
+  const understandsTicketPrices = checkGameAndPlayerStateForValue(
+    globalGameStateData,
+    curPlayerStateData || {},
+    UNDERSTANDS_TICKET_PRICES_KEY,
+    "true",
+  );
+  const understandsSellThroughRates = checkGameAndPlayerStateForValue(
+    globalGameStateData,
+    curPlayerStateData || {},
+    UNDERSTANDS_CONVERSION_RATE_KEY,
+    "true",
+  );
+  const understandsMultiplication = checkGameAndPlayerStateForValue(
+    globalGameStateData,
+    curPlayerStateData || {},
+    UNDERSTANDS_MULTIPLICATION_KEY,
+    "true",
+  );
+  const understandsAddition = checkGameAndPlayerStateForValue(
+    globalGameStateData,
+    curPlayerStateData || {},
+    UNDERSTANDS_ADDITION_KEY,
+    "true",
+  );
 
   React.useEffect(() => {
     if (ref?.current) {
@@ -86,56 +177,12 @@ export function SolutionComponent(props: {
   }, []);
 
   React.useEffect(() => {
-    const curPlayerStateData = uiGameData.playersGameStateData[player._id];
-    const globalGameStateData = uiGameData.globalStateData.gameStateData;
-    !understandsTicketPrices &&
-      setUnderstandsTicketPrices(
-        checkGameAndPlayerStateForValue(
-          globalGameStateData,
-          curPlayerStateData || {},
-          UNDERSTANDS_TICKET_PRICES_KEY,
-          'true'
-        )
-      );
-    !understandsSellThroughRates &&
-      setUnderstandsSellThroughRates(
-        checkGameAndPlayerStateForValue(
-          globalGameStateData,
-          curPlayerStateData || {},
-          UNDERSTANDS_CONVERSION_RATE_KEY,
-          'true'
-        )
-      );
-    !understandsMultiplication &&
-      setUnderstandsMultiplication(
-        checkGameAndPlayerStateForValue(
-          globalGameStateData,
-          curPlayerStateData || {},
-          UNDERSTANDS_MULTIPLICATION_KEY,
-          'true'
-        )
-      );
-    !understandsAddition &&
-      setUnderstandsAddition(
-        checkGameAndPlayerStateForValue(
-          globalGameStateData,
-          curPlayerStateData || {},
-          UNDERSTANDS_ADDITION_KEY,
-          'true'
-        )
-      );
-  }, [
-    uiGameData.globalStateData.gameStateData,
-    playerGameStateDataRecord || {},
-  ]);
-
-  React.useEffect(() => {
     if (width < 500 || height < 500) {
       zoomOut(1);
     } else {
       zoomIn(1);
     }
-  }, [width, height]);
+  }, [width, height, zoomIn, zoomOut]);
 
   React.useEffect(() => {
     if (!playerGameStateDataRecord) return;
@@ -160,10 +207,10 @@ export function SolutionComponent(props: {
           [RESERVED_TICKET_PERCENT_KEY]: reserved,
           [GENERAL_ADMISSION_TICKET_PERCENT_KEY]: general,
         },
-        player._id
+        player._id,
       );
     }
-  }, [playerGameStateDataRecord]);
+  }, [playerGameStateDataRecord, player._id, updatePlayerStateData]);
 
   function onClickEdit(): void {
     if (editing) {
@@ -181,119 +228,36 @@ export function SolutionComponent(props: {
     }
   }
 
-  function Variable(props: {
-    dataKey: string;
-    title: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    isEnabled: (value: any) => boolean;
-    value?: string;
-    forceShow?: boolean;
-    prefix?: string;
-    backgroundColor?: string;
-  }): JSX.Element {
-    const { isEnabled } = props;
-    const data =
-      globalGameStateDataRecord?.[props.dataKey] ||
-      playerGameStateDataRecord?.[props.dataKey];
-    const [revealed, setRevealed] = React.useState(data && isEnabled(data));
-    const value =
-      props.value ||
-      globalGameStateDataRecord?.[props.dataKey] ||
-      playerGameStateDataRecord?.[props.dataKey];
-
-    useEffect(() => {
-      if (revealed) {
-        return;
-      }
-      if (props.forceShow || (data && isEnabled(data))) {
-        setRevealed(true);
-      }
-    }, [data, isEnabled]);
-
-    return (
-      <Card
-        className={classes.box}
-        style={{
-          display: props.forceShow || (data && isEnabled(data)) ? '' : 'none',
-          backgroundColor: props.backgroundColor || '#301934',
-        }}
-      >
-        <Typography className={classes.text}>{props.title}</Typography>
-        <Typography className={classes.boxText} style={{ color: 'white' }}>
-          {props.prefix || ''}
-          {value}
-        </Typography>
-      </Card>
-    );
-  }
-
-  /**
-   * A component that will reveal the icon when reveal is true, and never hide it again.
-   */
-  function RevealingIcon(props: {
-    reveal: boolean;
-    icon: JSX.Element;
-  }): JSX.Element {
-    const { reveal, icon } = props;
-    const [revealed, setRevealed] = React.useState(reveal);
-
-    useEffect(() => {
-      if (reveal) {
-        setRevealed(true);
-      }
-    }, [reveal]);
-
-    return (
-      <Card
-        className={classes.box}
-        style={{
-          backgroundColor: '#301934',
-          borderColor: '#fff',
-          padding: 0,
-          width: 50,
-          height: 50,
-          minWidth: 50,
-          minHeight: 50,
-          borderRadius: 50,
-          display: revealed ? '' : 'none',
-        }}
-      >
-        <Typography className={classes.boxText}>{icon}</Typography>
-      </Card>
-    );
-  }
-
   if (minimize) {
     return (
       <div
         className="row spacing"
-        style={{ alignItems: 'center', overflowX: 'auto' }}
+        style={{ alignItems: "center", overflowX: "auto" }}
       >
-        <Typography style={{ whiteSpace: 'nowrap' }}>Profit =</Typography>
+        <Typography style={{ whiteSpace: "nowrap" }}>Profit =</Typography>
         <div className="column center-div">
           <Typography
-            fontSize={10}
-            style={{ whiteSpace: 'nowrap', color: 'blue' }}
+            style={{ whiteSpace: "nowrap", color: "blue", fontSize: 10 }}
           >
-            {understandsTicketPrices ? 'VIP sales' : ''}
+            {understandsTicketPrices ? "VIP sales" : ""}
           </Typography>
           <div className="row center-div spacing">
             <Typography
               style={{
-                whiteSpace: 'nowrap',
-                backgroundColor: 'lightblue',
+                whiteSpace: "nowrap",
+                backgroundColor: "lightblue",
                 padding: 5,
               }}
             >
               {understandsTicketPrices ? `$${String(VIP_TICKET_PRICE)}` : ``}
             </Typography>
-            <Typography style={{ backgroundColor: 'lightblue', padding: 5 }}>
-              {understandsMultiplication ? 'x' : ''}
+            <Typography style={{ backgroundColor: "lightblue", padding: 5 }}>
+              {understandsMultiplication ? "x" : ""}
             </Typography>
             <Typography
               style={{
-                whiteSpace: 'nowrap',
-                backgroundColor: 'lightblue',
+                whiteSpace: "nowrap",
+                backgroundColor: "lightblue",
                 padding: 5,
               }}
             >
@@ -302,55 +266,54 @@ export function SolutionComponent(props: {
                   ...globalGameStateDataRecord,
                   ...playerGameStateDataRecord,
                 }[VIP_TICKET_PERCENT_KEY]
-              }{' '}
+              }{" "}
               VIP
             </Typography>
-            <Typography style={{ backgroundColor: 'lightblue', padding: 5 }}>
-              {understandsMultiplication ? 'x' : ''}
+            <Typography style={{ backgroundColor: "lightblue", padding: 5 }}>
+              {understandsMultiplication ? "x" : ""}
             </Typography>
             <Typography
               style={{
-                whiteSpace: 'nowrap',
-                backgroundColor: 'lightblue',
+                whiteSpace: "nowrap",
+                backgroundColor: "lightblue",
                 padding: 5,
               }}
             >
               {understandsSellThroughRates
                 ? `${String(VIP_TICKET_CONVERSION_RATE)}%`
-                : ''}
+                : ""}
             </Typography>
           </div>
         </div>
-        <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
-          {understandsAddition ? '+' : ''}
+        <Typography style={{ backgroundColor: "#ddd", padding: 5 }}>
+          {understandsAddition ? "+" : ""}
         </Typography>
 
         <div className="column center-div">
           <Typography
-            fontSize={10}
-            style={{ whiteSpace: 'nowrap', color: 'red' }}
+            style={{ whiteSpace: "nowrap", color: "red", fontSize: 10 }}
           >
-            {understandsTicketPrices ? 'Reserved sales' : ''}
+            {understandsTicketPrices ? "Reserved sales" : ""}
           </Typography>
           <div className="row center-div spacing">
             <Typography
               style={{
-                whiteSpace: 'nowrap',
-                backgroundColor: 'pink',
+                whiteSpace: "nowrap",
+                backgroundColor: "pink",
                 padding: 5,
               }}
             >
               {understandsTicketPrices
                 ? `$${String(RESERVED_TICKET_PRICE)}`
-                : ''}
+                : ""}
             </Typography>
-            <Typography style={{ backgroundColor: 'pink', padding: 5 }}>
-              {understandsMultiplication ? 'x' : ''}
+            <Typography style={{ backgroundColor: "pink", padding: 5 }}>
+              {understandsMultiplication ? "x" : ""}
             </Typography>
             <Typography
               style={{
-                whiteSpace: 'nowrap',
-                backgroundColor: 'pink',
+                whiteSpace: "nowrap",
+                backgroundColor: "pink",
                 padding: 5,
               }}
             >
@@ -359,49 +322,48 @@ export function SolutionComponent(props: {
                   ...globalGameStateDataRecord,
                   ...playerGameStateDataRecord,
                 }[RESERVED_TICKET_PERCENT_KEY]
-              }{' '}
+              }{" "}
               Reserved
             </Typography>
-            <Typography style={{ backgroundColor: 'pink', padding: 5 }}>
-              {understandsMultiplication ? 'x' : ''}
+            <Typography style={{ backgroundColor: "pink", padding: 5 }}>
+              {understandsMultiplication ? "x" : ""}
             </Typography>
-            <Typography style={{ backgroundColor: 'pink', padding: 5 }}>
+            <Typography style={{ backgroundColor: "pink", padding: 5 }}>
               {understandsSellThroughRates
                 ? `${String(RESERVED_TICKET_CONVERSION_RATE)}%`
-                : ''}
+                : ""}
             </Typography>
           </div>
         </div>
-        <Typography style={{ backgroundColor: '#ddd', padding: 5 }}>
-          {understandsAddition ? '+' : ''}
+        <Typography style={{ backgroundColor: "#ddd", padding: 5 }}>
+          {understandsAddition ? "+" : ""}
         </Typography>
 
         <div className="column center-div">
           <Typography
-            fontSize={10}
-            style={{ whiteSpace: 'nowrap', color: 'brown' }}
+            style={{ whiteSpace: "nowrap", color: "brown", fontSize: 10 }}
           >
-            {understandsTicketPrices ? 'General Admission sales' : ''}
+            {understandsTicketPrices ? "General Admission sales" : ""}
           </Typography>
           <div className="row center-div spacing">
             <Typography
               style={{
-                whiteSpace: 'nowrap',
-                backgroundColor: 'tan',
+                whiteSpace: "nowrap",
+                backgroundColor: "tan",
                 padding: 5,
               }}
             >
               {understandsTicketPrices
                 ? `$${String(GENERAL_ADMISSION_TICKET_PRICE)}`
-                : ''}
+                : ""}
             </Typography>
-            <Typography style={{ backgroundColor: 'tan', padding: 5 }}>
-              {understandsMultiplication ? 'x' : ''}
+            <Typography style={{ backgroundColor: "tan", padding: 5 }}>
+              {understandsMultiplication ? "x" : ""}
             </Typography>
             <Typography
               style={{
-                whiteSpace: 'nowrap',
-                backgroundColor: 'tan',
+                whiteSpace: "nowrap",
+                backgroundColor: "tan",
                 padding: 5,
               }}
             >
@@ -410,16 +372,16 @@ export function SolutionComponent(props: {
                   ...globalGameStateDataRecord,
                   ...playerGameStateDataRecord,
                 }[GENERAL_ADMISSION_TICKET_PERCENT_KEY]
-              }{' '}
+              }{" "}
               General
             </Typography>
-            <Typography style={{ backgroundColor: 'tan', padding: 5 }}>
-              {understandsMultiplication ? 'x' : ''}
+            <Typography style={{ backgroundColor: "tan", padding: 5 }}>
+              {understandsMultiplication ? "x" : ""}
             </Typography>
-            <Typography style={{ backgroundColor: 'tan', padding: 5 }}>
+            <Typography style={{ backgroundColor: "tan", padding: 5 }}>
               {understandsSellThroughRates
                 ? `${String(GENERAL_ADMISSION_TICKET_CONVERSION_RATE)}%`
-                : ''}
+                : ""}
             </Typography>
           </div>
         </div>
@@ -435,12 +397,12 @@ export function SolutionComponent(props: {
       ref={ref}
       className="column center-div"
       style={{
-        height: '100%',
-        width: '100%',
+        height: "100%",
+        width: "100%",
         backgroundImage: `url(${stageBg})`,
-        backgroundSize: 'cover',
-        backgroundRepeat: 'no-repeat',
-        backgroundPosition: 'center',
+        backgroundSize: "cover",
+        backgroundRepeat: "no-repeat",
+        backgroundPosition: "center",
       }}
     >
       <TransformComponent>
@@ -451,6 +413,8 @@ export function SolutionComponent(props: {
             isEnabled={() => true}
             value={String(TOTAL_NUMBER_OF_TICKETS)}
             forceShow={true}
+            playerGameStateDataRecord={playerGameStateDataRecord}
+            globalGameStateDataRecord={globalGameStateDataRecord}
           />
           <div className="row center-div">
             <Variable
@@ -459,16 +423,18 @@ export function SolutionComponent(props: {
               title="Price per VIP ticket"
               prefix="$"
               value={String(VIP_TICKET_PRICE)}
+              playerGameStateDataRecord={playerGameStateDataRecord}
+              globalGameStateDataRecord={globalGameStateDataRecord}
             />
             <RevealingIcon
               reveal={understandsMultiplication}
               icon={
                 <Typography
                   className={classes.boxText}
-                  style={{ color: '#fff' }}
+                  style={{ color: "#fff" }}
                 >
-                  {' '}
-                  x{' '}
+                  {" "}
+                  x{" "}
                 </Typography>
               }
             />
@@ -487,10 +453,10 @@ export function SolutionComponent(props: {
               icon={
                 <Typography
                   className={classes.boxText}
-                  style={{ color: '#fff' }}
+                  style={{ color: "#fff" }}
                 >
-                  {' '}
-                  x{' '}
+                  {" "}
+                  x{" "}
                 </Typography>
               }
             />
@@ -499,14 +465,16 @@ export function SolutionComponent(props: {
               isEnabled={() => understandsSellThroughRates}
               title="Conversion Rate"
               value={String(VIP_TICKET_CONVERSION_RATE)}
+              playerGameStateDataRecord={playerGameStateDataRecord}
+              globalGameStateDataRecord={globalGameStateDataRecord}
             />
           </div>
           <RevealingIcon
             reveal={understandsAddition}
             icon={
-              <Typography className={classes.boxText} style={{ color: '#fff' }}>
-                {' '}
-                +{' '}
+              <Typography className={classes.boxText} style={{ color: "#fff" }}>
+                {" "}
+                +{" "}
               </Typography>
             }
           />
@@ -517,16 +485,18 @@ export function SolutionComponent(props: {
               title="Price per reserved ticket"
               prefix="$"
               value={String(RESERVED_TICKET_PRICE)}
+              playerGameStateDataRecord={playerGameStateDataRecord}
+              globalGameStateDataRecord={globalGameStateDataRecord}
             />
             <RevealingIcon
               reveal={understandsMultiplication}
               icon={
                 <Typography
                   className={classes.boxText}
-                  style={{ color: '#fff' }}
+                  style={{ color: "#fff" }}
                 >
-                  {' '}
-                  x{' '}
+                  {" "}
+                  x{" "}
                 </Typography>
               }
             />
@@ -545,10 +515,10 @@ export function SolutionComponent(props: {
               icon={
                 <Typography
                   className={classes.boxText}
-                  style={{ color: '#fff' }}
+                  style={{ color: "#fff" }}
                 >
-                  {' '}
-                  x{' '}
+                  {" "}
+                  x{" "}
                 </Typography>
               }
             />
@@ -557,14 +527,16 @@ export function SolutionComponent(props: {
               dataKey={UNDERSTANDS_CONVERSION_RATE_KEY}
               title="Conversion Rate"
               value={String(RESERVED_TICKET_CONVERSION_RATE)}
+              playerGameStateDataRecord={playerGameStateDataRecord}
+              globalGameStateDataRecord={globalGameStateDataRecord}
             />
           </div>
           <RevealingIcon
             reveal={understandsAddition}
             icon={
-              <Typography className={classes.boxText} style={{ color: '#fff' }}>
-                {' '}
-                +{' '}
+              <Typography className={classes.boxText} style={{ color: "#fff" }}>
+                {" "}
+                +{" "}
               </Typography>
             }
           />
@@ -575,16 +547,18 @@ export function SolutionComponent(props: {
               title="Price per GA ticket"
               prefix="$"
               value={String(GENERAL_ADMISSION_TICKET_PRICE)}
+              playerGameStateDataRecord={playerGameStateDataRecord}
+              globalGameStateDataRecord={globalGameStateDataRecord}
             />
             <RevealingIcon
               reveal={understandsMultiplication}
               icon={
                 <Typography
                   className={classes.boxText}
-                  style={{ color: '#fff' }}
+                  style={{ color: "#fff" }}
                 >
-                  {' '}
-                  x{' '}
+                  {" "}
+                  x{" "}
                 </Typography>
               }
             />
@@ -603,10 +577,10 @@ export function SolutionComponent(props: {
               icon={
                 <Typography
                   className={classes.boxText}
-                  style={{ color: '#fff' }}
+                  style={{ color: "#fff" }}
                 >
-                  {' '}
-                  x{' '}
+                  {" "}
+                  x{" "}
                 </Typography>
               }
             />
@@ -615,6 +589,8 @@ export function SolutionComponent(props: {
               isEnabled={() => understandsSellThroughRates}
               title="Conversion Rate"
               value={String(GENERAL_ADMISSION_TICKET_CONVERSION_RATE)}
+              playerGameStateDataRecord={playerGameStateDataRecord}
+              globalGameStateDataRecord={globalGameStateDataRecord}
             />
           </div>
         </div>
@@ -622,7 +598,7 @@ export function SolutionComponent(props: {
 
       {editing && (
         <Dialog open={Boolean(editing)} onClose={onClickEdit}>
-          <DialogTitle style={{ textAlign: 'center' }}>My Strategy</DialogTitle>
+          <DialogTitle style={{ textAlign: "center" }}>My Strategy</DialogTitle>
           <DialogContent style={{ paddingTop: 10 }}>
             <TextField
               label="Number of VIP Tickets"
@@ -634,17 +610,24 @@ export function SolutionComponent(props: {
               style={{ marginBottom: 10 }}
               sx={{
                 input: {
-                  color: '#c96049',
+                  color: "#c96049",
                   fontSize: 40,
-                  fontFamily: 'SigmarOne',
-                  textAlign: 'center',
+                  fontFamily: "SigmarOne",
+                  textAlign: "center",
                 },
-                '& .MuiInput-underline:before': {
-                  borderBottomColor: '#c96049',
+                "& .MuiInput-underline:before": {
+                  borderBottomColor: "#c96049",
                 },
-                '& .MuiInput-underline:after': { borderBottomColor: '#c96049' },
+                "& .MuiInput-underline:after": { borderBottomColor: "#c96049" },
               }}
-              InputProps={{ inputProps: { min: 0, max: 100 } }}
+              slotProps={{
+                input: {
+                  inputProps: {
+                    min: 0,
+                    max: 100,
+                  },
+                },
+              }}
               onChange={(e) => {
                 setEditing({ ...editing, vip: parseInt(e.target.value) });
               }}
@@ -659,17 +642,24 @@ export function SolutionComponent(props: {
               style={{ marginBottom: 10 }}
               sx={{
                 input: {
-                  color: '#c96049',
+                  color: "#c96049",
                   fontSize: 40,
-                  fontFamily: 'SigmarOne',
-                  textAlign: 'center',
+                  fontFamily: "SigmarOne",
+                  textAlign: "center",
                 },
-                '& .MuiInput-underline:before': {
-                  borderBottomColor: '#c96049',
+                "& .MuiInput-underline:before": {
+                  borderBottomColor: "#c96049",
                 },
-                '& .MuiInput-underline:after': { borderBottomColor: '#c96049' },
+                "& .MuiInput-underline:after": { borderBottomColor: "#c96049" },
               }}
-              InputProps={{ inputProps: { min: 0, max: 100 } }}
+              slotProps={{
+                input: {
+                  inputProps: {
+                    min: 0,
+                    max: 100,
+                  },
+                },
+              }}
               onChange={(e) => {
                 setEditing({ ...editing, reserved: parseInt(e.target.value) });
               }}
@@ -686,28 +676,35 @@ export function SolutionComponent(props: {
               style={{ marginBottom: 10 }}
               sx={{
                 input: {
-                  color: '#c96049',
+                  color: "#c96049",
                   fontSize: 40,
-                  fontFamily: 'SigmarOne',
-                  textAlign: 'center',
+                  fontFamily: "SigmarOne",
+                  textAlign: "center",
                 },
-                '& .MuiInput-underline:before': {
-                  borderBottomColor: '#c96049',
+                "& .MuiInput-underline:before": {
+                  borderBottomColor: "#c96049",
                 },
-                '& .MuiInput-underline:after': { borderBottomColor: '#c96049' },
+                "& .MuiInput-underline:after": { borderBottomColor: "#c96049" },
               }}
-              InputProps={{ inputProps: { min: 0, max: 100 } }}
+              slotProps={{
+                input: {
+                  inputProps: {
+                    min: 0,
+                    max: 100,
+                  },
+                },
+              }}
               onChange={(e) => {
                 setEditing({ ...editing, general: parseInt(e.target.value) });
               }}
             />
             {editing.vip + editing.general + editing.reserved !== 100 && (
-              <Typography color="error" textAlign="center">
+              <Typography color="error" style={{ textAlign: "center" }}>
                 Total must add up to 100
               </Typography>
             )}
           </DialogContent>
-          <DialogActions style={{ justifyContent: 'center' }}>
+          <DialogActions style={{ justifyContent: "center" }}>
             <Button onClick={onClickEdit} color="primary" variant="outlined">
               Close
             </Button>
@@ -724,7 +721,7 @@ export function SolutionComponent(props: {
                     [RESERVED_TICKET_PERCENT_KEY]: editing.reserved,
                     [VIP_TICKET_PERCENT_KEY]: editing.vip,
                   },
-                  player._id
+                  player._id,
                 );
                 onClickEdit();
               }}
@@ -740,36 +737,36 @@ export function SolutionComponent(props: {
 
 const useStyles = makeStyles()(() => ({
   grouping: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 'auto',
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "auto",
   },
   box: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
     padding: 10,
     borderRadius: 10,
     marginRight: 5,
     marginBottom: 10,
-    height: 'auto',
-    width: 'auto',
+    height: "auto",
+    width: "auto",
     minWidth: 100,
-    border: '1px solid lightgrey',
-    boxShadow: '-5px 5px 10px 0px rgba(0,0,0,0.75)',
+    border: "1px solid lightgrey",
+    boxShadow: "-5px 5px 10px 0px rgba(0,0,0,0.75)",
   },
   text: {
-    color: 'white',
+    color: "white",
     fontSize: 14,
     fontWeight: 600,
-    textAlign: 'center',
+    textAlign: "center",
   },
   boxText: {
-    color: 'white',
+    color: "white",
     fontSize: 40,
-    fontFamily: 'SigmarOne',
+    fontFamily: "SigmarOne",
   },
 }));

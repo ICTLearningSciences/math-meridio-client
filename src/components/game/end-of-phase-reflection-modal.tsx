@@ -5,7 +5,8 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
+import { useReward } from "partycles";
 import {
   Dialog,
   DialogContent,
@@ -17,20 +18,19 @@ import {
   Typography,
   IconButton,
   InputAdornment,
-} from '@mui/material';
-import { Check, Send } from '@mui/icons-material';
+} from "@mui/material";
+import { Check, Send } from "@mui/icons-material";
 
-import { Room } from '../../store/slices/game/types';
-import { EducationalRole, Player } from '../../store/slices/player/types';
-import AvatarSprite from '../avatar-sprite';
+import type { Room } from "../../store/slices/game/types";
+import type { Player } from "../../store/slices/player/types";
+import AvatarSprite from "../avatar-sprite";
 import {
   submitGamePhaseReflection,
   submitReadyToContinue,
-} from '../../hooks/game-rooms/game-room-api';
-import { ColumnDiv } from '../../styled-components';
-import { WavyText } from '../animated-text';
-import { useReward } from 'partycles';
-import { MAX_MESSAGE_LENGTH } from './chat-form';
+} from "../../hooks/game-room-api";
+import { ColumnDiv } from "../../styled-components";
+import { WavyText } from "../animated-text";
+import { MAX_MESSAGE_LENGTH } from "./chat-form";
 
 interface PlayerReflectionDisplayItemProps {
   player: Player;
@@ -40,37 +40,37 @@ interface PlayerReflectionDisplayItemProps {
 function PlayerReflectionDisplayItem({
   player,
   reflection,
-}: PlayerReflectionDisplayItemProps): JSX.Element {
+}: PlayerReflectionDisplayItemProps): React.ReactNode {
   return (
     <Box
       className="column"
       sx={{
-        alignItems: 'center',
+        alignItems: "center",
         gap: 2,
         padding: 2,
-        border: '1px solid',
+        border: "1px solid",
         borderRadius: 2,
-        width: '25%',
-        height: '125px',
+        width: "25%",
+        height: "125px",
       }}
     >
-      <ColumnDiv style={{ alignItems: 'center' }}>
+      <ColumnDiv style={{ alignItems: "center" }}>
         <AvatarSprite player={player} />
-        <Typography fontWeight="bold">{player.name}</Typography>
+        <Typography style={{ fontWeight: "bold" }}>{player.name}</Typography>
       </ColumnDiv>
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Typography
           variant="body2"
           color="text.secondary"
           sx={{
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            display: '-webkit-box',
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            display: "-webkit-box",
             WebkitLineClamp: 3,
-            WebkitBoxOrient: 'vertical',
+            WebkitBoxOrient: "vertical",
           }}
         >
-          {reflection || '…'}
+          {reflection || "…"}
         </Typography>
       </Box>
     </Box>
@@ -87,36 +87,36 @@ export default function EndOfPhaseReflectionModal({
   room,
   player,
   fetchRoom,
-}: EndOfPhaseReflectionModalProps): JSX.Element {
+}: EndOfPhaseReflectionModalProps): React.ReactNode {
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [reflectionText, setReflectionText] = useState('');
-  const [lastSubmittedReflection, setLastSubmittedReflection] = useState('');
+  const [reflectionText, setReflectionText] = useState("");
+  const [lastSubmittedReflection, setLastSubmittedReflection] = useState("");
   const [locallySubmittedReflection, setLocallySubmittedReflection] =
-    useState('');
+    useState("");
   const [isSubmittingReflection, setIsSubmittingReflection] = useState(false);
   const [isSubmittingReady, setIsSubmittingReady] = useState(false);
   const [hasLocallySubmitted, setHasLocallySubmitted] = useState(false);
   const [hasSubmittedReady, setHasSubmittedReady] = useState(false);
 
   const curState = room.gameData.curGameState.curState;
-  const selectedQuestion = room.gameData.curGameState.selectedQuestion || '';
+  const selectedQuestion = room.gameData.curGameState.selectedQuestion || "";
   const phaseTitle = room.gameData.phaseProgression.curPhaseTitle;
   const studentReflections =
     room.gameData.curGameState.studentReflections || {};
   const players = room.gameData.players;
   const isMultiplayer = players.length > 1;
 
-  const isInWaitingState = curState === 'WAITING_FOR_STUDENT_READY_TO_CONTINUE';
+  const isInWaitingState = curState === "WAITING_FOR_STUDENT_READY_TO_CONTINUE";
 
-  const isTeacher = player?.educationalRole === EducationalRole.INSTRUCTOR;
+  const isTeacher = player?.educationalRole === "INSTRUCTOR";
   const currentPlayerReflection = studentReflections[player._id];
   const hasSubmittedReflection =
     Boolean(currentPlayerReflection) || hasLocallySubmitted;
 
-  const { reward } = useReward('rewardId', 'confetti', {
+  const { reward } = useReward("rewardId", "confetti", {
     particleCount: 100,
     spread: 120,
-    colors: ['#ff0000', '#00ff00', '#0000ff'],
+    colors: ["#ff0000", "#00ff00", "#0000ff"],
     physics: {
       gravity: 0.5,
       wind: 0.1,
@@ -128,7 +128,7 @@ export default function EndOfPhaseReflectionModal({
     // Reset local submission state if user edits after submitting
     if (hasLocallySubmitted && text !== lastSubmittedReflection) {
       setHasLocallySubmitted(false);
-      setLocallySubmittedReflection('');
+      setLocallySubmittedReflection("");
     }
   };
 
@@ -142,10 +142,10 @@ export default function EndOfPhaseReflectionModal({
       setLastSubmittedReflection(reflectionText);
       setLocallySubmittedReflection(reflectionText);
       setHasLocallySubmitted(true);
-      setReflectionText('');
+      setReflectionText("");
       await fetchRoom(room._id);
     } catch (error) {
-      console.error('Failed to submit reflection:', error);
+      console.error("Failed to submit reflection:", error);
     } finally {
       setIsSubmittingReflection(false);
     }
@@ -161,7 +161,7 @@ export default function EndOfPhaseReflectionModal({
         setHasSubmittedReady(false);
       }, 4000);
     } catch (error) {
-      console.error('Failed to submit ready to continue:', error);
+      console.error("Failed to submit ready to continue:", error);
       setHasSubmittedReady(false);
     } finally {
       setIsSubmittingReady(false);
@@ -189,7 +189,7 @@ export default function EndOfPhaseReflectionModal({
           setIsOpen(true);
           setTimeout(reward, 1000);
         }}
-        sx={{ width: '100%' }}
+        sx={{ width: "100%" }}
       >
         Complete Reflection to Continue
       </Button>
@@ -199,27 +199,26 @@ export default function EndOfPhaseReflectionModal({
         onClose={() => setIsOpen(false)}
         maxWidth="lg"
         fullWidth
-        disableEscapeKeyDown
       >
-        <DialogContent style={{ overflowX: 'hidden' }}>
+        <DialogContent style={{ overflowX: "hidden" }}>
           <DialogTitle
-            style={{ fontSize: 36, textAlign: 'center', fontWeight: 'bold' }}
+            style={{ fontSize: 36, textAlign: "center", fontWeight: "bold" }}
           >
             <WavyText text={`${phaseTitle} - Phase Complete!`} />
           </DialogTitle>
           <Box
             id="rewardId"
             sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
               gap: 3,
               minHeight: 400,
               paddingTop: 2,
             }}
           >
             {/* Question at top */}
-            <Typography variant="h6" gutterBottom style={{ textAlign: 'left' }}>
+            <Typography variant="h6" gutterBottom style={{ textAlign: "left" }}>
               {selectedQuestion}
             </Typography>
 
@@ -229,16 +228,16 @@ export default function EndOfPhaseReflectionModal({
                 <Typography
                   variant="h6"
                   gutterBottom
-                  style={{ textAlign: 'left' }}
+                  style={{ textAlign: "left" }}
                 >
                   Player Reflections
                 </Typography>
                 <Box
                   sx={{
-                    display: 'flex',
-                    flexDirection: 'row',
+                    display: "flex",
+                    flexDirection: "row",
                     gap: 2,
-                    overflowX: 'auto',
+                    overflowX: "auto",
                     paddingBottom: 1,
                   }}
                 >
@@ -262,7 +261,7 @@ export default function EndOfPhaseReflectionModal({
 
             {/* Input section */}
             <Box
-              sx={{ display: 'flex', gap: 2, width: '100%', borderRadius: 10 }}
+              sx={{ display: "flex", gap: 2, width: "100%", borderRadius: 10 }}
             >
               {!isTeacher ? (
                 <TextField
@@ -276,29 +275,31 @@ export default function EndOfPhaseReflectionModal({
                   style={{ borderRadius: 10 }}
                   sx={{ flex: 1, borderRadius: 10 }}
                   disabled={hasSubmittedReady || isTeacher}
-                  inputProps={{
-                    maxLength: MAX_MESSAGE_LENGTH,
-                  }}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          onClick={handleSubmitReflection}
-                          disabled={isSubmitDisabled}
-                          edge="end"
-                          style={{
-                            height: '100%',
-                            color: 'black',
-                          }}
-                        >
-                          {isSubmittingReflection ? (
-                            <CircularProgress size={24} />
-                          ) : (
-                            <Send />
-                          )}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
+                  slotProps={{
+                    input: {
+                      inputProps: {
+                        maxLength: MAX_MESSAGE_LENGTH,
+                      },
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            onClick={handleSubmitReflection}
+                            disabled={isSubmitDisabled}
+                            edge="end"
+                            style={{
+                              height: "100%",
+                              color: "black",
+                            }}
+                          >
+                            {isSubmittingReflection ? (
+                              <CircularProgress size={24} />
+                            ) : (
+                              <Send />
+                            )}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    },
                   }}
                 />
               ) : (
@@ -306,12 +307,12 @@ export default function EndOfPhaseReflectionModal({
                   variant="contained"
                   onClick={handleReadyToContinue}
                   disabled={isSubmittingReady}
-                  sx={{ width: '100%' }}
+                  sx={{ width: "100%" }}
                 >
                   {isSubmittingReady ? (
                     <CircularProgress size={24} color="inherit" />
                   ) : (
-                    'Skip Reflection and Continue'
+                    "Skip Reflection and Continue"
                   )}
                 </Button>
               )}
@@ -321,13 +322,13 @@ export default function EndOfPhaseReflectionModal({
                   onClick={handleReadyToContinue}
                   disabled={isReadyDisabled}
                   sx={{
-                    width: '20%',
+                    width: "20%",
                     backgroundColor: hasSubmittedReady
-                      ? 'success.main'
+                      ? "success.main"
                       : undefined,
-                    '&:hover': {
+                    "&:hover": {
                       backgroundColor: hasSubmittedReady
-                        ? 'success.dark'
+                        ? "success.dark"
                         : undefined,
                     },
                   }}
@@ -335,12 +336,12 @@ export default function EndOfPhaseReflectionModal({
                   {isSubmittingReady ? (
                     <CircularProgress size={24} color="inherit" />
                   ) : hasSubmittedReady ? (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <Check />
                       <span>Ready!</span>
                     </Box>
                   ) : (
-                    'Ready to continue!'
+                    "Ready to continue!"
                   )}
                 </Button>
               )}

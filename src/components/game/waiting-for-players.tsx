@@ -4,31 +4,13 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-/*
-This software is Copyright ©️ 2020 The University of Southern California. All Rights Reserved.
-Permission to use, copy, modify, and distribute this software and its documentation for educational, research and non-profit purposes, without fee, and without a written agreement is hereby granted, provided that the above copyright notice and subject to the full license file found in the root of this software deliverable. Permission to make commercial use of this software may be obtained by contacting:  USC Stevens Center for Innovation University of Southern California 1150 S. Olive Street, Suite 2300, Los Angeles, CA 90115, USA Email: accounting@stevens.usc.edu
-
-The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
-*/
-import React, { useEffect, useState, useRef } from 'react';
-import { Stack, Typography, Button, CircularProgress } from '@mui/material';
-import { Player } from '../../store/slices/player/types';
-import {
-  CurGameState,
-  RequireInputType,
-} from '../discussion-stage-builder/types';
-import { RowDiv } from '../../styled-components';
-import AvatarSprite from '../avatar-sprite';
-import { Room } from '../../store/slices/game/types';
-
-enum PlayerColors {
-  Blue = 'info.main',
-  Green = 'success.main',
-  Orange = 'warning.main',
-  Lavender = 'secondary.main',
-  Grey = 'text.secondary',
-  Red = 'error.main',
-}
+import React, { useEffect, useState, useRef } from "react";
+import { Stack, Typography, Button, CircularProgress } from "@mui/material";
+import type { Player } from "../../store/slices/player/types";
+import type { CurGameState } from "../discussion-stage-builder/types";
+import { RowDiv } from "../../styled-components";
+import AvatarSprite from "../avatar-sprite";
+import type { Room } from "../../store/slices/game/types";
 
 interface WaitingForPlayersProps {
   numPlayersInRoom: number;
@@ -42,8 +24,8 @@ interface WaitingForPlayersProps {
 }
 
 export default function WaitingForPlayers(
-  props: WaitingForPlayersProps
-): JSX.Element {
+  props: WaitingForPlayersProps,
+): React.ReactNode {
   const {
     numPlayersInRoom,
     playersBeingWaitedFor,
@@ -55,25 +37,24 @@ export default function WaitingForPlayers(
     requestInputStartTime,
   } = props;
 
+  // eslint-disable-next-line react-hooks/purity
   const [currentTime, setCurrentTime] = useState(Date.now());
   const [reportingPlayerId, setReportingPlayerId] = useState<string | null>(
-    null
+    null,
   );
   const [recentlyReportedPlayers, setRecentlyReportedPlayers] = useState<
     Set<string>
   >(new Set());
-  const reportTimeoutRefs = useRef<Map<string, NodeJS.Timeout>>(new Map());
+  const reportTimeoutRefs = useRef<Map<string, number>>(new Map());
 
   // Update current time every second to check if 60 seconds have passed
   useEffect(() => {
     if (!requestInputStartTime || !isInRequestUserInputState) {
       return;
     }
-
     const interval = setInterval(() => {
       setCurrentTime(Date.now());
     }, 1000);
-
     return () => clearInterval(interval);
   }, [requestInputStartTime, isInRequestUserInputState]);
 
@@ -107,15 +88,16 @@ export default function WaitingForPlayers(
 
       reportTimeoutRefs.current.set(playerId, timeout);
     } catch (error) {
-      console.error('Failed to report player away:', error);
+      console.error("Failed to report player away:", error);
       setReportingPlayerId(null);
     }
   };
 
   // Cleanup timeouts on unmount
   useEffect(() => {
+    const cur = reportTimeoutRefs.current;
     return () => {
-      reportTimeoutRefs.current.forEach((timeout) => clearTimeout(timeout));
+      cur.forEach((timeout) => clearTimeout(timeout));
     };
   }, []);
 
@@ -130,14 +112,13 @@ export default function WaitingForPlayers(
   }
 
   const isOrderedResponse =
-    requestUserInputPhaseData.curState ===
-    RequireInputType.ALL_USER_RESPONSES_REQUIRED_IN_ORDER;
+    requestUserInputPhaseData.curState === "ALL_REQUIRED_IN_ORDER";
   const shouldShowUpNext =
     isOrderedResponse && playersBeingWaitedFor.length > 1;
 
   const shouldShowReportButton = (
     playerIndex: number,
-    playerId: string
+    playerId: string,
   ): boolean => {
     if (currentPlayerId === playerId) {
       return false;
@@ -153,18 +134,18 @@ export default function WaitingForPlayers(
       direction="column"
       key={`waiting-for-players-${playersBeingWaitedFor
         .map((p) => p._id)
-        .join(',')}`}
+        .join(",")}`}
       sx={{ p: 1 }}
       spacing={2}
       style={{
-        backgroundColor: '#1a699c',
+        backgroundColor: "#1a699c",
         borderRadius: 10,
-        marginLeft: 'auto',
-        marginRight: 'auto',
-        width: 'fit-content',
-        boxShadow: '0 0 10px 0 rgba(0, 0, 0, 0.1)',
+        marginLeft: "auto",
+        marginRight: "auto",
+        width: "fit-content",
+        boxShadow: "0 0 10px 0 rgba(0, 0, 0, 0.1)",
         padding: 10,
-        color: 'white',
+        color: "white",
       }}
     >
       <b>Waiting for response(s) from:</b>
@@ -173,29 +154,25 @@ export default function WaitingForPlayers(
           <RowDiv
             key={`waiting-for-player-${p.name}`}
             style={{
-              backgroundColor: 'lightyellow',
+              backgroundColor: "lightyellow",
               borderRadius: 10,
               opacity: i !== 0 && isOrderedResponse ? 0.8 : 1,
               marginTop: 8,
             }}
           >
             <RowDiv>
-              <AvatarSprite
-                player={p}
-                bgColor={PlayerColors.Blue}
-                border={false}
-              />
+              <AvatarSprite player={p} bgColor={"info.main"} border={false} />
               <Typography
                 key={`waiting-for-player-${p.name}-text`}
-                color={'black'}
+                color={"black"}
               >
                 <b>{p.name}</b>
               </Typography>
             </RowDiv>
             {currentPlayerId === p._id ? (
               <Typography
-                color={'black'}
-                style={{ width: '100%', textAlign: 'center' }}
+                color={"black"}
+                style={{ width: "100%", textAlign: "center" }}
               >
                 (You)
               </Typography>
@@ -209,18 +186,18 @@ export default function WaitingForPlayers(
                   recentlyReportedPlayers.has(p._id)
                 }
                 sx={{
-                  minWidth: '100px',
-                  fontSize: '0.75rem',
-                  textTransform: 'none',
-                  width: 'fit-content',
+                  minWidth: "100px",
+                  fontSize: "0.75rem",
+                  textTransform: "none",
+                  width: "fit-content",
                 }}
               >
                 {reportingPlayerId === p._id ? (
-                  <CircularProgress size={16} sx={{ color: 'black' }} />
+                  <CircularProgress size={16} sx={{ color: "black" }} />
                 ) : recentlyReportedPlayers.has(p._id) ? (
-                  'Reported'
+                  "Reported"
                 ) : (
-                  'Report Away'
+                  "Report Away"
                 )}
               </Button>
             ) : undefined}
@@ -228,11 +205,11 @@ export default function WaitingForPlayers(
           {i === 0 && shouldShowUpNext && (
             <Typography
               key={`up-next-divider`}
-              color={'white'}
+              color={"white"}
               style={{
-                textAlign: 'center',
-                fontSize: '0.85rem',
-                fontStyle: 'italic',
+                textAlign: "center",
+                fontSize: "0.85rem",
+                fontStyle: "italic",
                 marginTop: 8,
                 marginBottom: 4,
               }}

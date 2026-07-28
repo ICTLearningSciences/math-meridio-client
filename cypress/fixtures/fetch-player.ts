@@ -6,7 +6,6 @@ The full terms of this copyright and license should always be found in the root 
 */
 
 import { Player } from "../../src/store/slices/player/types";
-import { EducationalRole, LoginService, UserRole } from "../../src/store/slices/player/types";
 
 interface FetchPlayerResponse {
     fetchPlayer: Player;
@@ -16,10 +15,10 @@ export const defaultFetchPlayerData: FetchPlayerResponse = {
     "fetchPlayer": {
         _id: "my-player-id",
         googleId: "my-google-id",
-        userRole: UserRole.USER,
-        loginService: LoginService.GOOGLE,
+        userRole: 'USER',
+        loginService: 'GOOGLE',
         lastLoginAt: new Date(),
-        educationalRole: EducationalRole.STUDENT,
+        educationalRole: 'STUDENT',
         clientId: "my-player-id",
         name: "My Player",
         description: "",

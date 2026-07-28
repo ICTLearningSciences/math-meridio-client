@@ -4,15 +4,30 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 
-export enum PromptOutputTypes {
-  TEXT = 'TEXT',
-  JSON = 'JSON',
-}
+export type PromptOutputTypes = "TEXT" | "JSON";
+export type RequireInputType =
+  | "SINGLE_RESPONSE_REQUIRED"
+  | "ALL_USER_RESPONSES_REQUIRED_FREE_FOR_ALL"
+  | "ALL_REQUIRED_IN_ORDER";
+export type DiscussionStageStepType =
+  | "SYSTEM_MESSAGE"
+  | "REQUEST_USER_INPUT"
+  | "START_OF_PHASE"
+  | "END_OF_PHASE_REFLECTION"
+  | "PROMPT"
+  | "CONDITIONAL";
+export type JsonResponseDataType = "string" | "object" | "array";
+export type SubJsonResponseDataType = "string" | "array";
+export type ProcessPromptAs = "GROUP" | "INDIVIDUALLY";
+export type IncludeMessagesContextTypeEnum =
+  "NONE" | "ALL_MESSAGES" | "FROM_INPUT_STEPS";
+export type NumericOperations = ">" | "<" | "==" | "!=" | ">=" | "<=";
+export type Checking = "LENGTH" | "VALUE" | "CONTAINS";
 
 export interface IStage {
-  stageType: 'discussion' | 'simulation';
+  stageType: "discussion" | "simulation";
   clientId: string;
 }
 
@@ -45,13 +60,13 @@ export function defaultDicussionStage(): DiscussionStage {
   return {
     _id: uuidv4(),
     clientId: uuidv4(),
-    stageType: 'discussion',
-    title: 'New Discussion Stage',
-    description: '',
+    stageType: "discussion",
+    title: "New Discussion Stage",
+    description: "",
     flowsList: [
       {
         clientId: uuidv4(),
-        name: 'Flow 1',
+        name: "Flow 1",
         steps: [],
       },
     ],
@@ -60,16 +75,16 @@ export function defaultDicussionStage(): DiscussionStage {
 
 export interface SimulationStage extends IStage {
   _id: string;
-  stageType: 'simulation';
+  stageType: "simulation";
 }
 
 export function isDiscussionStage(stage: IStage): stage is DiscussionStage {
-  return stage.stageType === 'discussion';
+  return stage.stageType === "discussion";
 }
 
 export interface DiscussionStage extends IStage {
   _id: string;
-  stageType: 'discussion';
+  stageType: "discussion";
   title: string;
   description: string;
   flowsList: FlowItem[];
@@ -77,19 +92,10 @@ export interface DiscussionStage extends IStage {
 
 export interface DiscussionStageGQL extends IStage {
   _id: string;
-  stageType: 'discussion';
+  stageType: "discussion";
   title: string;
   description: string;
   flowsList: FlowItemGQL[];
-}
-
-export enum DiscussionStageStepType {
-  SYSTEM_MESSAGE = 'SYSTEM_MESSAGE',
-  REQUEST_USER_INPUT = 'REQUEST_USER_INPUT',
-  START_OF_PHASE = 'START_OF_PHASE',
-  END_OF_PHASE_REFLECTION = 'END_OF_PHASE_REFLECTION',
-  PROMPT = 'PROMPT',
-  CONDITIONAL = 'CONDITIONAL',
 }
 
 export interface StageBuilderStep {
@@ -101,18 +107,18 @@ export interface StageBuilderStep {
 
 // SystemMessage
 export interface SystemMessageStageStep extends StageBuilderStep {
-  stepType: DiscussionStageStepType.SYSTEM_MESSAGE;
+  stepType: "SYSTEM_MESSAGE";
   message: string;
 }
 
 export interface StartOfPhaseStep extends StageBuilderStep {
-  stepType: DiscussionStageStepType.START_OF_PHASE;
+  stepType: "START_OF_PHASE";
   phaseTitle: string;
   learningObjectives: string[];
 }
 
 export interface EndOfPhaseReflectionStep extends StageBuilderStep {
-  stepType: DiscussionStageStepType.END_OF_PHASE_REFLECTION;
+  stepType: "END_OF_PHASE_REFLECTION";
   skipReflectionCollection: boolean;
   parentStartOfPhaseStepId: string;
   message: string;
@@ -129,7 +135,7 @@ export interface PredefinedResponse {
 }
 
 export interface RequestUserInputStageStep extends StageBuilderStep {
-  stepType: DiscussionStageStepType.REQUEST_USER_INPUT;
+  stepType: "REQUEST_USER_INPUT";
   message: string;
   saveResponseVariableName: string;
   disableFreeInput: boolean;
@@ -138,18 +144,12 @@ export interface RequestUserInputStageStep extends StageBuilderStep {
   learningObjectives: string[];
 }
 
-export enum RequireInputType {
-  SINGLE_RESPONSE_REQUIRED = 'SINGLE_RESPONSE_REQUIRED',
-  ALL_USER_RESPONSES_REQUIRED_FREE_FOR_ALL = 'ALL_USER_RESPONSES_REQUIRED_FREE_FOR_ALL',
-  ALL_USER_RESPONSES_REQUIRED_IN_ORDER = 'ALL_REQUIRED_IN_ORDER',
-}
-
 export interface CurGameState {
   curState:
     | RequireInputType
-    | 'WAITING_FOR_SIMULATION'
-    | 'END_OF_PHASE_REFLECTION'
-    | 'WAITING_FOR_STUDENT_READY_TO_CONTINUE';
+    | "WAITING_FOR_SIMULATION"
+    | "END_OF_PHASE_REFLECTION"
+    | "WAITING_FOR_STUDENT_READY_TO_CONTINUE";
   playersLeftToRespond: string[];
   studentReadyToContinue: boolean;
   curRoundNumber?: number;
@@ -159,16 +159,6 @@ export interface CurGameState {
 }
 
 //Prompt
-export enum JsonResponseDataType {
-  STRING = 'string',
-  OBJECT = 'object',
-  ARRAY = 'array',
-}
-
-export enum SubJsonResponseDataType {
-  STRING = 'string',
-  ARRAY = 'array',
-}
 
 export interface JsonResponseDataGQL {
   clientId: string;
@@ -182,17 +172,6 @@ export interface JsonResponseData {
   isRequired: boolean;
   additionalInfo?: string;
   subData?: JsonResponseData[];
-}
-
-export enum ProcessPromptAs {
-  GROUP = 'GROUP',
-  INDIVIDUALLY = 'INDIVIDUALLY',
-}
-
-export enum IncludeMessagesContextTypeEnum {
-  NONE = 'NONE',
-  ALL_MESSAGES = 'ALL_MESSAGES',
-  FROM_INPUT_STEPS = 'FROM_INPUT_STEPS',
 }
 
 export interface IncludeMessageContext {
@@ -212,11 +191,11 @@ export interface PromptConfiguration {
 }
 
 export interface PromptStageStepGql extends StageBuilderStep {
-  stepType: DiscussionStageStepType.PROMPT;
+  stepType: "PROMPT";
   prompts: PromptConfiguration[];
 }
 
-export interface PromptStageStep extends Omit<PromptStageStepGql, 'prompts'> {
+export interface PromptStageStep extends Omit<PromptStageStepGql, "prompts"> {
   prompts: {
     processPromptAs: ProcessPromptAs;
     promptText: string;
@@ -230,23 +209,6 @@ export interface PromptStageStep extends Omit<PromptStageStepGql, 'prompts'> {
 }
 
 // LogicOperation
-export enum NumericOperations {
-  GREATER_THAN = '>',
-  LESS_THAN = '<',
-  EQUALS = '==',
-  NOT_EQUALS = '!=',
-  GREATER_THAN_EQUALS = '>=',
-  LESS_THAN_EQUALS = '<=',
-}
-
-export enum Checking {
-  // array or string
-  LENGTH = 'LENGTH',
-  // string, boolean, number
-  VALUE = 'VALUE',
-  // array or string
-  CONTAINS = 'CONTAINS',
-}
 
 export interface LogicStepConditional {
   stateDataKey: string;
@@ -256,7 +218,7 @@ export interface LogicStepConditional {
 }
 
 export interface ConditionalActivityStep extends StageBuilderStep {
-  stepType: DiscussionStageStepType.CONDITIONAL;
+  stepType: "CONDITIONAL";
   targetStepId: string;
   conditionalsToMeet: LogicStepConditional[];
 }
