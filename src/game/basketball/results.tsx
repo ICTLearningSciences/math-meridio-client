@@ -1,0 +1,378 @@
+/*
+This software is Copyright ©️ 2020 The University of Southern California. All Rights Reserved. 
+Permission to use, copy, modify, and distribute this software and its documentation for educational, research and non-profit purposes, without fee, and without a written agreement is hereby granted, provided that the above copyright notice and subject to the full license file found in the root of this software deliverable. Permission to make commercial use of this software may be obtained by contacting:  USC Stevens Center for Innovation University of Southern California 1150 S. Olive Street, Suite 2300, Los Angeles, CA 90115, USA Email: accounting@stevens.usc.edu
+
+The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
+*/
+import React, { useState } from "react";
+import { BarChart } from "@mui/x-charts/BarChart";
+import type { BasketballSimulationData } from "./SimulationScene";
+import {
+  INSIDE_SHOT_PERCENT,
+  INSIDE_SHOT_POINTS_VALUE,
+  INSIDE_SHOT_SUCCESS_VALUE,
+  MID_SHOT_PERCENT,
+  MID_SHOT_POINTS_VALUE,
+  MID_SHOT_SUCCESS_VALUE,
+  OUTSIDE_SHOT_PERCENT,
+  OUTSIDE_SHOT_POINTS_VALUE,
+  OUTSIDE_SHOT_SUCCESS_VALUE,
+} from "./solution";
+import {
+  Stack,
+  Typography,
+  Tabs,
+  Tab,
+  Box,
+  Avatar,
+  LinearProgress,
+  List,
+  ListItem,
+  ListItemAvatar,
+} from "@mui/material";
+import type { GameData } from "../../store/slices/game/types";
+import { EmojiEvents } from "@mui/icons-material";
+import AvatarSprite from "../../components/avatar-sprite";
+import { useAppSelector } from "../../store/hooks";
+
+export function Leaderboard(props: {
+  gameData: GameData;
+  simData: Record<string, BasketballSimulationData>;
+}): React.ReactNode {
+  const { gameData, simData } = props;
+  const me = useAppSelector((state) => state.playerData.player);
+  const data = Object.values(simData).sort(
+    (a, b) => b.totalPoints - a.totalPoints,
+  );
+  const topScore = data[0]?.totalPoints;
+
+  return (
+    <div className="column spacing">
+      <Typography style={{ fontWeight: "bold" }}>Leaderboard</Typography>
+      <List>
+        {data.map((data, i) => {
+          const player = gameData.players.find((p) => p._id === data.player);
+          const isTop = data.totalPoints === topScore;
+          const color = isTop ? "gold" : i === 1 ? "#CD7F32" : "";
+          return (
+            <ListItem key={i} className="row">
+              <ListItemAvatar
+                className="row center-div spacing"
+                style={{ marginRight: 10 }}
+              >
+                <Avatar sx={{ width: 24, height: 24, backgroundColor: color }}>
+                  <Typography style={{ fontSize: 12 }}>{i + 1}</Typography>
+                </Avatar>
+                <AvatarSprite bgColor={"rgb(217, 217, 217)"} player={player} />
+              </ListItemAvatar>
+              <div style={{ flexGrow: 1, marginRight: 5 }}>
+                <Typography style={{ fontWeight: "bold" }}>
+                  {player?.name} {me?._id === player?._id ? " (Me) " : ""}
+                </Typography>
+                <LinearProgress
+                  variant="determinate"
+                  value={(data?.totalPoints / 108) * 100}
+                  style={{
+                    height: 10,
+                    borderRadius: 10,
+                    marginTop: 5,
+                    marginBottom: 5,
+                  }}
+                />
+                <Typography color="primary" variant="subtitle2">
+                  {data?.totalPoints || 0} points
+                </Typography>
+              </div>
+              <EmojiEvents
+                sx={{ color: color, visibility: isTop ? "" : "hidden" }}
+              />
+            </ListItem>
+          );
+        })}
+      </List>
+    </div>
+  );
+}
+
+export function ResultComponent(props: {
+  uiGameData: GameData;
+}): React.ReactNode {
+  const { uiGameData } = props;
+  const [simulationData, setSimulationData] = React.useState<
+    Record<string, BasketballSimulationData>
+  >({});
+
+  const chartHeight = 300;
+  const resultsWidth = window.innerWidth / 2 - 300;
+  const scoreChartWidth = resultsWidth / 2;
+  const shotsChartWidth = resultsWidth / uiGameData.players.length;
+
+  interface ChartData {
+    insideScores: number[];
+    midScores: number[];
+    outsideScores: number[];
+
+    player1Data: number[];
+    player1MissedData: number[];
+
+    player2Data: number[];
+    player2MissedData: number[];
+
+    player3Data: number[];
+    player3MissedData: number[];
+
+    player4Data: number[];
+    player4MissedData: number[];
+
+    playerLabels: string[];
+  }
+
+  const [myChartData, setMyChartData] = useState<ChartData>({
+    insideScores: [],
+    midScores: [],
+    outsideScores: [],
+    player1Data: [],
+    player1MissedData: [],
+    player2Data: [],
+    player2MissedData: [],
+    player3Data: [],
+    player3MissedData: [],
+    player4Data: [],
+    player4MissedData: [],
+    playerLabels: [],
+  });
+
+  const scoreLabels = ["In", "Mid", "3pt"];
+
+  const [tabValue, setTabValue] = useState(0);
+
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setTabValue(newValue);
+  };
+
+  function simulationEnded(data: BasketballSimulationData): void {
+    const simData = {
+      ...simulationData,
+    };
+    simData[data.player] = data;
+    let player1Data: number[] = [];
+    let player1MissedData: number[] = [];
+    let player2Data: number[] = [];
+    let player2MissedData: number[] = [];
+    let player3Data: number[] = [];
+    let player3MissedData: number[] = [];
+    let player4Data: number[] = [];
+    let player4MissedData: number[] = [];
+
+    for (let index = 0; index < uiGameData.players.length; index++) {
+      const player = uiGameData.players[index];
+      const playerMade = [
+        simData[player._id]?.insideShotsMade,
+        simData[player._id]?.midShotsMade,
+        simData[player._id]?.outsideShotsMade,
+      ];
+      const playerMissed = [
+        simData[player._id]?.insideShots - simData[player._id]?.insideShotsMade,
+        simData[player._id]?.midShots - simData[player._id]?.midShotsMade,
+        simData[player._id]?.outsideShots -
+          simData[player._id]?.outsideShotsMade,
+      ];
+
+      switch (index) {
+        case 0:
+          player1Data = playerMade;
+          player1MissedData = playerMissed;
+          break;
+        case 1:
+          player2Data = playerMade;
+          player2MissedData = playerMissed;
+          break;
+        case 2:
+          player3Data = playerMade;
+          player3MissedData = playerMissed;
+          break;
+        case 3:
+          player4Data = playerMade;
+          player4MissedData = playerMissed;
+          break;
+      }
+    }
+    const insideScores = uiGameData.players.map(
+      (player) =>
+        (simData[player._id]?.insideShotsMade || 0) * INSIDE_SHOT_POINTS_VALUE,
+    );
+
+    const midScores = uiGameData.players.map(
+      (player) =>
+        (simData[player._id]?.midShotsMade || 0) * MID_SHOT_POINTS_VALUE,
+    );
+
+    const outsideScores = uiGameData.players.map(
+      (player) =>
+        (simData[player._id]?.outsideShotsMade || 0) *
+        OUTSIDE_SHOT_POINTS_VALUE,
+    );
+    const playerLabels = uiGameData.players.map((player) => player.name);
+    setMyChartData({
+      insideScores: insideScores,
+      midScores: midScores,
+      outsideScores: outsideScores,
+      player1Data: player1Data,
+      player1MissedData: player1MissedData,
+      player2Data: player2Data,
+      player2MissedData: player2MissedData,
+      player3Data: player3Data,
+      player3MissedData: player3MissedData,
+      player4Data: player4Data,
+      player4MissedData: player4MissedData,
+      playerLabels: playerLabels,
+    });
+    setSimulationData({ ...simulationData });
+  }
+
+  function GetShotChartFor(
+    playerData: number[],
+    playerMissedData: number[],
+    playerName: string,
+    bHideLegend: boolean,
+    index: number,
+  ) {
+    return (
+      <Stack key={index} direction="column" style={{ alignItems: "center" }}>
+        <BarChart
+          width={shotsChartWidth}
+          height={chartHeight}
+          series={[
+            { data: playerData, label: "made", stack: "shots" },
+            {
+              data: playerMissedData,
+              label: "missed",
+              stack: "shots",
+            },
+          ]}
+          // slotProps={{ legend: { hidden: bHideLegend } }}
+          xAxis={[{ data: scoreLabels, scaleType: "band" }]}
+        />
+        <Typography variant="subtitle1">{playerName}</Typography>
+      </Stack>
+    );
+  }
+
+  React.useEffect(() => {
+    for (const player of props.uiGameData.players) {
+      const psd = props.uiGameData.playersGameStateData[player._id];
+      const insideShots = psd[INSIDE_SHOT_PERCENT] || 0;
+      const outsideShots = psd[OUTSIDE_SHOT_PERCENT] || 0;
+      const midShots = psd[MID_SHOT_PERCENT] || 0;
+      const insideShotsMade = Math.round(
+        insideShots * INSIDE_SHOT_SUCCESS_VALUE,
+      );
+      const outsideShotsMade = Math.round(
+        outsideShots * OUTSIDE_SHOT_SUCCESS_VALUE,
+      );
+      const midShotsMade = Math.round(midShots * MID_SHOT_SUCCESS_VALUE);
+      const totalPoints =
+        insideShotsMade * INSIDE_SHOT_POINTS_VALUE +
+        outsideShotsMade * OUTSIDE_SHOT_POINTS_VALUE +
+        midShotsMade * MID_SHOT_POINTS_VALUE;
+      const simData: BasketballSimulationData = {
+        player: player._id,
+        playerAvatar: player,
+        outsideShots,
+        midShots,
+        insideShots,
+        outsideShotsMade,
+        midShotsMade,
+        insideShotsMade,
+        totalPoints,
+      };
+      simulationEnded(simData);
+    }
+  }, [props.uiGameData.playersGameStateData, props.uiGameData.players]);
+
+  return (
+    <Stack
+      style={{ width: resultsWidth, alignItems: "center" }}
+      direction="column"
+    >
+      <Tabs value={tabValue} onChange={handleTabChange}>
+        <Tab label="Score" />
+        <Tab label="Shots" />
+      </Tabs>
+      <Box sx={{ width: "100%", mt: 2 }}>
+        {tabValue === 0 && (
+          <Stack direction="column" style={{ alignItems: "center" }}>
+            <BarChart
+              width={scoreChartWidth}
+              height={chartHeight}
+              series={[
+                {
+                  data: myChartData.insideScores,
+                  label: "In",
+                  stack: "mademissedshots",
+                  color: "#e15759",
+                },
+                {
+                  data: myChartData.midScores,
+                  label: "Mid",
+                  stack: "mademissedshots",
+                  color: "#ff9da7",
+                },
+                {
+                  data: myChartData.outsideScores,
+                  label: "3pt",
+                  stack: "mademissedshots",
+                  color: "#af7aa1",
+                },
+              ]}
+              xAxis={[{ data: myChartData.playerLabels, scaleType: "band" }]}
+            />
+          </Stack>
+        )}
+        {tabValue === 1 && (
+          <Stack direction="row" style={{ alignItems: "center" }}>
+            {uiGameData.players.map((player, index) => (
+              <>
+                {index === 0 &&
+                  GetShotChartFor(
+                    myChartData.player1Data,
+                    myChartData.player1MissedData,
+                    player.name,
+                    true,
+                    index,
+                  )}
+                {index === 1 &&
+                  GetShotChartFor(
+                    myChartData.player2Data,
+                    myChartData.player2MissedData,
+                    player.name,
+                    true,
+                    index,
+                  )}
+                {index === 2 &&
+                  GetShotChartFor(
+                    myChartData.player3Data,
+                    myChartData.player3MissedData,
+                    player.name,
+                    true,
+                    index,
+                  )}
+                {index === 3 &&
+                  GetShotChartFor(
+                    myChartData.player4Data,
+                    myChartData.player4MissedData,
+                    player.name,
+                    true,
+                    index,
+                  )}
+              </>
+            ))}
+          </Stack>
+        )}
+      </Box>
+      <Box sx={{ width: "100%", height: "100%", mt: 2 }}>
+        <Leaderboard gameData={uiGameData} simData={simulationData} />
+      </Box>
+    </Stack>
+  );
+}

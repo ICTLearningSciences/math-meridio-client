@@ -1,0 +1,199 @@
+/*
+This software is Copyright ©️ 2020 The University of Southern California. All Rights Reserved. 
+Permission to use, copy, modify, and distribute this software and its documentation for educational, research and non-profit purposes, without fee, and without a written agreement is hereby granted, provided that the above copyright notice and subject to the full license file found in the root of this software deliverable. Permission to make commercial use of this software may be obtained by contacting:  USC Stevens Center for Innovation University of Southern California 1150 S. Olive Street, Suite 2300, Los Angeles, CA 90115, USA Email: accounting@stevens.usc.edu
+
+The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
+*/
+
+import React from "react";
+import { useParams } from "react-router-dom";
+import { Card, CardActionArea, CardContent, Typography } from "@mui/material";
+import { useWithEducationalData } from "../../../store/slices/educational-data/use-with-educational-data";
+import { useAppSelector } from "../../../store/hooks";
+import { GAMES, type Game } from "../../../game/types";
+import { StudentRoomCard } from "./student-room-card";
+import AvatarSprite from "../../avatar-sprite";
+
+export default function StudentSelectedClassPage(): React.ReactNode {
+  const { classId } = useParams<{ classId: string }>();
+  const { educationalData } = useWithEducationalData();
+  const { player } = useAppSelector((state) => state.playerData);
+  const [selectedGame, setSelectedGame] = React.useState<Game>();
+
+  const classroom = educationalData.classes.find((c) => c._id === classId);
+  const studentMemberships = educationalData.classMemberships.filter(
+    (c) => c.classId === classId && c.status === "Member",
+  );
+  const myGroup = studentMemberships.find((c) => c.userId === player?._id);
+  const gameRoom = myGroup
+    ? educationalData.rooms.find(
+        (r) =>
+          r.classId === classId &&
+          r.gameData.players.find((p) => p._id === player?._id),
+      )
+    : undefined;
+
+  const handleSelectGame = (game: Game) => {
+    setSelectedGame(game);
+  };
+
+  if (!classroom) {
+    return (
+      <div className="root center-div">
+        <Typography variant="h6" color="error">
+          Classroom not found
+        </Typography>
+      </div>
+    );
+  }
+
+  if (!player)
+    return (
+      <div className="root center-div">
+        <Typography variant="h6" color="error">
+          Player not found
+        </Typography>
+      </div>
+    );
+
+  if (!classId)
+    return (
+      <div className="root center-div">
+        <Typography variant="h6" color="error">
+          Class ID not found
+        </Typography>
+      </div>
+    );
+
+  return (
+    <div
+      className="column"
+      style={{
+        width: "100%",
+        height: "100%",
+        alignItems: "center",
+        padding: 20,
+      }}
+    >
+      <Typography variant="h4" style={{ marginBottom: 10 }}>
+        {classroom.name}
+      </Typography>
+      {classroom.description && (
+        <Typography
+          variant="body1"
+          color="text.secondary"
+          style={{ marginBottom: 20 }}
+        >
+          {classroom.description}
+        </Typography>
+      )}
+
+      <div
+        className="column"
+        style={{ width: "90%", maxWidth: 800, marginBottom: 40 }}
+      >
+        <Typography variant="h5" style={{ marginBottom: 15 }}>
+          My Assigned Group
+        </Typography>
+        {!myGroup ? (
+          <div>
+            <Typography variant="body1" color="error">
+              Oops! Your instructor has not assigned you to a group yet.
+            </Typography>
+          </div>
+        ) : (
+          <div
+            className="row list center-div"
+            style={{ justifyContent: "space-evenly" }}
+          >
+            {studentMemberships
+              .filter((m) => m.groupId === myGroup.groupId)
+              .map((m) => {
+                const p = educationalData.students.find(
+                  (s) => s._id === m.userId,
+                );
+                return (
+                  <div key={m.userId} className="column center-div">
+                    <AvatarSprite
+                      player={p || player}
+                      bgColor={p ? "" : "rgb(218, 183, 250)"}
+                    />
+                    <Typography
+                      variant="body2"
+                      style={{ fontSize: 12, textAlign: "center" }}
+                    >
+                      {p?.name || `ME: ${player.name}`}
+                    </Typography>
+                  </div>
+                );
+              })}
+          </div>
+        )}
+      </div>
+
+      {gameRoom && !gameRoom.gameData.gameId && (
+        <div
+          className="column"
+          style={{ width: "90%", maxWidth: 800, marginBottom: 40 }}
+        >
+          <Typography variant="h5" style={{ marginBottom: 15 }}>
+            Select a Game
+          </Typography>
+          <div className="row list center-div">
+            {GAMES.map((game) => (
+              <Card
+                data-cy={`game-card-${game.id}`}
+                key={game.id}
+                style={{
+                  width: 300,
+                  marginLeft: 5,
+                  marginRight: 5,
+                  backgroundColor:
+                    selectedGame?.id === game.id ? "#D2EBFE" : "",
+                }}
+              >
+                <CardActionArea onClick={() => handleSelectGame(game)}>
+                  <CardContent>
+                    <Typography
+                      gutterBottom
+                      variant="h6"
+                      component="div"
+                      style={{
+                        textAlign: "center",
+                      }}
+                    >
+                      {game.name}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {game.problem}
+                    </Typography>
+                  </CardContent>
+                </CardActionArea>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="column" style={{ width: "90%", maxWidth: 800, gap: 15 }}>
+        <Typography variant="h5" style={{ marginBottom: 10 }}>
+          Game Room
+        </Typography>
+        {!gameRoom ? (
+          <div>
+            <Typography variant="body1" color="error">
+              Oops! Your instructor has not assigned you to a room yet.
+            </Typography>
+          </div>
+        ) : (
+          <StudentRoomCard
+            room={gameRoom}
+            player={player}
+            classId={classId}
+            gameId={selectedGame?.id}
+          />
+        )}
+      </div>
+    </div>
+  );
+}

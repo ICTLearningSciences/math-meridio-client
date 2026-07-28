@@ -1,0 +1,63 @@
+This software is Copyright ©️ 2020 The University of Southern California. All Rights Reserved. 
+Permission to use, copy, modify, and distribute this software and its documentation for educational, research and non-profit purposes, without fee, and without a written agreement is hereby granted, provided that the above copyright notice and subject to the full license file found in the root of this software deliverable. Permission to make commercial use of this software may be obtained by contacting:  USC Stevens Center for Innovation University of Southern California 1150 S. Olive Street, Suite 2300, Los Angeles, CA 90115, USA Email: accounting@stevens.usc.edu
+
+The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
+
+GRID SIZE 32x32
+CELL SIZE MERGED: 256x1568
+
+WALK FR: 100 
+Cell Size: 256x128
+
+JUMP FR: 100; 200; 100; 120; 100
+Cell Size: 160x128
+
+PICK UP FR: 150; 150; 100; 100; 150
+Cell Size: 160x128
+
+CARRY FR:100 
+Cell Size: 256x128
+(char moved  up 1px)
+
+SWORD FR: 100; 200; 80; 100
+Cell Size: 128x128
+
+BLOCK Cell Size: 32x128
+
+HURT Cell Size: 32x128
+
+DIE FR: 500
+Cell Size: 64x32
+
+PICKAXE/ AXE FR: 100; 100; 250; 60; 100
+Cell Size: 160x128
+
+WATER FR: 300; 600
+Cell Size: 64x128
+(char moved up 5 px)
+
+HOE FR: 200; 150; 200; 200; 200
+Cell Size: 160x128
+(down: char moved up 8 px; left/right char moved up 1 px)
+
+FISHING L/R FR: 100; 100; 250; 60; 100
+FISHING U/D FR: 100; 250; 60; 100; 100
+Cell Size: 160x128
+(char moved up 4 px)
+
+LAYERS
+1. Characters
+2. Eyes ->Blush/Lipstick
+3. Clothes: Shirt -> Pants -> Shoes
+4. Hair
+5. Accessories Beard -> Glasses -> Hat
+
+
+
+
+
+
+
+
+
+

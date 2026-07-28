@@ -1,0 +1,114 @@
+/*
+This software is Copyright ©️ 2020 The University of Southern California. All Rights Reserved. 
+Permission to use, copy, modify, and distribute this software and its documentation for educational, research and non-profit purposes, without fee, and without a written agreement is hereby granted, provided that the above copyright notice and subject to the full license file found in the root of this software deliverable. Permission to make commercial use of this software may be obtained by contacting:  USC Stevens Center for Innovation University of Southern California 1150 S. Olive Street, Suite 2300, Los Angeles, CA 90115, USA Email: accounting@stevens.usc.edu
+
+The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
+*/
+
+import type { StaticGame } from ".";
+import type { GamePhaseReflections } from "../../../types";
+import type { Room } from "../game/types";
+import type { Player } from "../player/types";
+
+export type ClassMembershipStatus = "Member" | "Removed" | "Blocked" | "None";
+export type NotificationType =
+  "" | "JOIN" | "LEAVE" | "REPORT" | "REQUEST_HELP";
+
+export interface InviteCode {
+  code: string;
+  validUntil?: Date;
+  maxUses?: number;
+  uses: number;
+}
+
+export interface Classroom {
+  _id: string;
+  name: string;
+  description?: string;
+  teacherId: string;
+  inviteCodes: InviteCode[];
+  createdAt: Date;
+  startedAt?: Date;
+  archivedAt?: Date;
+}
+
+export const classroomDataQuery = `
+    _id
+    name
+    description
+    teacherId
+    sharedWithInstructorIds
+    inviteCodes {
+        code
+        validUntil
+        maxUses
+        uses
+    }
+    createdAt
+    startedAt
+    archivedAt
+  `;
+
+export interface ClassMembership {
+  classId: string;
+  userId: string;
+  groupId: number;
+  status: ClassMembershipStatus;
+}
+
+export const classMembershipDataQuery = `
+  classId
+  groupId
+  userId
+  status
+`;
+
+export const phaseReflectionsDataQuery = `
+  roomId
+  stepId
+  phaseId
+  question
+  roundNumber
+  reflections
+`;
+
+export const notificationDataQuery = `
+  classId
+  roomId
+  userId
+  event
+  eventAt
+  dismissedAt
+  eventType
+`;
+
+export interface JoinClassroomResponse {
+  classMembership: ClassMembership;
+  classroom: Classroom;
+}
+
+export interface FetchEducationalDataHydrationResponse {
+  classes: Classroom[];
+  rooms: Room[];
+  students: Player[];
+  classMemberships: ClassMembership[];
+  phaseReflections: GamePhaseReflections[];
+  gameList: StaticGame[];
+  notifications: NotificationEvent[];
+}
+
+export interface RoomHeartBeat {
+  roomId: string;
+  userId: string;
+  lastHeartBeatAt: Date;
+}
+
+export interface NotificationEvent {
+  classId: string;
+  roomId: string;
+  userId: string;
+  event: string;
+  eventAt: Date;
+  dismissedAt: Date;
+  eventType: NotificationType;
+}

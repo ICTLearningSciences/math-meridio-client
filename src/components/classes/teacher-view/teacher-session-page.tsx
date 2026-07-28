@@ -1,0 +1,167 @@
+/*
+This software is Copyright ©️ 2020 The University of Southern California. All Rights Reserved. 
+Permission to use, copy, modify, and distribute this software and its documentation for educational, research and non-profit purposes, without fee, and without a written agreement is hereby granted, provided that the above copyright notice and subject to the full license file found in the root of this software deliverable. Permission to make commercial use of this software may be obtained by contacting:  USC Stevens Center for Innovation University of Southern California 1150 S. Olive Street, Suite 2300, Los Angeles, CA 90115, USA Email: accounting@stevens.usc.edu
+
+The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
+*/
+import React from "react";
+import { useSearchParams } from "react-router-dom";
+import { makeStyles } from "tss-react/mui";
+import { ChevronRight, Search } from "@mui/icons-material";
+import { Button, Grid, TextField, Typography } from "@mui/material";
+
+import { useWithEducationalData } from "../../../store/slices/educational-data/use-with-educational-data";
+import PhaseProgressBar from "../../phase-progress-bar";
+import RoomCard from "./teacher-room-card";
+import { NeedsHelp, SkillsPracticed, TroubleSpots } from "./skill-card";
+import type { Classroom } from "../../../store/slices/educational-data/types";
+import { GamesDropdown } from "../../button";
+import { useWithWindow } from "../../../hooks/use-with-window";
+
+const styles = makeStyles()(() => ({
+  card: {
+    borderRadius: 10,
+  },
+  header: {
+    fontWeight: "bold",
+    marginTop: 10,
+  },
+  headerText: {
+    color: "black",
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+}));
+
+export default function ActiveSessionView(props: {
+  classroom: Classroom;
+}): React.ReactNode {
+  const { classroom } = props;
+  const { classes } = styles();
+  const { educationalData } = useWithEducationalData();
+  const { windowHeight } = useWithWindow();
+  const [studentSearch, setStudentSearch] = React.useState<string>();
+  const [game, setGame] = React.useState<string>();
+  const searchParams = useSearchParams();
+
+  const gameRooms = educationalData.rooms.filter(
+    (r) => r.classId === classroom._id && (!game || r.gameData.gameId === game),
+  );
+  const students = educationalData.students.filter((s) =>
+    gameRooms.find((r) => r.gameData.players.find((p) => p._id === s._id)),
+  );
+
+  return (
+    <div className="dashboard" style={{ minHeight: windowHeight - 250 }}>
+      <div className="row" style={{ justifyContent: "space-between" }}>
+        <Typography variant="h5" style={{ fontWeight: "bold" }}>
+          {classroom.archivedAt ? "ARCHIVED" : "ACTIVE"} SESSION
+        </Typography>
+        <GamesDropdown
+          game={game}
+          setGame={(id: string) => setGame(id)}
+          buttonStyle={{
+            color: "white",
+            borderColor: "white",
+            marginLeft: "10px",
+          }}
+        />
+      </div>
+
+      <div className="column spacing" style={{ marginTop: 10 }}>
+        <PhaseProgressBar gameRooms={gameRooms} size="large" />
+      </div>
+
+      <div className="column spacing" style={{ marginTop: 10 }}>
+        <NeedsHelp students={students} gameRooms={gameRooms} />
+      </div>
+
+      <div className="column spacing" style={{ marginTop: 10 }}>
+        <Typography className={classes.header}>Open Rooms</Typography>
+        <div
+          className="row center-div"
+          style={{
+            backgroundColor: "rgb(217, 217, 217)",
+            borderRadius: 60,
+            height: 40,
+            paddingLeft: 15,
+          }}
+        >
+          <Search style={{ color: "rgb(137, 137, 137)" }} />
+          <TextField
+            variant="standard"
+            label="Student Search"
+            fullWidth
+            value={studentSearch}
+            onChange={(e) => setStudentSearch(e.target.value)}
+            style={{ marginLeft: 10, marginBottom: 15 }}
+          />
+        </div>
+        {gameRooms.length === 0 && (
+          <Typography variant="body2" align="center">
+            There are no open rooms yet
+          </Typography>
+        )}
+        <Grid container spacing={2}>
+          {gameRooms
+            .filter((room) => {
+              if (!studentSearch) return true;
+              return room.gameData.players.find((p) =>
+                p.name.toLowerCase().includes(studentSearch.toLowerCase()),
+              );
+            })
+            .map((room, idx) => {
+              return (
+                <Grid size={{ xs: 6, md: 4, lg: 3 }} key={`room-${idx}`}>
+                  <RoomCard
+                    room={room}
+                    classroom={classroom}
+                    classes={classes}
+                  />
+                </Grid>
+              );
+            })}
+        </Grid>
+      </div>
+
+      <div className="column spacing" style={{ marginTop: 10 }}>
+        <Grid container spacing={2}>
+          <Grid size={6}>
+            <div className="row" style={{ justifyContent: "space-between" }}>
+              <Typography className={classes.header}>
+                Skills Practiced
+              </Typography>
+              <Button
+                color="inherit"
+                style={{ alignSelf: "end" }}
+                endIcon={<ChevronRight />}
+                onClick={() => searchParams[1]({ tab: "1", report: "0" })}
+              >
+                View Report
+              </Button>
+            </div>
+            <SkillsPracticed
+              students={students}
+              gameRooms={gameRooms}
+              noHeader
+            />
+          </Grid>
+          <Grid size={6}>
+            <div className="row" style={{ justifyContent: "space-between" }}>
+              <Typography className={classes.header}>Trouble Spots</Typography>
+              <Button
+                color="inherit"
+                style={{ alignSelf: "end" }}
+                endIcon={<ChevronRight />}
+                onClick={() => searchParams[1]({ tab: "1", report: "1" })}
+              >
+                Monitor Students
+              </Button>
+            </div>
+            <TroubleSpots students={students} gameRooms={gameRooms} noHeader />
+          </Grid>
+        </Grid>
+      </div>
+    </div>
+  );
+}

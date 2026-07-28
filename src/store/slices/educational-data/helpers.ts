@@ -1,0 +1,88 @@
+/*
+This software is Copyright ©️ 2020 The University of Southern California. All Rights Reserved. 
+Permission to use, copy, modify, and distribute this software and its documentation for educational, research and non-profit purposes, without fee, and without a written agreement is hereby granted, provided that the above copyright notice and subject to the full license file found in the root of this software deliverable. Permission to make commercial use of this software may be obtained by contacting:  USC Stevens Center for Innovation University of Southern California 1150 S. Olive Street, Suite 2300, Los Angeles, CA 90115, USA Email: accounting@stevens.usc.edu
+
+The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
+*/
+
+import type { EducationalDataStateData } from ".";
+import type { LearningObjective, Room } from "../game/types";
+import type { ClassMembership, Classroom } from "./types";
+
+export function addOrUpdateClassMembership(
+  state: EducationalDataStateData,
+  newClassMembership: ClassMembership,
+) {
+  const existingClassMembershipIdx = state.classMemberships.findIndex(
+    (cm) =>
+      cm.classId === newClassMembership.classId &&
+      cm.userId === newClassMembership.userId,
+  );
+  if (existingClassMembershipIdx !== -1) {
+    state.classMemberships[existingClassMembershipIdx] = newClassMembership;
+  } else {
+    state.classMemberships.push(newClassMembership);
+  }
+}
+
+export function addOrUpdateClass(
+  state: EducationalDataStateData,
+  updatedClass: Classroom,
+) {
+  const existingClassIdx = state.classes.findIndex(
+    (c) => c._id === updatedClass._id,
+  );
+  if (existingClassIdx !== -1) {
+    state.classes[existingClassIdx] = updatedClass;
+  } else {
+    state.classes.push(updatedClass);
+  }
+}
+
+export function addOrUpdateGameRoom(
+  state: EducationalDataStateData,
+  updatedRoom: Room,
+) {
+  console.log("state.rooms", state);
+  const existingRoomIdx = state.rooms.findIndex(
+    (r) => r._id === updatedRoom._id,
+  );
+  if (existingRoomIdx !== -1) {
+    if (updatedRoom.gameData.mathStandardsCompleted) {
+      state.rooms[existingRoomIdx] = updatedRoom;
+    } else {
+      // if we did not receive new math standards completed, persist the old ones
+      updatedRoom.gameData.mathStandardsCompleted =
+        state.rooms[existingRoomIdx].gameData.mathStandardsCompleted;
+      state.rooms[existingRoomIdx] = updatedRoom;
+    }
+  } else {
+    state.rooms.push(updatedRoom);
+  }
+}
+
+export function addOrUpdateLearningObjective(
+  state: EducationalDataStateData,
+  updatedLearningObjective: LearningObjective,
+) {
+  const existingLearningObjectiveIdx = state.learningObjectives.findIndex(
+    (lo) => lo._id === updatedLearningObjective._id,
+  );
+  if (existingLearningObjectiveIdx !== -1) {
+    state.learningObjectives[existingLearningObjectiveIdx] =
+      updatedLearningObjective;
+  } else {
+    state.learningObjectives.push(updatedLearningObjective);
+  }
+}
+
+export function removeGameRoom(
+  state: EducationalDataStateData,
+  removedRoom: Room,
+) {
+  state.rooms = state.rooms.filter((r) => r._id !== removedRoom._id);
+}
+
+export function getCurPhaseTitleFromRoom(room: Room): string {
+  return room.gameData.phaseProgression.curPhaseTitle;
+}

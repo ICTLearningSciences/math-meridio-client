@@ -1,0 +1,360 @@
+/*
+This software is Copyright ©️ 2020 The University of Southern California. All Rights Reserved. 
+Permission to use, copy, modify, and distribute this software and its documentation for educational, research and non-profit purposes, without fee, and without a written agreement is hereby granted, provided that the above copyright notice and subject to the full license file found in the root of this software deliverable. Permission to make commercial use of this software may be obtained by contacting:  USC Stevens Center for Innovation University of Southern California 1150 S. Olive Street, Suite 2300, Los Angeles, CA 90115, USA Email: accounting@stevens.usc.edu
+
+The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
+*/
+
+import React from "react";
+import * as motion from "motion/react-client";
+import type { CSS } from "styled-components/dist/types";
+import { makeStyles } from "tss-react/mui";
+import {
+  Button,
+  type ButtonBaseProps,
+  CircularProgress,
+  Menu,
+  MenuItem,
+  styled,
+  Typography,
+} from "@mui/material";
+import {
+  Archive,
+  ArrowDropDown,
+  Visibility,
+  VisibilityOff,
+} from "@mui/icons-material";
+import { GAMES } from "../game/types";
+import type { Classroom } from "../store/slices/educational-data/types";
+import { useWithEducationalData } from "../store/slices/educational-data/use-with-educational-data";
+import { useAppSelector } from "../store/hooks";
+
+const buttonStyles = makeStyles()(() => ({
+  button: {
+    display: "flex",
+    textTransform: "none",
+    fontSize: 12,
+    borderRadius: 32,
+    fontWeight: "bold",
+  },
+  textButton: {
+    fontSize: 12,
+    color: "purple",
+    textDecoration: "underline",
+    textDecorationColor: "purple",
+    textTransform: "none",
+    minHeight: 0,
+    minWidth: 0,
+    padding: 0,
+  },
+}));
+
+export const VisuallyHiddenInput = styled("input")({
+  clip: "rect(0 0 0 0)",
+  clipPath: "inset(50%)",
+  height: 1,
+  overflow: "hidden",
+  position: "absolute",
+  bottom: 0,
+  left: 0,
+  whiteSpace: "nowrap",
+  width: 1,
+});
+
+interface MyButtonProps extends ButtonBaseProps {
+  children: React.ReactNode;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onClick?: (e: any) => void;
+  icon?: React.ReactNode;
+  endIcon?: React.ReactNode;
+  disabled?: boolean;
+  loading?: boolean;
+  color?:
+    | "inherit"
+    | "primary"
+    | "secondary"
+    | "success"
+    | "error"
+    | "info"
+    | "warning";
+  tooltip?: string;
+  style?: React.CSSProperties;
+}
+
+export function ContainedButton(props: MyButtonProps): React.ReactNode {
+  const { classes } = buttonStyles();
+  return (
+    <motion.div
+      whileHover={
+        props.disabled ? {} : { scale: 1.05, filter: "brightness(0.8)" }
+      }
+    >
+      <Button
+        size="medium"
+        variant="contained"
+        disableElevation
+        className={classes.button}
+        disabled={props.disabled || props.loading}
+        onClick={props.onClick}
+        color={props.color}
+        style={{ ...props.style }}
+        startIcon={
+          props.loading ? (
+            <CircularProgress color="inherit" size={16} />
+          ) : (
+            props.icon
+          )
+        }
+        endIcon={!props.loading && props.endIcon}
+      >
+        {props.children}
+      </Button>
+    </motion.div>
+  );
+}
+
+export function OutlinedButton(props: MyButtonProps): React.ReactNode {
+  const { classes } = buttonStyles();
+  return (
+    <motion.div
+      whileHover={
+        props.disabled ? {} : { scale: 1.05, filter: "brightness(0.8)" }
+      }
+    >
+      <Button
+        size="medium"
+        variant="outlined"
+        className={classes.button}
+        startIcon={
+          props.loading ? (
+            <CircularProgress color="inherit" size={16} />
+          ) : (
+            props.icon
+          )
+        }
+        endIcon={props.loading ? undefined : props.endIcon}
+        disabled={props.disabled || props.loading}
+        onClick={props.onClick}
+        style={{
+          color: props.color,
+          borderColor: props.color,
+          ...props.style,
+        }}
+      >
+        {props.children}
+      </Button>
+    </motion.div>
+  );
+}
+
+export function TextButton(props: MyButtonProps): React.ReactNode {
+  const { classes } = buttonStyles();
+  return (
+    <Button
+      size="medium"
+      variant="text"
+      endIcon={props.icon}
+      className={classes.textButton}
+      disabled={props.disabled}
+      onClick={props.onClick}
+      style={{
+        color: props.color || "purple",
+        textDecorationColor: props.color || "purple",
+        ...props.style,
+      }}
+    >
+      {props.children}
+    </Button>
+  );
+}
+
+export function DropdownButton(props: {
+  label: string;
+  value: string | undefined;
+  items: string[];
+  children?: React.ReactNode;
+  buttonStyle?: CSS.Properties;
+  onSelect: (v: string) => void;
+  renderItem?: (v: string) => React.ReactNode | string;
+}): React.ReactNode {
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+
+  const handleButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleItemClick = (v: string) => {
+    props.onSelect(v);
+    setAnchorEl(null);
+  };
+
+  return (
+    <div>
+      <Button
+        variant="outlined"
+        style={{
+          border: "1px black solid",
+          color: "black",
+          fontWeight: "bold",
+          borderRadius: 30,
+          ...props.buttonStyle,
+        }}
+        endIcon={<ArrowDropDown />}
+        onClick={handleButtonClick}
+      >
+        {props.label}
+      </Button>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={() => setAnchorEl(null)}
+        style={{ width: "100%" }}
+      >
+        {props.items.map((item) => {
+          return (
+            <MenuItem
+              key={item}
+              selected={props.value === item}
+              onClick={() => handleItemClick(item)}
+            >
+              {props.renderItem ? props.renderItem(item) : item}
+            </MenuItem>
+          );
+        })}
+        {props.children}
+      </Menu>
+    </div>
+  );
+}
+
+export function ClassDropdown(props: {
+  myClass?: Classroom;
+  classId?: string;
+  setClassId: (id: string) => void;
+}): React.ReactNode {
+  const { myClass, classId, setClassId } = props;
+  const { player } = useAppSelector((state) => state.playerData);
+  const { educationalData, createClassroom } = useWithEducationalData();
+  const [creating, setCreating] = React.useState(false);
+  const [viewArchived, setViewArchived] = React.useState(false);
+
+  const myClasses = educationalData.classes.filter(
+    (c) => c.teacherId === player?._id,
+  );
+
+  const handleCreateClass = async () => {
+    setCreating(true);
+    try {
+      const newClass = await createClassroom();
+      setClassId(newClass._id);
+    } catch (err) {
+      console.error("Failed to create classroom", err);
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  return (
+    <DropdownButton
+      label={myClass?.name || "My Class"}
+      value={classId}
+      items={myClasses
+        .filter((c) => viewArchived || !c.archivedAt)
+        .sort((a, b) => {
+          if (!b.archivedAt && a.archivedAt) return 1;
+          if (!a.archivedAt && b.archivedAt) return -1;
+          return (
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+        })
+        .map((c) => c._id)}
+      onSelect={(id: string) => setClassId(id)}
+      renderItem={(id) => {
+        const classroom = myClasses.find((c) => c._id === id);
+        if (!classroom) return <></>;
+        const studentCount = educationalData.classMemberships.filter(
+          (cm) => cm.classId === classroom?._id && cm.status === "Member",
+        ).length;
+        return (
+          <div
+            className="row"
+            style={{
+              width: "100%",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <div>
+              <div className="row center-div spacing">
+                {classroom.archivedAt && <Archive fontSize="small" />}
+                <Typography variant="h6">{classroom.name}</Typography>
+              </div>
+              {classroom.description && (
+                <Typography variant="body2" color="text.secondary">
+                  {classroom.description}
+                </Typography>
+              )}
+            </div>
+            <div style={{ textAlign: "right" }}>
+              <Typography variant="body2" color="text.secondary">
+                {studentCount} {studentCount === 1 ? "student" : "students"}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {classroom.archivedAt
+                  ? `Archived: ${new Date(
+                      classroom.archivedAt,
+                    ).toLocaleDateString()}`
+                  : `Created: ${new Date(
+                      classroom.createdAt,
+                    ).toLocaleDateString()}`}
+              </Typography>
+            </div>
+          </div>
+        );
+      }}
+    >
+      <div className="row center-div spacing">
+        <Button
+          variant="contained"
+          color="primary"
+          disabled={creating}
+          onClick={handleCreateClass}
+        >
+          {creating ? "Creating..." : "Create New Class"}
+        </Button>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => setViewArchived(!viewArchived)}
+          startIcon={viewArchived ? <VisibilityOff /> : <Visibility />}
+        >
+          {viewArchived ? "Hide" : "View"} Archived
+        </Button>
+      </div>
+    </DropdownButton>
+  );
+}
+
+export function GamesDropdown(props: {
+  game?: string;
+  setGame: (id: string) => void;
+  buttonStyle?: CSS.Properties;
+}): React.ReactNode {
+  const { game, setGame } = props;
+  return (
+    <DropdownButton
+      label={GAMES.find((g) => g.id === game)?.name || "All Games"}
+      value={game}
+      items={["", ...GAMES.map((g) => g.id)]}
+      onSelect={(id: string) => setGame(id)}
+      renderItem={(id) => {
+        return (
+          <Typography>
+            {GAMES.find((g) => g.id === id)?.name || "Show All"}
+          </Typography>
+        );
+      }}
+      buttonStyle={props.buttonStyle}
+    />
+  );
+}

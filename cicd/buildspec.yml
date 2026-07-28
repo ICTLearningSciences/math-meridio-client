@@ -1,0 +1,24 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 18
+    commands:
+      - NODE_ENV=dev npm ci 
+  pre_build:
+    on-failure: ABORT # or CONTINUE
+    commands:
+      - npm run test:format
+      - npm run test:license
+      - npm run test:lint
+      - npm run test:types
+
+  build:
+    commands:
+      - npm run build
+
+artifacts:
+  files:
+    - '**/*'
+  enable-symlinks: yes

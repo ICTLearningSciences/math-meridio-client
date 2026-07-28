@@ -1,0 +1,261 @@
+/*
+This software is Copyright ©️ 2020 The University of Southern California. All Rights Reserved. 
+Permission to use, copy, modify, and distribute this software and its documentation for educational, research and non-profit purposes, without fee, and without a written agreement is hereby granted, provided that the above copyright notice and subject to the full license file found in the root of this software deliverable. Permission to make commercial use of this software may be obtained by contacting:  USC Stevens Center for Innovation University of Southern California 1150 S. Olive Street, Suite 2300, Los Angeles, CA 90115, USA Email: accounting@stevens.usc.edu
+
+The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
+*/
+
+import React from "react";
+import * as motion from "motion/react-client";
+import { Tooltip, Typography } from "@mui/material";
+import { Pause } from "@mui/icons-material";
+import type { Player } from "../store/slices/player/types";
+import type { Room } from "../store/slices/game/types";
+import { getLastActivityString } from "../helpers";
+import { useWithEducationalData } from "../store/slices/educational-data/use-with-educational-data";
+import { TwoOptionDialog } from "./dialog";
+
+export function PlayerActivitySprite(props: {
+  player: Player;
+  room: Room;
+}): React.ReactNode {
+  const { player, room } = props;
+  const { togglePlayerPausedInRoomStatus } = useWithEducationalData(room._id);
+  const [pausePlayer, setPausePlayer] = React.useState<Player>();
+  const [updating, setUpdating] = React.useState<boolean>(false);
+
+  const isActive =
+    room.gameData.playersStatusRecord[player._id]?.computedState === "ACTIVE";
+  const isPaused = room.gameData.playersStatusRecord[player._id]?.pausedByAdmin;
+
+  const onTogglePause = async () => {
+    if (!pausePlayer) return;
+    setUpdating(true);
+    try {
+      await togglePlayerPausedInRoomStatus(room._id, pausePlayer._id);
+      setUpdating(false);
+      setPausePlayer(undefined);
+    } catch {
+      setUpdating(false);
+      setPausePlayer(undefined);
+    }
+  };
+
+  const Sprite = () => {
+    if (isPaused) {
+      return (
+        <Tooltip key={player._id} title="Unpause player">
+          <div className="column center-div">
+            <motion.div
+              className="column center-div"
+              whileHover={{ scale: 1.05, filter: "brightness(0.8)" }}
+              onClick={() => setPausePlayer(player)}
+            >
+              <AvatarSprite
+                player={player}
+                bgColor="rgb(218, 183, 250)"
+                isPaused={isPaused}
+              />
+            </motion.div>
+            <Typography
+              variant="body2"
+
+              style={{
+                marginTop: 5,
+                fontSize: 12,
+                fontWeight: "bold",
+                textAlign: "center",
+              }}
+            >
+              {player.name}
+            </Typography>
+            <Typography
+              style={{
+                fontSize: 10,
+                fontWeight: "lighter",
+              }}
+            >
+              PAUSED
+            </Typography>
+            <Dialog />
+          </div>
+        </Tooltip>
+      );
+    }
+
+    return (
+      <PlayerSprite key={player._id} player={player}>
+        <Typography
+          style={{
+            fontSize: 10,
+            fontWeight: "lighter",
+          }}
+        >
+          {isActive
+            ? room.gameData.playersStatusRecord[player._id]?.computedState
+            : getLastActivityString(player.lastLoginAt)}
+        </Typography>
+        <Tooltip title="Pause player">
+          <motion.div
+            whileHover={{ scale: 1.05, filter: "brightness(0.8)" }}
+            onClick={() => setPausePlayer(player)}
+            style={{
+              position: "absolute",
+              marginRight: -30,
+              width: 12,
+              height: 12,
+              borderRadius: 12,
+              backgroundColor: isActive ? "rgb(91, 197, 57)" : "white",
+              border: `1px solid ${isActive ? "white" : "black"}`,
+            }}
+          />
+        </Tooltip>
+        <Dialog />
+      </PlayerSprite>
+    );
+  };
+
+  const Dialog = () => {
+    if (!pausePlayer) return <div />;
+    return (
+      <TwoOptionDialog
+        title={`Mark [${pausePlayer.name}] as ${
+          isPaused ? "Active" : "Inactive"
+        }?`}
+        open={Boolean(pausePlayer)}
+        actionInProgress={updating}
+        option1={{
+          display: "Confirm",
+          onClick: () => onTogglePause(),
+        }}
+        option2={{
+          display: "Cancel",
+          onClick: () => setPausePlayer(undefined),
+        }}
+      />
+    );
+  };
+
+  return (
+    <div>
+      <Sprite />
+      <Dialog />
+    </div>
+  );
+}
+
+export function PlayerSprite(props: {
+  player: Player | undefined;
+  color?: string;
+  children?: React.ReactNode;
+}): React.ReactNode {
+  const { player } = props;
+  if (!player) return <div />;
+  return (
+    <div
+      key={player._id}
+      className="column center-div"
+      style={{ position: "relative" }}
+    >
+      <AvatarSprite
+        player={player}
+        bgColor={props.color || "rgb(218, 183, 250)"}
+      />
+      <Typography
+        variant="body2"
+        style={{
+          marginTop: 5,
+          fontSize: 12,
+          fontWeight: "bold",
+          textAlign: "center",
+        }}
+      >
+        {player.name}
+      </Typography>
+      {props.children}
+    </div>
+  );
+}
+
+export default function AvatarSprite(props: {
+  player: Player | undefined;
+  isPaused?: boolean;
+  bgColor?: string;
+  border?: boolean;
+}): React.ReactNode {
+  const { player } = props;
+  const avatar = player?.avatar || [];
+
+  if (!player) return <div />;
+  return (
+    <div
+      style={{
+        position: "relative",
+        height: 40,
+        width: 40,
+        borderRadius: 40,
+        padding: 3,
+        border: props.border ? "1px solid rgb(114, 20, 201)" : "none",
+        backgroundColor: props.bgColor || "white",
+      }}
+    >
+      {props.isPaused ? (
+        <div
+          className="column center-div"
+          style={{
+            position: "absolute",
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            borderRadius: 40,
+            backgroundColor: "black",
+            opacity: 0.3,
+          }}
+        >
+          <Pause style={{ color: "white" }} />
+        </div>
+      ) : !avatar.length ? (
+        <div
+          className="column center-div"
+          style={{
+            position: "absolute",
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+          }}
+        >
+          <Typography>
+            {player.name
+              .split(" ")
+              .map((c) => c[0])
+              .join("")}
+          </Typography>
+        </div>
+      ) : (
+        avatar
+          .filter((a) => a.id && a.type)
+          .map((a) => (
+            <div
+              key={a.id}
+              style={{
+                backgroundImage: `url(/assets/avatar/sprite/${
+                  a.type?.split("_")[1]
+                }/${a.id}.png)`,
+                position: "absolute",
+                transform: "scale(1.5)",
+                left: 7,
+                top: 1,
+                width: 32,
+                height: 40,
+                backgroundPosition: `top left -${
+                  a.variant ? a.variant * 32 * 8 : 0
+                }px`,
+              }}
+            />
+          ))
+      )}
+    </div>
+  );
+}

@@ -1,0 +1,18 @@
+name: test and publish
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+      - name: Install
+        run:  npm ci
+      - name: Run format test
+        run: npm run test:format
+      - name: Run license test
+        run: npm run test:license
+      - name: Run lint test
+        run: npm run test:lint
+      - name: Run types test
+        run: npm run test:types
