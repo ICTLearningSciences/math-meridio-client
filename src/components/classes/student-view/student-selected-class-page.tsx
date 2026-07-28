@@ -182,7 +182,6 @@ export default function StudentSelectedClassPage(): React.ReactNode {
         {!gameRoom ? (
           <div>
             <Typography variant="body1" color="error">
-              {JSON.stringify(educationalData.rooms)}
               Oops! Your instructor has not assigned you to a room yet.
             </Typography>
           </div>

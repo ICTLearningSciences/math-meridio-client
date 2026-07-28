@@ -40,7 +40,7 @@ describe("Student classes screen", () => {
     cy.contains("My Classroom")
   })
 
-  it.only("student can create a game room in a classroom", () => {
+  it("student can create a game room in a classroom", () => {
     const classId = "test-class-id"
     const defaultRoom = defaultNbaStarterRoomData("test-class-id", user);
     cyMockDefault(cy,
@@ -75,6 +75,10 @@ describe("Student classes screen", () => {
     cy.get("[data-cy='join-class-join-button']").click();
     cy.get("[data-cy='student-classroom-card-test-class-id']").click();
     cy.contains("My Classroom")
+    cy.contains("NBA Starter Room")
+    cy.contains("1 player")
+    cy.get("[data-cy='join-room-btn']").click();
+    cy.contains("We're currently losing, and we can't change our players—but we can change our strategy. What combination of shot types will help us close the gap and come out on top?")
   })
 
 })

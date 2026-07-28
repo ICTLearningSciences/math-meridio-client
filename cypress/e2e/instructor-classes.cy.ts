@@ -15,8 +15,8 @@ describe("Instructor classes screen", () => {
         userEducationalRole: 'INSTRUCTOR'
       });
     cy.visit("/");
-    cy.contains("My Classes")
-    cy.contains("You haven't created any classes yet.")
+    cy.contains("Welcome, Testing 123")
+    cy.contains("Click the button below to create your first class.")
   })
 
 })

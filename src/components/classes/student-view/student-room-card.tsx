@@ -69,6 +69,7 @@ export function StudentRoomCard(props: {
           <Button
             variant="contained"
             color="primary"
+            data-cy="join-room-btn"
             onClick={() => handleJoinRoom(room._id)}
             disabled={joining || !hasGame}
           >
