@@ -166,13 +166,13 @@ export default function GamePagePhaseDisplay(props: {
   updateMyRoomGameStateData: (gameStateData: GameStateData) => Promise<Room>;
 }): React.ReactNode {
   const { room, game, player, updateMyRoomGameStateData } = props;
-  const { windowHeight } = useWithWindow();
+  const { isMobile, windowHeight } = useWithWindow();
   const [expanded, setExpanded] = React.useState<boolean>(false);
   const phasesStarted =
     props.selectedPhase !== undefined
       ? props.selectedPhase + 1
       : room?.gameData?.phaseProgression?.phasesStarted?.length;
-  const cardHeight = windowHeight - 210;
+  const cardHeight = isMobile ? windowHeight / 2 - 150 : windowHeight - 210;
   const minHeight = Math.max(100, cardHeight * (expanded ? 0.5 : 0.1)) - 25;
   const maxHeight =
     Math.min(cardHeight - 100, cardHeight * (expanded ? 0.5 : 0.9)) - 25;
@@ -224,28 +224,30 @@ export default function GamePagePhaseDisplay(props: {
     return (
       <MyCarousel phase={phasesStarted}>
         <div className="column spacing">
-          <Space
-            title="Approach"
-            height={minHeight}
-            expanded={expanded}
-            onExpand={() => setExpanded(!expanded)}
-          >
-            <TransformWrapper
-              minScale={0.5}
-              maxScale={1}
-              panning={{ excluded: ["panningDisabled"] }}
+          {!isMobile && (
+            <Space
+              title="Approach"
+              height={minHeight}
+              expanded={expanded}
+              onExpand={() => setExpanded(!expanded)}
             >
-              {game.showSolution(
-                room.gameData,
-                player,
-                updateMyRoomGameStateData,
-                !expanded,
-              )}
-            </TransformWrapper>
-          </Space>
+              <TransformWrapper
+                minScale={0.5}
+                maxScale={1}
+                panning={{ excluded: ["panningDisabled"] }}
+              >
+                {game.showSolution(
+                  room.gameData,
+                  player,
+                  updateMyRoomGameStateData,
+                  !expanded,
+                )}
+              </TransformWrapper>
+            </Space>
+          )}
           <Space
             title="Simulation"
-            height={maxHeight}
+            height={isMobile ? cardHeight : maxHeight}
             header={<SimulationSelection room={room} game={game} />}
           >
             {game.showSimulation(game)}
@@ -258,8 +260,11 @@ export default function GamePagePhaseDisplay(props: {
   if (phasesStarted === 5) {
     return (
       <MyCarousel phase={phasesStarted}>
-        <Space title="Results">{game.showResult(room.gameData)}</Space>
+        <Space height={cardHeight} title="Results">
+          {game.showResult(room.gameData)}
+        </Space>
         <Space
+          height={cardHeight}
           title="Simulation"
           header={<SimulationSelection room={room} game={game} />}
         >
@@ -294,8 +299,10 @@ export default function GamePagePhaseDisplay(props: {
   // Big Problem. Everything else hidden in tabs (and not very interesting
   return (
     <MyCarousel phase={phasesStarted || 0}>
-      <Space title="Problem">{game.showProblem()}</Space>
-      <Space title="Approach">
+      <Space height={cardHeight} title="Problem">
+        {game.showProblem()}
+      </Space>
+      <Space height={cardHeight} title="Approach">
         <TransformWrapper
           minScale={0.5}
           maxScale={1}
@@ -305,12 +312,15 @@ export default function GamePagePhaseDisplay(props: {
         </TransformWrapper>
       </Space>
       <Space
+        height={cardHeight}
         title="Simulation"
         header={<SimulationSelection room={room} game={game} />}
       >
         {game.showSimulation(game)}
       </Space>
-      <Space title="Results">{game.showResult(room.gameData)}</Space>
+      <Space height={cardHeight} title="Results">
+        {game.showResult(room.gameData)}
+      </Space>
     </MyCarousel>
   );
 }

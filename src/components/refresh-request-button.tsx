@@ -5,15 +5,18 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import React, { useEffect, useRef } from "react";
-import { Button, CircularProgress } from "@mui/material";
+import { Button, CircularProgress, IconButton } from "@mui/material";
 import { useAppSelector } from "../store/hooks";
 import { useWithEducationalData } from "../store/slices/educational-data/use-with-educational-data";
 import { useLocation } from "react-router-dom";
+import { useWithWindow } from "../hooks/use-with-window";
+import { Refresh } from "@mui/icons-material";
 
 export function RefreshRequestButton(props: { autoRefreshTime?: number }) {
   const { player } = useAppSelector((state) => state.playerData);
   const { fetchInstructorDataHydration, fetchStudentDataHydration } =
     useWithEducationalData();
+  const { isMobile } = useWithWindow();
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const { pathname, search } = useLocation();
   const isCalledRef = useRef(false);
@@ -76,6 +79,10 @@ export function RefreshRequestButton(props: { autoRefreshTime?: number }) {
     <div style={{ display: "flex", alignItems: "center" }}>
       {isLoading ? (
         <CircularProgress size={24} style={{ color: "white" }} />
+      ) : isMobile ? (
+        <IconButton style={{ color: "white" }} onClick={refresh}>
+          <Refresh />
+        </IconButton>
       ) : (
         <Button
           variant="text"

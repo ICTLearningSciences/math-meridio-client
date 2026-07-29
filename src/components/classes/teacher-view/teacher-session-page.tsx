@@ -112,7 +112,7 @@ export default function ActiveSessionView(props: {
             })
             .map((room, idx) => {
               return (
-                <Grid size={{ xs: 6, md: 4, lg: 3 }} key={`room-${idx}`}>
+                <Grid size={{ xs: 12, md: 4, lg: 3 }} key={`room-${idx}`}>
                   <RoomCard
                     room={room}
                     classroom={classroom}
@@ -126,7 +126,7 @@ export default function ActiveSessionView(props: {
 
       <div className="column spacing" style={{ marginTop: 10 }}>
         <Grid container spacing={2}>
-          <Grid size={6}>
+          <Grid size={{ xs: 12, lg: 6 }}>
             <div className="row" style={{ justifyContent: "space-between" }}>
               <Typography className={classes.header}>
                 Skills Practiced
@@ -146,7 +146,7 @@ export default function ActiveSessionView(props: {
               noHeader
             />
           </Grid>
-          <Grid size={6}>
+          <Grid size={{ xs: 12, lg: 6 }}>
             <div className="row" style={{ justifyContent: "space-between" }}>
               <Typography className={classes.header}>Trouble Spots</Typography>
               <Button

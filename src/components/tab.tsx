@@ -9,6 +9,9 @@ import { AnimatePresence } from "motion/react";
 import * as motion from "motion/react-client";
 import type { CSS } from "styled-components/dist/types";
 import { ContainedButton, OutlinedButton } from "./button";
+import { useWithWindow } from "../hooks/use-with-window";
+import { ArrowDropDown } from "@mui/icons-material";
+import { Menu, MenuItem } from "@mui/material";
 
 export interface Tab {
   name: string;
@@ -77,9 +80,16 @@ export function Tabs(props: {
   selectedTab?: number;
   onSelectTab?: (t: number) => void;
 }): React.ReactNode {
+  const { isMobile } = useWithWindow();
   const { tabs } = props;
   const selectedTab = props.selectedTab || 0;
   const tab = tabs[selectedTab];
+
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const handleButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
   const handleSelectTab = (n: number) => {
     if (props.onSelectTab) {
       props.onSelectTab(n);
@@ -89,20 +99,47 @@ export function Tabs(props: {
   if (tabs.length === 0) return <div />;
   return (
     <div>
-      <div className="row spacing" style={props.tabsStyle}>
-        {tabs.map((tab, i) => (
-          <TabButton
-            key={i}
-            index={i}
-            value={selectedTab}
-            icon={tab.tabIcon}
-            disabled={tab.disabled}
-            onClick={handleSelectTab}
+      {isMobile ? (
+        <div style={props.tabsStyle}>
+          <ContainedButton
+            style={{
+              backgroundColor: "white",
+              color: "black",
+            }}
+            onClick={handleButtonClick}
+            endIcon={<ArrowDropDown />}
           >
             {tab.name}
-          </TabButton>
-        ))}
-      </div>
+          </ContainedButton>
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={() => setAnchorEl(null)}
+            style={{ width: "100%" }}
+          >
+            {tabs.map((tab, i) => (
+              <MenuItem key={i} onClick={() => handleSelectTab(i)}>
+                {tab.name}
+              </MenuItem>
+            ))}
+          </Menu>
+        </div>
+      ) : (
+        <div className="row spacing" style={props.tabsStyle}>
+          {tabs.map((tab, i) => (
+            <TabButton
+              key={i}
+              index={i}
+              value={selectedTab}
+              icon={tab.tabIcon}
+              disabled={tab.disabled}
+              onClick={handleSelectTab}
+            >
+              {tab.name}
+            </TabButton>
+          ))}
+        </div>
+      )}
       <AnimatePresence mode="wait">
         <motion.div
           key={tab ? tab.name : "empty"}

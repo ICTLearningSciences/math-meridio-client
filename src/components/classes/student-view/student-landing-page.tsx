@@ -6,7 +6,7 @@ The full terms of this copyright and license should always be found in the root 
 */
 
 import React from "react";
-import { Button, TextField, Typography } from "@mui/material";
+import { Button, CircularProgress, TextField, Typography } from "@mui/material";
 import { useWithEducationalData } from "../../../store/slices/educational-data/use-with-educational-data";
 import { extractErrorMessageFromError } from "../../../helpers";
 import { StudentClassroomCard } from "./student-classroom-card";
@@ -16,6 +16,7 @@ export default function StudentLandingPage(): React.ReactNode {
   const [inviteCode, setInviteCode] = React.useState("");
   const [joining, setJoining] = React.useState(false);
   const [error, setError] = React.useState<string>();
+  const [loaded, setLoaded] = React.useState<boolean>(false);
 
   const myClassMemberships = educationalData.classMemberships.filter(
     (cm) => cm.status === "Member",
@@ -23,6 +24,14 @@ export default function StudentLandingPage(): React.ReactNode {
   const myClasses = educationalData.classes
     .filter((c) => myClassMemberships.some((cm) => cm.classId === c._id))
     .filter((c) => !c.archivedAt);
+
+  React.useEffect(() => {
+    if (loaded) return;
+    if (educationalData.hydrationLoadStatus.status === 2) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setLoaded(true);
+    }
+  }, [loaded, educationalData.hydrationLoadStatus.status]);
 
   const handleJoinClass = async () => {
     if (!inviteCode.trim()) {
@@ -40,6 +49,14 @@ export default function StudentLandingPage(): React.ReactNode {
       setJoining(false);
     }
   };
+
+  if (!loaded) {
+    return (
+      <div className="root center-div">
+        <CircularProgress />
+      </div>
+    );
+  }
 
   return (
     <div

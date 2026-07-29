@@ -7,7 +7,7 @@ The full terms of this copyright and license should always be found in the root 
 
 import React from "react";
 import { useSearchParams } from "react-router-dom";
-import { Badge, Typography } from "@mui/material";
+import { Badge, IconButton, Typography } from "@mui/material";
 import { Archive, ContentCopy, Mail, Unarchive } from "@mui/icons-material";
 
 import { useAppSelector } from "../../../store/hooks";
@@ -20,6 +20,7 @@ import TeacherReports from "./teacher-reports-page";
 import TeacherManageClass from "./teacher-manage-class";
 import TeacherEvents from "./teacher-events-page";
 import type { Classroom } from "../../../store/slices/educational-data/types";
+import { useWithWindow } from "../../../hooks/use-with-window";
 
 export default function TeacherLandingPage(): React.ReactNode {
   const {
@@ -27,6 +28,7 @@ export default function TeacherLandingPage(): React.ReactNode {
     adjustClassroomArchiveStatus,
     copyAndArchiveClassroom,
   } = useWithEducationalData();
+  const { isMobile } = useWithWindow();
   const { player } = useAppSelector((state) => state.playerData);
   const [classId, setClassId] = React.useState<string>();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -105,24 +107,37 @@ export default function TeacherLandingPage(): React.ReactNode {
           setClassId={setClassId}
         />
         <div style={{ flexGrow: 1 }} />
-        {myClass && (
-          <OutlinedButton
-            color="secondary"
-            onClick={() => onArchive(myClass)}
-            icon={myClass.archivedAt ? <Unarchive /> : <Archive />}
-          >
-            {myClass.archivedAt ? "Unarchive Class" : "Archive Class"}
-          </OutlinedButton>
-        )}
-        {myClass && (
-          <OutlinedButton
-            color="secondary"
-            onClick={() => onCopyAndArchive(myClass)}
-            icon={<ContentCopy />}
-          >
-            Copy & Archive Class
-          </OutlinedButton>
-        )}
+        {myClass &&
+          (isMobile ? (
+            <IconButton color="secondary" onClick={() => onArchive(myClass)}>
+              {myClass.archivedAt ? <Unarchive /> : <Archive />}
+            </IconButton>
+          ) : (
+            <OutlinedButton
+              color="secondary"
+              onClick={() => onArchive(myClass)}
+              icon={myClass.archivedAt ? <Unarchive /> : <Archive />}
+            >
+              {myClass.archivedAt ? "Unarchive" : "Archive"}
+            </OutlinedButton>
+          ))}
+        {myClass &&
+          (isMobile ? (
+            <IconButton
+              color="secondary"
+              onClick={() => onCopyAndArchive(myClass)}
+            >
+              <ContentCopy />
+            </IconButton>
+          ) : (
+            <OutlinedButton
+              color="secondary"
+              onClick={() => onCopyAndArchive(myClass)}
+              icon={<ContentCopy />}
+            >
+              Copy & Archive
+            </OutlinedButton>
+          ))}
       </div>
       <Tabs
         selectedTab={tab}
@@ -130,7 +145,7 @@ export default function TeacherLandingPage(): React.ReactNode {
         tabsStyle={{
           position: "absolute",
           top: "20px",
-          left: "150px",
+          left: "125px",
         }}
         tabs={[
           {
