@@ -20,6 +20,7 @@ import { useAppSelector } from "../../store/hooks";
 import PhaseProgressBar from "../phase-progress-bar";
 
 import "../../layout.css";
+import { useWithWindow } from "../../hooks/use-with-window";
 
 // Type for the outlet context provided by GameLayout
 type EducationalDataContext = UseWithEducationalData;
@@ -36,6 +37,7 @@ function GamePage(): React.ReactNode {
     fetchRoom,
   } = outletContext;
   const navigate = useNavigate();
+  const { isMobile } = useWithWindow();
 
   const isTeacher = player?.educationalRole === "INSTRUCTOR";
   const myStatusInRoom =
@@ -131,7 +133,7 @@ function GamePage(): React.ReactNode {
         spacing={2}
         style={{ height: 0, width: "100%", padding: 20 }}
       >
-        <Grid size={6}>
+        <Grid size={{ xs: 12, lg: 6 }}>
           <GamePagePhaseDisplay
             room={room}
             game={curGame}
@@ -140,12 +142,12 @@ function GamePage(): React.ReactNode {
             updateMyRoomGameStateData={updateMyRoomGameStateData}
           />
         </Grid>
-        <Grid size={6}>
+        <Grid size={{ xs: 12, lg: 6 }}>
           <Stack
             key="chat"
             spacing={2}
             style={{
-              height: "100%",
+              height: isMobile ? "50%" : "100%",
               boxSizing: "border-box",
               padding: 10,
             }}

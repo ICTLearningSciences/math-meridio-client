@@ -239,7 +239,7 @@ export default function TeacherManageClass(props: {
               className="dashboard"
               style={{ minHeight: windowHeight - 300 }}
             >
-              <TeacherEditClass classroom={classroom} />
+              <RoomSetupView classroom={classroom} />
             </div>
           ),
         },
@@ -251,17 +251,6 @@ export default function TeacherManageClass(props: {
               style={{ minHeight: windowHeight - 300 }}
             >
               <TeacherSummary classroom={classroom} />
-            </div>
-          ),
-        },
-        {
-          name: "GROUP FORMATION",
-          element: (
-            <div
-              className="dashboard"
-              style={{ minHeight: windowHeight - 300 }}
-            >
-              <RoomSetupView classroom={classroom} />
             </div>
           ),
         },

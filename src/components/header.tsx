@@ -22,6 +22,7 @@ import { useWithEducationalData } from "../store/slices/educational-data/use-wit
 import { HelpRequestButton } from "./help-request-button";
 import { RefreshRequestButton } from "./refresh-request-button";
 import { Logout } from "@mui/icons-material";
+import { useWithWindow } from "../hooks/use-with-window";
 
 export function Header(props: { useLogin: UseWithLogin }) {
   const dispatch = useAppDispatch();
@@ -29,6 +30,7 @@ export function Header(props: { useLogin: UseWithLogin }) {
   const { roomId } = useParams<{ roomId: string }>();
   const { logout } = props.useLogin;
   const { pathname } = useLocation();
+  const { isMobile } = useWithWindow();
   const navigate = useNavigate();
   const { educationalData, setPlayerNeedsHelpInRoom } =
     useWithEducationalData();
@@ -82,7 +84,7 @@ export function Header(props: { useLogin: UseWithLogin }) {
         </div>
         {/* Empty div for spacing */}
         <div className="row center-div spacing" style={{ flexGrow: 1 }}>
-          <Typography variant="h5">{room?.name}</Typography>
+          <Typography variant="h5">{!isMobile && room?.name}</Typography>
           <Typography variant="h5" color="red">
             {classroom?.archivedAt ? " (Archived)" : ""}
           </Typography>
