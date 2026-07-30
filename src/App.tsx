@@ -12,7 +12,7 @@ import { Header } from "./components/header";
 import AvatarPage from "./components/avatar-page";
 import PhaserTestPage from "./components/phaser-test-page";
 import { StageBuilderPage } from "./components/discussion-stage-builder/stage-builder-page";
-import Login from "./components/cognito_login/login";
+import Login from "./components/google_login/login";
 import {
   ClassesPage,
   SelectedClassPage,
@@ -31,7 +31,8 @@ import { requireEnv } from "./helpers";
 
 const USER_POOL_ID = requireEnv("VITE_USER_POOL_ID");
 const USER_POOL_CLIENT_ID = requireEnv("VITE_USER_POOL_CLIENT_ID");
-//const COGNITO_DOMAIN = requireEnv("VITE_COGNITO_DOMAIN");
+const COGNITO_DOMAIN = requireEnv("VITE_COGNITO_DOMAIN");
+const REDIRECT_URL = requireEnv("VITE_REDIRECT_URL");
 
 Amplify.configure({
   Auth: {
@@ -44,21 +45,11 @@ Amplify.configure({
         phone: false,
         username: true,
         oauth: {
-          domain: "dev.mathmeridio.org",
+          domain: COGNITO_DOMAIN,
           scopes: ["email", "openid", "aws.cognito.signin.user.admin"],
           providers: ["Google"],
-          redirectSignIn: [
-            "http://localhost:3000/",
-            "https://dev.mathmeridio.org",
-            "https://qa.mathmeridio.org",
-            "https://mathmeridio.org",
-          ],
-          redirectSignOut: [
-            "http://localhost:3000/",
-            "https://dev.mathmeridio.org",
-            "https://qa.mathmeridio.org",
-            "https://mathmeridio.org",
-          ],
+          redirectSignIn: [REDIRECT_URL],
+          redirectSignOut: [REDIRECT_URL],
           responseType: "token",
         },
       },

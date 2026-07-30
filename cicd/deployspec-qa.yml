@@ -6,6 +6,7 @@ env:
     VITE_GRAPHQL_ENDPOINT: "https://api-qa.meridiomath.org/graphql/graphql"
     VITE_ABE_GQL_ENDPOINT: "https://api-qa.abewriting.org/graphql/graphql"
     VITE_LLM_API_ENDPOINT: "https://api-qa.abewriting.org/docs"
+    VITE_REDIRECT_URL: "https://qa.meridiomath.org"
   parameter-store:
     S3_DEPLOY_BUCKET_QA: "/mathm/qa/s3-websites/NAME"
     CDN_ID_QA: "/mathm/qa/CLOUDFRONT_DISTRIBUTION_ID"
