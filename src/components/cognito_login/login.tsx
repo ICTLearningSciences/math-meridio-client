@@ -110,7 +110,7 @@ export default function Login(props: {
       }}
     >
       <Authenticator loginMechanism="email" socialProviders={["google"]}>
-        {() => <MainApp/>}
+        {() => <MainApp />}
       </Authenticator>
       <div
         style={{
