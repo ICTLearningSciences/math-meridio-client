@@ -31,7 +31,7 @@ import { requireEnv } from "./helpers";
 
 const USER_POOL_ID = requireEnv("VITE_USER_POOL_ID");
 const USER_POOL_CLIENT_ID = requireEnv("VITE_USER_POOL_CLIENT_ID");
-const COGNITO_DOMAIN = requireEnv("VITE_COGNITO_DOMAIN");
+//const COGNITO_DOMAIN = requireEnv("VITE_COGNITO_DOMAIN");
 
 Amplify.configure({
   Auth: {
@@ -44,7 +44,7 @@ Amplify.configure({
         phone: false,
         username: true,
         oauth: {
-          domain: COGNITO_DOMAIN,
+          domain: "dev.mathmeridio.org",
           scopes: ["email", "openid", "aws.cognito.signin.user.admin"],
           providers: ["Google"],
           redirectSignIn: [
