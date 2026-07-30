@@ -25,6 +25,46 @@ import { useWithLogin } from "./store/slices/player/use-with-login";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { useWithEducationalData } from "./store/slices/educational-data/use-with-educational-data";
 import AdminPage from "./components/admin";
+import { withAuthenticator } from "@aws-amplify/ui-react";
+import { Amplify } from "aws-amplify";
+import { requireEnv } from "./helpers";
+
+const USER_POOL_ID = requireEnv("VITE_USER_POOL_ID");
+const USER_POOL_CLIENT_ID = requireEnv("VITE_USER_POOL_CLIENT_ID");
+const COGNITO_DOMAIN = requireEnv("VITE_COGNITO_DOMAIN");
+
+Amplify.configure({
+  Auth: {
+    Cognito: {
+      userPoolId: USER_POOL_ID,
+      userPoolClientId: USER_POOL_CLIENT_ID,
+
+      loginWith: {
+        email: true,
+        phone: false,
+        username: true,
+        oauth: {
+          domain: COGNITO_DOMAIN,
+          scopes: ["email", "openid", "aws.cognito.signin.user.admin"],
+          providers: ["Google"],
+          redirectSignIn: [
+            "http://localhost:3000/",
+            "https://dev.mathmeridio.org",
+            "https://qa.mathmeridio.org",
+            "https://mathmeridio.org",
+          ],
+          redirectSignOut: [
+            "http://localhost:3000/",
+            "https://dev.mathmeridio.org",
+            "https://qa.mathmeridio.org",
+            "https://mathmeridio.org",
+          ],
+          responseType: "token",
+        },
+      },
+    },
+  },
+});
 
 // Layout component that provides useLogin to all routes
 function RootLayout() {
@@ -124,4 +164,7 @@ function App(): React.ReactNode {
   );
 }
 
-export default App;
+export default withAuthenticator(App, {
+  loginMechanism: "email",
+  socialProviders: ["google"],
+});

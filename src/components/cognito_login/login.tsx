@@ -7,50 +7,11 @@ The full terms of this copyright and license should always be found in the root 
 
 import React, { useCallback, useEffect } from "react";
 import { Authenticator } from "@aws-amplify/ui-react";
-import { Amplify } from "aws-amplify";
 import { fetchAuthSession } from "aws-amplify/auth";
 import { Hub } from "aws-amplify/utils";
 import "@aws-amplify/ui-react/styles.css";
 import { useNavigateWithParams } from "../../hooks/use-navigate-with-params";
 import type { UseWithLogin } from "../../store/slices/player/use-with-login";
-import { requireEnv } from "../../helpers";
-
-const USER_POOL_ID = requireEnv("VITE_USER_POOL_ID");
-const USER_POOL_CLIENT_ID = requireEnv("VITE_USER_POOL_CLIENT_ID");
-const COGNITO_DOMAIN = requireEnv("VITE_COGNITO_DOMAIN");
-
-Amplify.configure({
-  Auth: {
-    Cognito: {
-      userPoolId: USER_POOL_ID,
-      userPoolClientId: USER_POOL_CLIENT_ID,
-
-      loginWith: {
-        email: true,
-        phone: false,
-        username: true,
-        oauth: {
-          domain: COGNITO_DOMAIN,
-          scopes: ["email", "openid", "aws.cognito.signin.user.admin"],
-          providers: ["Google"],
-          redirectSignIn: [
-            "http://localhost:3000/",
-            "https://dev.mathmeridio.org",
-            "https://qa.mathmeridio.org",
-            "https://mathmeridio.org",
-          ],
-          redirectSignOut: [
-            "http://localhost:3000/",
-            "https://dev.mathmeridio.org",
-            "https://qa.mathmeridio.org",
-            "https://mathmeridio.org",
-          ],
-          responseType: "token",
-        },
-      },
-    },
-  },
-});
 
 export default function Login(props: {
   useLogin: UseWithLogin;
