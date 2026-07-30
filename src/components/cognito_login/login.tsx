@@ -14,6 +14,7 @@ import "@aws-amplify/ui-react/styles.css";
 import { useNavigateWithParams } from "../../hooks/use-navigate-with-params";
 import type { UseWithLogin } from "../../store/slices/player/use-with-login";
 import { requireEnv } from "../../helpers";
+import { MainApp } from "../../App";
 
 const USER_POOL_ID = requireEnv("VITE_USER_POOL_ID");
 const USER_POOL_CLIENT_ID = requireEnv("VITE_USER_POOL_CLIENT_ID");
@@ -24,6 +25,7 @@ Amplify.configure({
     Cognito: {
       userPoolId: USER_POOL_ID,
       userPoolClientId: USER_POOL_CLIENT_ID,
+
       loginWith: {
         email: true,
         phone: false,
@@ -108,12 +110,7 @@ export default function Login(props: {
       }}
     >
       <Authenticator loginMechanism="email" socialProviders={["google"]}>
-        {({ signOut, user }) => (
-          <div>
-            <p>Welcome {user?.username}</p>
-            <button onClick={signOut}>Sign out</button>
-          </div>
-        )}
+        {() => <MainApp/>}
       </Authenticator>
       <div
         style={{

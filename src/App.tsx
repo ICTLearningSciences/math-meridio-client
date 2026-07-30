@@ -106,7 +106,7 @@ const router = createBrowserRouter([
   },
 ]);
 
-function MainApp() {
+export function MainApp() {
   useWithHydrateRedux();
   return <RouterProvider router={router} />;
 }
