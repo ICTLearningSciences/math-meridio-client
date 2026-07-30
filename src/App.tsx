@@ -164,6 +164,7 @@ function App(): React.ReactNode {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export default withAuthenticator(App, {
   loginMechanism: "email",
   socialProviders: ["google"],
