@@ -19,7 +19,7 @@ export interface UseWithLogin {
   state: PlayerStateData;
   logout: () => Promise<void>;
   loginWithGoogle: (
-    googleAccessToken: string,
+    googleAccessToken: string | undefined,
     educationalLoginRole: EducationalRole,
   ) => Promise<UserAccessToken | undefined>;
   refreshAccessToken: () => void;
@@ -55,9 +55,10 @@ export function useWithLogin(): UseWithLogin {
   }
 
   async function loginWithGoogle(
-    googleAccessToken: string,
+    googleAccessToken: string | undefined,
     educationalLoginRole: EducationalRole,
   ) {
+    if (googleAccessToken == undefined) return;
     if (
       state.loginStatus.status === 0 ||
       state.loginStatus.status === 4 ||

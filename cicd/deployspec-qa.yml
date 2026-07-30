@@ -11,6 +11,9 @@ env:
     CDN_ID_QA: "/mathm/qa/CLOUDFRONT_DISTRIBUTION_ID"
     VITE_GQL_SECRET: "/mathmeridio/qa/gql_secret"
     VITE_GOOGLE_CLIENT_ID: "/mathmeridio/shared/google_client_id"
+    VITE_COGNITO_DOMAIN: "/mathmeridio/shared/cognito_domain"
+    VITE_USER_POOL_ID: "/mathmeridio/shared/user_pool_id"
+    VITE_USER_POOL_CLIENT_ID: "/mathmeridio/shared/user_pool_client_id"
 
 phases:
   install:

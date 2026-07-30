@@ -12,7 +12,7 @@ import { Header } from "./components/header";
 import AvatarPage from "./components/avatar-page";
 import PhaserTestPage from "./components/phaser-test-page";
 import { StageBuilderPage } from "./components/discussion-stage-builder/stage-builder-page";
-import GoogleLoginPage from "./components/google_login/login";
+import Login from "./components/cognito_login/login";
 import {
   ClassesPage,
   SelectedClassPage,
@@ -43,7 +43,7 @@ function RootLayout() {
 // Wrapper for GoogleLoginPage to provide useLogin
 function GoogleLoginPageWrapper() {
   const useLogin = useWithLogin();
-  return <GoogleLoginPage useLogin={useLogin} />;
+  return <Login useLogin={useLogin} />;
 }
 
 // Layout component for game routes that provides useWithEducationalData to child routes
