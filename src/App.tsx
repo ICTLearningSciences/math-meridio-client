@@ -52,7 +52,7 @@ Amplify.configure({
           providers: ["Google"],
           redirectSignIn: [REDIRECT_URL],
           redirectSignOut: [REDIRECT_URL],
-          responseType: "token",
+          responseType: "code",
         },
       },
     },
