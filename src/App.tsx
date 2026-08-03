@@ -29,8 +29,7 @@ import { withAuthenticator } from "@aws-amplify/ui-react";
 import { Amplify } from "aws-amplify";
 import { requireEnv } from "./helpers";
 
-import '@aws-amplify/ui-react/styles.css';
-
+import "@aws-amplify/ui-react/styles.css";
 
 const USER_POOL_ID = requireEnv("VITE_USER_POOL_ID");
 const USER_POOL_CLIENT_ID = requireEnv("VITE_USER_POOL_CLIENT_ID");
