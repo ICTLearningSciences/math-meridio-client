@@ -46,7 +46,7 @@ Amplify.configure({
         username: true,
         oauth: {
           domain: COGNITO_DOMAIN,
-          scopes: ["email", "openid"],
+          scopes: ["email", "openid", "profile"],
           providers: ["Google"],
           redirectSignIn: [REDIRECT_URL],
           redirectSignOut: [REDIRECT_URL],
