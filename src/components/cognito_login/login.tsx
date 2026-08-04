@@ -24,7 +24,7 @@ export default function Login(props: {
       return;
     }
     fetchAuthSession().then((authSession) => {
-      login(authSession?.tokens?.accessToken.toString()).then(() => {
+      login(authSession?.tokens?.idToken?.toString()).then(() => {
         navigate("/classes");
       });
     });
