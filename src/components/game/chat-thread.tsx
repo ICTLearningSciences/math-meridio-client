@@ -156,9 +156,9 @@ export default function ChatThread(props: {
   const playerColorMap: Map<string, string> = new Map([]);
 
   const usedColors: Map<string, boolean> = new Map([
-    ["success.main", false],
-    ["secondary.main", false],
-    ["warning.main", false],
+    ["green", false],
+    ["blue", false],
+    ["purple", false],
   ]);
   //setting only 3 colors as we have 4 players max. Blue is reserved for Self and Grey is for System.
 
@@ -278,9 +278,9 @@ export default function ChatThread(props: {
             <Stack key={`chat-msg-container-${idx}`} direction="column">
               {!skipAvatar && (
                 <Typography
-                  color="teal"
                   style={{
                     textAlign: !myMessage ? "left" : "right",
+                    color: "teal",
                   }}
                 >
                   {teacherMessage
@@ -351,7 +351,9 @@ export default function ChatThread(props: {
                       fontFamily: "inherit",
                     }}
                   >
-                    <Typography color={teacherMessage ? "black" : "white"}>
+                    <Typography
+                      style={{ color: teacherMessage ? "black" : "white" }}
+                    >
                       {msg.message}
                     </Typography>
                   </pre>

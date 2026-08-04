@@ -637,8 +637,8 @@ export default function SkillCard(props: {
           fontSize="small"
           color={percentMet === 1 ? "success" : "inherit"}
         />
-        <Typography color={percentMet === 1 ? "green" : ""}>
-          {playersMet.length} / {players.length}
+        <Typography style={{ color: percentMet === 1 ? "green" : "" }}>
+          {playersMet.length}/{players.length}
         </Typography>
       </div>
       <Collapse in={expanded}>

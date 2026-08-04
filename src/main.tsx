@@ -12,6 +12,7 @@ import App from "./App";
 import "./fonts/Caprasimo-Regular.ttf";
 import "./fonts/SigmarOne-Regular.ttf";
 import "./index.css";
+import "./layout.css";
 
 const theme = createTheme({
   palette: {

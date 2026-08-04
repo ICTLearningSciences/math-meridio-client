@@ -25,7 +25,7 @@ import {
 } from "@mui/icons-material";
 
 import type { Classroom } from "../../../store/slices/educational-data/types";
-import PhaseProgressBar, { PhaseSelector } from "../../phase-progress-bar";
+import { PhaseSelector } from "../../phase-progress-bar";
 import {
   ChatLog,
   Contribution,
@@ -56,7 +56,7 @@ function RoomCompletion(props: { phase: number; gameRooms: Room[] }) {
       gameRooms.length);
   const completion = Number.isNaN(avgRoomCompletion) ? 0 : avgRoomCompletion;
   return (
-    <Grid size={3}>
+    <div>
       <Typography style={{ fontSize: 14, fontWeight: "bold" }}>
         Avg Room Completion
       </Typography>
@@ -104,52 +104,7 @@ function RoomCompletion(props: { phase: number; gameRooms: Room[] }) {
           </Box>
         </Box>
       </div>
-    </Grid>
-  );
-}
-
-export function SummaryReportCard(props: {
-  classroom: Classroom;
-}): React.ReactNode {
-  const { classroom } = props;
-  const { educationalData } = useWithEducationalData();
-  const [game, setGame] = React.useState<string>();
-
-  const gameRooms = educationalData.rooms.filter(
-    (r) => r.classId === classroom._id && (!game || r.gameData.gameId === game),
-  );
-  const students = educationalData.students.filter((s) =>
-    gameRooms.find((r) => r.gameData.players.find((p) => p._id === s._id)),
-  );
-
-  return (
-    <Card>
-      <CardContent
-        className="column spacing"
-        style={{ position: "relative", padding: 20 }}
-      >
-        <GamesDropdown
-          game={game}
-          setGame={(id: string) => setGame(id)}
-          buttonStyle={{ borderColor: "black" }}
-        />
-        <PhaseProgressBar size="large" gameRooms={gameRooms} />
-        <Grid container spacing={2} style={{ marginTop: 10 }}>
-          <Grid size={4}>
-            <Contribution students={students} gameRooms={gameRooms} />
-          </Grid>
-          <Grid size={3}>
-            <TimeSpent gameRooms={gameRooms} />
-          </Grid>
-          <Grid size={5}>
-            <KeyWords gameRooms={gameRooms} />
-          </Grid>
-        </Grid>
-        <NeedsHelp students={students} gameRooms={gameRooms} />
-        <SkillsPracticed students={students} gameRooms={gameRooms} />
-        <TroubleSpots students={students} gameRooms={gameRooms} />
-      </CardContent>
-    </Card>
+    </div>
   );
 }
 
@@ -263,7 +218,7 @@ export function PhaseReportCard(props: {
             borderRadius: 20,
           }}
         >
-          <Grid size={2}>
+          <Grid size={{ xs: 12, sm: 6, md: 2 }}>
             <div
               className="column center-div"
               style={{ borderRight: "1px solid black" }}
@@ -279,7 +234,7 @@ export function PhaseReportCard(props: {
               </Typography>
             </div>
           </Grid>
-          <Grid size={2}>
+          <Grid size={{ xs: 12, sm: 6, md: 2 }}>
             <div
               className="column center-div"
               style={{ borderRight: "1px solid black" }}
@@ -295,7 +250,7 @@ export function PhaseReportCard(props: {
               </Typography>
             </div>
           </Grid>
-          <Grid size={2}>
+          <Grid size={{ xs: 12, sm: 6, md: 2 }}>
             <div
               className="column center-div"
               style={{ borderRight: "1px solid black" }}
@@ -311,7 +266,7 @@ export function PhaseReportCard(props: {
               </Typography>
             </div>
           </Grid>
-          <Grid size={2}>
+          <Grid size={{ xs: 12, sm: 6, md: 2 }}>
             <div
               className="column center-div"
               style={{ borderRight: "1px solid black" }}
@@ -334,7 +289,7 @@ export function PhaseReportCard(props: {
               </Typography>
             </div>
           </Grid>
-          <Grid size={2}>
+          <Grid size={{ xs: 12, sm: 6, md: 2 }}>
             <div
               className="column center-div"
               style={{ borderRight: "1px solid black" }}
@@ -357,8 +312,11 @@ export function PhaseReportCard(props: {
               </Typography>
             </div>
           </Grid>
-          <Grid size={2}>
-            <div className="column center-div">
+          <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+            <div
+              className="column center-div"
+              style={{ borderRight: "1px solid black" }}
+            >
               <div className="row spacing center-div">
                 <AccessTime color="success" />
                 <Typography
@@ -387,15 +345,17 @@ export function PhaseReportCard(props: {
 
         <Grid container spacing={2} style={{ marginTop: 10 }}>
           {phase !== undefined && (
-            <RoomCompletion phase={phase} gameRooms={gameRooms} />
+            <Grid size={{ xs: 12, lg: 3 }}>
+              <RoomCompletion phase={phase} gameRooms={gameRooms} />
+            </Grid>
           )}
-          <Grid size={phase === undefined ? 4 : 3}>
+          <Grid size={{ xs: 12, lg: phase === undefined ? 4 : 3 }}>
             <TimeSpent phase={phase} gameRooms={gameRooms} />
           </Grid>
-          <Grid size={phase === undefined ? 4 : 3}>
+          <Grid size={{ xs: 12, lg: phase === undefined ? 4 : 3 }}>
             <KeyWords phase={phase} gameRooms={gameRooms} />
           </Grid>
-          <Grid size={phase === undefined ? 4 : 3}>
+          <Grid size={{ xs: 12, lg: phase === undefined ? 4 : 3 }}>
             <Contribution
               phase={phase}
               students={students}

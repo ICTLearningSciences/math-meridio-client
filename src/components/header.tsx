@@ -14,19 +14,23 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { Logout } from "@mui/icons-material";
-import { Authenticator } from "@aws-amplify/ui-react";
-
-import { useAppSelector } from "../store/hooks";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { clearPlayer } from "../store/slices/player";
 import AvatarSprite from "./avatar-sprite";
+import type { UseWithLogin } from "../store/slices/player/use-with-login";
 import { useWithEducationalData } from "../store/slices/educational-data/use-with-educational-data";
 import { HelpRequestButton } from "./help-request-button";
 import { RefreshRequestButton } from "./refresh-request-button";
+import { Logout } from "@mui/icons-material";
+import { useWithWindow } from "../hooks/use-with-window";
 
-export function Header() {
+export function Header(props: { useLogin: UseWithLogin }) {
+  const dispatch = useAppDispatch();
   const { player } = useAppSelector((state) => state.playerData);
   const { roomId } = useParams<{ roomId: string }>();
+  const { logout } = props.useLogin;
   const { pathname } = useLocation();
+  const { isMobile } = useWithWindow();
   const navigate = useNavigate();
   const { educationalData, setPlayerNeedsHelpInRoom } =
     useWithEducationalData();
@@ -80,7 +84,7 @@ export function Header() {
         </div>
         {/* Empty div for spacing */}
         <div className="row center-div spacing" style={{ flexGrow: 1 }}>
-          <Typography variant="h5">{room?.name}</Typography>
+          <Typography variant="h5">{!isMobile && room?.name}</Typography>
           <Typography variant="h5" color="red">
             {classroom?.archivedAt ? " (Archived)" : ""}
           </Typography>
@@ -119,14 +123,14 @@ export function Header() {
                 open={Boolean(anchorEl)}
                 onClose={() => setAnchorEl(null)}
               >
-                <Authenticator
-                  loginMechanism="email"
-                  socialProviders={["google"]}
+                <MenuItem
+                  onClick={() => {
+                    dispatch(clearPlayer());
+                    logout();
+                  }}
                 >
-                  {({ signOut }) => (
-                    <MenuItem onClick={signOut}>Logout</MenuItem>
-                  )}
-                </Authenticator>
+                  Logout
+                </MenuItem>
                 {player.userRole === "ADMIN" && (
                   <MenuItem onClick={() => navigate("/admin")}>Admin</MenuItem>
                 )}

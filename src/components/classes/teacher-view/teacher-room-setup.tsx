@@ -23,6 +23,7 @@ import AvatarSprite, { PlayerSprite } from "../../avatar-sprite";
 import { ContainedButton } from "../../button";
 import { useAppSelector } from "../../../store/hooks";
 import { TeacherEditClass } from "./teacher-manage-class";
+import { useWithWindow } from "../../../hooks/use-with-window";
 
 function DraggablePlayer(props: {
   player?: Player;
@@ -125,6 +126,7 @@ export function RoomSetupView(props: {
   const { player } = useAppSelector((state) => state.playerData);
   const { educationalData, assignClassGroupsAndStart } =
     useWithEducationalData();
+  const { isMobile } = useWithWindow();
   const [groupSize, setGroupSize] = React.useState<number>(3);
   const [studentMembers, setStudentMembers] = React.useState<ClassMembership[]>(
     [],
@@ -269,7 +271,10 @@ export function RoomSetupView(props: {
           No students have joined yet.
         </Typography>
       ) : (
-        <ImageList sx={{ width: "100%", height: "100%" }} cols={3}>
+        <ImageList
+          sx={{ width: "100%", height: "100%" }}
+          cols={isMobile ? 1 : 3}
+        >
           <DragDropProvider
             onDragEnd={(event) => {
               if (event.canceled) return;

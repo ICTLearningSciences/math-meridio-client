@@ -18,8 +18,7 @@ export function localStorageGet<T>(key: string): T | null {
   }
   try {
     return JSON.parse(item) as T;
-  } catch (err) {
-    console.error(err);
+  } catch {
     return item as T;
   }
 }
