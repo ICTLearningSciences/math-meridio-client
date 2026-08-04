@@ -7,12 +7,14 @@ The full terms of this copyright and license should always be found in the root 
 
 import { Provider } from "react-redux";
 import { RouterProvider, createBrowserRouter, Outlet } from "react-router-dom";
+import { Amplify } from "aws-amplify";
+import { withAuthenticator } from "@aws-amplify/ui-react";
 
 import { Header } from "./components/header";
 import AvatarPage from "./components/avatar-page";
 import PhaserTestPage from "./components/phaser-test-page";
 import { StageBuilderPage } from "./components/discussion-stage-builder/stage-builder-page";
-import Login from "./components/google_login/login";
+import Login from "./components/cognito_login/login";
 import {
   ClassesPage,
   SelectedClassPage,
@@ -22,11 +24,8 @@ import {
 import { store } from "./store";
 import { useWithHydrateRedux } from "./store/use-with-hydrate-redux";
 import { useWithLogin } from "./store/slices/player/use-with-login";
-import { GoogleOAuthProvider } from "@react-oauth/google";
 import { useWithEducationalData } from "./store/slices/educational-data/use-with-educational-data";
 import AdminPage from "./components/admin";
-import { withAuthenticator } from "@aws-amplify/ui-react";
-import { Amplify } from "aws-amplify";
 import { requireEnv } from "./helpers";
 
 import "@aws-amplify/ui-react/styles.css";
@@ -41,7 +40,6 @@ Amplify.configure({
     Cognito: {
       userPoolId: USER_POOL_ID,
       userPoolClientId: USER_POOL_CLIENT_ID,
-
       loginWith: {
         email: true,
         phone: false,
@@ -61,11 +59,9 @@ Amplify.configure({
 
 // Layout component that provides useLogin to all routes
 function RootLayout() {
-  const useLogin = useWithLogin();
-
   return (
     <>
-      <Header useLogin={useLogin} />
+      <Header />
       <div className="page">
         <Outlet />
       </div>
@@ -73,8 +69,8 @@ function RootLayout() {
   );
 }
 
-// Wrapper for GoogleLoginPage to provide useLogin
-function GoogleLoginPageWrapper() {
+// Wrapper for LoginPage to provide useLogin
+function LoginPageWrapper() {
   const useLogin = useWithLogin();
   return <Login useLogin={useLogin} />;
 }
@@ -92,7 +88,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: <GoogleLoginPageWrapper />,
+        element: <LoginPageWrapper />,
       },
       {
         path: "/avatar-creator",
@@ -145,15 +141,12 @@ export function MainApp() {
 }
 
 function App(): React.ReactNode {
-  const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "123";
   return (
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <Provider store={store}>
-        <div style={{ height: "100vh" }}>
-          <MainApp />
-        </div>
-      </Provider>
-    </GoogleOAuthProvider>
+    <Provider store={store}>
+      <div style={{ height: "100vh" }}>
+        <MainApp />
+      </div>
+    </Provider>
   );
 }
 

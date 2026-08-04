@@ -18,9 +18,8 @@ import type { PlayerStateData } from "./index";
 export interface UseWithLogin {
   state: PlayerStateData;
   logout: () => Promise<void>;
-  loginWithGoogle: (
-    googleAccessToken: string | undefined,
-    educationalLoginRole: EducationalRole,
+  login: (
+    accessToken: string | undefined,
   ) => Promise<UserAccessToken | undefined>;
   refreshAccessToken: () => void;
   setViewingAs: (educationalRole: EducationalRole) => void;
@@ -54,22 +53,14 @@ export function useWithLogin(): UseWithLogin {
     dispatch(loginActions.setViewingAs(educationalRole));
   }
 
-  async function loginWithGoogle(
-    googleAccessToken: string | undefined,
-    educationalLoginRole: EducationalRole,
-  ) {
-    if (googleAccessToken == undefined) return;
+  async function login(accessToken: string | undefined) {
+    if (accessToken == undefined) return;
     if (
       state.loginStatus.status === 0 ||
       state.loginStatus.status === 4 ||
       state.loginStatus.status === 3
     ) {
-      return await dispatch(
-        loginActions.login({
-          accessToken: googleAccessToken,
-          educationalLoginRole: educationalLoginRole,
-        }),
-      ).unwrap();
+      return await dispatch(loginActions.login({ accessToken })).unwrap();
     }
   }
 
@@ -91,7 +82,7 @@ export function useWithLogin(): UseWithLogin {
   return {
     state,
     logout,
-    loginWithGoogle,
+    login,
     refreshAccessToken,
     setViewingAs,
   };

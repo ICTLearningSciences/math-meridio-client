@@ -12,7 +12,10 @@ import {
 import * as api from "../../../api";
 import type { LoadingState } from "../../../types";
 import type { EducationalRole, UserRole } from "./types";
-import { refreshAccessToken as _refreshAccessToken, loginGoogle } from "./api";
+import {
+  refreshAccessToken as _refreshAccessToken,
+  login as _login,
+} from "./api";
 import {
   ACCESS_TOKEN_KEY,
   localStorageClear,
@@ -65,11 +68,8 @@ export const refreshAccessToken = createAsyncThunk(
 
 export const login = createAsyncThunk(
   "login/login",
-  async (args: {
-    accessToken: string;
-    educationalLoginRole: EducationalRole;
-  }) => {
-    return await loginGoogle(args.accessToken, args.educationalLoginRole);
+  async (args: { accessToken: string }) => {
+    return await _login(args.accessToken);
   },
 );
 
