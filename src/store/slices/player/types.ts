@@ -7,7 +7,7 @@ The full terms of this copyright and license should always be found in the root 
 
 export type UserRole = "USER" | "ADMIN";
 export type EducationalRole = "STUDENT" | "INSTRUCTOR";
-export type LoginService = "GOOGLE";
+export type LoginService = "GOOGLE" | "EMAIL";
 
 export interface Avatar {
   type: string;

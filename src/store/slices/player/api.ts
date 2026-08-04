@@ -5,7 +5,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import { execGql } from "../../../api-helpers";
-import type { EducationalRole, UserAccessToken } from "./types";
+import type { UserAccessToken } from "./types";
 
 export const userDataQuery = `
   _id
@@ -25,15 +25,12 @@ export const userDataQuery = `
   educationalRole
 `;
 
-export async function loginGoogle(
-  accessToken: string,
-  educationalLoginRole: EducationalRole,
-): Promise<UserAccessToken> {
+export async function login(accessToken: string): Promise<UserAccessToken> {
   return await execGql<UserAccessToken>(
     {
       query: `
-        mutation LoginGoogle($accessToken: String!, $educationalLoginRole: String!) {
-          loginGoogle(accessToken: $accessToken, educationalLoginRole: $educationalLoginRole) {
+        mutation Login($accessToken: String!) {
+          login(accessToken: $accessToken) {
             user {
               ${userDataQuery}
             }
@@ -43,7 +40,35 @@ export async function loginGoogle(
       `,
       variables: {
         accessToken: accessToken,
-        educationalLoginRole: educationalLoginRole,
+      },
+    },
+    // login responds with set-cookie, w/o withCredentials it doesnt get stored
+    {
+      dataPath: "login",
+      axiosConfig: {
+        withCredentials: true,
+      },
+    },
+  );
+}
+
+export async function loginGoogle(
+  accessToken: string,
+): Promise<UserAccessToken> {
+  return await execGql<UserAccessToken>(
+    {
+      query: `
+        mutation LoginGoogle($accessToken: String!) {
+          loginGoogle(accessToken: $accessToken) {
+            user {
+              ${userDataQuery}
+            }
+            accessToken
+          }
+        }
+      `,
+      variables: {
+        accessToken: accessToken,
       },
     },
     // login responds with set-cookie, w/o withCredentials it doesnt get stored

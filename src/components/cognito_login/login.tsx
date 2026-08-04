@@ -5,59 +5,31 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 
-import React, { useCallback, useEffect } from "react";
+import React, { useEffect } from "react";
 import { Authenticator } from "@aws-amplify/ui-react";
 import { fetchAuthSession } from "aws-amplify/auth";
-import { Hub } from "aws-amplify/utils";
-import "@aws-amplify/ui-react/styles.css";
 import { useNavigateWithParams } from "../../hooks/use-navigate-with-params";
 import type { UseWithLogin } from "../../store/slices/player/use-with-login";
 
 export default function Login(props: {
   useLogin: UseWithLogin;
 }): React.ReactNode {
+  const { useLogin } = props;
+  const { login, state: loginState } = useLogin;
   const navigate = useNavigateWithParams();
 
-  const handleLoginNavigate = useCallback(() => {
-    if (typeof window === "undefined") {
+  useEffect(() => {
+    if (loginState.loginStatus.status === 2) {
+      navigate("/classes");
       return;
     }
-    navigate("/classes");
-  }, [navigate]);
-
-  const { useLogin } = props;
-  const { loginWithGoogle, state: loginState } = useLogin;
-
-  if (loginState.loginStatus.status === 2) {
-    handleLoginNavigate();
-  }
-
-  useEffect(() => {
-    // Listen for auth events
-    const unsubscribe = Hub.listen("auth", (data) => {
-      const { event } = data.payload;
-
-      const fetchUserData = () => {
-        fetchAuthSession().then((authSession) => {
-          loginWithGoogle(
-            authSession?.tokens?.accessToken.toString(),
-            "STUDENT",
-          ).then(() => {
-            handleLoginNavigate();
-          });
-        });
-      };
-
-      if (event === "signedIn") {
-        console.log("User has successfully signed in!");
-        // Trigger your callback or custom logic here
-        fetchUserData();
-      }
+    fetchAuthSession().then((authSession) => {
+      login(authSession?.tokens?.accessToken.toString()).then(() => {
+        navigate("/classes");
+      });
     });
-
-    // Cleanup the listener when the component unmounts
-    return () => unsubscribe();
-  }, [loginWithGoogle, handleLoginNavigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div
