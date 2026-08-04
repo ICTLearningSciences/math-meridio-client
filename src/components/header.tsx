@@ -14,21 +14,19 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { useAppDispatch, useAppSelector } from "../store/hooks";
-import { clearPlayer } from "../store/slices/player";
+import { Authenticator } from "@aws-amplify/ui-react";
+import { Logout } from "@mui/icons-material";
+
+import { useAppSelector } from "../store/hooks";
 import AvatarSprite from "./avatar-sprite";
-import type { UseWithLogin } from "../store/slices/player/use-with-login";
 import { useWithEducationalData } from "../store/slices/educational-data/use-with-educational-data";
 import { HelpRequestButton } from "./help-request-button";
 import { RefreshRequestButton } from "./refresh-request-button";
-import { Logout } from "@mui/icons-material";
 import { useWithWindow } from "../hooks/use-with-window";
 
-export function Header(props: { useLogin: UseWithLogin }) {
-  const dispatch = useAppDispatch();
+export function Header() {
   const { player } = useAppSelector((state) => state.playerData);
   const { roomId } = useParams<{ roomId: string }>();
-  const { logout } = props.useLogin;
   const { pathname } = useLocation();
   const { isMobile } = useWithWindow();
   const navigate = useNavigate();
@@ -123,14 +121,14 @@ export function Header(props: { useLogin: UseWithLogin }) {
                 open={Boolean(anchorEl)}
                 onClose={() => setAnchorEl(null)}
               >
-                <MenuItem
-                  onClick={() => {
-                    dispatch(clearPlayer());
-                    logout();
-                  }}
+                <Authenticator
+                  loginMechanism="email"
+                  socialProviders={["google"]}
                 >
-                  Logout
-                </MenuItem>
+                  {({ signOut }) => (
+                    <MenuItem onClick={signOut}>Logout</MenuItem>
+                  )}
+                </Authenticator>
                 {player.userRole === "ADMIN" && (
                   <MenuItem onClick={() => navigate("/admin")}>Admin</MenuItem>
                 )}

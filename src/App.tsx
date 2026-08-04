@@ -59,10 +59,9 @@ Amplify.configure({
 
 // Layout component that provides useLogin to all routes
 function RootLayout() {
-  const useLogin = useWithLogin();
   return (
     <>
-      <Header useLogin={useLogin} />
+      <Header />
       <div className="page">
         <Outlet />
       </div>

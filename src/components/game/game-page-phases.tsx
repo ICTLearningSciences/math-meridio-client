@@ -167,12 +167,12 @@ export default function GamePagePhaseDisplay(props: {
 }): React.ReactNode {
   const { room, game, player, updateMyRoomGameStateData } = props;
   const { isMobile, windowHeight } = useWithWindow();
-  const [expanded, setExpanded] = React.useState<boolean>(false);
+  const [expanded, setExpanded] = React.useState<boolean>(isMobile);
   const phasesStarted =
     props.selectedPhase !== undefined
       ? props.selectedPhase + 1
       : room?.gameData?.phaseProgression?.phasesStarted?.length;
-  const cardHeight = isMobile ? windowHeight / 2 - 150 : windowHeight - 210;
+  const cardHeight = isMobile ? windowHeight / 2 - 50 : windowHeight - 210;
   const minHeight = Math.max(100, cardHeight * (expanded ? 0.5 : 0.1)) - 25;
   const maxHeight =
     Math.min(cardHeight - 100, cardHeight * (expanded ? 0.5 : 0.9)) - 25;
