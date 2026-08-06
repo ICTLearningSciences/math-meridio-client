@@ -123,8 +123,6 @@ function AvatarPage(): React.ReactNode {
 
   /** end hard-coding */
 
-  console.log(loginStatus.status);
-
   if (loginStatus.status === 0 || loginStatus.status === 1) {
     return (
       <div>
