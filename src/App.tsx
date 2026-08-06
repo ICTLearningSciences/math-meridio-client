@@ -8,7 +8,6 @@ The full terms of this copyright and license should always be found in the root 
 import { Provider } from "react-redux";
 import { RouterProvider, createBrowserRouter, Outlet } from "react-router-dom";
 import { Amplify } from "aws-amplify";
-import { withAuthenticator } from "@aws-amplify/ui-react";
 
 import { Header } from "./components/header";
 import AvatarPage from "./components/avatar-page";
@@ -150,8 +149,4 @@ function App(): React.ReactNode {
   );
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
-export default withAuthenticator(App, {
-  loginMechanism: "email",
-  socialProviders: ["google"],
-});
+export default App;

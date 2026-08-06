@@ -26,7 +26,6 @@ const withAuthorizationOnly = (Component: any) => (props: any) => {
       loginStatus.status === 3
     ) {
       dispatch(clearPlayer());
-      console.log("navigating to login");
       navigate("/");
       return;
     }
@@ -35,10 +34,10 @@ const withAuthorizationOnly = (Component: any) => (props: any) => {
       player?.educationalRole !== "INSTRUCTOR" &&
       !player?.description
     ) {
-      console.log("navigating to avatar-creator");
       navigate("/avatar-creator");
     }
-  }, [loginStatus.status, player, dispatch, navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loginStatus.status, player]);
 
   React.useEffect(() => {
     if (loadStagesStatus === 0) {
