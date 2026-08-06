@@ -8,8 +8,10 @@ The full terms of this copyright and license should always be found in the root 
 import React, { useEffect } from "react";
 import { Authenticator } from "@aws-amplify/ui-react";
 import { fetchAuthSession } from "aws-amplify/auth";
+import { Hub } from "aws-amplify/utils";
 import { useNavigateWithParams } from "../../hooks/use-navigate-with-params";
 import type { UseWithLogin } from "../../store/slices/player/use-with-login";
+import { CircularProgress } from "@mui/material";
 
 export default function Login(props: {
   useLogin: UseWithLogin;
@@ -21,13 +23,27 @@ export default function Login(props: {
   useEffect(() => {
     if (loginState.loginStatus.status === 2) {
       navigate("/classes");
-      return;
     }
-    fetchAuthSession().then((authSession) => {
-      login(authSession?.tokens?.idToken?.toString()).then(() => {
-        navigate("/classes");
-      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    // Listen for auth events
+    const unsubscribe = Hub.listen("auth", (data) => {
+      const { event } = data.payload;
+      const fetchUserData = () => {
+        fetchAuthSession().then((authSession) => {
+          login(authSession?.tokens?.idToken?.toString()).then(() => {
+            navigate("/classes");
+          });
+        });
+      };
+      if (event === "signedIn") {
+        fetchUserData();
+      }
     });
+    // Cleanup the listener when the component unmounts
+    return () => unsubscribe();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -42,12 +58,7 @@ export default function Login(props: {
       }}
     >
       <Authenticator loginMechanism="email" socialProviders={["google"]}>
-        {({ signOut, user }) => (
-          <div>
-            <p>Welcome {user?.username}</p>
-            <button onClick={signOut}>Sign out</button>
-          </div>
-        )}
+        {() => <CircularProgress />}
       </Authenticator>
       <div
         style={{

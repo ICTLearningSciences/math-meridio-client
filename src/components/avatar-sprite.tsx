@@ -245,8 +245,7 @@ export default function AvatarSprite(props: {
                 }/${a.id}.png)`,
                 position: "absolute",
                 transform: "scale(1.5)",
-                left: 7,
-                top: 1,
+                bottom: 2,
                 width: 32,
                 height: 40,
                 backgroundPosition: `top left -${

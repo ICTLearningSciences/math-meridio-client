@@ -4,6 +4,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
+
 import React from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
@@ -14,17 +15,19 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { Authenticator } from "@aws-amplify/ui-react";
+import { signOut } from "aws-amplify/auth";
 import { Logout } from "@mui/icons-material";
 
-import { useAppSelector } from "../store/hooks";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
 import AvatarSprite from "./avatar-sprite";
 import { useWithEducationalData } from "../store/slices/educational-data/use-with-educational-data";
+import { clearPlayer, logout } from "../store/slices/player";
 import { HelpRequestButton } from "./help-request-button";
 import { RefreshRequestButton } from "./refresh-request-button";
 import { useWithWindow } from "../hooks/use-with-window";
 
 export function Header() {
+  const dispatch = useAppDispatch();
   const { player } = useAppSelector((state) => state.playerData);
   const { roomId } = useParams<{ roomId: string }>();
   const { pathname } = useLocation();
@@ -121,14 +124,15 @@ export function Header() {
                 open={Boolean(anchorEl)}
                 onClose={() => setAnchorEl(null)}
               >
-                <Authenticator
-                  loginMechanism="email"
-                  socialProviders={["google"]}
+                <MenuItem
+                  onClick={() => {
+                    dispatch(clearPlayer());
+                    dispatch(logout());
+                    signOut();
+                  }}
                 >
-                  {({ signOut }) => (
-                    <MenuItem onClick={signOut}>Logout</MenuItem>
-                  )}
-                </Authenticator>
+                  Logout
+                </MenuItem>
                 {player.userRole === "ADMIN" && (
                   <MenuItem onClick={() => navigate("/admin")}>Admin</MenuItem>
                 )}
