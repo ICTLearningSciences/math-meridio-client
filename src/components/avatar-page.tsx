@@ -17,6 +17,7 @@ import {
   type Avatars,
   useWithPlayer,
 } from "../store/slices/player/use-with-player-state";
+import withAuthorizationOnly from "../wrap-with-authorization-only";
 
 function AvatarPage(): React.ReactNode {
   const { player, loginStatus, saveStatus } = useAppSelector(
@@ -42,24 +43,14 @@ function AvatarPage(): React.ReactNode {
   }
 
   React.useEffect(() => {
-    if (loginStatus.status === 0 || loginStatus.status === 1) {
-      return;
-    }
-    if (
-      loginStatus.status === 4 ||
-      loginStatus.status === 3 ||
-      !player ||
-      !player.name
-    ) {
-      console.log("navigating to login");
-      navigate("/");
+    if (loginStatus.status !== 2) {
       return;
     }
     startPhaserGame(AvatarCreator, "AvatarCreator");
     EventSystem.on("sceneCreated", () => setSceneCreated(true));
     EventSystem.on("avatarSelected", onAvatarSelected);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loginStatus, navigate, player]);
+  }, [loginStatus.status]);
 
   /**
    * Let's hard-code everything for now since player creation
@@ -154,4 +145,5 @@ function AvatarPage(): React.ReactNode {
   );
 }
 
-export default AvatarPage;
+const Page = withAuthorizationOnly(AvatarPage);
+export default Page;

@@ -4,6 +4,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
+
 import React from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
@@ -14,21 +15,21 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
+import { signOut } from "aws-amplify/auth";
+import { Logout } from "@mui/icons-material";
+
 import { useAppDispatch, useAppSelector } from "../store/hooks";
-import { clearPlayer } from "../store/slices/player";
 import AvatarSprite from "./avatar-sprite";
-import type { UseWithLogin } from "../store/slices/player/use-with-login";
 import { useWithEducationalData } from "../store/slices/educational-data/use-with-educational-data";
+import { clearPlayer, logout } from "../store/slices/player";
 import { HelpRequestButton } from "./help-request-button";
 import { RefreshRequestButton } from "./refresh-request-button";
-import { Logout } from "@mui/icons-material";
 import { useWithWindow } from "../hooks/use-with-window";
 
-export function Header(props: { useLogin: UseWithLogin }) {
+export function Header() {
   const dispatch = useAppDispatch();
   const { player } = useAppSelector((state) => state.playerData);
   const { roomId } = useParams<{ roomId: string }>();
-  const { logout } = props.useLogin;
   const { pathname } = useLocation();
   const { isMobile } = useWithWindow();
   const navigate = useNavigate();
@@ -126,7 +127,8 @@ export function Header(props: { useLogin: UseWithLogin }) {
                 <MenuItem
                   onClick={() => {
                     dispatch(clearPlayer());
-                    logout();
+                    dispatch(logout());
+                    signOut();
                   }}
                 >
                   Logout

@@ -5,37 +5,47 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 
-import React from "react";
-import { useGoogleLogin } from "@react-oauth/google";
-import { LoginUI } from "./login-ui";
+import React, { useEffect } from "react";
+import { Authenticator } from "@aws-amplify/ui-react";
+import { fetchAuthSession } from "aws-amplify/auth";
+import { Hub } from "aws-amplify/utils";
 import { useNavigateWithParams } from "../../hooks/use-navigate-with-params";
 import type { UseWithLogin } from "../../store/slices/player/use-with-login";
+import { CircularProgress } from "@mui/material";
 
 export default function Login(props: {
   useLogin: UseWithLogin;
 }): React.ReactNode {
-  const navigate = useNavigateWithParams();
   const { useLogin } = props;
-  const { loginWithGoogle, state: loginState } = useLogin;
+  const { login, state: loginState } = useLogin;
+  const navigate = useNavigateWithParams();
 
-  if (loginState.loginStatus.status === 2) {
-    handleLoginNavigate();
-  }
-
-  const loginGoogle = useGoogleLogin({
-    onSuccess: (tokenResponse) => {
-      loginWithGoogle(tokenResponse.access_token, "STUDENT").then(() => {
-        handleLoginNavigate();
-      });
-    },
-  });
-
-  async function handleLoginNavigate() {
-    if (typeof window === "undefined") {
-      return;
+  useEffect(() => {
+    if (loginState.loginStatus.status === 2) {
+      navigate("/classes");
     }
-    navigate("/classes");
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    // Listen for auth events
+    const unsubscribe = Hub.listen("auth", (data) => {
+      const { event } = data.payload;
+      const fetchUserData = () => {
+        fetchAuthSession().then((authSession) => {
+          login(authSession?.tokens?.idToken?.toString()).then(() => {
+            navigate("/classes");
+          });
+        });
+      };
+      if (event === "signedIn") {
+        fetchUserData();
+      }
+    });
+    // Cleanup the listener when the component unmounts
+    return () => unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div
@@ -47,7 +57,9 @@ export default function Login(props: {
         justifyContent: "center",
       }}
     >
-      <LoginUI loginState={loginState} loginGoogle={loginGoogle} />
+      <Authenticator loginMechanism="email" socialProviders={["google"]}>
+        {() => <CircularProgress />}
+      </Authenticator>
       <div
         style={{
           position: "absolute",

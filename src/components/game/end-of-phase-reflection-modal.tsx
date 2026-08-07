@@ -31,6 +31,7 @@ import {
 import { ColumnDiv } from "../../styled-components";
 import { WavyText } from "../animated-text";
 import { MAX_MESSAGE_LENGTH } from "./chat-form";
+import { useWithWindow } from "../../hooks/use-with-window";
 
 interface PlayerReflectionDisplayItemProps {
   player: Player;
@@ -97,6 +98,7 @@ export default function EndOfPhaseReflectionModal({
   const [isSubmittingReady, setIsSubmittingReady] = useState(false);
   const [hasLocallySubmitted, setHasLocallySubmitted] = useState(false);
   const [hasSubmittedReady, setHasSubmittedReady] = useState(false);
+  const { isMobile } = useWithWindow();
 
   const curState = room.gameData.curGameState.curState;
   const selectedQuestion = room.gameData.curGameState.selectedQuestion || "";
@@ -204,7 +206,14 @@ export default function EndOfPhaseReflectionModal({
           <DialogTitle
             style={{ fontSize: 36, textAlign: "center", fontWeight: "bold" }}
           >
-            <WavyText text={`${phaseTitle} - Phase Complete!`} />
+            {isMobile ? (
+              <div>
+                <WavyText text={phaseTitle} />
+                <WavyText text="Complete!" />
+              </div>
+            ) : (
+              <WavyText text={`${phaseTitle} - Phase Complete!`} />
+            )}
           </DialogTitle>
           <Box
             id="rewardId"

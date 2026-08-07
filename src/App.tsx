@@ -7,12 +7,13 @@ The full terms of this copyright and license should always be found in the root 
 
 import { Provider } from "react-redux";
 import { RouterProvider, createBrowserRouter, Outlet } from "react-router-dom";
+import { Amplify } from "aws-amplify";
 
 import { Header } from "./components/header";
 import AvatarPage from "./components/avatar-page";
 import PhaserTestPage from "./components/phaser-test-page";
 import { StageBuilderPage } from "./components/discussion-stage-builder/stage-builder-page";
-import GoogleLoginPage from "./components/google_login/login";
+import Login from "./components/cognito_login/login";
 import {
   ClassesPage,
   SelectedClassPage,
@@ -22,17 +23,44 @@ import {
 import { store } from "./store";
 import { useWithHydrateRedux } from "./store/use-with-hydrate-redux";
 import { useWithLogin } from "./store/slices/player/use-with-login";
-import { GoogleOAuthProvider } from "@react-oauth/google";
 import { useWithEducationalData } from "./store/slices/educational-data/use-with-educational-data";
 import AdminPage from "./components/admin";
+import { requireEnv } from "./helpers";
+
+import "@aws-amplify/ui-react/styles.css";
+
+const USER_POOL_ID = requireEnv("VITE_USER_POOL_ID");
+const USER_POOL_CLIENT_ID = requireEnv("VITE_USER_POOL_CLIENT_ID");
+const COGNITO_DOMAIN = requireEnv("VITE_COGNITO_DOMAIN");
+const REDIRECT_URL = requireEnv("VITE_REDIRECT_URL");
+
+Amplify.configure({
+  Auth: {
+    Cognito: {
+      userPoolId: USER_POOL_ID,
+      userPoolClientId: USER_POOL_CLIENT_ID,
+      loginWith: {
+        email: true,
+        phone: false,
+        username: true,
+        oauth: {
+          domain: COGNITO_DOMAIN,
+          scopes: ["email", "openid", "profile"],
+          providers: ["Google"],
+          redirectSignIn: [REDIRECT_URL],
+          redirectSignOut: [REDIRECT_URL],
+          responseType: "code",
+        },
+      },
+    },
+  },
+});
 
 // Layout component that provides useLogin to all routes
 function RootLayout() {
-  const useLogin = useWithLogin();
-
   return (
     <>
-      <Header useLogin={useLogin} />
+      <Header />
       <div className="page">
         <Outlet />
       </div>
@@ -40,10 +68,10 @@ function RootLayout() {
   );
 }
 
-// Wrapper for GoogleLoginPage to provide useLogin
-function GoogleLoginPageWrapper() {
+// Wrapper for LoginPage to provide useLogin
+function LoginPageWrapper() {
   const useLogin = useWithLogin();
-  return <GoogleLoginPage useLogin={useLogin} />;
+  return <Login useLogin={useLogin} />;
 }
 
 // Layout component for game routes that provides useWithEducationalData to child routes
@@ -59,7 +87,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: <GoogleLoginPageWrapper />,
+        element: <LoginPageWrapper />,
       },
       {
         path: "/avatar-creator",
@@ -106,21 +134,18 @@ const router = createBrowserRouter([
   },
 ]);
 
-function MainApp() {
+export function MainApp() {
   useWithHydrateRedux();
   return <RouterProvider router={router} />;
 }
 
 function App(): React.ReactNode {
-  const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "123";
   return (
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <Provider store={store}>
-        <div style={{ height: "100vh" }}>
-          <MainApp />
-        </div>
-      </Provider>
-    </GoogleOAuthProvider>
+    <Provider store={store}>
+      <div style={{ height: "100vh" }}>
+        <MainApp />
+      </div>
+    </Provider>
   );
 }
 

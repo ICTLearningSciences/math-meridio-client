@@ -6,11 +6,15 @@ env:
     VITE_GRAPHQL_ENDPOINT: "https://api.meridiomath.org/graphql/graphql"
     VITE_ABE_GQL_ENDPOINT: "https://api.abewriting.org/graphql/graphql"
     VITE_LLM_API_ENDPOINT: "https://api.abewriting.org/docs"
+    VITE_REDIRECT_URL: "https://meridiomath.org/"
   parameter-store:
     S3_DEPLOY_BUCKET_PROD: "/mathm/prod/s3-websites/NAME"
     CDN_ID_PROD: "/mathm/prod/CLOUDFRONT_DISTRIBUTION_ID"
     VITE_GQL_SECRET: "/mathmeridio/prod/gql_secret"
     VITE_GOOGLE_CLIENT_ID: "/mathmeridio/shared/google_client_id"
+    VITE_COGNITO_DOMAIN: "/mathmeridio/shared/cognito_domain"
+    VITE_USER_POOL_ID: "/mathmeridio/shared/user_pool_id"
+    VITE_USER_POOL_CLIENT_ID: "/mathmeridio/shared/user_pool_client_id"
 
 phases:
   install:
