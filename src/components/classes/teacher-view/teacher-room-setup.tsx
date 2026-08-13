@@ -7,9 +7,7 @@ The full terms of this copyright and license should always be found in the root 
 
 import React from "react";
 import * as motion from "motion/react-client";
-import { DragDropProvider, useDroppable } from "@dnd-kit/react";
-import { useSortable, isSortable } from "@dnd-kit/react/sortable";
-import { CollisionPriority } from "@dnd-kit/abstract";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { Button, ImageList, ImageListItem, Typography } from "@mui/material";
 import { Add, Remove } from "@mui/icons-material";
 
@@ -18,106 +16,12 @@ import type {
   Classroom,
 } from "../../../store/slices/educational-data/types";
 import { useWithEducationalData } from "../../../store/slices/educational-data/use-with-educational-data";
-import type { Player } from "../../../store/slices/player/types";
 import AvatarSprite, { PlayerSprite } from "../../avatar-sprite";
 import { ContainedButton } from "../../button";
 import { useAppSelector } from "../../../store/hooks";
 import { TeacherEditClass } from "./teacher-manage-class";
 import { useWithWindow } from "../../../hooks/use-with-window";
-
-function DraggablePlayer(props: {
-  player?: Player;
-  group: number;
-  index: number;
-}): React.ReactNode {
-  const { player, group } = props;
-  const { ref, isDragging } = useSortable({
-    id: player?._id || "",
-    index: props.index,
-    type: "item",
-    accept: "item",
-    group: group,
-  });
-
-  return (
-    <motion.div
-      ref={ref}
-      whileHover={{ scale: 1.1 }}
-      data-dragging={isDragging}
-      className="column center-div"
-    >
-      <AvatarSprite player={player} bgColor="rgb(218, 183, 250)" />
-      <Typography variant="body2" style={{ fontSize: 12, textAlign: "center" }}>
-        {player?.name}
-      </Typography>
-    </motion.div>
-  );
-}
-
-function DroppableGroup(props: {
-  groupId: number;
-  children: React.ReactNode;
-}): React.ReactNode {
-  const { ref, isDropTarget } = useDroppable({
-    id: props.groupId,
-    type: "column",
-    accept: "item",
-    collisionPriority: CollisionPriority.Low,
-  });
-
-  return (
-    <div ref={ref}>
-      <Typography style={{ fontSize: 12 }}>
-        {!props.groupId ? "UNASSIGNED STUDENTS" : `Group ${props.groupId}`}
-      </Typography>
-      <div
-        className="row center-div spacing"
-        style={{
-          borderStyle: "solid",
-          borderWidth: 1,
-          borderRadius: 10,
-          padding: 15,
-          justifyContent: "space-evenly",
-          backgroundColor: isDropTarget
-            ? "orange"
-            : !props.groupId
-              ? "#ef9a9a"
-              : undefined,
-        }}
-      >
-        {props.children}
-      </div>
-    </div>
-  );
-}
-
-function NewDroppableGroup(): React.ReactNode {
-  const { ref, isDropTarget } = useDroppable({
-    id: "new",
-    type: "column",
-    accept: "item",
-    collisionPriority: CollisionPriority.Low,
-  });
-
-  return (
-    <div ref={ref}>
-      <Typography style={{ fontSize: 12 }}>New Group</Typography>
-      <div
-        className="column center-div"
-        style={{
-          borderStyle: "solid",
-          borderWidth: 1,
-          borderRadius: 10,
-          padding: 15,
-          backgroundColor: isDropTarget ? "orange" : undefined,
-        }}
-      >
-        <Add fontSize="large" style={{ marginBottom: 5 }} />
-        <Typography>Drag here to create a new group</Typography>
-      </div>
-    </div>
-  );
-}
+import { copyAndSet } from "../../../helpers";
 
 export function RoomSetupView(props: {
   classroom: Classroom;
@@ -152,7 +56,7 @@ export function RoomSetupView(props: {
       const cur = studentMembers.find((m) => m.userId === member.userId);
       members.push({
         ...member,
-        groupId: !member.groupId && cur?.groupId ? cur.groupId : member.groupId,
+        groupId: cur?.groupId || member.groupId,
       });
     }
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -186,16 +90,12 @@ export function RoomSetupView(props: {
       .map((value) => ({ value, sort: Math.random() }))
       .sort((a, b) => a.sort - b.sort)
       .map(({ value }) => value);
+    let groupId = 1;
     for (let i = 0; i < shuffled.length; i++) {
-      if (!shuffled[i].groupId) {
-        let groupId = 1;
-        let groupMembers = shuffled.filter((m) => m.groupId === groupId);
-        while (groupMembers && groupMembers.length >= groupSize) {
-          groupId++;
-          groupMembers = shuffled.filter((m) => m.groupId === groupId);
-        }
-        shuffled[i].groupId = groupId;
+      if (i >= groupId * groupSize) {
+        groupId += 1;
       }
+      shuffled[i].groupId = groupId;
     }
     setStudentMembers(shuffled);
   };
@@ -275,61 +175,139 @@ export function RoomSetupView(props: {
           sx={{ width: "100%", height: "100%" }}
           cols={isMobile ? 1 : 3}
         >
-          <DragDropProvider
+          <DragDropContext
             onDragEnd={(event) => {
-              if (event.canceled) return;
-              const { source, target } = event.operation;
-              if (isSortable(source) && target?.isDropTarget) {
-                setStudentMembers((items) => {
-                  const idx = items.findIndex((s) => s.userId === source.id);
-                  if (target.id === "new") {
-                    const max = Math.max(
-                      ...Object.keys(groups).map((k) => Number.parseInt(k)),
-                    );
-                    items[idx].groupId = max + 1;
-                    return [...items];
-                  }
-                  const targetGroupIdx = Number.parseInt(`${target?.id}`);
-                  if (targetGroupIdx >= 0 && targetGroupIdx <= groupSize) {
-                    items[idx].groupId = targetGroupIdx;
-                  }
-                  return [...items];
-                });
+              if (!event.destination) return;
+              const idx = studentMembers.findIndex(
+                (s) => s.userId === event.draggableId,
+              );
+              if (event.destination.droppableId === "new") {
+                const max = Math.max(
+                  ...Object.keys(groups).map((k) => Number.parseInt(k)),
+                );
+                setStudentMembers(
+                  copyAndSet(studentMembers, idx, {
+                    ...studentMembers[idx],
+                    groupId: max + 1,
+                  }),
+                );
+              } else {
+                setStudentMembers(
+                  copyAndSet(studentMembers, idx, {
+                    ...studentMembers[idx],
+                    groupId: Number.parseInt(event.destination.droppableId),
+                  }),
+                );
               }
             }}
           >
-            {Object.values(groups).map((group, gIdx) => {
+            {Object.entries(groups).map(([gIdx, group]) => {
               return (
-                <DroppableGroup
-                  key={`group-${gIdx}`}
-                  groupId={group[0].groupId}
-                >
-                  {group.map((member, mIdx) => {
-                    const p = educationalData.students.find(
-                      (p) => p._id === member.userId,
-                    );
-                    const studentMembership = studentMemberships.find(
-                      (m) => m.userId === member.userId,
-                    );
-                    return (
-                      <ImageListItem key={member.userId}>
-                        {!studentMembership?.groupId ? (
-                          <DraggablePlayer
-                            player={p}
-                            group={member.groupId}
-                            index={gIdx * groupSize + mIdx}
-                          />
-                        ) : (
-                          <PlayerSprite player={p} color="white" />
-                        )}
-                      </ImageListItem>
-                    );
-                  })}
-                </DroppableGroup>
+                <div key={gIdx}>
+                  <Typography style={{ fontSize: 12 }}>
+                    {gIdx !== "0" ? `Group ${gIdx}` : "UNASSIGNED STUDENTS"}
+                  </Typography>
+                  <Droppable
+                    droppableId={`${gIdx}`}
+                    type="PERSON"
+                    direction="horizontal"
+                  >
+                    {(provided, snapshot) => (
+                      <div
+                        ref={provided.innerRef}
+                        className="row"
+                        style={{
+                          border: "1px solid white",
+                          borderRadius: 10,
+                          padding: 15,
+                          justifyContent: "space-evenly",
+                          backgroundColor: snapshot.isDraggingOver
+                            ? "orange"
+                            : gIdx === "0"
+                              ? "#ef9a9a"
+                              : undefined,
+                        }}
+                        {...provided.droppableProps}
+                      >
+                        {group.map((member, mIdx) => {
+                          const player = educationalData.students.find(
+                            (p) => p._id === member.userId,
+                          );
+                          const assignment = studentMemberships.find(
+                            (m) => m.userId === member.userId,
+                          );
+                          return (
+                            <ImageListItem key={member.userId}>
+                              {classroom.startedAt && assignment?.groupId ? (
+                                <PlayerSprite player={player} color="white" />
+                              ) : (
+                                <Draggable
+                                  key={player?._id}
+                                  draggableId={player?._id || `${mIdx}`}
+                                  index={mIdx}
+                                >
+                                  {(provided) => (
+                                    <div
+                                      ref={provided.innerRef}
+                                      {...provided.draggableProps}
+                                      {...provided.dragHandleProps}
+                                    >
+                                      <motion.div
+                                        whileHover={{ scale: 1.1 }}
+                                        className="column center-div"
+                                      >
+                                        <AvatarSprite
+                                          player={player}
+                                          bgColor="rgb(218, 183, 250)"
+                                        />
+                                        <Typography
+                                          variant="body2"
+                                          style={{
+                                            fontSize: 12,
+                                            textAlign: "center",
+                                          }}
+                                        >
+                                          {player?.name}
+                                        </Typography>
+                                      </motion.div>
+                                    </div>
+                                  )}
+                                </Draggable>
+                              )}
+                            </ImageListItem>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </Droppable>
+                </div>
               );
             })}
-            <NewDroppableGroup />
-          </DragDropProvider>
+            <div>
+              <Typography style={{ fontSize: 12 }}>New Group</Typography>
+              <Droppable droppableId="new" type="PERSON" direction="horizontal">
+                {(provided, snapshot) => (
+                  <div
+                    ref={provided.innerRef}
+                    className="column center-div"
+                    style={{
+                      border: "1px solid white",
+                      borderRadius: 10,
+                      padding: 15,
+                      justifyContent: "space-evenly",
+                      backgroundColor: snapshot.isDraggingOver
+                        ? "orange"
+                        : undefined,
+                    }}
+                    {...provided.droppableProps}
+                  >
+                    <Add fontSize="large" />
+                    <Typography>Drag here to create a new group</Typography>
+                  </div>
+                )}
+              </Droppable>
+            </div>
+          </DragDropContext>
         </ImageList>
       )}
 

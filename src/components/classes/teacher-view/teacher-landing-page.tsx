@@ -27,6 +27,7 @@ export default function TeacherLandingPage(): React.ReactNode {
     educationalData,
     adjustClassroomArchiveStatus,
     copyAndArchiveClassroom,
+    fetchInstructorDataHydration,
   } = useWithEducationalData();
   const { isMobile } = useWithWindow();
   const { player } = useAppSelector((state) => state.playerData);
@@ -76,6 +77,7 @@ export default function TeacherLandingPage(): React.ReactNode {
 
   async function onCopyAndArchive(c: Classroom): Promise<void> {
     const newClass = await copyAndArchiveClassroom(c._id);
+    await fetchInstructorDataHydration();
     setClassId(newClass.updatedClassroom._id);
   }
 

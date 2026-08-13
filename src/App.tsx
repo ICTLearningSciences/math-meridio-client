@@ -13,7 +13,7 @@ import { Header } from "./components/header";
 import AvatarPage from "./components/avatar-page";
 import PhaserTestPage from "./components/phaser-test-page";
 import { StageBuilderPage } from "./components/discussion-stage-builder/stage-builder-page";
-import Login from "./components/cognito_login/login";
+import LoginWrapper from "./components/cognito_login/login";
 import {
   ClassesPage,
   SelectedClassPage,
@@ -71,7 +71,7 @@ function RootLayout() {
 // Wrapper for LoginPage to provide useLogin
 function LoginPageWrapper() {
   const useLogin = useWithLogin();
-  return <Login useLogin={useLogin} />;
+  return <LoginWrapper useLogin={useLogin} />;
 }
 
 // Layout component for game routes that provides useWithEducationalData to child routes
