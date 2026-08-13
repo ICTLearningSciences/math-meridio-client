@@ -82,9 +82,12 @@ export default function AdminManageUsers(): React.ReactNode {
                   {
                     field: "name",
                     headerName: "Name",
-                    width: 300,
+                    width: 350,
                     renderCell: (params) => (
-                      <div className="row center-div spacing">
+                      <div
+                        className="row spacing"
+                        style={{ alignItems: "center" }}
+                      >
                         <AvatarSprite player={params.row} />
                         <Typography>{params.row.name}</Typography>
                       </div>
@@ -111,6 +114,12 @@ export default function AdminManageUsers(): React.ReactNode {
                         label={params.row.userRole}
                         value={params.row.userRole}
                         items={["USER", "ADMIN"]}
+                        buttonStyle={{
+                          backgroundColor:
+                            params.row.userRole === "ADMIN"
+                              ? "yellow"
+                              : undefined,
+                        }}
                         onSelect={(id: string) =>
                           updateUser(params.row.id, id as UserRole)
                         }
@@ -126,6 +135,12 @@ export default function AdminManageUsers(): React.ReactNode {
                         label={params.row.educationalRole || ""}
                         value={params.row.educationalRole}
                         items={["STUDENT", "INSTRUCTOR"]}
+                        buttonStyle={{
+                          backgroundColor:
+                            params.row.educationalRole === "INSTRUCTOR"
+                              ? "yellow"
+                              : undefined,
+                        }}
                         onSelect={(id: string) =>
                           updateUser(
                             params.row.id,

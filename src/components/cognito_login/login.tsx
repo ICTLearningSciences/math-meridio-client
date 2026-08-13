@@ -8,45 +8,47 @@ The full terms of this copyright and license should always be found in the root 
 import React, { useEffect } from "react";
 import { Authenticator } from "@aws-amplify/ui-react";
 import { fetchAuthSession } from "aws-amplify/auth";
-import { Hub } from "aws-amplify/utils";
+import { signOut } from "aws-amplify/auth";
 import { useNavigateWithParams } from "../../hooks/use-navigate-with-params";
 import type { UseWithLogin } from "../../store/slices/player/use-with-login";
 import { CircularProgress } from "@mui/material";
+import { useAppDispatch } from "../../store/hooks";
+import { clearPlayer, logout } from "../../store/slices/player";
 
-export default function Login(props: {
-  useLogin: UseWithLogin;
-}): React.ReactNode {
+function Login(props: { useLogin: UseWithLogin }): React.ReactNode {
   const { useLogin } = props;
   const { login, state: loginState } = useLogin;
   const navigate = useNavigateWithParams();
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
+    const fetchUserData = () => {
+      fetchAuthSession().then((authSession) => {
+        login(authSession?.tokens?.idToken?.toString())
+          .then(() => {
+            navigate("/classes");
+          })
+          .catch(() => {
+            dispatch(clearPlayer());
+            dispatch(logout());
+            signOut();
+          });
+      });
+    };
     if (loginState.loginStatus.status === 2) {
       navigate("/classes");
+    } else {
+      fetchUserData();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    // Listen for auth events
-    const unsubscribe = Hub.listen("auth", (data) => {
-      const { event } = data.payload;
-      const fetchUserData = () => {
-        fetchAuthSession().then((authSession) => {
-          login(authSession?.tokens?.idToken?.toString()).then(() => {
-            navigate("/classes");
-          });
-        });
-      };
-      if (event === "signedIn") {
-        fetchUserData();
-      }
-    });
-    // Cleanup the listener when the component unmounts
-    return () => unsubscribe();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  return <CircularProgress />;
+}
 
+export default function LoginWrapper(props: {
+  useLogin: UseWithLogin;
+}): React.ReactNode {
   return (
     <div
       style={{
@@ -58,14 +60,8 @@ export default function Login(props: {
       }}
     >
       <Authenticator loginMechanism="email" socialProviders={["google"]}>
-        {() => <CircularProgress />}
+        {() => <Login useLogin={props.useLogin} />}
       </Authenticator>
-      <div
-        style={{
-          position: "absolute",
-          bottom: "0",
-        }}
-      ></div>
     </div>
   );
 }

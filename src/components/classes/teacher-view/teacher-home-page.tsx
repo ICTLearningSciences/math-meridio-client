@@ -10,16 +10,11 @@ import { Typography } from "@mui/material";
 import type { Classroom } from "../../../store/slices/educational-data/types";
 import ActiveSessionView from "./teacher-session-page";
 import { RoomSetupView } from "./teacher-room-setup";
-import { useWithEducationalData } from "../../../store/slices/educational-data/use-with-educational-data";
 
 export default function TeacherHome(props: {
   classroom?: Classroom;
 }): React.ReactNode {
   const { classroom } = props;
-  const { educationalData } = useWithEducationalData();
-  const rooms = educationalData.rooms.filter(
-    (r) => r.classId === classroom?._id,
-  );
 
   if (!classroom) {
     return (
@@ -31,7 +26,7 @@ export default function TeacherHome(props: {
     );
   }
 
-  if (rooms.length === 0) {
+  if (!classroom.startedAt) {
     return (
       <div className="dashboard">
         <RoomSetupView classroom={classroom} />
