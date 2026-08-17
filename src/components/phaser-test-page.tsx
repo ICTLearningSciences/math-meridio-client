@@ -26,6 +26,16 @@ function PhaserTestPage(): React.ReactNode {
   const [game] = React.useState<string>("concert");
   const { startPhaserGame } = useWithPhaserGame(gameContainerRef);
 
+  React.useEffect(() => {
+    if (game === "basketball") {
+      startPhaserGame(BasketballGame.config, "Simulation");
+    } else {
+      startPhaserGame(ConcertGame.config, "Simulation");
+    }
+    EventSystem.on("sceneCreated", sceneCreated);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [game]);
+
   function sceneCreated() {
     if (game === "basketball") {
       const outside = getRandomNumber(10, 50);
@@ -72,16 +82,6 @@ function PhaserTestPage(): React.ReactNode {
       });
     }
   }
-
-  React.useEffect(() => {
-    if (game === "basketball") {
-      startPhaserGame(BasketballGame.config, "Simulation");
-    } else {
-      startPhaserGame(ConcertGame.config, "Simulation");
-    }
-    EventSystem.on("sceneCreated", sceneCreated);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [game]);
 
   return (
     <>

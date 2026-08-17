@@ -92,8 +92,10 @@ export function RoomSetupView(props: {
       .map(({ value }) => value);
     let groupId = 1;
     for (let i = 0; i < shuffled.length; i++) {
-      if (i >= groupId * groupSize) {
-        groupId += 1;
+      if (classroom.startedAt && shuffled[i].groupId) continue;
+      let curGroupSize = shuffled.filter((m) => m.groupId === groupId).length;
+      while (curGroupSize >= groupSize) {
+        curGroupSize = shuffled.filter((m) => m.groupId === ++groupId).length;
       }
       shuffled[i].groupId = groupId;
     }

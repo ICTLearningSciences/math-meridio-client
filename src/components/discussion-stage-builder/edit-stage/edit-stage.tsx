@@ -42,7 +42,6 @@ const VisuallyHiddenInput = styled("input")({
 });
 
 export function EditDiscussionStage(props: {
-  goToStage: (stage: DiscussionStage) => void;
   stage: DiscussionStage;
   saveStage: (stage: DiscussionStage) => Promise<DiscussionStage>;
   returnTo: () => void;

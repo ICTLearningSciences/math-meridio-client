@@ -12,7 +12,6 @@ import { Amplify } from "aws-amplify";
 import { Header } from "./components/header";
 import AvatarPage from "./components/avatar-page";
 import PhaserTestPage from "./components/phaser-test-page";
-import { StageBuilderPage } from "./components/discussion-stage-builder/stage-builder-page";
 import LoginWrapper from "./components/cognito_login/login";
 import {
   ClassesPage,
@@ -111,19 +110,10 @@ const router = createBrowserRouter([
           },
         ],
       },
+      // admin pages
       {
         path: "/admin",
         element: <AdminPage />,
-      },
-      {
-        path: "/discussion-builder",
-        element: (
-          <StageBuilderPage
-            goToStage={() => {
-              console.log("");
-            }}
-          />
-        ),
       },
       // test stuff only remove later
       {

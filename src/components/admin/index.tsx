@@ -11,6 +11,7 @@ import { Typography } from "@mui/material";
 import { useAppSelector } from "../../store/hooks";
 import { Tabs } from "../tab";
 import AdminManageUsers from "./manage-users";
+import { StageBuilderPage } from "../discussion-stage-builder/stage-builder-page";
 
 export default function AdminPage(): React.ReactNode {
   const { player } = useAppSelector((state) => state.playerData);
@@ -48,6 +49,10 @@ export default function AdminPage(): React.ReactNode {
           {
             name: "MANAGE USERS",
             element: <AdminManageUsers />,
+          },
+          {
+            name: "DISCUSSION BUILDER",
+            element: <StageBuilderPage />,
           },
         ]}
       />
