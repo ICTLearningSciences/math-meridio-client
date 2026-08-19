@@ -29,7 +29,7 @@ import {
   arrayNRandom,
   getRandomAvatar,
   getRandomNumber,
-  randomInt,
+  getRandomInt,
 } from "../../helpers";
 
 export interface ConcertTicketSalesSimulationData {
@@ -552,7 +552,7 @@ export class SimulationScene extends GameScene {
       lights.play("lights_off");
     }
 
-    playSound(this, `music${randomInt(6)}`, { loop: true, volume: 0.5 });
+    playSound(this, `music${getRandomInt(6)}`, { loop: true, volume: 0.5 });
     this.destroySprite(this.mySprite);
     this.vipText?.destroy();
     this.reservedText?.destroy();
@@ -621,7 +621,7 @@ export class SimulationScene extends GameScene {
       delay: 500,
       loop: true,
       callback: () => {
-        const rand = randomInt(3);
+        const rand = getRandomInt(3);
         this.playSpriteAnim(
           this.mySprite,
           rand === 0 ? "walk" : rand === 1 ? "walk_left" : "walk_right",

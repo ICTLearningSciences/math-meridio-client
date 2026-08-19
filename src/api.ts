@@ -316,13 +316,15 @@ export function convertGqlToDiscussionStage(
 
 export async function addOrUpdateDiscussionStage(
   stage: DiscussionStage,
-  password: string,
 ): Promise<DiscussionStage> {
+  const accessToken = localStorageGet<string>(ACCESS_TOKEN_KEY);
   const res = await execGql<DiscussionStageGQL>(
     {
       query: `mutation AddOrUpdateDiscussionStage($stage: DiscussionStageInputType!) {
-        addOrUpdateDiscussionStage(stage: $stage) {
-          ${fullDiscussionStageQueryData}
+        admin {
+          addOrUpdateDiscussionStage(stage: $stage) {
+            ${fullDiscussionStageQueryData}
+          }
         }
        }`,
       variables: {
@@ -331,7 +333,7 @@ export async function addOrUpdateDiscussionStage(
     },
     {
       dataPath: "addOrUpdateDiscussionStage",
-      accessToken: password,
+      accessToken: accessToken || undefined,
     },
   );
   return convertGqlToDiscussionStage(res);

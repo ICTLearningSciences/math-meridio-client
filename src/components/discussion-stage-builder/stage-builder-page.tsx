@@ -6,68 +6,36 @@ The full terms of this copyright and license should always be found in the root 
 */
 
 import React from "react";
-import { Button, TextField, Tabs, Tab, Box } from "@mui/material";
+import { Tabs, Tab, Box } from "@mui/material";
 import { SelectCreateStage } from "./select-create-stage";
 import { EditDiscussionStage } from "./edit-stage/edit-stage";
 import type { DiscussionStage } from "./types";
 import { useWithStages } from "../../store/slices/stages/use-with-stages";
 import { getAllStartOfPhaseSteps } from "../../helpers";
 import { LearningObjectivesBuilder } from "./learning-objectives-builder";
-import { localStorageGet } from "../../store/local-storage";
 
-export function StageBuilderPage(props: {
-  goToStage: (stage: DiscussionStage) => void;
-}): React.ReactNode {
+export function StageBuilderPage(): React.ReactNode {
   const {
     addNewLocalDiscussionStage,
     addOrUpdateDiscussionStage,
     discussionStages,
   } = useWithStages();
-  const { goToStage } = props;
   const existingStages: DiscussionStage[] = discussionStages;
 
   const gameIdentifierToStartOfPhaseSteps =
     getAllStartOfPhaseSteps(existingStages);
   const [selectedStageClientId, setSelectedStageClientId] =
     React.useState<string>("");
-  const localStorageGqlSecret = localStorageGet<string>("gqlSecret");
-  const [password, setPassword] = React.useState<string>(
-    localStorageGqlSecret || "",
-  );
-  const [authorized, setAuthorized] = React.useState<boolean>(
-    localStorageGqlSecret === import.meta.env.VITE_GQL_SECRET || false,
-  );
   const [selectedTab, setSelectedTab] = React.useState<number>(0);
 
   const selectedStage = existingStages.find(
     (stage) => stage.clientId === selectedStageClientId,
   );
 
-  if (!authorized) {
-    return (
-      <>
-        <TextField
-          label="Password"
-          variant="filled"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <Button
-          disabled={password !== import.meta.env.VITE_GQL_SECRET}
-          onClick={() => setAuthorized(true)}
-        >
-          Login
-        </Button>
-      </>
-    );
-  }
-
   const renderDiscussionStagesTab = () => {
     if (!selectedStage) {
       return (
         <SelectCreateStage
-          goToStage={goToStage}
           existingStages={existingStages}
           onEditStage={(stage) => {
             setSelectedStageClientId(stage.clientId);
@@ -84,10 +52,9 @@ export function StageBuilderPage(props: {
           returnTo={() => {
             setSelectedStageClientId("");
           }}
-          goToStage={goToStage}
           stage={selectedStage}
           saveStage={async (stage) => {
-            return await addOrUpdateDiscussionStage(stage, password);
+            return await addOrUpdateDiscussionStage(stage);
           }}
           gameIdentifierToStartOfPhaseSteps={gameIdentifierToStartOfPhaseSteps}
         />

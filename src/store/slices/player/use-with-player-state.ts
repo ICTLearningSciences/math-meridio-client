@@ -10,7 +10,7 @@ import { savePlayer } from "./index";
 import { jsonLlmRequest } from "../../../classes/api-helpers";
 import type { GenericLlmRequest } from "../../../types";
 import { useAppDispatch, useAppSelector } from "../../hooks";
-import { arrayGetRandom, randomInt } from "../../../helpers";
+import { getRandomArrayItem, getRandomInt } from "../../../helpers";
 import { useWithConfig } from "../config/use-with-config";
 
 export const pickAvatarSchema: Schema = {
@@ -80,10 +80,11 @@ export function useWithPlayer() {
         const avatar: Avatar[] = [];
         const bodies = sprites.filter((s) => s.type.endsWith("body"));
         const body = {
-          ...(bodies[i % bodies.length] || arrayGetRandom<Avatar>(SPRITE_BODY)),
+          ...(bodies[i % bodies.length] ||
+            getRandomArrayItem<Avatar>(SPRITE_BODY)),
         };
         body.variant = body.variants
-          ? randomInt(body.variants.length)
+          ? getRandomInt(body.variants.length)
           : undefined;
         avatar.push(body);
 
@@ -93,7 +94,7 @@ export function useWithPlayer() {
         );
         const top = {
           ...(tops[i % tops.length] ||
-            arrayGetRandom<Avatar>(
+            getRandomArrayItem<Avatar>(
               SPRITE_CLOTHES.filter(
                 (s) =>
                   s.type.endsWith("clothes_top") ||
@@ -101,7 +102,9 @@ export function useWithPlayer() {
               ),
             )),
         };
-        top.variant = top.variants ? randomInt(top.variants.length) : undefined;
+        top.variant = top.variants
+          ? getRandomInt(top.variants.length)
+          : undefined;
         avatar.push(top);
 
         if (top.type.endsWith("_top")) {
@@ -110,12 +113,12 @@ export function useWithPlayer() {
           );
           const bottom = {
             ...(bottoms[i % bottoms.length] ||
-              arrayGetRandom<Avatar>(
+              getRandomArrayItem<Avatar>(
                 SPRITE_CLOTHES.filter((s) => s.type.endsWith("clothes_bottom")),
               )),
           };
           bottom.variant = bottom.variants
-            ? randomInt(bottom.variants.length)
+            ? getRandomInt(bottom.variants.length)
             : undefined;
           avatar.push(bottom);
         }
@@ -123,10 +126,10 @@ export function useWithPlayer() {
         const hairStyles = sprites.filter((s) => s.type.endsWith("hair"));
         const hair = {
           ...(hairStyles[i % hairStyles.length] ||
-            arrayGetRandom<Avatar>(SPRITE_HAIR)),
+            getRandomArrayItem<Avatar>(SPRITE_HAIR)),
         };
         hair.variant = hair.variants
-          ? randomInt(hair.variants.length)
+          ? getRandomInt(hair.variants.length)
           : undefined;
         avatar.push(hair);
 
@@ -134,7 +137,7 @@ export function useWithPlayer() {
         const acc = { ...accessories[i % accessories.length] };
         if (acc) {
           acc.variant = acc.variants
-            ? randomInt(acc.variants.length)
+            ? getRandomInt(acc.variants.length)
             : undefined;
           avatar.push(acc);
         }

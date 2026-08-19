@@ -23,7 +23,7 @@ import {
   Visibility,
   VisibilityOff,
 } from "@mui/icons-material";
-import { GAMES } from "../game/types";
+import { GAMES, type GameType } from "../game/types";
 import type { Classroom } from "../store/slices/educational-data/types";
 import { useWithEducationalData } from "../store/slices/educational-data/use-with-educational-data";
 import { useAppSelector } from "../store/hooks";
@@ -323,8 +323,8 @@ export function ClassDropdown(props: {
 }
 
 export function GamesDropdown(props: {
-  game?: string;
-  setGame: (id: string) => void;
+  game?: GameType;
+  setGame: (id: GameType) => void;
   buttonStyle?: CSS.Properties;
 }): React.ReactNode {
   const { game, setGame } = props;
@@ -333,7 +333,7 @@ export function GamesDropdown(props: {
       label={GAMES.find((g) => g.id === game)?.name || "All Games"}
       value={game}
       items={["", ...GAMES.map((g) => g.id)]}
-      onSelect={(id: string) => setGame(id)}
+      onSelect={(id: string) => setGame(id as GameType)}
       renderItem={(id) => {
         return (
           <Typography>

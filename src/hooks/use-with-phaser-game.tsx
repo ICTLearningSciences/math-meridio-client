@@ -72,6 +72,7 @@ export function useWithPhaserGame(
     setScene(scene);
     phaserGame.scene.start(scene, { player });
   }
+
   function destroyPhaserGame(phaserGame: Phaser.Game): void {
     if (phaserGame) {
       phaserGame.destroy(false);

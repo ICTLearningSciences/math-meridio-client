@@ -27,11 +27,8 @@ export function useWithStages() {
 
   async function addOrUpdateDiscussionStage(
     stage: DiscussionStage,
-    password: string,
   ): Promise<DiscussionStage> {
-    const res = await dispatch(
-      _addOrUpdateDiscussionStage({ stage, password }),
-    );
+    const res = await dispatch(_addOrUpdateDiscussionStage({ stage }));
     return res.payload as DiscussionStage;
   }
 

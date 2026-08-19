@@ -168,6 +168,107 @@ export abstract class GameScene extends Scene {
           frameOffset: 11,
           variants: a.variants?.length,
         });
+        this.createSpriteAnim({
+          name: a.id,
+          variant: i,
+          anim: "dance",
+          numFrames: 8,
+          frameOffset: 12,
+          variants: a.variants?.length,
+        });
+        this.createSpriteAnim({
+          name: a.id,
+          variant: i,
+          anim: "dance_back",
+          numFrames: 8,
+          frameOffset: 13,
+          variants: a.variants?.length,
+        });
+        this.createSpriteAnim({
+          name: a.id,
+          variant: i,
+          anim: "dance_right",
+          numFrames: 8,
+          frameOffset: 14,
+          variants: a.variants?.length,
+        });
+        this.createSpriteAnim({
+          name: a.id,
+          variant: i,
+          anim: "dance_left",
+          numFrames: 8,
+          frameOffset: 15,
+          variants: a.variants?.length,
+        });
+        this.createSpriteAnim({
+          name: a.id,
+          variant: i,
+          anim: "sword_right",
+          numFrames: 4,
+          frameOffset: 18,
+          variants: a.variants?.length,
+          repeat: true,
+        });
+        this.createSpriteAnim({
+          name: a.id,
+          variant: i,
+          anim: "pickaxe_right",
+          numFrames: 5,
+          frameOffset: 31,
+          variants: a.variants?.length,
+          repeat: true,
+        });
+        this.createSpriteAnim({
+          name: a.id,
+          variant: i,
+          anim: "axe_right",
+          numFrames: 5,
+          frameOffset: 35,
+          variants: a.variants?.length,
+          repeat: true,
+        });
+        this.createSpriteAnim({
+          name: a.id,
+          variant: i,
+          anim: "plow_right",
+          numFrames: 5,
+          frameOffset: 43,
+          variants: a.variants?.length,
+          repeat: true,
+        });
+        this.createSpriteAnim({
+          name: a.id,
+          variant: i,
+          anim: "fish_right",
+          numFrames: 5,
+          frameOffset: 47,
+          variants: a.variants?.length,
+          repeat: true,
+        });
+        this.createSpriteAnim({
+          name: a.id,
+          variant: i,
+          anim: "sit",
+          numFrames: 1,
+          frameOffset: 24,
+          variants: a.variants?.length,
+        });
+        this.createSpriteAnim({
+          name: a.id,
+          variant: i,
+          anim: "sit_right",
+          numFrames: 1,
+          frameOffset: 26,
+          variants: a.variants?.length,
+        });
+        this.createSpriteAnim({
+          name: a.id,
+          variant: i,
+          anim: "sit_left",
+          numFrames: 1,
+          frameOffset: 27,
+          variants: a.variants?.length,
+        });
       }
     }
 

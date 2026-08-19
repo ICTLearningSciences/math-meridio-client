@@ -12,7 +12,6 @@ import { RowDiv, ColumnDiv } from "../../styled-components";
 
 export function ExistingStageItem(props: {
   stage: DiscussionStage;
-  goToStage: () => void;
   editStage: () => void;
 }) {
   const { stage, editStage } = props;
@@ -33,7 +32,6 @@ export function ExistingStageItem(props: {
 }
 
 export function ExistingStages(props: {
-  goToStage: (stage: DiscussionStage) => void;
   stages: DiscussionStage[];
   editStage: (stage: DiscussionStage) => void;
 }): React.ReactNode {
@@ -75,9 +73,6 @@ export function ExistingStages(props: {
               editStage={() => {
                 editStage(stage);
               }}
-              goToStage={() => {
-                props.goToStage(stage);
-              }}
             />
           ))}
         </div>
@@ -92,9 +87,6 @@ export function ExistingStages(props: {
               editStage={() => {
                 editStage(stage);
               }}
-              goToStage={() => {
-                props.goToStage(stage);
-              }}
             />
           ))}
         </div>
@@ -104,12 +96,11 @@ export function ExistingStages(props: {
 }
 
 export function SelectCreateStage(props: {
-  goToStage: (stage: DiscussionStage) => void;
   existingStages: DiscussionStage[];
   onEditStage: (stage: DiscussionStage) => void;
   onCreateStage: () => void;
 }): React.ReactNode {
-  const { existingStages, onEditStage, onCreateStage, goToStage } = props;
+  const { existingStages, onEditStage, onCreateStage } = props;
   return (
     <ColumnDiv
       style={{
@@ -121,11 +112,7 @@ export function SelectCreateStage(props: {
       }}
     >
       <h1>Discussion Stage Builder</h1>
-      <ExistingStages
-        goToStage={goToStage}
-        stages={existingStages}
-        editStage={onEditStage}
-      />
+      <ExistingStages stages={existingStages} editStage={onEditStage} />
       <Button onClick={onCreateStage}>+ Create New Discussion Stage</Button>
     </ColumnDiv>
   );
