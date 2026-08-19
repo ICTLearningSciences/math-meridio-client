@@ -38,7 +38,7 @@ import {
 } from "./skill-card";
 import type { Room } from "../../../store/slices/game/types";
 import { useWithEducationalData } from "../../../store/slices/educational-data/use-with-educational-data";
-import { GAMES } from "../../../game/types";
+import { GAMES, type GameType } from "../../../game/types";
 import { GamesDropdown } from "../../button";
 import { PlayerSprite } from "../../avatar-sprite";
 import type { SkillsMet } from "../../../types";
@@ -113,7 +113,7 @@ export function PhaseReportCard(props: {
 }): React.ReactNode {
   const { classroom } = props;
   const { educationalData } = useWithEducationalData();
-  const [game, setGame] = React.useState<string>();
+  const [game, setGame] = React.useState<GameType>();
   const [phase, setPhase] = React.useState<number>();
 
   const gameRooms = educationalData.rooms.filter(
@@ -204,7 +204,7 @@ export function PhaseReportCard(props: {
       >
         <GamesDropdown
           game={game}
-          setGame={(id: string) => setGame(id)}
+          setGame={(id) => setGame(id)}
           buttonStyle={{ borderColor: "black" }}
         />
 

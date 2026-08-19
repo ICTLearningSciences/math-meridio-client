@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { CircularProgress } from "@mui/material";
 
 import { useAppDispatch, useAppSelector } from "./store/hooks";
-import { clearPlayer } from "./store/slices/player";
+import { logout } from "./store/slices/player";
 import { fetchDiscussionStages } from "./store/slices/stages";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -22,10 +22,10 @@ const withAuthorizationOnly = (Component: any) => (props: any) => {
   React.useEffect(() => {
     if (
       loginStatus.status === 0 ||
-      loginStatus.status === 4 ||
-      loginStatus.status === 3
+      loginStatus.status === 3 ||
+      loginStatus.status === 4
     ) {
-      dispatch(clearPlayer());
+      dispatch(logout());
       navigate("/");
       return;
     }

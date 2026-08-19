@@ -21,7 +21,7 @@ import { Logout } from "@mui/icons-material";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import AvatarSprite from "./avatar-sprite";
 import { useWithEducationalData } from "../store/slices/educational-data/use-with-educational-data";
-import { clearPlayer, logout } from "../store/slices/player";
+import { logout } from "../store/slices/player";
 import { HelpRequestButton } from "./help-request-button";
 import { RefreshRequestButton } from "./refresh-request-button";
 import { useWithWindow } from "../hooks/use-with-window";
@@ -54,6 +54,11 @@ export function Header() {
 
   function homeButtonClick() {
     navigate("/classes");
+  }
+
+  async function handleLogout() {
+    await signOut();
+    dispatch(logout());
   }
 
   if (!player) {
@@ -124,15 +129,7 @@ export function Header() {
                 open={Boolean(anchorEl)}
                 onClose={() => setAnchorEl(null)}
               >
-                <MenuItem
-                  onClick={() => {
-                    dispatch(clearPlayer());
-                    dispatch(logout());
-                    signOut();
-                  }}
-                >
-                  Logout
-                </MenuItem>
+                <MenuItem onClick={handleLogout}>Logout</MenuItem>
                 {player.userRole === "ADMIN" && (
                   <MenuItem onClick={() => navigate("/admin")}>Admin</MenuItem>
                 )}
