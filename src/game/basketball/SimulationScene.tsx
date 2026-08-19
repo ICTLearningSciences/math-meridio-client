@@ -5,7 +5,12 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import GameScene from "../game-scene";
-import { addBackground, addImage, addTween } from "../phaser-helpers";
+import {
+  addBackground,
+  addImage,
+  addTween,
+  playSound,
+} from "../phaser-helpers";
 import EventSystem from "../event-system";
 import {
   INSIDE_SHOT_SUCCESS_VALUE,
@@ -55,6 +60,11 @@ export class SimulationScene extends GameScene {
     this.load.image("court", "court_side.jpg");
     this.load.image("hoop", "court_hoop.jpg");
     this.load.image("basketball", "basketball.png");
+    this.load.audio("swish", ["swish.wav"]);
+    this.load.audio("basketball", ["basketball.wav"]);
+    this.load.setPath("/assets/concert");
+    this.load.audio("cheers", ["cheers.wav"]);
+    this.load.audio("wrong", ["wrong.mp3"]);
   }
 
   create() {
@@ -173,6 +183,7 @@ export class SimulationScene extends GameScene {
 
   _shoot(shot: BasketballShot) {
     // jump
+    playSound(this, "basketball", { volume: 2 });
     this.playSpriteAnim(this.mySprite, `jump_right`);
     const hoop = addImage(this, "hoop", undefined, {
       bg: this.bg,
@@ -192,6 +203,11 @@ export class SimulationScene extends GameScene {
       duration: 1000,
       onComplete: () => {
         // show whether shot made or not
+        if (shot.success) {
+          playSound(this, "swish", { volume: 5 });
+        } else {
+          playSound(this, "wrong", { volume: 2 });
+        }
         hoop.setAlpha(1);
         ball.displayHeight = 200;
         ball.displayWidth = 200;

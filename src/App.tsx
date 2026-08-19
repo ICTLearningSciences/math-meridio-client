@@ -11,7 +11,6 @@ import { Amplify } from "aws-amplify";
 
 import { Header } from "./components/header";
 import AvatarPage from "./components/avatar-page";
-import PhaserTestPage from "./components/phaser-test-page";
 import LoginWrapper from "./components/cognito_login/login";
 import {
   ClassesPage,
@@ -114,11 +113,6 @@ const router = createBrowserRouter([
       {
         path: "/admin",
         element: <AdminPage />,
-      },
-      // test stuff only remove later
-      {
-        path: "/phaser",
-        element: <PhaserTestPage />,
       },
     ],
   },

@@ -7,7 +7,7 @@ The full terms of this copyright and license should always be found in the root 
 
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { randomInt } from "../helpers";
+import { getRandomInt } from "../helpers";
 
 import "./animated-text.css";
 
@@ -67,7 +67,7 @@ export const WavyText = ({ text = "Wavy Motion" }: { text?: string }) => {
     <h4 className="row center-div">
       {text.split("").map((char, i) => {
         const yOffset = Math.sin(animationTime + i * 0.3) * 5;
-        const color = colors[randomInt(colors.length)];
+        const color = colors[getRandomInt(colors.length)];
         return (
           <motion.span
             key={i}

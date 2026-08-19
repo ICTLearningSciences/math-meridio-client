@@ -8,11 +8,15 @@ The full terms of this copyright and license should always be found in the root 
 import React from "react";
 import BasketballGame from "./basketball";
 import ConcertTicketSalesGame from "./concert-ticket-sales";
+import SocialMediaInfluencerGame from "./social-media";
 import type { GameData, GameStateData, Room } from "../store/slices/game/types";
 import type { Player } from "../store/slices/player/types";
 
+export type GameType =
+  "basketball" | "concert-ticket-sales" | "social-media-influencer";
+
 export interface Game {
-  id: "basketball" | "concert-ticket-sales";
+  id: GameType;
   name: string;
   problem: string;
   minProblem?: string;
@@ -36,4 +40,8 @@ export interface Game {
   showResult: (uiGameData: GameData) => React.ReactNode;
 }
 
-export const GAMES: Game[] = [BasketballGame, ConcertTicketSalesGame];
+export const GAMES: Game[] = [
+  BasketballGame,
+  ConcertTicketSalesGame,
+  SocialMediaInfluencerGame,
+];

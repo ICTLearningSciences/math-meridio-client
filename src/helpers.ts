@@ -119,17 +119,33 @@ export function arrayNRandom(arr: any[], n: number): any[] {
   return result;
 }
 
-export function randomInt(n: number): number {
-  return Math.floor(Math.random() * n);
+export function delay(ms: number) {
+  return new Promise((res) => setTimeout(res, ms));
+}
+
+export function getRandomInt(n: number, max?: number): number {
+  if (max === undefined) return Math.floor(Math.random() * n);
+  const min = Math.ceil(n);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 export function getRandomNumber(min: number, max: number) {
   return Math.random() * (max - min) + min;
 }
 
-export function arrayGetRandom<T>(arr: T[]): T | undefined {
+export function getRandomArrayItem<T>(arr: T[]): T | undefined {
   if (arr.length === 0) return undefined;
-  return arr[randomInt(arr.length)];
+  return arr[getRandomInt(arr.length)];
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getShuffledArray(arr: any[]) {
+  const shuffled = arr
+    .map((value) => ({ value, sort: Math.random() }))
+    .sort((a, b) => a.sort - b.sort)
+    .map(({ value }) => value);
+  return shuffled;
 }
 
 export function isEqual<T>(obj1: T, obj2: T): boolean {
@@ -191,35 +207,39 @@ export function requireEnv(key: string): string {
 
 export function getRandomAvatar() {
   const avatar: Avatar[] = [];
-  const body = arrayGetRandom<Avatar>(SPRITE_BODY);
+  const body = getRandomArrayItem<Avatar>(SPRITE_BODY);
   if (body) {
-    body.variant = body.variants ? randomInt(body.variants.length) : undefined;
+    body.variant = body.variants
+      ? getRandomInt(body.variants.length)
+      : undefined;
     avatar.push(body);
   }
-  const top = arrayGetRandom<Avatar>(
+  const top = getRandomArrayItem<Avatar>(
     SPRITE_CLOTHES.filter(
       (s) =>
         s.type.endsWith("clothes_top") || s.type.endsWith("clothes_outfit"),
     ),
   );
   if (top) {
-    top.variant = top.variants ? randomInt(top.variants.length) : undefined;
+    top.variant = top.variants ? getRandomInt(top.variants.length) : undefined;
     avatar.push(top);
     if (top.type.endsWith("_top")) {
-      const bottom = arrayGetRandom<Avatar>(
+      const bottom = getRandomArrayItem<Avatar>(
         SPRITE_CLOTHES.filter((s) => s.type.endsWith("clothes_bottom")),
       );
       if (bottom) {
         bottom.variant = bottom.variants
-          ? randomInt(bottom.variants.length)
+          ? getRandomInt(bottom.variants.length)
           : undefined;
         avatar.push(bottom);
       }
     }
   }
-  const hair = arrayGetRandom<Avatar>(SPRITE_HAIR);
+  const hair = getRandomArrayItem<Avatar>(SPRITE_HAIR);
   if (hair) {
-    hair.variant = hair.variants ? randomInt(hair.variants.length) : undefined;
+    hair.variant = hair.variants
+      ? getRandomInt(hair.variants.length)
+      : undefined;
     avatar.push(hair);
   }
   return avatar;

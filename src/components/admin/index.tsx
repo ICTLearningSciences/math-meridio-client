@@ -12,6 +12,7 @@ import { useAppSelector } from "../../store/hooks";
 import { Tabs } from "../tab";
 import AdminManageUsers from "./manage-users";
 import { StageBuilderPage } from "../discussion-stage-builder/stage-builder-page";
+import PhaserTestPage from "../phaser-test-page";
 
 export default function AdminPage(): React.ReactNode {
   const { player } = useAppSelector((state) => state.playerData);
@@ -46,6 +47,10 @@ export default function AdminPage(): React.ReactNode {
         onSelectTab={(t) => setSearchParams({ ...searchParams, tab: `${t}` })}
         tabsStyle={{ margin: "10px" }}
         tabs={[
+          {
+            name: "PHASER TEST",
+            element: <PhaserTestPage />,
+          },
           {
             name: "MANAGE USERS",
             element: <AdminManageUsers />,

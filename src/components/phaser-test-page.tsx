@@ -7,92 +7,125 @@ The full terms of this copyright and license should always be found in the root 
 import React from "react";
 import { useWithPhaserGame } from "../hooks/use-with-phaser-game";
 import { useAppSelector } from "../store/hooks";
+import { GAMES, type GameType } from "../game/types";
 import BasketballGame from "../game/basketball";
-import ConcertGame, {
-  GENERAL_ADMISSION_TICKET_CONVERSION_RATE,
-  GENERAL_ADMISSION_TICKET_PRICE,
-  RESERVED_TICKET_CONVERSION_RATE,
-  RESERVED_TICKET_PRICE,
-  VIP_TICKET_CONVERSION_RATE,
-  VIP_TICKET_PRICE,
-} from "../game/concert-ticket-sales";
-import withAuthorizationOnly from "../wrap-with-authorization-only";
+import ConcertGame from "../game/concert-ticket-sales";
+import SocialMediaGame from "../game/social-media";
 import EventSystem from "../game/event-system";
+import { DropdownButton, OutlinedButton } from "./button";
 import { getRandomNumber } from "../helpers";
+import withAuthorizationOnly from "../wrap-with-authorization-only";
+import { Typography } from "@mui/material";
+
+const GAME_CONFIGS: Record<GameType, Phaser.Types.Core.GameConfig> = {
+  basketball: BasketballGame.config,
+  "concert-ticket-sales": ConcertGame.config,
+  "social-media-influencer": SocialMediaGame.config,
+};
 
 function PhaserTestPage(): React.ReactNode {
   const { player } = useAppSelector((state) => state.playerData);
   const gameContainerRef = React.useRef<HTMLDivElement | null>(null);
-  const [game] = React.useState<string>("concert");
-  const { startPhaserGame } = useWithPhaserGame(gameContainerRef);
+  const [gameType, setGameType] = React.useState<GameType>();
+  const { phaserGame, startPhaserGame, destroyPhaserGame } =
+    useWithPhaserGame(gameContainerRef);
 
-  React.useEffect(() => {
-    if (game === "basketball") {
-      startPhaserGame(BasketballGame.config, "Simulation");
-    } else {
-      startPhaserGame(ConcertGame.config, "Simulation");
-    }
-    EventSystem.on("sceneCreated", sceneCreated);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [game]);
+  function runGame() {
+    if (gameType === "basketball") runBasketball();
+    else if (gameType === "concert-ticket-sales") runConcert();
+    else if (gameType === "social-media-influencer") runSocialMedia();
+  }
 
-  function sceneCreated() {
-    if (game === "basketball") {
-      const outside = getRandomNumber(10, 50);
-      const mid = getRandomNumber(10, 50);
-      const inside = 100 - outside - mid;
-      EventSystem.emit("simulate", {
-        player: player?._id,
-        playerAvatar: player,
-        insideShots: inside,
-        midShots: mid,
-        outsideShots: outside,
-        insidePoints: 2,
-        midPoints: 2,
-        outsidePoints: 3,
-        insidePercent: 0.75,
-        midPercent: 0.5,
-        outsidePercent: 0.25,
-      });
-    } else {
-      const vip = getRandomNumber(0, 50);
-      const vipSold = Math.round(vip * VIP_TICKET_CONVERSION_RATE);
-      const reserved = getRandomNumber(0, 50);
-      const reservedSold = Math.round(
-        reserved * RESERVED_TICKET_CONVERSION_RATE,
-      );
-      const general = 100 - vip - reserved;
-      const generalSold = Math.round(
-        general * GENERAL_ADMISSION_TICKET_CONVERSION_RATE,
-      );
-
-      EventSystem.emit("simulate", {
-        player: player?._id,
-        playerAvatar: player,
-        generalAdmissionTicketsUpForSale: general,
-        reservedTicketsUpForSale: reserved,
-        vipTicketsUpForSale: vip,
-        generalAdmissionTicketsSold: generalSold,
-        reservedTicketsSold: reservedSold,
-        vipTicketsSold: vipSold,
-        totalProfit:
-          generalSold * GENERAL_ADMISSION_TICKET_PRICE +
-          vipSold * VIP_TICKET_PRICE +
-          reservedSold * RESERVED_TICKET_PRICE,
-      });
+  function closeGame(): void {
+    if (phaserGame) {
+      destroyPhaserGame(phaserGame);
+      setGameType(undefined);
     }
   }
 
+  function runBasketball(): void {
+    const outsideShots = getRandomNumber(10, 50);
+    const midShots = getRandomNumber(10, 50);
+    const insideShots = 100 - outsideShots - midShots;
+    EventSystem.emit("simulate", {
+      player: player?._id,
+      playerAvatar: player,
+      outsideShots,
+      outsidePoints: 3,
+      outsidePercent: 0.25,
+      midShots,
+      midPoints: 2,
+      midPercent: 0.5,
+      insideShots,
+      insidePoints: 2,
+      insidePercent: 0.75,
+    });
+  }
+
+  function runConcert(): void {
+    const vipTicketsUpForSale = getRandomNumber(0, 50);
+    const reservedTicketsUpForSale = getRandomNumber(0, 50);
+    const generalAdmissionTicketsUpForSale =
+      100 - vipTicketsUpForSale - reservedTicketsUpForSale;
+    EventSystem.emit("simulate", {
+      player: player?._id,
+      playerAvatar: player,
+      vipTicketsUpForSale,
+      reservedTicketsUpForSale,
+      generalAdmissionTicketsUpForSale,
+    });
+  }
+
+  function runSocialMedia(): void {
+    const danceShorts = getRandomNumber(0, 50);
+    const danceLongs = getRandomNumber(0, 50);
+    const instructionals = 100 - danceShorts - danceLongs;
+    EventSystem.emit("simulate", {
+      player: player?._id,
+      playerAvatar: player,
+      danceShorts,
+      danceLongs,
+      instructionals,
+    });
+  }
+
+  React.useEffect(() => {
+    if (gameType) {
+      startPhaserGame(GAME_CONFIGS[gameType], "Simulation");
+      EventSystem.on("sceneCreated", runGame);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameType]);
+
   return (
     <>
-      <div
-        id="game-container"
-        ref={gameContainerRef}
-        style={{
-          height: window.innerHeight - 100,
-          width: window.innerWidth,
-        }}
-      />
+      <div className="row center-div">
+        {gameType ? (
+          <OutlinedButton onClick={closeGame}>Close</OutlinedButton>
+        ) : (
+          <DropdownButton
+            label={GAMES.find((g) => g.id === gameType)?.name || "Select Game"}
+            value={gameType}
+            items={GAMES.map((g) => g.id)}
+            onSelect={(id: string) => setGameType(id as GameType)}
+            renderItem={(id) => {
+              return (
+                <Typography>{GAMES.find((g) => g.id === id)?.name}</Typography>
+              );
+            }}
+          />
+        )}
+      </div>
+      {gameType && (
+        <div
+          id="game-container"
+          ref={gameContainerRef}
+          style={{
+            height: window.innerHeight - 200,
+            width: window.innerWidth,
+          }}
+        />
+      )}
     </>
   );
 }
