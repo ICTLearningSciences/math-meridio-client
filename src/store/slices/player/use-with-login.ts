@@ -12,7 +12,7 @@ import {
   localStorageClear,
   localStorageGet,
 } from "../../local-storage";
-import type { EducationalRole, UserAccessToken } from "./types";
+import type { UserAccessToken } from "./types";
 import type { PlayerStateData } from "./index";
 
 export interface UseWithLogin {
@@ -22,7 +22,6 @@ export interface UseWithLogin {
     accessToken: string | undefined,
   ) => Promise<UserAccessToken | undefined>;
   refreshAccessToken: () => void;
-  setViewingAs: (educationalRole: EducationalRole) => void;
 }
 
 // Gives you a way to interface with the redux store (which has the user information)
@@ -48,10 +47,6 @@ export function useWithLogin(): UseWithLogin {
       dispatch(loginActions.logout());
     }
   }, [state.loginStatus.status, dispatch]);
-
-  function setViewingAs(educationalRole: EducationalRole) {
-    dispatch(loginActions.setViewingAs(educationalRole));
-  }
 
   async function login(accessToken: string | undefined) {
     if (accessToken == undefined) return;
@@ -84,6 +79,5 @@ export function useWithLogin(): UseWithLogin {
     logout,
     login,
     refreshAccessToken,
-    setViewingAs,
   };
 }

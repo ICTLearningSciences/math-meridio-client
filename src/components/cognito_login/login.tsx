@@ -13,7 +13,7 @@ import { useNavigateWithParams } from "../../hooks/use-navigate-with-params";
 import type { UseWithLogin } from "../../store/slices/player/use-with-login";
 import { CircularProgress } from "@mui/material";
 import { useAppDispatch } from "../../store/hooks";
-import { clearPlayer, logout } from "../../store/slices/player";
+import { logout } from "../../store/slices/player";
 
 function Login(props: { useLogin: UseWithLogin }): React.ReactNode {
   const { useLogin } = props;
@@ -29,7 +29,6 @@ function Login(props: { useLogin: UseWithLogin }): React.ReactNode {
             navigate("/classes");
           })
           .catch(() => {
-            dispatch(clearPlayer());
             dispatch(logout());
             signOut();
           });
