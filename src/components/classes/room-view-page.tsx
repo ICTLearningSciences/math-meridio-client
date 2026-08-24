@@ -7,13 +7,9 @@ The full terms of this copyright and license should always be found in the root 
 
 import React from "react";
 import GamePage from "../game/game-page";
-import withAuthorizationOnly from "../../wrap-with-authorization-only";
 import { useWithPollActiveRoom } from "../../store/slices/educational-data/use-with-poll-active-room";
 
-function RoomViewPage(): React.ReactNode {
+export default function RoomViewPage(): React.ReactNode {
   useWithPollActiveRoom();
   return <GamePage />;
 }
-
-const Page = withAuthorizationOnly(RoomViewPage);
-export default Page;

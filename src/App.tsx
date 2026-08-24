@@ -6,26 +6,29 @@ The full terms of this copyright and license should always be found in the root 
 */
 
 import { Provider } from "react-redux";
-import { RouterProvider, createBrowserRouter, Outlet } from "react-router-dom";
+import {
+  RouterProvider,
+  createBrowserRouter,
+  Outlet,
+  useNavigate,
+} from "react-router-dom";
 import { Amplify } from "aws-amplify";
 
-import { Header } from "./components/header";
 import AvatarPage from "./components/avatar-page";
-import LoginWrapper from "./components/cognito_login/login";
 import {
   ClassesPage,
   SelectedClassPage,
   RoomViewPage,
 } from "./components/classes";
-
 import { store } from "./store";
 import { useWithHydrateRedux } from "./store/use-with-hydrate-redux";
-import { useWithLogin } from "./store/slices/player/use-with-login";
 import { useWithEducationalData } from "./store/slices/educational-data/use-with-educational-data";
 import AdminPage from "./components/admin";
 import { requireEnv } from "./helpers";
 
 import "@aws-amplify/ui-react/styles.css";
+import { useAppSelector } from "./store/hooks";
+import WithAuthorizationOnly from "./wrap-with-authorization-only";
 
 const USER_POOL_ID = requireEnv("VITE_USER_POOL_ID");
 const USER_POOL_CLIENT_ID = requireEnv("VITE_USER_POOL_CLIENT_ID");
@@ -57,24 +60,20 @@ Amplify.configure({
 // Layout component that provides useLogin to all routes
 function RootLayout() {
   return (
-    <>
-      <Header />
-      <div className="page">
-        <Outlet />
-      </div>
-    </>
+    <WithAuthorizationOnly>
+      <Outlet />
+    </WithAuthorizationOnly>
   );
-}
-
-// Wrapper for LoginPage to provide useLogin
-function LoginPageWrapper() {
-  const useLogin = useWithLogin();
-  return <LoginWrapper useLogin={useLogin} />;
 }
 
 // Layout component for game routes that provides useWithEducationalData to child routes
 function GameLayout() {
   const educationalData = useWithEducationalData();
+  const navigate = useNavigate();
+  const { player, loginStatus } = useAppSelector((state) => state.playerData);
+  if (loginStatus.status === 2 && !player?.description) {
+    navigate("/avatar-creator");
+  }
   return <Outlet context={educationalData} />;
 }
 
@@ -85,14 +84,6 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: <LoginPageWrapper />,
-      },
-      {
-        path: "/avatar-creator",
-        element: <AvatarPage />,
-      },
-      {
-        path: "/classes",
         element: <GameLayout />,
         children: [
           {
@@ -108,6 +99,10 @@ const router = createBrowserRouter([
             element: <RoomViewPage />,
           },
         ],
+      },
+      {
+        path: "/avatar-creator",
+        element: <AvatarPage />,
       },
       // admin pages
       {

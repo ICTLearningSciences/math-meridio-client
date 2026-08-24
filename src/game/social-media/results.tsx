@@ -20,15 +20,15 @@ import {
 import { BarChart } from "@mui/x-charts/BarChart";
 import type { SocialMediaSimulationData } from "./SimulationScene";
 import {
-  SHORT_DANCE_PRICE,
-  LONG_DANCE_PRICE,
-  INSTRUCTIONAL_TICKET_PRICE,
-  SHORT_DANCE_PERCENT_KEY,
-  LONG_DANCE_PERCENT_KEY,
-  INSTRUCTIONAL_PERCENT_KEY,
-  INSTRUCTIONAL_CONVERSION_RATE,
-  LONG_DANCE_CONVERSION_RATE,
-  SHORT_DANCE_CONVERSION_RATE,
+  DANCE_PRICE,
+  MUSIC_PRICE,
+  TECH_PRICE,
+  DANCE_PERCENT_KEY,
+  MUSIC_PERCENT_KEY,
+  TECH_PERCENT_KEY,
+  TECH_CONVERSION_RATE,
+  MUSIC_CONVERSION_RATE,
+  DANCE_CONVERSION_RATE,
 } from ".";
 import type { GameData } from "../../store/slices/game/types";
 import AvatarSprite from "../../components/avatar-sprite";
@@ -100,6 +100,21 @@ export function Leaderboard(props: {
   );
 }
 
+interface ChartData {
+  profitFromDanceShorts: number[];
+  profitFromMusicVideos: number[];
+  profitFromTechVideos: number[];
+  player1Data: number[];
+  player1ViewData: number[];
+  player2Data: number[];
+  player2ViewData: number[];
+  player3Data: number[];
+  player3ViewData: number[];
+  player4Data: number[];
+  player4ViewData: number[];
+  playerLabels: string[];
+}
+
 export function ResultComponent(props: {
   uiGameData: GameData;
 }): React.ReactNode {
@@ -111,116 +126,28 @@ export function ResultComponent(props: {
   const chartHeight = 300;
   const resultsWidth = window.innerWidth / 2 - 100;
   const scoreChartWidth = resultsWidth;
-  const ticketsChartWidth = resultsWidth / uiGameData.players.length;
+  const videosChartWidth = resultsWidth / uiGameData.players.length;
   const initialChartData: ChartData = {
-    profitFromVipTickets: [],
-    profitFromReservedTickets: [],
-    profitFromGeneralAdmissionTickets: [],
+    profitFromDanceShorts: [],
+    profitFromMusicVideos: [],
+    profitFromTechVideos: [],
     player1Data: [],
-    player1MissedData: [],
+    player1ViewData: [],
     player2Data: [],
-    player2MissedData: [],
+    player2ViewData: [],
     player3Data: [],
-    player3MissedData: [],
+    player3ViewData: [],
     player4Data: [],
-    player4MissedData: [],
+    player4ViewData: [],
     playerLabels: [],
   };
   const [myChartData, setMyChartData] = useState<ChartData>(initialChartData);
-  const ticketLabels = ["VIP", "Reserved", "General Admission"];
   const [tabValue, setTabValue] = useState(0);
-
-  interface ChartData {
-    profitFromVipTickets: number[];
-    profitFromReservedTickets: number[];
-    profitFromGeneralAdmissionTickets: number[];
-    player1Data: number[];
-    player1MissedData: number[];
-    player2Data: number[];
-    player2MissedData: number[];
-    player3Data: number[];
-    player3MissedData: number[];
-    player4Data: number[];
-    player4MissedData: number[];
-    playerLabels: string[];
-  }
+  const labels = ["Dance Shorts", "Music Videos", "Tech Videos"];
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
-
-  function simulationEnded(data: SocialMediaSimulationData): void {
-    const simData = { ...simulationData };
-    simData[data.player] = data;
-    let player1Data: number[] = [];
-    let player1MissedData: number[] = [];
-    let player2Data: number[] = [];
-    let player2MissedData: number[] = [];
-    let player3Data: number[] = [];
-    let player3MissedData: number[] = [];
-    let player4Data: number[] = [];
-    let player4MissedData: number[] = [];
-    for (let index = 0; index < uiGameData.players.length; index++) {
-      const player = uiGameData.players[index];
-      const playerMade = [
-        simData[player._id]?.instructionalsViewed,
-        simData[player._id]?.danceLongsViewed,
-        simData[player._id]?.danceShortsViewed,
-      ];
-      const playerMissed = [
-        simData[player._id]?.instructionals -
-          simData[player._id]?.instructionalsViewed,
-        simData[player._id]?.danceLongs - simData[player._id]?.danceLongsViewed,
-        simData[player._id]?.danceShorts -
-          simData[player._id]?.danceShortsViewed,
-      ];
-      switch (index) {
-        case 0:
-          player1Data = playerMade;
-          player1MissedData = playerMissed;
-          break;
-        case 1:
-          player2Data = playerMade;
-          player2MissedData = playerMissed;
-          break;
-        case 2:
-          player3Data = playerMade;
-          player3MissedData = playerMissed;
-          break;
-        case 3:
-          player4Data = playerMade;
-          player4MissedData = playerMissed;
-          break;
-      }
-    }
-    const playerLabels = uiGameData.players.map((player) => player.name);
-    const chartData = {
-      profitFromVipTickets: uiGameData.players.map(
-        (player) =>
-          (simData[player._id]?.instructionalsViewed || 0) * SHORT_DANCE_PRICE,
-      ),
-      profitFromReservedTickets: uiGameData.players.map(
-        (player) =>
-          (simData[player._id]?.danceLongsViewed || 0) * LONG_DANCE_PRICE,
-      ),
-      profitFromGeneralAdmissionTickets: uiGameData.players.map(
-        (player) =>
-          (simData[player._id]?.danceShortsViewed || 0) *
-          INSTRUCTIONAL_TICKET_PRICE,
-      ),
-      player1Data,
-      player1MissedData,
-      player2Data,
-      player2MissedData,
-      player3Data,
-      player3MissedData,
-      player4Data,
-      player4MissedData,
-      playerLabels,
-    };
-    setMyChartData(chartData);
-    setSimulationData({ ...simData });
-  }
 
   function GetChartFor(
     playerData: number[],
@@ -231,17 +158,17 @@ export function ResultComponent(props: {
     return (
       <Stack key={index} direction="column" style={{ alignItems: "center" }}>
         <BarChart
-          width={ticketsChartWidth}
+          width={videosChartWidth}
           height={chartHeight}
           series={[
-            { data: playerData, label: "sold", stack: "tickets" },
+            { data: playerData, label: "videos", stack: "profit" },
             {
               data: playerMissedData,
-              label: "unsold",
-              stack: "tickets",
+              label: "views",
+              stack: "views",
             },
           ]}
-          xAxis={[{ data: ticketLabels, scaleType: "band" }]}
+          xAxis={[{ data: labels, scaleType: "band" }]}
         />
         <Typography variant="subtitle1">{playerName}</Typography>
       </Stack>
@@ -249,41 +176,110 @@ export function ResultComponent(props: {
   }
 
   React.useEffect(() => {
-    for (const player of props.uiGameData.players) {
-      const psd = props.uiGameData.playersGameStateData[player._id];
-      const vipTicketsUpForSale = psd[SHORT_DANCE_PERCENT_KEY] || 0;
-      const reservedTicketsUpForSale = psd[LONG_DANCE_PERCENT_KEY] || 0;
-      const generalAdmissionTicketsUpForSale =
-        psd[INSTRUCTIONAL_PERCENT_KEY] || 0;
-      const generalAdmissionTicketsSold = Math.round(
-        generalAdmissionTicketsUpForSale * INSTRUCTIONAL_CONVERSION_RATE,
+    const simulationData: Record<string, SocialMediaSimulationData> = {};
+    for (const player of uiGameData.players) {
+      const psd = uiGameData.playersGameStateData[player._id];
+      const danceShorts = psd[DANCE_PERCENT_KEY] || 0;
+      const musicVideos = psd[MUSIC_PERCENT_KEY] || 0;
+      const techVideos = psd[TECH_PERCENT_KEY] || 0;
+      const danceShortsViews = Math.round(
+        danceShorts * DANCE_CONVERSION_RATE * 0.05,
       );
-      const reservedTicketsSold = Math.round(
-        reservedTicketsUpForSale * LONG_DANCE_CONVERSION_RATE,
+      const musicVideosViews = Math.round(
+        musicVideos * MUSIC_CONVERSION_RATE * 0.05,
       );
-      const vipTicketsSold = Math.round(
-        vipTicketsUpForSale * SHORT_DANCE_CONVERSION_RATE,
+      const techVideosViews = Math.round(
+        techVideos * TECH_CONVERSION_RATE * 0.05,
       );
-      const total =
-        generalAdmissionTicketsSold * INSTRUCTIONAL_TICKET_PRICE +
-        reservedTicketsSold * LONG_DANCE_PRICE +
-        vipTicketsSold * SHORT_DANCE_PRICE;
+      const profit =
+        (techVideosViews / 100000) * TECH_PRICE +
+        (musicVideosViews / 100000) * MUSIC_PRICE +
+        (danceShortsViews / 100000) * DANCE_PRICE;
       const simData: SocialMediaSimulationData = {
         player: player._id,
         playerAvatar: player,
-        danceShorts: generalAdmissionTicketsUpForSale,
-        danceShortsViewed: generalAdmissionTicketsSold,
-        danceLongs: reservedTicketsUpForSale,
-        danceLongsViewed: reservedTicketsSold,
-        instructionals: vipTicketsUpForSale,
-        instructionalsViewed: vipTicketsSold,
-        totalProfit: total,
+        danceShorts: danceShorts,
+        danceShortsViewed: danceShortsViews,
+        musicVideos: musicVideos,
+        musicVideosViewed: musicVideosViews,
+        techVideos: techVideos,
+        techVideosViewed: techVideosViews,
+        totalProfit: profit,
       };
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      simulationEnded(simData);
+      simulationData[player._id] = simData;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.uiGameData.playersGameStateData, props.uiGameData.players]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSimulationData(simulationData);
+
+    let player1Data: number[] = [];
+    let player1ViewData: number[] = [];
+    let player2Data: number[] = [];
+    let player2ViewData: number[] = [];
+    let player3Data: number[] = [];
+    let player3ViewData: number[] = [];
+    let player4Data: number[] = [];
+    let player4ViewData: number[] = [];
+    for (let index = 0; index < uiGameData.players.length; index++) {
+      const player = uiGameData.players[index];
+      const playerMade = [
+        simulationData[player._id]?.danceShorts,
+        simulationData[player._id]?.musicVideos,
+        simulationData[player._id]?.techVideos,
+      ];
+      const playerViews = [
+        simulationData[player._id]?.danceShortsViewed,
+        simulationData[player._id]?.musicVideosViewed,
+        simulationData[player._id]?.techVideosViewed,
+      ];
+      switch (index) {
+        case 0:
+          player1Data = playerMade;
+          player1ViewData = playerViews;
+          break;
+        case 1:
+          player2Data = playerMade;
+          player2ViewData = playerViews;
+          break;
+        case 2:
+          player3Data = playerMade;
+          player3ViewData = playerViews;
+          break;
+        case 3:
+          player4Data = playerMade;
+          player4ViewData = playerViews;
+          break;
+      }
+    }
+
+    const playerLabels = uiGameData.players.map((player) => player.name);
+    const chartData = {
+      profitFromDanceShorts: uiGameData.players.map(
+        (player) =>
+          ((simulationData[player._id]?.danceShortsViewed || 0) / 100000) *
+          DANCE_PRICE,
+      ),
+      profitFromMusicVideos: uiGameData.players.map(
+        (player) =>
+          ((simulationData[player._id]?.musicVideosViewed || 0) / 100000) *
+          MUSIC_PRICE,
+      ),
+      profitFromTechVideos: uiGameData.players.map(
+        (player) =>
+          ((simulationData[player._id]?.techVideosViewed || 0) / 100000) *
+          TECH_PRICE,
+      ),
+      player1Data,
+      player1ViewData,
+      player2Data,
+      player2ViewData,
+      player3Data,
+      player3ViewData,
+      player4Data,
+      player4ViewData,
+      playerLabels,
+    };
+    setMyChartData(chartData);
+  }, [uiGameData.playersGameStateData, uiGameData.players]);
 
   return (
     <Stack
@@ -292,7 +288,7 @@ export function ResultComponent(props: {
     >
       <Tabs value={tabValue} onChange={handleTabChange}>
         <Tab label="Profits" />
-        <Tab label="Tickets Sold" />
+        <Tab label="Views" />
       </Tabs>
       <Box sx={{ width: "100%", height: "100%", mt: 2 }}>
         {tabValue === 0 && (
@@ -302,20 +298,20 @@ export function ResultComponent(props: {
               height={chartHeight}
               series={[
                 {
-                  data: myChartData.profitFromVipTickets,
-                  label: "VIP",
+                  data: myChartData.profitFromDanceShorts,
+                  label: "Dance Shorts",
                   stack: "profit",
                   color: "rgb(150,221,242)",
                 },
                 {
-                  data: myChartData.profitFromReservedTickets,
-                  label: "Reserved",
+                  data: myChartData.profitFromMusicVideos,
+                  label: "Music Videos",
                   stack: "profit",
                   color: "rgb(245,152,160)",
                 },
                 {
-                  data: myChartData.profitFromGeneralAdmissionTickets,
-                  label: "General Admission",
+                  data: myChartData.profitFromTechVideos,
+                  label: "Tech Videos",
                   stack: "profit",
                   color: "rgb(151,118,109)",
                 },
@@ -331,28 +327,28 @@ export function ResultComponent(props: {
                 {index === 0 &&
                   GetChartFor(
                     myChartData.player1Data,
-                    myChartData.player1MissedData,
+                    myChartData.player1ViewData,
                     player.name,
                     index,
                   )}
                 {index === 1 &&
                   GetChartFor(
                     myChartData.player2Data,
-                    myChartData.player2MissedData,
+                    myChartData.player2ViewData,
                     player.name,
                     index,
                   )}
                 {index === 2 &&
                   GetChartFor(
                     myChartData.player3Data,
-                    myChartData.player3MissedData,
+                    myChartData.player3ViewData,
                     player.name,
                     index,
                   )}
                 {index === 3 &&
                   GetChartFor(
                     myChartData.player4Data,
-                    myChartData.player4MissedData,
+                    myChartData.player4ViewData,
                     player.name,
                     index,
                   )}

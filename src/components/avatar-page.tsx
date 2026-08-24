@@ -17,9 +17,8 @@ import {
   type Avatars,
   useWithPlayer,
 } from "../store/slices/player/use-with-player-state";
-import withAuthorizationOnly from "../wrap-with-authorization-only";
 
-function AvatarPage(): React.ReactNode {
+export default function AvatarPage(): React.ReactNode {
   const { player, loginStatus, saveStatus } = useAppSelector(
     (state) => state.playerData,
   );
@@ -78,8 +77,7 @@ function AvatarPage(): React.ReactNode {
   React.useEffect(() => {
     if (!isSaving) return;
     if (saveStatus.status === 2) {
-      console.log("navigating to home");
-      navigate("/classes");
+      navigate("/");
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsSaving(false);
     } else if (saveStatus.status === 3) {
@@ -144,6 +142,3 @@ function AvatarPage(): React.ReactNode {
     </>
   );
 }
-
-const Page = withAuthorizationOnly(AvatarPage);
-export default Page;

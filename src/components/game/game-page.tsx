@@ -10,7 +10,6 @@ import { useNavigate, useOutletContext } from "react-router-dom";
 import { CircularProgress, Grid, Stack } from "@mui/material";
 import ChatThread from "./chat-thread";
 import ChatForm from "./chat-form";
-import withAuthorizationOnly from "../../wrap-with-authorization-only";
 import EndOfPhaseReflectionModal from "./end-of-phase-reflection-modal";
 import AwayStatusModal from "./away-status-modal";
 import PausedStatusModal from "./paused-status-modal";
@@ -18,14 +17,14 @@ import GamePagePhaseDisplay from "./game-page-phases";
 import type { UseWithEducationalData } from "../../store/slices/educational-data/use-with-educational-data";
 import { useAppSelector } from "../../store/hooks";
 import PhaseProgressBar from "../phase-progress-bar";
+import { useWithWindow } from "../../hooks/use-with-window";
 
 import "../../layout.css";
-import { useWithWindow } from "../../hooks/use-with-window";
 
 // Type for the outlet context provided by GameLayout
 type EducationalDataContext = UseWithEducationalData;
 
-function GamePage(): React.ReactNode {
+export default function GamePage(): React.ReactNode {
   // Use prop if provided, otherwise try to get from outlet context
   const outletContext = useOutletContext<EducationalDataContext>();
   const { player } = useAppSelector((state) => state.playerData);
@@ -79,8 +78,7 @@ function GamePage(): React.ReactNode {
 
   React.useEffect(() => {
     if (!room) {
-      console.log("navigating to home");
-      navigate("/classes");
+      navigate("/");
     }
   }, [room, navigate]);
 
@@ -186,6 +184,3 @@ function GamePage(): React.ReactNode {
     </div>
   );
 }
-
-const Page = withAuthorizationOnly(GamePage);
-export default Page;

@@ -14,7 +14,6 @@ import SocialMediaGame from "../game/social-media";
 import EventSystem from "../game/event-system";
 import { DropdownButton, OutlinedButton } from "./button";
 import { getRandomNumber } from "../helpers";
-import withAuthorizationOnly from "../wrap-with-authorization-only";
 import { Typography } from "@mui/material";
 
 const GAME_CONFIGS: Record<GameType, Phaser.Types.Core.GameConfig> = {
@@ -23,7 +22,7 @@ const GAME_CONFIGS: Record<GameType, Phaser.Types.Core.GameConfig> = {
   "social-media-influencer": SocialMediaGame.config,
 };
 
-function PhaserTestPage(): React.ReactNode {
+export default function PhaserTestPage(): React.ReactNode {
   const { player } = useAppSelector((state) => state.playerData);
   const gameContainerRef = React.useRef<HTMLDivElement | null>(null);
   const [gameType, setGameType] = React.useState<GameType>();
@@ -129,6 +128,3 @@ function PhaserTestPage(): React.ReactNode {
     </>
   );
 }
-
-const Page = withAuthorizationOnly(PhaserTestPage);
-export default Page;

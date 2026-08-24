@@ -67,7 +67,7 @@ export const dataSlice = createSlice({
   initialState,
   reducers: {
     logout: (state) => {
-      state.player = undefined;
+      delete state.player;
       state.loginStatus = { status: 4 };
       state.saveStatus = { status: 0 };
     },

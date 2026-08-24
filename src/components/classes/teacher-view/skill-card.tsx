@@ -508,9 +508,7 @@ export function NeedsHelp(props: {
                 <AvatarSprite player={p} />
                 <Typography>{p.name}</Typography>
               </div>
-              <Link to={`/classes/${room.classId}/room/${room._id}`}>
-                {room.name}
-              </Link>
+              <Link to={`/${room.classId}/room/${room._id}`}>{room.name}</Link>
               <Typography>
                 {GAMES.find((g) => g.id === room.gameData.gameId)?.name}: Phase{" "}
                 {room?.gameData.phaseProgression.phasesCompleted.length + 1}

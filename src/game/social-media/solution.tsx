@@ -24,15 +24,15 @@ import { checkGameAndPlayerStateForValue } from "../../components/discussion-sta
 
 import stageBg from "./stage.jpg";
 import {
-  SHORT_DANCE_PERCENT_KEY,
-  SHORT_DANCE_PRICE,
-  SHORT_DANCE_CONVERSION_RATE,
-  LONG_DANCE_PERCENT_KEY,
-  LONG_DANCE_PRICE,
-  LONG_DANCE_CONVERSION_RATE,
-  INSTRUCTIONAL_PERCENT_KEY,
-  INSTRUCTIONAL_TICKET_PRICE,
-  INSTRUCTIONAL_CONVERSION_RATE,
+  DANCE_PERCENT_KEY,
+  DANCE_PRICE,
+  DANCE_CONVERSION_RATE,
+  MUSIC_PERCENT_KEY,
+  MUSIC_PRICE,
+  MUSIC_CONVERSION_RATE,
+  TECH_PERCENT_KEY,
+  TECH_PRICE,
+  TECH_CONVERSION_RATE,
   TOTAL_NUMBER_OF_VIDEOS,
   UNDERSTANDS_ADDITION_KEY,
   UNDERSTANDS_MULTIPLICATION_KEY,
@@ -130,9 +130,9 @@ export function SolutionComponent(props: {
     uiGameData.globalStateData.gameStateData;
 
   const [editing, setEditing] = React.useState<{
-    general: number;
-    reserved: number;
-    vip: number;
+    techVideos: number;
+    musicVideos: number;
+    danceShorts: number;
   }>();
 
   const ref = useRef<HTMLDivElement | null>(null);
@@ -142,7 +142,7 @@ export function SolutionComponent(props: {
   const curPlayerStateData = uiGameData.playersGameStateData[player._id];
   const globalGameStateData = uiGameData.globalStateData.gameStateData;
 
-  const understandsTicketPrices = checkGameAndPlayerStateForValue(
+  const understandsRevenue = checkGameAndPlayerStateForValue(
     globalGameStateData,
     curPlayerStateData || {},
     UNDERSTANDS_VIDEO_REVENUE_KEY,
@@ -186,9 +186,9 @@ export function SolutionComponent(props: {
 
   React.useEffect(() => {
     if (!playerGameStateDataRecord) return;
-    let vip = playerGameStateDataRecord[SHORT_DANCE_PERCENT_KEY] || 0;
-    let reserved = playerGameStateDataRecord[LONG_DANCE_PERCENT_KEY] || 0;
-    let general = playerGameStateDataRecord[INSTRUCTIONAL_PERCENT_KEY] || 0;
+    let vip = playerGameStateDataRecord[DANCE_PERCENT_KEY] || 0;
+    let reserved = playerGameStateDataRecord[MUSIC_PERCENT_KEY] || 0;
+    let general = playerGameStateDataRecord[TECH_PERCENT_KEY] || 0;
     vip = Number.parseInt(vip);
     reserved = Number.parseInt(reserved);
     general = Number.parseInt(general);
@@ -202,9 +202,9 @@ export function SolutionComponent(props: {
       if (vip < 0) vip = 0;
       updatePlayerStateData(
         {
-          [SHORT_DANCE_PERCENT_KEY]: vip,
-          [LONG_DANCE_PERCENT_KEY]: reserved,
-          [INSTRUCTIONAL_PERCENT_KEY]: general,
+          [DANCE_PERCENT_KEY]: vip,
+          [MUSIC_PERCENT_KEY]: reserved,
+          [TECH_PERCENT_KEY]: general,
         },
         player._id,
       );
@@ -215,13 +215,17 @@ export function SolutionComponent(props: {
     if (editing) {
       setEditing(undefined);
     } else {
-      let vip = playerGameStateDataRecord[SHORT_DANCE_PERCENT_KEY] || 0;
-      let reserved = playerGameStateDataRecord[LONG_DANCE_PERCENT_KEY] || 0;
-      let general = playerGameStateDataRecord[INSTRUCTIONAL_PERCENT_KEY] || 0;
+      let vip = playerGameStateDataRecord[DANCE_PERCENT_KEY] || 0;
+      let reserved = playerGameStateDataRecord[MUSIC_PERCENT_KEY] || 0;
+      let general = playerGameStateDataRecord[TECH_PERCENT_KEY] || 0;
       vip = Number.parseInt(vip);
       reserved = Number.parseInt(reserved);
       general = Number.parseInt(general);
-      setEditing({ general, reserved, vip });
+      setEditing({
+        techVideos: general,
+        musicVideos: reserved,
+        danceShorts: vip,
+      });
     }
   }
 
@@ -236,7 +240,7 @@ export function SolutionComponent(props: {
           <Typography
             style={{ whiteSpace: "nowrap", color: "blue", fontSize: 10 }}
           >
-            {understandsTicketPrices ? "VIP sales" : ""}
+            {understandsRevenue ? "Dance Short Revenue" : ""}
           </Typography>
           <div className="row center-div spacing">
             <Typography
@@ -246,7 +250,7 @@ export function SolutionComponent(props: {
                 padding: 5,
               }}
             >
-              {understandsTicketPrices ? `$${String(SHORT_DANCE_PRICE)}` : ``}
+              {understandsRevenue ? `$${String(DANCE_PRICE)}` : ``}
             </Typography>
             <Typography style={{ backgroundColor: "lightblue", padding: 5 }}>
               {understandsMultiplication ? "x" : ""}
@@ -262,9 +266,9 @@ export function SolutionComponent(props: {
                 {
                   ...globalGameStateDataRecord,
                   ...playerGameStateDataRecord,
-                }[SHORT_DANCE_PERCENT_KEY]
+                }[DANCE_PERCENT_KEY]
               }{" "}
-              VIP
+              Dance Shorts
             </Typography>
             <Typography style={{ backgroundColor: "lightblue", padding: 5 }}>
               {understandsMultiplication ? "x" : ""}
@@ -276,9 +280,19 @@ export function SolutionComponent(props: {
                 padding: 5,
               }}
             >
-              {understandsSellThroughRates
-                ? `${String(SHORT_DANCE_CONVERSION_RATE)}%`
-                : ""}
+              0.05
+            </Typography>
+            <Typography style={{ backgroundColor: "lightblue", padding: 5 }}>
+              {understandsMultiplication ? "x" : ""}
+            </Typography>
+            <Typography
+              style={{
+                whiteSpace: "nowrap",
+                backgroundColor: "lightblue",
+                padding: 5,
+              }}
+            >
+              {understandsSellThroughRates ? DANCE_CONVERSION_RATE : ""}
             </Typography>
           </div>
         </div>
@@ -290,7 +304,7 @@ export function SolutionComponent(props: {
           <Typography
             style={{ whiteSpace: "nowrap", color: "red", fontSize: 10 }}
           >
-            {understandsTicketPrices ? "Reserved sales" : ""}
+            {understandsRevenue ? "Music Video Revenue" : ""}
           </Typography>
           <div className="row center-div spacing">
             <Typography
@@ -300,7 +314,7 @@ export function SolutionComponent(props: {
                 padding: 5,
               }}
             >
-              {understandsTicketPrices ? `$${String(LONG_DANCE_PRICE)}` : ""}
+              {understandsRevenue ? `$${String(MUSIC_PRICE)}` : ""}
             </Typography>
             <Typography style={{ backgroundColor: "pink", padding: 5 }}>
               {understandsMultiplication ? "x" : ""}
@@ -316,17 +330,33 @@ export function SolutionComponent(props: {
                 {
                   ...globalGameStateDataRecord,
                   ...playerGameStateDataRecord,
-                }[LONG_DANCE_PERCENT_KEY]
+                }[MUSIC_PERCENT_KEY]
               }{" "}
-              Reserved
+              Music Videos
             </Typography>
             <Typography style={{ backgroundColor: "pink", padding: 5 }}>
               {understandsMultiplication ? "x" : ""}
             </Typography>
+            <Typography
+              style={{
+                whiteSpace: "nowrap",
+                backgroundColor: "pink",
+                padding: 5,
+              }}
+            >
+              0.05
+            </Typography>
             <Typography style={{ backgroundColor: "pink", padding: 5 }}>
-              {understandsSellThroughRates
-                ? `${String(LONG_DANCE_CONVERSION_RATE)}%`
-                : ""}
+              {understandsMultiplication ? "x" : ""}
+            </Typography>
+            <Typography
+              style={{
+                whiteSpace: "nowrap",
+                backgroundColor: "pink",
+                padding: 5,
+              }}
+            >
+              {understandsSellThroughRates ? MUSIC_CONVERSION_RATE : ""}
             </Typography>
           </div>
         </div>
@@ -338,7 +368,7 @@ export function SolutionComponent(props: {
           <Typography
             style={{ whiteSpace: "nowrap", color: "brown", fontSize: 10 }}
           >
-            {understandsTicketPrices ? "General Admission sales" : ""}
+            {understandsRevenue ? "Tech Repair Revenue" : ""}
           </Typography>
           <div className="row center-div spacing">
             <Typography
@@ -348,9 +378,7 @@ export function SolutionComponent(props: {
                 padding: 5,
               }}
             >
-              {understandsTicketPrices
-                ? `$${String(INSTRUCTIONAL_TICKET_PRICE)}`
-                : ""}
+              {understandsRevenue ? `$${String(TECH_PRICE)}` : ""}
             </Typography>
             <Typography style={{ backgroundColor: "tan", padding: 5 }}>
               {understandsMultiplication ? "x" : ""}
@@ -366,17 +394,33 @@ export function SolutionComponent(props: {
                 {
                   ...globalGameStateDataRecord,
                   ...playerGameStateDataRecord,
-                }[INSTRUCTIONAL_PERCENT_KEY]
+                }[TECH_PERCENT_KEY]
               }{" "}
-              General
+              Tech Videos
             </Typography>
             <Typography style={{ backgroundColor: "tan", padding: 5 }}>
               {understandsMultiplication ? "x" : ""}
             </Typography>
+            <Typography
+              style={{
+                whiteSpace: "nowrap",
+                backgroundColor: "tan",
+                padding: 5,
+              }}
+            >
+              0.05
+            </Typography>
             <Typography style={{ backgroundColor: "tan", padding: 5 }}>
-              {understandsSellThroughRates
-                ? `${String(INSTRUCTIONAL_CONVERSION_RATE)}%`
-                : ""}
+              {understandsMultiplication ? "x" : ""}
+            </Typography>
+            <Typography
+              style={{
+                whiteSpace: "nowrap",
+                backgroundColor: "tan",
+                padding: 5,
+              }}
+            >
+              {understandsSellThroughRates ? TECH_CONVERSION_RATE : ""}
             </Typography>
           </div>
         </div>
@@ -402,22 +446,33 @@ export function SolutionComponent(props: {
     >
       <TransformComponent>
         <div className="column center-div">
-          <Variable
-            title="Total # of tickets to sell"
-            dataKey=""
-            isEnabled={() => true}
-            value={String(TOTAL_NUMBER_OF_VIDEOS)}
-            forceShow={true}
-            playerGameStateDataRecord={playerGameStateDataRecord}
-            globalGameStateDataRecord={globalGameStateDataRecord}
-          />
+          <div className="row center-div">
+            <Variable
+              title="Total # of videos"
+              dataKey=""
+              isEnabled={() => true}
+              value={String(TOTAL_NUMBER_OF_VIDEOS)}
+              forceShow={true}
+              playerGameStateDataRecord={playerGameStateDataRecord}
+              globalGameStateDataRecord={globalGameStateDataRecord}
+            />
+            <Variable
+              title="Success rate of videos"
+              dataKey=""
+              isEnabled={() => true}
+              value={"5%"}
+              forceShow={true}
+              playerGameStateDataRecord={playerGameStateDataRecord}
+              globalGameStateDataRecord={globalGameStateDataRecord}
+            />
+          </div>
           <div className="row center-div">
             <Variable
               dataKey={UNDERSTANDS_VIDEO_REVENUE_KEY}
-              isEnabled={() => understandsTicketPrices}
-              title="Price per VIP ticket"
+              isEnabled={() => understandsRevenue}
+              title="Revenue for Dance Shorts"
               prefix="$"
-              value={String(SHORT_DANCE_PRICE)}
+              value={`${DANCE_PRICE}/100k`}
               playerGameStateDataRecord={playerGameStateDataRecord}
               globalGameStateDataRecord={globalGameStateDataRecord}
             />
@@ -435,8 +490,8 @@ export function SolutionComponent(props: {
             />
             <EditableVariable
               backgroundColor="#301934"
-              dataKey={SHORT_DANCE_PERCENT_KEY}
-              title="# of VIP tickets"
+              dataKey={DANCE_PERCENT_KEY}
+              title="# of Dance Shorts"
               myPlayerStateData={{
                 ...globalGameStateDataRecord,
                 ...playerGameStateDataRecord,
@@ -458,8 +513,8 @@ export function SolutionComponent(props: {
             <Variable
               dataKey={UNDERSTANDS_CONVERSION_RATE_KEY}
               isEnabled={() => understandsSellThroughRates}
-              title="Conversion Rate"
-              value={String(SHORT_DANCE_CONVERSION_RATE)}
+              title="Avg Views"
+              value={String(DANCE_CONVERSION_RATE)}
               playerGameStateDataRecord={playerGameStateDataRecord}
               globalGameStateDataRecord={globalGameStateDataRecord}
             />
@@ -475,11 +530,11 @@ export function SolutionComponent(props: {
           />
           <div className="row center-div">
             <Variable
-              isEnabled={() => understandsTicketPrices}
+              isEnabled={() => understandsRevenue}
               dataKey={UNDERSTANDS_VIDEO_REVENUE_KEY}
-              title="Price per reserved ticket"
+              title="Revenue for Music Videos"
               prefix="$"
-              value={String(LONG_DANCE_PRICE)}
+              value={`${MUSIC_PRICE}/100k`}
               playerGameStateDataRecord={playerGameStateDataRecord}
               globalGameStateDataRecord={globalGameStateDataRecord}
             />
@@ -497,8 +552,8 @@ export function SolutionComponent(props: {
             />
             <EditableVariable
               backgroundColor="#301934"
-              dataKey={LONG_DANCE_PERCENT_KEY}
-              title="# of Reserved tickets"
+              dataKey={MUSIC_PERCENT_KEY}
+              title="# of Music Videos"
               myPlayerStateData={{
                 ...globalGameStateDataRecord,
                 ...playerGameStateDataRecord,
@@ -520,8 +575,8 @@ export function SolutionComponent(props: {
             <Variable
               isEnabled={() => understandsSellThroughRates}
               dataKey={UNDERSTANDS_CONVERSION_RATE_KEY}
-              title="Conversion Rate"
-              value={String(LONG_DANCE_CONVERSION_RATE)}
+              title="Avg Views"
+              value={String(MUSIC_CONVERSION_RATE)}
               playerGameStateDataRecord={playerGameStateDataRecord}
               globalGameStateDataRecord={globalGameStateDataRecord}
             />
@@ -538,10 +593,10 @@ export function SolutionComponent(props: {
           <div className="row center-div">
             <Variable
               dataKey={UNDERSTANDS_VIDEO_REVENUE_KEY}
-              isEnabled={() => understandsTicketPrices}
-              title="Price per GA ticket"
+              isEnabled={() => understandsRevenue}
+              title="Revenue for Tech Videos"
               prefix="$"
-              value={String(INSTRUCTIONAL_TICKET_PRICE)}
+              value={`${TECH_PRICE}/100k`}
               playerGameStateDataRecord={playerGameStateDataRecord}
               globalGameStateDataRecord={globalGameStateDataRecord}
             />
@@ -559,8 +614,8 @@ export function SolutionComponent(props: {
             />
             <EditableVariable
               backgroundColor="#301934"
-              dataKey={INSTRUCTIONAL_PERCENT_KEY}
-              title="# of GA tickets"
+              dataKey={TECH_PERCENT_KEY}
+              title="# of Tech Videos"
               myPlayerStateData={{
                 ...globalGameStateDataRecord,
                 ...playerGameStateDataRecord,
@@ -582,8 +637,8 @@ export function SolutionComponent(props: {
             <Variable
               dataKey={UNDERSTANDS_CONVERSION_RATE_KEY}
               isEnabled={() => understandsSellThroughRates}
-              title="Conversion Rate"
-              value={String(INSTRUCTIONAL_CONVERSION_RATE)}
+              title="Avg Views"
+              value={String(TECH_CONVERSION_RATE)}
               playerGameStateDataRecord={playerGameStateDataRecord}
               globalGameStateDataRecord={globalGameStateDataRecord}
             />
@@ -596,10 +651,8 @@ export function SolutionComponent(props: {
           <DialogTitle style={{ textAlign: "center" }}>My Strategy</DialogTitle>
           <DialogContent style={{ paddingTop: 10 }}>
             <TextField
-              label="Number of VIP Tickets"
-              defaultValue={
-                playerGameStateDataRecord[SHORT_DANCE_PERCENT_KEY] || 0
-              }
+              label="Number of Dance Shorts"
+              defaultValue={playerGameStateDataRecord[DANCE_PERCENT_KEY] || 0}
               type="number"
               fullWidth
               style={{ marginBottom: 10 }}
@@ -624,14 +677,15 @@ export function SolutionComponent(props: {
                 },
               }}
               onChange={(e) => {
-                setEditing({ ...editing, vip: parseInt(e.target.value) });
+                setEditing({
+                  ...editing,
+                  danceShorts: parseInt(e.target.value),
+                });
               }}
             />
             <TextField
-              label="Number of Reserved Tickets"
-              defaultValue={
-                playerGameStateDataRecord[LONG_DANCE_PERCENT_KEY] || 0
-              }
+              label="Number of Music Videos"
+              defaultValue={playerGameStateDataRecord[MUSIC_PERCENT_KEY] || 0}
               type="number"
               fullWidth
               style={{ marginBottom: 10 }}
@@ -656,14 +710,15 @@ export function SolutionComponent(props: {
                 },
               }}
               onChange={(e) => {
-                setEditing({ ...editing, reserved: parseInt(e.target.value) });
+                setEditing({
+                  ...editing,
+                  musicVideos: parseInt(e.target.value),
+                });
               }}
             />
             <TextField
-              label="Number of General Tickets"
-              defaultValue={
-                playerGameStateDataRecord[INSTRUCTIONAL_PERCENT_KEY] || 0
-              }
+              label="Number of Tech Videos"
+              defaultValue={playerGameStateDataRecord[TECH_PERCENT_KEY] || 0}
               type="number"
               fullWidth
               style={{ marginBottom: 10 }}
@@ -688,10 +743,14 @@ export function SolutionComponent(props: {
                 },
               }}
               onChange={(e) => {
-                setEditing({ ...editing, general: parseInt(e.target.value) });
+                setEditing({
+                  ...editing,
+                  techVideos: parseInt(e.target.value),
+                });
               }}
             />
-            {editing.vip + editing.general + editing.reserved !== 100 && (
+            {editing.danceShorts + editing.techVideos + editing.musicVideos !==
+              100 && (
               <Typography color="error" style={{ textAlign: "center" }}>
                 Total must add up to 100
               </Typography>
@@ -705,14 +764,17 @@ export function SolutionComponent(props: {
               color="primary"
               variant="contained"
               disabled={
-                editing.vip + editing.general + editing.reserved !== 100
+                editing.danceShorts +
+                  editing.techVideos +
+                  editing.musicVideos !==
+                100
               }
               onClick={() => {
                 updatePlayerStateData(
                   {
-                    [INSTRUCTIONAL_PERCENT_KEY]: editing.general,
-                    [LONG_DANCE_PERCENT_KEY]: editing.reserved,
-                    [SHORT_DANCE_PERCENT_KEY]: editing.vip,
+                    [TECH_PERCENT_KEY]: editing.techVideos,
+                    [MUSIC_PERCENT_KEY]: editing.musicVideos,
+                    [DANCE_PERCENT_KEY]: editing.danceShorts,
                   },
                   player._id,
                 );

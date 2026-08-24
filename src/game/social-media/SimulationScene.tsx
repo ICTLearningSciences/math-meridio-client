@@ -13,12 +13,7 @@ import {
   playSound,
 } from "../phaser-helpers";
 import EventSystem from "../event-system";
-import {
-  SHORT_DANCE_CONVERSION_RATE,
-  LONG_DANCE_CONVERSION_RATE,
-  TOTAL_NUMBER_OF_VIDEOS,
-  INSTRUCTIONAL_CONVERSION_RATE,
-} from ".";
+import { TOTAL_NUMBER_OF_VIDEOS } from ".";
 import { localStorageGet, SESSION_ID } from "../../store/local-storage";
 import type { Player } from "../../store/slices/player/types";
 import {
@@ -35,12 +30,12 @@ export interface SocialMediaSimulationData {
   playerAvatar?: Player;
 
   danceShorts: number;
-  danceLongs: number;
-  instructionals: number;
+  musicVideos: number;
+  techVideos: number;
 
   danceShortsViewed: number;
-  danceLongsViewed: number;
-  instructionalsViewed: number;
+  musicVideosViewed: number;
+  techVideosViewed: number;
 
   totalProfit: number;
 }
@@ -238,6 +233,24 @@ export class SimulationScene extends GameScene {
       frameRate: 6,
       repeat: -1,
     });
+    this.anims.create({
+      key: "emote_heart",
+      frames: this.anims.generateFrameNumbers("emotes", {
+        start: 8 * 3,
+        end: 8 * 4,
+      }),
+      frameRate: 6,
+      repeat: -1,
+    });
+    this.anims.create({
+      key: "emote_zzz",
+      frames: this.anims.generateFrameNumbers("emotes", {
+        start: 8 * 9,
+        end: 8 * 10,
+      }),
+      frameRate: 6,
+      repeat: -1,
+    });
 
     this.createScene();
   }
@@ -292,27 +305,27 @@ export class SimulationScene extends GameScene {
     ) {
       this.videos.push({
         videoType: "dance_short",
-        success: Math.random() <= INSTRUCTIONAL_CONVERSION_RATE,
+        success: Math.random() <= 0.6,
       });
     }
     for (
       let i = 0;
-      i < Math.ceil(simulation.danceLongs / (TOTAL_NUMBER_OF_VIDEOS / 10));
+      i < Math.ceil(simulation.musicVideos / (TOTAL_NUMBER_OF_VIDEOS / 10));
       i++
     ) {
       this.videos.push({
         videoType: "dance_long",
-        success: Math.random() <= LONG_DANCE_CONVERSION_RATE,
+        success: Math.random() <= 0.4,
       });
     }
     for (
       let i = 0;
-      i < Math.ceil(simulation.instructionals / (TOTAL_NUMBER_OF_VIDEOS / 10));
+      i < Math.ceil(simulation.techVideos / (TOTAL_NUMBER_OF_VIDEOS / 10));
       i++
     ) {
       this.videos.push({
         videoType: "instructional",
-        success: Math.random() <= SHORT_DANCE_CONVERSION_RATE,
+        success: Math.random() <= 0.2,
       });
     }
     this.videos = arrayNRandom(this.videos, this.videos.length);
@@ -439,13 +452,13 @@ export class SimulationScene extends GameScene {
           "Woooooo",
           "Yassss",
         ],
-        getRandomInt(3, 7),
+        getRandomInt(5, 7),
       );
     } else {
       this.addShortMessages(
         video.success,
         ["Meh", "Not my thing", "🥱💤", "👎"],
-        getRandomInt(1, 3),
+        getRandomInt(1, 2),
       );
     }
     if (this.curVideo === this.videos.length - 1) return;
@@ -485,7 +498,7 @@ export class SimulationScene extends GameScene {
       width: this.bg.displayWidth * 0.65,
       height: this.bg.displayHeight * 0.85,
     });
-    this.videoText = addText(this, "Dance Video", {
+    this.videoText = addText(this, "Music Video", {
       bg: this.bg,
       heightRel: 0.1,
       x: this.bg.displayWidth * -0.35,
@@ -578,7 +591,7 @@ export class SimulationScene extends GameScene {
           "💤💤💤",
           "👎👎👎",
         ],
-        getRandomInt(1, 3),
+        getRandomInt(1, 2),
       );
     }
 
@@ -616,7 +629,7 @@ export class SimulationScene extends GameScene {
       width: this.bg.displayWidth * 0.65,
       height: this.bg.displayHeight * 0.85,
     });
-    this.videoText = addText(this, "How to fix it", {
+    this.videoText = addText(this, "Tech Video", {
       bg: this.bg,
       heightRel: 0.1,
       x: this.bg.displayWidth * -0.35,
@@ -641,7 +654,7 @@ export class SimulationScene extends GameScene {
       .setFrame(0);
     const avatar = this.simulation.playerAvatar?.avatar || [];
     this.mySprite = this.renderSpriteAvatar(avatar, {
-      x: this.videoBg.displayWidth * 0.4,
+      x: this.videoBg.displayWidth * 0.5,
       y: this.videoBg.displayHeight * 0.8,
       scale: 0.5,
     });
@@ -653,19 +666,27 @@ export class SimulationScene extends GameScene {
 
     const bubble = addSprite(this, "emotes", 0, {
       x: this.mySprite[0].x,
-      y: this.mySprite[0].y - 60,
+      y: this.mySprite[0].y - 100,
       heightRel: 0.2,
     })
       .setDepth(1000)
-      .play(getRandomArrayItem(["emote_thinking", "emote_?"])!);
+      .play(getRandomArrayItem(["emote_thinking", "emote_?", "emote_zzz"])!);
     this.playSpriteAnim(this.mySprite, "walk_right");
     const work = this.time.addEvent({
       delay: 500,
       callback: () => {
-        bubble.play(getRandomArrayItem(["emote_idea", "emote_!"])!);
+        bubble.play(
+          getRandomArrayItem(["emote_idea", "emote_!", "emote_heart"])!,
+        );
         this.playSpriteAnim(this.mySprite, "jump_right");
         delay(500).then(() => {
-          bubble.play(getRandomArrayItem(["emote_working", "emote_angry"])!);
+          bubble.play(
+            getRandomArrayItem([
+              "emote_working",
+              "emote_angry",
+              "emote_music",
+            ])!,
+          );
           this.playSpriteAnim(
             this.mySprite,
             getRandomArrayItem([
@@ -712,7 +733,7 @@ export class SimulationScene extends GameScene {
           "am i dumb i dont get it",
           "Is it supposed to explode like that???",
         ],
-        getRandomInt(1, 3),
+        getRandomInt(1, 2),
       );
     }
 
@@ -758,7 +779,7 @@ export class SimulationScene extends GameScene {
       bg: this.videoBg,
       heightRel: 0.1,
       x: this.videoBg!.displayWidth * 0.5,
-      y: this.videoBg!.displayHeight * getRandomNumber(-0.35, 0.35),
+      y: this.videoBg!.displayHeight * getRandomNumber(-0.4, -0.2),
       maxFontSize: 78,
       textStyle: {
         align: "center",

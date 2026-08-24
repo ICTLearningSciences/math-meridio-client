@@ -13,12 +13,14 @@ import { useAppSelector } from "../../../store/hooks";
 import { GAMES, type Game } from "../../../game/types";
 import { StudentRoomCard } from "./student-room-card";
 import AvatarSprite from "../../avatar-sprite";
+import { useWithWindow } from "../../../hooks/use-with-window";
 
 export default function StudentSelectedClassPage(): React.ReactNode {
   const { classId } = useParams<{ classId: string }>();
   const { educationalData } = useWithEducationalData();
   const { player } = useAppSelector((state) => state.playerData);
   const [selectedGame, setSelectedGame] = React.useState<Game>();
+  const { isMobile } = useWithWindow();
 
   const classroom = educationalData.classes.find((c) => c._id === classId);
   const studentMemberships = educationalData.classMemberships.filter(
@@ -88,10 +90,7 @@ export default function StudentSelectedClassPage(): React.ReactNode {
         </Typography>
       )}
 
-      <div
-        className="column"
-        style={{ width: "90%", maxWidth: 800, marginBottom: 40 }}
-      >
+      <div className="column" style={{ width: "90%", marginBottom: 40 }}>
         <Typography variant="h5" style={{ marginBottom: 15 }}>
           My Assigned Group
         </Typography>
@@ -132,19 +131,17 @@ export default function StudentSelectedClassPage(): React.ReactNode {
       </div>
 
       {gameRoom && !gameRoom.gameData.gameId && (
-        <div
-          className="column"
-          style={{ width: "90%", maxWidth: 800, marginBottom: 40 }}
-        >
+        <div className="column" style={{ width: "90%", marginBottom: 40 }}>
           <Typography variant="h5" style={{ marginBottom: 15 }}>
             Select a Game
           </Typography>
-          <div className="row list center-div">
+          <div className={`${isMobile ? "column" : "row"} list center-div`}>
             {GAMES.map((game) => (
               <Card
                 data-cy={`game-card-${game.id}`}
                 key={game.id}
                 style={{
+                  height: "100%",
                   width: 300,
                   marginLeft: 5,
                   marginRight: 5,
@@ -175,7 +172,7 @@ export default function StudentSelectedClassPage(): React.ReactNode {
         </div>
       )}
 
-      <div className="column" style={{ width: "90%", maxWidth: 800, gap: 15 }}>
+      <div className="column" style={{ width: "90%", gap: 15 }}>
         <Typography variant="h5" style={{ marginBottom: 10 }}>
           Game Room
         </Typography>

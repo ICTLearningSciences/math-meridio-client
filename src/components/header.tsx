@@ -53,12 +53,13 @@ export function Header() {
   };
 
   function homeButtonClick() {
-    navigate("/classes");
+    navigate("/");
   }
 
   async function handleLogout() {
-    await signOut();
     dispatch(logout());
+    signOut();
+    navigate("/");
   }
 
   if (!player) {
@@ -78,7 +79,7 @@ export function Header() {
   }
 
   return (
-    <header className="column header" style={{ height: 80 }}>
+    <header className="column header" style={{ height: 80, width: "100%" }}>
       <div
         className="row center-div"
         style={{ justifyContent: "space-between" }}
@@ -111,7 +112,7 @@ export function Header() {
               <IconButton
                 disabled={!player || !room}
                 style={{ color: "white" }}
-                onClick={() => navigate("/classes")}
+                onClick={() => navigate("/")}
               >
                 <Logout />
               </IconButton>
