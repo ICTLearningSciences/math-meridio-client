@@ -24,7 +24,7 @@ export function StudentClassroomCard(props: {
   ).length;
 
   const handleClassClick = (classId: string) => {
-    navigate(`/classes/${classId}`);
+    navigate(`/${classId}`);
   };
   return (
     <Card

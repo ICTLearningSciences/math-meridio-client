@@ -12,16 +12,16 @@ import EventSystem from "../event-system";
 import { Typography } from "@mui/material";
 import type { SocialMediaSimulationData } from "./SimulationScene";
 import {
-  SHORT_DANCE_PERCENT_KEY,
-  LONG_DANCE_PERCENT_KEY,
-  INSTRUCTIONAL_PERCENT_KEY,
+  DANCE_PERCENT_KEY,
+  MUSIC_PERCENT_KEY,
+  TECH_PERCENT_KEY,
   TOTAL_NUMBER_OF_VIDEOS,
-  INSTRUCTIONAL_CONVERSION_RATE,
-  SHORT_DANCE_CONVERSION_RATE,
-  LONG_DANCE_CONVERSION_RATE,
-  INSTRUCTIONAL_TICKET_PRICE,
-  SHORT_DANCE_PRICE,
-  LONG_DANCE_PRICE,
+  TECH_CONVERSION_RATE,
+  DANCE_CONVERSION_RATE,
+  MUSIC_CONVERSION_RATE,
+  TECH_PRICE,
+  DANCE_PRICE,
+  MUSIC_PRICE,
 } from ".";
 import type { Player } from "../../store/slices/player/types";
 import type { Game } from "../types";
@@ -34,15 +34,13 @@ export function PlayerStrategy(props: {
   room: Room;
 }): React.ReactNode {
   const psd = props.playersGameStateData;
-  const vipTicketsUpForSale = psd[SHORT_DANCE_PERCENT_KEY] || 0;
-  const reservedTicketsUpForSale = psd[LONG_DANCE_PERCENT_KEY] || 0;
-  const generalAdmissionTicketsUpForSale = psd[INSTRUCTIONAL_PERCENT_KEY] || 0;
+  const danceShorts = psd[DANCE_PERCENT_KEY] || 0;
+  const musicVideos = psd[MUSIC_PERCENT_KEY] || 0;
+  const techVideos = psd[TECH_PERCENT_KEY] || 0;
   const { player } = useWithPlayer();
 
   const canSimulate = Boolean(
-    parseInt(vipTicketsUpForSale) +
-      parseInt(reservedTicketsUpForSale) +
-      parseInt(generalAdmissionTicketsUpForSale) ===
+    parseInt(danceShorts) + parseInt(musicVideos) + parseInt(techVideos) ===
     TOTAL_NUMBER_OF_VIDEOS,
   );
 
@@ -51,24 +49,18 @@ export function PlayerStrategy(props: {
     const simData: SocialMediaSimulationData = {
       player: props.player._id,
       playerAvatar: props.player,
-      danceShorts: generalAdmissionTicketsUpForSale,
-      danceShortsViewed: Math.round(
-        generalAdmissionTicketsUpForSale * INSTRUCTIONAL_CONVERSION_RATE,
-      ),
-      danceLongs: reservedTicketsUpForSale,
-      danceLongsViewed: Math.round(
-        reservedTicketsUpForSale * LONG_DANCE_CONVERSION_RATE,
-      ),
-      instructionals: vipTicketsUpForSale,
-      instructionalsViewed: Math.round(
-        vipTicketsUpForSale * SHORT_DANCE_CONVERSION_RATE,
-      ),
+      danceShorts: techVideos,
+      danceShortsViewed: Math.round(techVideos * TECH_CONVERSION_RATE * 0.05),
+      musicVideos: musicVideos,
+      musicVideosViewed: Math.round(musicVideos * MUSIC_CONVERSION_RATE * 0.05),
+      techVideos: danceShorts,
+      techVideosViewed: Math.round(danceShorts * DANCE_CONVERSION_RATE * 0.05),
       totalProfit: 0,
     };
     simData.totalProfit =
-      simData.danceShortsViewed * INSTRUCTIONAL_TICKET_PRICE +
-      simData.instructionalsViewed * SHORT_DANCE_PRICE +
-      simData.danceLongsViewed * LONG_DANCE_PRICE;
+      simData.danceShortsViewed * TECH_PRICE +
+      simData.techVideosViewed * DANCE_PRICE +
+      simData.musicVideosViewed * MUSIC_PRICE;
     EventSystem.emit("destroy");
     EventSystem.emit("simulate", simData);
     viewGameRoomSimulation(props.room._id);
@@ -90,8 +82,8 @@ export function PlayerStrategy(props: {
         strategy:
       </Typography>
       <Typography>
-        {vipTicketsUpForSale} vip, {reservedTicketsUpForSale} reserved,{" "}
-        {generalAdmissionTicketsUpForSale} general admission
+        {danceShorts} dance shorts, {musicVideos} music videos, {techVideos}{" "}
+        tech videos
       </Typography>
     </div>
   );

@@ -17,6 +17,7 @@ import { NeedsHelp, SkillsPracticed, TroubleSpots } from "./skill-card";
 import type { Classroom } from "../../../store/slices/educational-data/types";
 import { GamesDropdown } from "../../button";
 import { useWithWindow } from "../../../hooks/use-with-window";
+import type { GameType } from "../../../game/types";
 
 const styles = makeStyles()(() => ({
   card: {
@@ -41,7 +42,7 @@ export default function ActiveSessionView(props: {
   const { educationalData } = useWithEducationalData();
   const { windowHeight } = useWithWindow();
   const [studentSearch, setStudentSearch] = React.useState<string>();
-  const [game, setGame] = React.useState<string>();
+  const [game, setGame] = React.useState<GameType>();
   const searchParams = useSearchParams();
 
   const gameRooms = educationalData.rooms.filter(
@@ -59,7 +60,7 @@ export default function ActiveSessionView(props: {
         </Typography>
         <GamesDropdown
           game={game}
-          setGame={(id: string) => setGame(id)}
+          setGame={(id) => setGame(id)}
           buttonStyle={{
             color: "white",
             borderColor: "white",

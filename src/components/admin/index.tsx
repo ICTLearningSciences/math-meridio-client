@@ -48,16 +48,16 @@ export default function AdminPage(): React.ReactNode {
         tabsStyle={{ margin: "10px" }}
         tabs={[
           {
-            name: "PHASER TEST",
-            element: <PhaserTestPage />,
-          },
-          {
             name: "MANAGE USERS",
             element: <AdminManageUsers />,
           },
           {
             name: "DISCUSSION BUILDER",
             element: <StageBuilderPage />,
+          },
+          {
+            name: "PHASER TEST",
+            element: <PhaserTestPage />,
           },
         ]}
       />

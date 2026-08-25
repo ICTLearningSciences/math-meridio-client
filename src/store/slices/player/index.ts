@@ -4,14 +4,9 @@ Permission to use, copy, modify, and distribute this software and its documentat
 
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
-import {
-  createAsyncThunk,
-  createSlice,
-  type PayloadAction,
-} from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import * as api from "../../../api";
 import type { LoadingState } from "../../../types";
-import type { EducationalRole, UserRole } from "./types";
 import {
   refreshAccessToken as _refreshAccessToken,
   login as _login,
@@ -27,18 +22,12 @@ export interface PlayerStateData {
   player: Player | undefined;
   loginStatus: LoadingState;
   saveStatus: LoadingState;
-  accessToken?: string;
-  userRole?: UserRole;
-  viewingAs: EducationalRole | undefined;
 }
 
 const initialState: PlayerStateData = {
   player: undefined,
   loginStatus: { status: 0 },
   saveStatus: { status: 0 },
-  accessToken: undefined,
-  userRole: undefined,
-  viewingAs: undefined,
 };
 
 /** Actions */
@@ -73,34 +62,18 @@ export const login = createAsyncThunk(
   },
 );
 
-export const logout = createAsyncThunk("login/logout", async () => {
-  return Promise.resolve();
-});
-
 export const dataSlice = createSlice({
   name: "playerData",
   initialState,
   reducers: {
-    clearPlayer: (state) => {
-      state.player = undefined;
+    logout: (state) => {
+      delete state.player;
       state.loginStatus = { status: 4 };
       state.saveStatus = { status: 0 };
-    },
-    setViewingAs: (state, action: PayloadAction<EducationalRole>) => {
-      state.viewingAs = action.payload;
     },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(logout.fulfilled, (state) => {
-        state.player = undefined;
-        state.loginStatus = { status: 4 };
-        state.saveStatus = { status: 0 };
-        state.accessToken = undefined;
-        state.userRole = undefined;
-        state.viewingAs = undefined;
-      })
-
       .addCase(login.pending, (state) => {
         state.loginStatus.status = 1;
         state.loginStatus.startedAt = Date.now.toString();
@@ -109,8 +82,6 @@ export const dataSlice = createSlice({
       .addCase(login.fulfilled, (state, action) => {
         localStorageStore(ACCESS_TOKEN_KEY, action.payload.accessToken);
         state.player = action.payload.user;
-        state.accessToken = action.payload.accessToken;
-        state.userRole = action.payload.user.userRole;
         state.loginStatus.status = 2;
         state.loginStatus.endedAt = Date.now.toString();
         state.loginStatus.error = undefined;
@@ -130,8 +101,6 @@ export const dataSlice = createSlice({
       .addCase(refreshAccessToken.fulfilled, (state, action) => {
         localStorageStore(ACCESS_TOKEN_KEY, action.payload.accessToken);
         state.player = action.payload.user;
-        state.accessToken = action.payload.accessToken;
-        state.userRole = action.payload.user.userRole;
         state.loginStatus.status = 2;
         state.loginStatus.endedAt = Date.now.toString();
         state.loginStatus.error = undefined;
@@ -180,5 +149,5 @@ export const dataSlice = createSlice({
   },
 });
 
-export const { clearPlayer, setViewingAs } = dataSlice.actions;
+export const { logout } = dataSlice.actions;
 export default dataSlice.reducer;

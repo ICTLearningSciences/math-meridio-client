@@ -6,60 +6,90 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { CircularProgress } from "@mui/material";
+import { CircularProgress, IconButton } from "@mui/material";
+import { fetchAuthSession, signOut } from "aws-amplify/auth";
+import { Authenticator } from "@aws-amplify/ui-react";
 
 import { useAppDispatch, useAppSelector } from "./store/hooks";
-import { clearPlayer } from "./store/slices/player";
-import { fetchDiscussionStages } from "./store/slices/stages";
+import { logout } from "./store/slices/player";
+import { useWithLogin } from "./store/slices/player/use-with-login";
+import { Header } from "./components/header";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const withAuthorizationOnly = (Component: any) => (props: any) => {
+function Wrapper(props: { children: any }) {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { player, loginStatus } = useAppSelector((state) => state.playerData);
-  const { loadStagesStatus } = useAppSelector((state) => state.stages);
+  const { login } = useWithLogin();
+  const { loginStatus } = useAppSelector((state) => state.playerData);
 
   React.useEffect(() => {
-    if (
-      loginStatus.status === 0 ||
-      loginStatus.status === 4 ||
-      loginStatus.status === 3
-    ) {
-      dispatch(clearPlayer());
-      navigate("/");
-      return;
-    }
-    if (
-      loginStatus.status === 2 &&
-      player?.educationalRole !== "INSTRUCTOR" &&
-      !player?.description
-    ) {
-      navigate("/avatar-creator");
-    }
+    if (loginStatus.status === 2) return;
+    fetchAuthSession()
+      .then((authSession) => {
+        login(authSession?.tokens?.idToken?.toString()).catch(() => {
+          dispatch(logout());
+          signOut();
+          navigate("/");
+        });
+      })
+      .catch(() => {
+        dispatch(logout());
+        navigate("/");
+      });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loginStatus.status, player]);
-
-  React.useEffect(() => {
-    if (loadStagesStatus === 0) {
-      dispatch(fetchDiscussionStages());
-    }
-  }, [loadStagesStatus, dispatch]);
-
-  if (loginStatus.status === 0 || loginStatus.status === 1) {
-    return (
-      <div className="root center-div">
-        <CircularProgress size="large" />
-      </div>
-    );
-  }
+  }, [loginStatus.status]);
 
   return loginStatus.status === 2 ? (
-    <Component {...props} />
+    <div
+      className="column center-div"
+      style={{ height: "100%", width: "100%" }}
+    >
+      <Header />
+      <div className="page">
+        <div className="root center-div">{props.children}</div>
+      </div>
+    </div>
   ) : (
     <div className="root center-div">
       <CircularProgress size="large" />
     </div>
   );
-};
+}
 
-export default withAuthorizationOnly;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function WithAuthorizationOnly(props: { children: any }) {
+  const navigate = useNavigate();
+  return (
+    <div
+      className="column center-div"
+      style={{ height: "100%", width: "100%" }}
+    >
+      <Authenticator
+        loginMechanism="email"
+        socialProviders={["google"]}
+        components={{
+          Header: () => {
+            return (
+              <header className="column header" style={{ height: 80 }}>
+                <div
+                  className="row center-div"
+                  style={{ justifyContent: "space-between" }}
+                >
+                  <div style={{ width: 300 }}>
+                    <IconButton onClick={() => navigate("/")}>
+                      <img height={60} src="/logo.png" alt="image" />
+                    </IconButton>
+                  </div>
+                </div>
+              </header>
+            );
+          },
+        }}
+      >
+        {() => <Wrapper>{props.children}</Wrapper>}
+      </Authenticator>
+    </div>
+  );
+}
+
+export default WithAuthorizationOnly;

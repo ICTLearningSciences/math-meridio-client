@@ -27,25 +27,28 @@ export const UNDERSTANDS_CONVERSION_RATE_KEY = "understands_conversion_rate";
 export const UNDERSTANDS_VIDEO_REVENUE_KEY = "understands_video_revenue";
 export const BEST_STRATEGY_FOUND_KEY = "best_strategy_found";
 
-export const SHORT_DANCE_PERCENT_KEY = "vip_ticket_percent";
-export const SHORT_DANCE_PRICE = 10;
-export const SHORT_DANCE_CONVERSION_RATE = 0.2;
+export const DANCE_PERCENT_KEY = "dance_shorts_count";
+export const DANCE_PRICE = 10;
+export const DANCE_CONVERSION_RATE = 200000;
 
-export const LONG_DANCE_PERCENT_KEY = "reserved_ticket_percent";
-export const LONG_DANCE_PRICE = 100;
-export const LONG_DANCE_CONVERSION_RATE = 0.5;
+export const MUSIC_PERCENT_KEY = "music_videos_count";
+export const MUSIC_PRICE = 100;
+export const MUSIC_CONVERSION_RATE = 16000;
 
-export const INSTRUCTIONAL_PERCENT_KEY = "general_admission_ticket_percent";
-export const INSTRUCTIONAL_TICKET_PRICE = 250;
-export const INSTRUCTIONAL_CONVERSION_RATE = 0.8;
+export const TECH_PERCENT_KEY = "tech_videos_count";
+export const TECH_PRICE = 250;
+export const TECH_CONVERSION_RATE = 8000;
 
 export const TOTAL_NUMBER_OF_VIDEOS = 100;
+export const VIDEO_SUCCESS_RATE = 0.05;
 
 const SocialMediaInfluencerGame: Game = {
   id: "social-media-influencer",
   name: "Social Media Influencer",
-  problem: "",
-  minProblem: "",
+  problem:
+    "You're trying to build a social media empire, but it has been a hard road. There are a lot of creators and only 5% of your videos get many views, no matter what type you make. However, different kinds of videos are worth different amounts of money.\n\nYouTube pays only $10 / 100k views of short videos, but it's easiest for those to go viral to over 100k's of views. Music videos pay more ($100 / 100k views), but a big hit only gets 15k views. Tech videos pay the most ($250 / 100k views) but you're lucky to get 10k people to watch.\n\nHow many videos of each type should we record to make the most money?",
+  minProblem:
+    "To make the most money, how many videos should be Dance Shorts ($10 / 100k views), versus Music Videos ($100 / 100k views), or Tech Repair ($250 / 100k views) videos?",
   config: {
     type: Phaser.CANVAS,
     backgroundColor: "#282c34",

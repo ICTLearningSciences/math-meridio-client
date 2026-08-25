@@ -9,9 +9,8 @@ import React from "react";
 import { useAppSelector } from "../../store/hooks";
 import StudentSelectedClassPage from "./student-view/student-selected-class-page";
 import TeacherSelectedClassPage from "./teacher-selected-class-page";
-import withAuthorizationOnly from "../../wrap-with-authorization-only";
 
-function SelectedClassPage(): React.ReactNode {
+export default function SelectedClassPage(): React.ReactNode {
   const { player } = useAppSelector((state) => state.playerData);
 
   if (player?.educationalRole === "INSTRUCTOR") {
@@ -28,6 +27,3 @@ function SelectedClassPage(): React.ReactNode {
     </div>
   );
 }
-
-const Page = withAuthorizationOnly(SelectedClassPage);
-export default Page;

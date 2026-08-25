@@ -32,7 +32,7 @@ export function StudentRoomCard(props: {
       if (!room.gameData.gameId && props.gameId) {
         await assignGameToGameRoom(roomId, props.gameId);
       }
-      navigate(`/classes/${classId}/room/${roomId}`);
+      navigate(`/${classId}/room/${roomId}`);
     } catch (err) {
       console.error("Failed to join room", err);
     } finally {

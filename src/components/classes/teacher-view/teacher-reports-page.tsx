@@ -15,6 +15,7 @@ import { GamesDropdown } from "../../button";
 import { IndividualReportCard, PhaseReportCard } from "./report-card";
 import { Tabs } from "../../tab";
 import { useWithWindow } from "../../../hooks/use-with-window";
+import type { GameType } from "../../../game/types";
 
 export default function TeacherReports(props: {
   classroom?: Classroom;
@@ -26,7 +27,7 @@ export default function TeacherReports(props: {
     (r) => r.classId === classroom?._id,
   );
   const [searchParams, setSearchParams] = useSearchParams();
-  const [game, setGame] = React.useState<string>();
+  const [game, setGame] = React.useState<GameType>();
 
   if (!classroom) {
     return (
@@ -87,7 +88,7 @@ export default function TeacherReports(props: {
                 </Typography>
                 <GamesDropdown
                   game={game}
-                  setGame={(id: string) => setGame(id)}
+                  setGame={(id) => setGame(id)}
                   buttonStyle={{
                     color: "white",
                     borderColor: "white",

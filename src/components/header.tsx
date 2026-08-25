@@ -21,7 +21,7 @@ import { Logout } from "@mui/icons-material";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import AvatarSprite from "./avatar-sprite";
 import { useWithEducationalData } from "../store/slices/educational-data/use-with-educational-data";
-import { clearPlayer, logout } from "../store/slices/player";
+import { logout } from "../store/slices/player";
 import { HelpRequestButton } from "./help-request-button";
 import { RefreshRequestButton } from "./refresh-request-button";
 import { useWithWindow } from "../hooks/use-with-window";
@@ -45,6 +45,7 @@ export function Header() {
       ? room?.gameData.playersStatusRecord[player?._id]
       : undefined;
   const isTeacher = player?.educationalRole === "INSTRUCTOR";
+  const isAdmin = player?.userRole === "ADMIN" && isTeacher;
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
@@ -53,7 +54,13 @@ export function Header() {
   };
 
   function homeButtonClick() {
-    navigate("/classes");
+    navigate("/");
+  }
+
+  async function handleLogout() {
+    dispatch(logout());
+    signOut();
+    navigate("/");
   }
 
   if (!player) {
@@ -73,7 +80,7 @@ export function Header() {
   }
 
   return (
-    <header className="column header" style={{ height: 80 }}>
+    <header className="column header" style={{ height: 80, width: "100%" }}>
       <div
         className="row center-div"
         style={{ justifyContent: "space-between" }}
@@ -106,39 +113,32 @@ export function Header() {
               <IconButton
                 disabled={!player || !room}
                 style={{ color: "white" }}
-                onClick={() => navigate("/classes")}
+                onClick={() => navigate("/")}
               >
                 <Logout />
               </IconButton>
             </Tooltip>
           )}
-          {player && (
-            <div>
-              <Tooltip title="Logout">
-                <Button onClick={handleButtonClick}>
-                  <AvatarSprite bgColor="rgb(217, 217, 217)" player={player} />
-                </Button>
-              </Tooltip>
-              <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={() => setAnchorEl(null)}
-              >
-                <MenuItem
-                  onClick={() => {
-                    dispatch(clearPlayer());
-                    dispatch(logout());
-                    signOut();
-                  }}
-                >
-                  Logout
-                </MenuItem>
-                {player.userRole === "ADMIN" && (
-                  <MenuItem onClick={() => navigate("/admin")}>Admin</MenuItem>
-                )}
-              </Menu>
-            </div>
-          )}
+          <div>
+            <Tooltip title="Logout">
+              <Button onClick={handleButtonClick}>
+                <AvatarSprite bgColor="rgb(217, 217, 217)" player={player} />
+              </Button>
+            </Tooltip>
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={() => setAnchorEl(null)}
+            >
+              <MenuItem onClick={() => navigate("/avatar-creator")}>
+                Edit Avatar
+              </MenuItem>
+              {isAdmin && (
+                <MenuItem onClick={() => navigate("/admin")}>Admin</MenuItem>
+              )}
+              <MenuItem onClick={handleLogout}>Logout</MenuItem>
+            </Menu>
+          </div>
         </div>
       </div>
     </header>

@@ -8,9 +8,8 @@ import React from "react";
 import { useAppSelector } from "../../store/hooks";
 import StudentLandingPage from "./student-view/student-landing-page";
 import TeacherLandingPage from "./teacher-view/teacher-landing-page";
-import withAuthorizationOnly from "../../wrap-with-authorization-only";
 
-function ClassesPage(): React.ReactNode {
+export default function ClassesPage(): React.ReactNode {
   const { player } = useAppSelector((state) => state.playerData);
 
   if (player?.educationalRole === "INSTRUCTOR") {
@@ -27,6 +26,3 @@ function ClassesPage(): React.ReactNode {
     </div>
   );
 }
-
-const Page = withAuthorizationOnly(ClassesPage);
-export default Page;

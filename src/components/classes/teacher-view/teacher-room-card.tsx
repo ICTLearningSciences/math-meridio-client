@@ -44,7 +44,7 @@ export default function RoomCard(props: {
   );
 
   const enterRoom = () => {
-    navigate(`/classes/${classroom._id}/room/${room._id}`);
+    navigate(`/${classroom._id}/room/${room._id}`);
   };
 
   return (

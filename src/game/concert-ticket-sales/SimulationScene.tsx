@@ -26,10 +26,10 @@ import {
 import { localStorageGet, SESSION_ID } from "../../store/local-storage";
 import type { Avatar, Player } from "../../store/slices/player/types";
 import {
-  arrayNRandom,
   getRandomAvatar,
   getRandomNumber,
   getRandomInt,
+  getShuffledArray,
 } from "../../helpers";
 
 export interface ConcertTicketSalesSimulationData {
@@ -260,7 +260,7 @@ export class SimulationScene extends GameScene {
         avatar: getRandomAvatar(),
       });
     }
-    this.tickets = arrayNRandom(this.tickets, this.tickets.length);
+    this.tickets = getShuffledArray(this.tickets, this.tickets.length);
     this.simulateTickets();
     // this.simulateConcert();
   }

@@ -117,7 +117,7 @@ export default function TeacherEvents(): React.ReactNode {
                                 <Link
                                   onClick={() =>
                                     navigate(
-                                      `/classes/${classroom._id}/room/${room._id}`,
+                                      `/${classroom._id}/room/${room._id}`,
                                     )
                                   }
                                 >

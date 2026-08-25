@@ -17,12 +17,9 @@ import {
   type Avatars,
   useWithPlayer,
 } from "../store/slices/player/use-with-player-state";
-import withAuthorizationOnly from "../wrap-with-authorization-only";
 
-function AvatarPage(): React.ReactNode {
-  const { player, loginStatus, saveStatus } = useAppSelector(
-    (state) => state.playerData,
-  );
+export default function AvatarPage(): React.ReactNode {
+  const { player, loginStatus } = useAppSelector((state) => state.playerData);
   const gameContainerRef = React.useRef<HTMLDivElement | null>(null);
   const { startPhaserGame } = useWithPhaserGame(gameContainerRef);
   const { loadAvatarsFromDesc, saveAvatar } = useWithPlayer();
@@ -43,19 +40,12 @@ function AvatarPage(): React.ReactNode {
   }
 
   React.useEffect(() => {
-    if (loginStatus.status !== 2) {
-      return;
-    }
+    if (loginStatus.status !== 2) return;
     startPhaserGame(AvatarCreator, "AvatarCreator");
     EventSystem.on("sceneCreated", () => setSceneCreated(true));
     EventSystem.on("avatarSelected", onAvatarSelected);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loginStatus.status]);
-
-  /**
-   * Let's hard-code everything for now since player creation
-   * goes before and is separate from the games themselves
-   */
 
   React.useEffect(() => {
     if (!player) return;
@@ -74,21 +64,6 @@ function AvatarPage(): React.ReactNode {
       });
     }
   }, [player, sceneCreated]);
-
-  React.useEffect(() => {
-    if (!isSaving) return;
-    if (saveStatus.status === 2) {
-      console.log("navigating to home");
-      navigate("/classes");
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setIsSaving(false);
-    } else if (saveStatus.status === 3) {
-      setIsSaving(false);
-      EventSystem.emit("addSystemMessage", {
-        message: `Failed to save avatar. Would you like to try again? 'yes'/'no'`,
-      });
-    }
-  }, [saveStatus, isSaving, navigate]);
 
   async function onUserMessage(msg: string): Promise<void> {
     EventSystem.emit("addChatMessage", msg);
@@ -109,8 +84,15 @@ function AvatarPage(): React.ReactNode {
         EventSystem.emit("addSystemMessage", {
           message: "Saving your avatar...",
         });
-        saveAvatar(description, selectedAvatar.avatar);
         setIsSaving(true);
+        saveAvatar(description, selectedAvatar.avatar)
+          .then(() => navigate("/"))
+          .catch(() => {
+            setIsSaving(false);
+            EventSystem.emit("addSystemMessage", {
+              message: `Failed to save avatar. Would you like to try again? 'yes'/'no'`,
+            });
+          });
       } else {
         EventSystem.emit("addSystemMessage", {
           message: "What would you like your avatar to look like?",
@@ -123,7 +105,7 @@ function AvatarPage(): React.ReactNode {
 
   /** end hard-coding */
 
-  if (loginStatus.status === 0 || loginStatus.status === 1) {
+  if (loginStatus.status !== 2) {
     return (
       <div>
         <CircularProgress />
@@ -144,6 +126,3 @@ function AvatarPage(): React.ReactNode {
     </>
   );
 }
-
-const Page = withAuthorizationOnly(AvatarPage);
-export default Page;
