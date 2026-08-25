@@ -124,7 +124,6 @@ export function getRandomArrayItem<T>(arr: T[]): T | undefined {
   return arr[getRandomInt(arr.length)];
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getShuffledArray<T>(arr: T[], n?: number) {
   const shuffled = arr
     .map((value) => ({ value, sort: Math.random() }))
