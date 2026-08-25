@@ -45,6 +45,7 @@ export function Header() {
       ? room?.gameData.playersStatusRecord[player?._id]
       : undefined;
   const isTeacher = player?.educationalRole === "INSTRUCTOR";
+  const isAdmin = player?.userRole === "ADMIN" && isTeacher;
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
@@ -118,25 +119,26 @@ export function Header() {
               </IconButton>
             </Tooltip>
           )}
-          {player && (
-            <div>
-              <Tooltip title="Logout">
-                <Button onClick={handleButtonClick}>
-                  <AvatarSprite bgColor="rgb(217, 217, 217)" player={player} />
-                </Button>
-              </Tooltip>
-              <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={() => setAnchorEl(null)}
-              >
-                <MenuItem onClick={handleLogout}>Logout</MenuItem>
-                {player.userRole === "ADMIN" && (
-                  <MenuItem onClick={() => navigate("/admin")}>Admin</MenuItem>
-                )}
-              </Menu>
-            </div>
-          )}
+          <div>
+            <Tooltip title="Logout">
+              <Button onClick={handleButtonClick}>
+                <AvatarSprite bgColor="rgb(217, 217, 217)" player={player} />
+              </Button>
+            </Tooltip>
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={() => setAnchorEl(null)}
+            >
+              <MenuItem onClick={() => navigate("/avatar-creator")}>
+                Edit Avatar
+              </MenuItem>
+              {isAdmin && (
+                <MenuItem onClick={() => navigate("/admin")}>Admin</MenuItem>
+              )}
+              <MenuItem onClick={handleLogout}>Logout</MenuItem>
+            </Menu>
+          </div>
         </div>
       </div>
     </header>

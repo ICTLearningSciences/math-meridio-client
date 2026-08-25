@@ -77,14 +77,14 @@ export default function PhaserTestPage(): React.ReactNode {
 
   function runSocialMedia(): void {
     const danceShorts = getRandomNumber(0, 50);
-    const danceLongs = getRandomNumber(0, 50);
-    const instructionals = 100 - danceShorts - danceLongs;
+    const musicVideos = getRandomNumber(0, 50);
+    const techVideos = 100 - danceShorts - musicVideos;
     EventSystem.emit("simulate", {
       player: player?._id,
       playerAvatar: player,
       danceShorts,
-      danceLongs,
-      instructionals,
+      musicVideos,
+      techVideos,
     });
   }
 

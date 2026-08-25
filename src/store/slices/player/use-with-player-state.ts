@@ -5,7 +5,7 @@ Permission to use, copy, modify, and distribute this software and its documentat
 The full terms of this copyright and license should always be found in the root directory of this software deliverable as "license.txt" and if these terms are not found with this software, please contact the USC Stevens Center for the full license.
 */
 import type { Schema } from "jsonschema";
-import type { Avatar } from "./types";
+import type { Avatar, Player } from "./types";
 import { savePlayer } from "./index";
 import { jsonLlmRequest } from "../../../classes/api-helpers";
 import type { GenericLlmRequest } from "../../../types";
@@ -44,9 +44,12 @@ export function useWithPlayer() {
     );
   }
 
-  function saveAvatar(description: string, avatar: Avatar[]): void {
-    if (!player) return;
-    dispatch(
+  async function saveAvatar(
+    description: string,
+    avatar: Avatar[],
+  ): Promise<Player> {
+    if (!player) throw new Error("no player");
+    return await dispatch(
       savePlayer({
         playerId: player._id,
         player: {
@@ -54,7 +57,7 @@ export function useWithPlayer() {
           description: description,
         },
       }),
-    );
+    ).unwrap();
   }
 
   async function loadAvatarsFromDesc(

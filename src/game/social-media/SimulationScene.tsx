@@ -13,52 +13,117 @@ import {
   playSound,
 } from "../phaser-helpers";
 import EventSystem from "../event-system";
-import { TOTAL_NUMBER_OF_VIDEOS } from ".";
 import { localStorageGet, SESSION_ID } from "../../store/local-storage";
 import type { Player } from "../../store/slices/player/types";
 import {
-  arrayNRandom,
   delay,
   getRandomNumber,
   getRandomInt,
-  getShuffledArray,
   getRandomArrayItem,
+  getShuffledArray,
 } from "../../helpers";
+import {
+  DANCE_CONVERSION_RATE,
+  DANCE_PRICE,
+  MUSIC_CONVERSION_RATE,
+  MUSIC_PRICE,
+  TECH_CONVERSION_RATE,
+  TECH_PRICE,
+  VIDEO_SUCCESS_RATE,
+} from ".";
 
 export interface SocialMediaSimulationData {
   player: string;
   playerAvatar?: Player;
-
   danceShorts: number;
   musicVideos: number;
   techVideos: number;
-
   danceShortsViewed: number;
   musicVideosViewed: number;
   techVideosViewed: number;
-
   totalProfit: number;
 }
 
-export interface SocialMediaVideoAttempt {
+interface SocialMediaVideoAttempt {
   videoType: "dance_short" | "dance_long" | "instructional";
-  success: boolean;
+  numViews: number;
 }
+interface SocialMediaComment {
+  msg: string;
+  like: boolean;
+}
+const MESSAGES: SocialMediaComment[] = [
+  { msg: "Cool video", like: true },
+  { msg: "Nice job!", like: true },
+  { msg: "Keep it up!", like: true },
+  { msg: "Donated!", like: true },
+  { msg: "Subbed for more", like: true },
+  { msg: "You dropped this king 👑", like: true },
+  { msg: "❤️❤️❤️", like: true },
+  { msg: "❤️", like: true },
+  { msg: "👍👍👍", like: true },
+  { msg: "👍", like: true },
+
+  { msg: "Meh", like: false },
+  { msg: "Not my thing", like: false },
+  { msg: "Kinda boring", like: false },
+  { msg: "I sleep", like: false },
+  { msg: "zzzzz", like: false },
+  { msg: "🥱🥱🥱", like: false },
+  { msg: "🥱", like: false },
+  { msg: "👎👎👎", like: false },
+  { msg: "👎", like: false },
+  { msg: "💤", like: false },
+];
+const DANCE_MESSAGES: SocialMediaComment[] = [
+  ...MESSAGES,
+  { msg: "Nice moves!", like: true },
+  { msg: "Love this song :D", like: true },
+  { msg: "Woooooo", like: true },
+  { msg: "Yassss", like: true },
+  { msg: "🎵🎶", like: true },
+  { msg: "💃🕺", like: true },
+  { msg: "❤️❤️❤️❤️❤️", like: true },
+
+  { msg: "Laaaaame", like: false },
+  { msg: "What a tryhard", like: false },
+  { msg: "When does it get good", like: false },
+  { msg: "🥀", like: false },
+];
+const MUSIC_MESSAGES: SocialMediaComment[] = [
+  ...DANCE_MESSAGES,
+  { msg: "Awesome sets!!", like: true },
+  { msg: "Too long lol", like: false },
+];
+const TECH_MESSAGES: SocialMediaComment[] = [
+  ...MESSAGES,
+  { msg: "Thank you!!", like: true },
+  { msg: "Super helpful vid!", like: true },
+  { msg: "Easy to understand", like: true },
+  { msg: "You made this so easy!", like: true },
+  { msg: "GG EZ", like: true },
+  { msg: "Taught me to love again", like: true },
+  { msg: "Finally fixed it!", like: true },
+  { msg: "This changed my life", like: true },
+  { msg: "Too long lol", like: false },
+  { msg: "I still don't get it...", like: false },
+  { msg: "help i set my house on fire", like: false },
+  { msg: "instructions unclear", like: false },
+  { msg: "am i dumb i dont get it", like: false },
+  { msg: "is it supposed to explode???", like: false },
+];
 
 export class SimulationScene extends GameScene {
   simulation: SocialMediaSimulationData | undefined;
   videos: SocialMediaVideoAttempt[];
   curVideo: number;
   profit: number;
-
   numDanceShorts: number;
   numDanceLongs: number;
   numInstructional: number;
-
   videoBg?: Phaser.GameObjects.Image;
   videoText?: Phaser.GameObjects.Text;
   chatText: Phaser.GameObjects.Text[];
-
   like?: Phaser.GameObjects.Sprite;
   dislike?: Phaser.GameObjects.Sprite;
   likesText?: Phaser.GameObjects.Text;
@@ -131,6 +196,9 @@ export class SimulationScene extends GameScene {
     this.load.audio("music2", ["music_2.mp3"]);
     this.load.audio("music3", ["music_3.wav"]);
     this.load.audio("music4", ["music_4.wav"]);
+  }
+  update() {
+    super.update();
   }
 
   create() {
@@ -282,10 +350,6 @@ export class SimulationScene extends GameScene {
     this.avatars = [];
   }
 
-  update() {
-    super.update();
-  }
-
   simulate(simulation: SocialMediaSimulationData) {
     if (!this.bg) return;
     for (const obj of gameObjects) {
@@ -298,40 +362,25 @@ export class SimulationScene extends GameScene {
     this.destroySprite(this.mySprite);
     this.videos = [];
     this.curVideo = 0;
-    for (
-      let i = 0;
-      i < Math.ceil(simulation.danceShorts / (TOTAL_NUMBER_OF_VIDEOS / 10));
-      i++
-    ) {
+    for (let i = 0; i < Math.ceil(simulation.danceShorts / 10); i++) {
       this.videos.push({
         videoType: "dance_short",
-        success: Math.random() <= 0.6,
+        numViews: DANCE_CONVERSION_RATE * VIDEO_SUCCESS_RATE * Math.random(),
       });
     }
-    for (
-      let i = 0;
-      i < Math.ceil(simulation.musicVideos / (TOTAL_NUMBER_OF_VIDEOS / 10));
-      i++
-    ) {
+    for (let i = 0; i < Math.ceil(simulation.musicVideos / 10); i++) {
       this.videos.push({
         videoType: "dance_long",
-        success: Math.random() <= 0.4,
+        numViews: MUSIC_CONVERSION_RATE * VIDEO_SUCCESS_RATE * Math.random(),
       });
     }
-    for (
-      let i = 0;
-      i < Math.ceil(simulation.techVideos / (TOTAL_NUMBER_OF_VIDEOS / 10));
-      i++
-    ) {
+    for (let i = 0; i < Math.ceil(simulation.techVideos / 10); i++) {
       this.videos.push({
         videoType: "instructional",
-        success: Math.random() <= 0.2,
+        numViews: TECH_CONVERSION_RATE * VIDEO_SUCCESS_RATE * Math.random(),
       });
     }
-    this.videos = arrayNRandom(this.videos, this.videos.length);
-    this.simulateVideos();
-  }
-  simulateVideos() {
+    this.videos = getShuffledArray(this.videos, this.videos.length);
     this.curVideo = 0;
     this.numDanceShorts = 0;
     this.numDanceLongs = 0;
@@ -346,59 +395,29 @@ export class SimulationScene extends GameScene {
     }
     this.destroyScene();
     const video = this.videos[this.curVideo];
-    if (video.videoType === "dance_short") {
-      this.bg = addBackground(this, "bg_short");
-      if (this.curVideo === 0) {
-        this.playShortDance(video);
-      } else {
-        const y = this.bg.y;
-        this.bg.y = this.bg.displayHeight * 2;
-        addTween(this, {
-          targets: this.bg,
-          y: y,
-          duration: 300,
-          onComplete: () => {
-            this.playShortDance(video);
-          },
-        });
-      }
-    }
-    if (video.videoType === "dance_long") {
-      this.bg = addBackground(this, "bg_video");
-      if (this.curVideo === 0) {
-        this.playLongDance(video);
-      } else {
-        const y = this.bg.y;
-        this.bg.y = this.bg.displayHeight * 2;
-        addTween(this, {
-          targets: this.bg,
-          y: y,
-          duration: 300,
-          onComplete: () => {
-            this.playLongDance(video);
-          },
-        });
-      }
-    }
-    if (video.videoType === "instructional") {
-      this.bg = addBackground(this, "bg_video");
-      if (this.curVideo === 0) {
-        this.playInstructional(video);
-      } else {
-        const y = this.bg.y;
-        this.bg.y = this.bg.displayHeight * 2;
-        addTween(this, {
-          targets: this.bg,
-          y: y,
-          duration: 300,
-          onComplete: () => {
-            this.playInstructional(video);
-          },
-        });
-      }
+    const bg = video.videoType === "dance_short" ? "bg_short" : "bg_video";
+    this.bg = addBackground(this, bg);
+    if (this.curVideo === 0) {
+      this.playVideo(video);
+    } else {
+      const y = this.bg.y;
+      this.bg.y = this.bg.displayHeight * 2;
+      addTween(this, {
+        targets: this.bg,
+        y: y,
+        duration: 300,
+        onComplete: () => {
+          this.playVideo(video);
+        },
+      });
     }
   }
-  playShortDance(video: SocialMediaVideoAttempt) {
+  playVideo(video: SocialMediaVideoAttempt) {
+    if (video.videoType === "dance_short") this.playDanceShort(video);
+    if (video.videoType === "dance_long") this.playMusicVideo(video);
+    if (video.videoType === "instructional") this.playTechVideo(video);
+  }
+  playDanceShort(video: SocialMediaVideoAttempt) {
     if (!this.bg || !this.simulation) return;
     playSound(this, `music${getRandomInt(1, 4)}`, { loop: true });
     this.videoText = addText(this, "Dance Short", {
@@ -438,29 +457,7 @@ export class SimulationScene extends GameScene {
       },
       callbackScope: this,
     });
-    if (video.success) {
-      this.addShortMessages(
-        video.success,
-        [
-          "Nice moves!",
-          "Love this song",
-          "🎵🎶",
-          "💃🕺",
-          "❤️❤️❤️",
-          "👍",
-          "Keep it up!",
-          "Woooooo",
-          "Yassss",
-        ],
-        getRandomInt(5, 7),
-      );
-    } else {
-      this.addShortMessages(
-        video.success,
-        ["Meh", "Not my thing", "🥱💤", "👎"],
-        getRandomInt(1, 2),
-      );
-    }
+    this.addShortMessages(DANCE_MESSAGES, DANCE_PRICE, video.numViews);
     if (this.curVideo === this.videos.length - 1) return;
     addTween(this, {
       targets: [this.bg, this.videoText, this.like],
@@ -485,7 +482,7 @@ export class SimulationScene extends GameScene {
       },
     });
   }
-  playLongDance(video: SocialMediaVideoAttempt) {
+  playMusicVideo(video: SocialMediaVideoAttempt) {
     if (!this.bg || !this.simulation) return;
     const song = getRandomInt(3, 8);
     playSound(this, `music${song}`, { loop: true });
@@ -554,47 +551,7 @@ export class SimulationScene extends GameScene {
       },
       callbackScope: this,
     });
-
-    if (video.success) {
-      this.scrollMessages(
-        video.success,
-        [
-          "Nice moves!",
-          "Love this song :D",
-          "Cool video",
-          "🎵🎶 ",
-          "💃🕺",
-          "❤️❤️❤️❤️❤️",
-          "👍👍👍",
-          "Donated!",
-          "Keep it up!",
-          "Subbed for more",
-          "Woooooo",
-          "Yassssss",
-          "You dropped this king 👑",
-        ],
-        getRandomInt(5, 7),
-      );
-    } else {
-      this.scrollMessages(
-        video.success,
-        [
-          "Laaaaame",
-          "Too long lol",
-          "Not my thing",
-          "Kinda boring",
-          "zzzzzz",
-          "I sleep",
-          "When does it get good",
-          "What a tryhard",
-          "🥱🥱🥱",
-          "💤💤💤",
-          "👎👎👎",
-        ],
-        getRandomInt(1, 2),
-      );
-    }
-
+    this.addVideoMessages(MUSIC_MESSAGES, MUSIC_PRICE, video.numViews);
     if (this.curVideo === this.videos.length - 1) return;
     addTween(this, {
       targets: [this.bg, this.videoBg, this.videoText, this.like, this.dislike],
@@ -621,7 +578,7 @@ export class SimulationScene extends GameScene {
       },
     });
   }
-  playInstructional(video: SocialMediaVideoAttempt) {
+  playTechVideo(video: SocialMediaVideoAttempt) {
     if (!this.bg || !this.simulation) return;
     this.videoBg = addSprite(this, `bg_computer${getRandomInt(1, 2)}`, 0, {
       x: this.bg.displayWidth * 0.36,
@@ -663,7 +620,6 @@ export class SimulationScene extends GameScene {
       y: this.videoBg.displayHeight * 0.9,
       heightRel: 0.3,
     });
-
     const bubble = addSprite(this, "emotes", 0, {
       x: this.mySprite[0].x,
       y: this.mySprite[0].y - 100,
@@ -704,39 +660,7 @@ export class SimulationScene extends GameScene {
       },
       callbackScope: this,
     });
-
-    if (video.success) {
-      this.scrollMessages(
-        video.success,
-        [
-          "Thank you!!",
-          "Super helpful vid!",
-          "Quick and easy to understand",
-          "You made this look so easy!",
-          "GG EZ",
-          "This taught me how to love again",
-          "Finally fixed it thanks to you!",
-          "This changed my life",
-          "Subbed for more",
-          "You dropped this king 👑",
-        ],
-        getRandomInt(3, 5),
-      );
-    } else {
-      this.scrollMessages(
-        video.success,
-        [
-          "I still don't get it...",
-          "help i set my house on fire",
-          "Instructions unclear",
-          "I hope you step on a lego",
-          "am i dumb i dont get it",
-          "Is it supposed to explode like that???",
-        ],
-        getRandomInt(1, 2),
-      );
-    }
-
+    this.addVideoMessages(TECH_MESSAGES, TECH_PRICE, video.numViews);
     if (this.curVideo === this.videos.length - 1) return;
     addTween(this, {
       targets: [this.bg, this.videoBg, this.videoText, this.like, this.dislike],
@@ -765,83 +689,84 @@ export class SimulationScene extends GameScene {
     });
   }
 
-  scrollMessages(success: boolean, msgs: string[], num?: number) {
-    const messages = getShuffledArray(msgs);
-    num = num || messages.length;
+  addVideoMessages(m: SocialMediaComment[], price: number, numViews: number) {
+    const num = Math.min(10, Math.ceil(numViews / 100));
+    const msgs = getShuffledArray(m);
     for (let i = 0; i < num; i++) {
-      delay(i * (3000 / num)).then(() =>
-        this.scrollMessage(success, messages[i]),
-      );
+      const msg = msgs[i];
+      delay(i * (3000 / num)).then(() => {
+        const scrollText = addText(this, msg.msg, {
+          bg: this.videoBg,
+          heightRel: 0.1,
+          x: this.videoBg!.displayWidth * 0.5,
+          y: this.videoBg!.displayHeight * getRandomNumber(-0.4, -0.2),
+          maxFontSize: 78,
+          textStyle: {
+            align: "center",
+          },
+        }).setDepth(1000);
+        addTween(this, {
+          targets: scrollText,
+          x: 0,
+          duration: 2000,
+          onComplete: () => {
+            scrollText.destroy();
+          },
+        });
+        const chatText = addText(
+          this,
+          `${msg.msg} - $${((i + 1) * (price / 1000)).toFixed(2)}`,
+          {
+            bg: this.bg,
+            heightRel: 0.05,
+            x: this.bg!.displayWidth * 0.35,
+            y: this.bg!.displayHeight * (-0.3 + 0.05 * this.chatText.length),
+            maxFontSize: 18,
+            textStyle: {
+              align: "flexstart",
+            },
+          },
+        );
+        this.chatText.push(chatText);
+        if (msg.like) {
+          this.like?.play("like");
+          playSound(this, "like", { volume: 0.8 });
+        } else {
+          this.dislike?.play("dislike");
+          playSound(this, "dislike");
+        }
+      });
     }
   }
-  scrollMessage(success: boolean, msg: string) {
-    const text = addText(this, msg, {
-      bg: this.videoBg,
-      heightRel: 0.1,
-      x: this.videoBg!.displayWidth * 0.5,
-      y: this.videoBg!.displayHeight * getRandomNumber(-0.4, -0.2),
-      maxFontSize: 78,
-      textStyle: {
-        align: "center",
-      },
-    });
-    text.setDepth(1000);
-    this.addMessage(success, msg);
-    addTween(this, {
-      targets: text,
-      x: 0,
-      duration: 2000,
-      onComplete: () => {
-        text.destroy();
-      },
-    });
-  }
-  addMessage(success: boolean, msg: string) {
-    const text = addText(this, msg, {
-      bg: this.bg,
-      heightRel: 0.05,
-      x: this.bg!.displayWidth * 0.35,
-      y: this.bg!.displayHeight * (-0.3 + 0.1 * this.chatText.length),
-      maxFontSize: 78,
-      textStyle: {
-        align: "flexstart",
-      },
-    });
-    this.chatText.push(text);
-    if (success) {
-      this.like?.play("like");
-      playSound(this, "like", { volume: 0.8 });
-    } else {
-      this.dislike?.play("dislike");
-      playSound(this, "dislike");
-    }
-  }
-  addShortMessages(success: boolean, msgs: string[], num?: number) {
-    const messages = getShuffledArray(msgs);
-    num = num || messages.length;
+  addShortMessages(m: SocialMediaComment[], price: number, numViews: number) {
+    const num = Math.min(10, Math.ceil(numViews / 100));
+    const msgs = getShuffledArray(m);
     for (let i = 0; i < num; i++) {
-      delay(i * (3000 / num)).then(() =>
-        this.addShortMessage(success, messages[i]),
-      );
-    }
-  }
-  addShortMessage(success: boolean, msg: string) {
-    const text = addText(this, msg, {
-      bg: this.bg,
-      heightRel: 0.05,
-      x: this.bg!.displayWidth * 0.3,
-      y: this.bg!.displayHeight * (-0.3 + 0.1 * this.chatText.length),
-      maxFontSize: 78,
-      textStyle: {
-        align: "flexstart",
-      },
-    });
-    this.chatText.push(text);
-    if (success) {
-      this.like?.play("heart");
-      playSound(this, "like", { volume: 0.8 });
-    } else {
-      playSound(this, "dislike");
+      const msg = msgs[i];
+      delay(i * (3000 / num)).then(() => {
+        const text = addText(
+          this,
+          `${msg.msg} - $${((i + 1) * (price / 1000)).toFixed(2)}`,
+          {
+            bg: this.bg,
+            heightRel: 0.05,
+            x: this.bg!.displayWidth * 0.3,
+            y: this.bg!.displayHeight * (-0.4 + 0.05 * this.chatText.length),
+            maxFontSize: 18,
+            textStyle: {
+              align: "flexstart",
+            },
+          },
+        );
+        this.chatText.push(text);
+        if (msg.like) {
+          this.like?.play("heart");
+          playSound(this, "like", { volume: 0.8 });
+        } else {
+          this.like?.play("heart")?.stop()?.setFrame(0);
+          playSound(this, "dislike");
+        }
+      });
     }
   }
 }

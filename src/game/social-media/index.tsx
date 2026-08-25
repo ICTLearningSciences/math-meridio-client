@@ -40,6 +40,7 @@ export const TECH_PRICE = 250;
 export const TECH_CONVERSION_RATE = 8000;
 
 export const TOTAL_NUMBER_OF_VIDEOS = 100;
+export const VIDEO_SUCCESS_RATE = 0.05;
 
 const SocialMediaInfluencerGame: Game = {
   id: "social-media-influencer",
