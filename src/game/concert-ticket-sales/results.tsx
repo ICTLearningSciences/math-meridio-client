@@ -177,8 +177,8 @@ export function ResultComponent(props: {
 
   React.useEffect(() => {
     const simulationData: Record<string, ConcertTicketSalesSimulationData> = {};
-    for (const player of props.uiGameData.players) {
-      const psd = props.uiGameData.playersGameStateData[player._id];
+    for (const player of uiGameData.players) {
+      const psd = uiGameData.playersGameStateData[player._id];
       const vipTicketsUpForSale = psd[VIP_TICKET_PERCENT_KEY] || 0;
       const reservedTicketsUpForSale = psd[RESERVED_TICKET_PERCENT_KEY] || 0;
       const generalAdmissionTicketsUpForSale =
@@ -279,9 +279,10 @@ export function ResultComponent(props: {
       player4MissedData,
       playerLabels,
     };
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMyChartData(chartData);
-    setSimulationData({ ...simulationData });
-  }, [props.uiGameData.playersGameStateData, props.uiGameData.players]);
+    setSimulationData(simulationData);
+  }, [uiGameData.playersGameStateData, uiGameData.players]);
 
   return (
     <Stack

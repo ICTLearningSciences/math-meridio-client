@@ -171,8 +171,8 @@ export function ResultComponent(props: {
 
   React.useEffect(() => {
     const simulationData: Record<string, BasketballSimulationData> = {};
-    for (const player of props.uiGameData.players) {
-      const psd = props.uiGameData.playersGameStateData[player._id];
+    for (const player of uiGameData.players) {
+      const psd = uiGameData.playersGameStateData[player._id];
       const insideShots = psd[INSIDE_SHOT_PERCENT] || 0;
       const outsideShots = psd[OUTSIDE_SHOT_PERCENT] || 0;
       const midShots = psd[MID_SHOT_PERCENT] || 0;
@@ -200,8 +200,6 @@ export function ResultComponent(props: {
       };
       simulationData[player._id] = simData;
     }
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setSimulationData(simulationData);
 
     let player1Data: number[] = [];
     let player1MissedData: number[] = [];
@@ -260,6 +258,7 @@ export function ResultComponent(props: {
         OUTSIDE_SHOT_POINTS_VALUE,
     );
     const playerLabels = uiGameData.players.map((player) => player.name);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMyChartData({
       insideScores: insideScores,
       midScores: midScores,
@@ -274,9 +273,8 @@ export function ResultComponent(props: {
       player4MissedData: player4MissedData,
       playerLabels: playerLabels,
     });
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSimulationData(simulationData);
-  }, [props.uiGameData.playersGameStateData, props.uiGameData.players]);
+  }, [uiGameData.playersGameStateData, uiGameData.players]);
 
   return (
     <Stack
