@@ -116,7 +116,7 @@ export default function EndOfPhaseReflectionModal({
     Boolean(currentPlayerReflection) || hasLocallySubmitted;
 
   const { reward } = useReward("rewardId", "confetti", {
-    particleCount: 100,
+    particleCount: 20,
     spread: 120,
     colors: ["#ff0000", "#00ff00", "#0000ff"],
     physics: {
