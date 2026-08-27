@@ -142,86 +142,6 @@ export function ResultComponent(props: {
     setTabValue(newValue);
   };
 
-  function simulationEnded(data: BasketballSimulationData): void {
-    const simData = {
-      ...simulationData,
-    };
-    simData[data.player] = data;
-    let player1Data: number[] = [];
-    let player1MissedData: number[] = [];
-    let player2Data: number[] = [];
-    let player2MissedData: number[] = [];
-    let player3Data: number[] = [];
-    let player3MissedData: number[] = [];
-    let player4Data: number[] = [];
-    let player4MissedData: number[] = [];
-
-    for (let index = 0; index < uiGameData.players.length; index++) {
-      const player = uiGameData.players[index];
-      const playerMade = [
-        simData[player._id]?.insideShotsMade,
-        simData[player._id]?.midShotsMade,
-        simData[player._id]?.outsideShotsMade,
-      ];
-      const playerMissed = [
-        simData[player._id]?.insideShots - simData[player._id]?.insideShotsMade,
-        simData[player._id]?.midShots - simData[player._id]?.midShotsMade,
-        simData[player._id]?.outsideShots -
-          simData[player._id]?.outsideShotsMade,
-      ];
-
-      switch (index) {
-        case 0:
-          player1Data = playerMade;
-          player1MissedData = playerMissed;
-          break;
-        case 1:
-          player2Data = playerMade;
-          player2MissedData = playerMissed;
-          break;
-        case 2:
-          player3Data = playerMade;
-          player3MissedData = playerMissed;
-          break;
-        case 3:
-          player4Data = playerMade;
-          player4MissedData = playerMissed;
-          break;
-      }
-    }
-    const insideScores = uiGameData.players.map(
-      (player) =>
-        (simData[player._id]?.insideShotsMade || 0) * INSIDE_SHOT_POINTS_VALUE,
-    );
-
-    const midScores = uiGameData.players.map(
-      (player) =>
-        (simData[player._id]?.midShotsMade || 0) * MID_SHOT_POINTS_VALUE,
-    );
-
-    const outsideScores = uiGameData.players.map(
-      (player) =>
-        (simData[player._id]?.outsideShotsMade || 0) *
-        OUTSIDE_SHOT_POINTS_VALUE,
-    );
-    const playerLabels = uiGameData.players.map((player) => player.name);
-    setMyChartData({
-      insideScores: insideScores,
-      midScores: midScores,
-      outsideScores: outsideScores,
-      player1Data: player1Data,
-      player1MissedData: player1MissedData,
-      player2Data: player2Data,
-      player2MissedData: player2MissedData,
-      player3Data: player3Data,
-      player3MissedData: player3MissedData,
-      player4Data: player4Data,
-      player4MissedData: player4MissedData,
-      playerLabels: playerLabels,
-    });
-    setSimulationData({ ...simulationData });
-  }
-
   function GetShotChartFor(
     playerData: number[],
     playerMissedData: number[],
@@ -250,6 +170,7 @@ export function ResultComponent(props: {
   }
 
   React.useEffect(() => {
+    const simulationData: Record<string, BasketballSimulationData> = {};
     for (const player of props.uiGameData.players) {
       const psd = props.uiGameData.playersGameStateData[player._id];
       const insideShots = psd[INSIDE_SHOT_PERCENT] || 0;
@@ -277,10 +198,84 @@ export function ResultComponent(props: {
         insideShotsMade,
         totalPoints,
       };
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      simulationEnded(simData);
+      simulationData[player._id] = simData;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSimulationData(simulationData);
+
+    let player1Data: number[] = [];
+    let player1MissedData: number[] = [];
+    let player2Data: number[] = [];
+    let player2MissedData: number[] = [];
+    let player3Data: number[] = [];
+    let player3MissedData: number[] = [];
+    let player4Data: number[] = [];
+    let player4MissedData: number[] = [];
+    for (let index = 0; index < uiGameData.players.length; index++) {
+      const player = uiGameData.players[index];
+      const playerMade = [
+        simulationData[player._id]?.insideShotsMade,
+        simulationData[player._id]?.midShotsMade,
+        simulationData[player._id]?.outsideShotsMade,
+      ];
+      const playerMissed = [
+        simulationData[player._id]?.insideShots -
+          simulationData[player._id]?.insideShotsMade,
+        simulationData[player._id]?.midShots -
+          simulationData[player._id]?.midShotsMade,
+        simulationData[player._id]?.outsideShots -
+          simulationData[player._id]?.outsideShotsMade,
+      ];
+      switch (index) {
+        case 0:
+          player1Data = playerMade;
+          player1MissedData = playerMissed;
+          break;
+        case 1:
+          player2Data = playerMade;
+          player2MissedData = playerMissed;
+          break;
+        case 2:
+          player3Data = playerMade;
+          player3MissedData = playerMissed;
+          break;
+        case 3:
+          player4Data = playerMade;
+          player4MissedData = playerMissed;
+          break;
+      }
+    }
+    const insideScores = uiGameData.players.map(
+      (player) =>
+        (simulationData[player._id]?.insideShotsMade || 0) *
+        INSIDE_SHOT_POINTS_VALUE,
+    );
+    const midScores = uiGameData.players.map(
+      (player) =>
+        (simulationData[player._id]?.midShotsMade || 0) * MID_SHOT_POINTS_VALUE,
+    );
+    const outsideScores = uiGameData.players.map(
+      (player) =>
+        (simulationData[player._id]?.outsideShotsMade || 0) *
+        OUTSIDE_SHOT_POINTS_VALUE,
+    );
+    const playerLabels = uiGameData.players.map((player) => player.name);
+    setMyChartData({
+      insideScores: insideScores,
+      midScores: midScores,
+      outsideScores: outsideScores,
+      player1Data: player1Data,
+      player1MissedData: player1MissedData,
+      player2Data: player2Data,
+      player2MissedData: player2MissedData,
+      player3Data: player3Data,
+      player3MissedData: player3MissedData,
+      player4Data: player4Data,
+      player4MissedData: player4MissedData,
+      playerLabels: playerLabels,
+    });
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSimulationData(simulationData);
   }, [props.uiGameData.playersGameStateData, props.uiGameData.players]);
 
   return (

@@ -149,81 +149,6 @@ export function ResultComponent(props: {
     setTabValue(newValue);
   };
 
-  function simulationEnded(data: ConcertTicketSalesSimulationData): void {
-    const simData = { ...simulationData };
-    simData[data.player] = data;
-    let player1Data: number[] = [];
-    let player1MissedData: number[] = [];
-    let player2Data: number[] = [];
-    let player2MissedData: number[] = [];
-    let player3Data: number[] = [];
-    let player3MissedData: number[] = [];
-    let player4Data: number[] = [];
-    let player4MissedData: number[] = [];
-    for (let index = 0; index < uiGameData.players.length; index++) {
-      const player = uiGameData.players[index];
-      const playerMade = [
-        simData[player._id]?.vipTicketsSold,
-        simData[player._id]?.reservedTicketsSold,
-        simData[player._id]?.generalAdmissionTicketsSold,
-      ];
-      const playerMissed = [
-        simData[player._id]?.vipTicketsUpForSale -
-          simData[player._id]?.vipTicketsSold,
-        simData[player._id]?.reservedTicketsUpForSale -
-          simData[player._id]?.reservedTicketsSold,
-        simData[player._id]?.generalAdmissionTicketsUpForSale -
-          simData[player._id]?.generalAdmissionTicketsSold,
-      ];
-      switch (index) {
-        case 0:
-          player1Data = playerMade;
-          player1MissedData = playerMissed;
-          break;
-        case 1:
-          player2Data = playerMade;
-          player2MissedData = playerMissed;
-          break;
-        case 2:
-          player3Data = playerMade;
-          player3MissedData = playerMissed;
-          break;
-        case 3:
-          player4Data = playerMade;
-          player4MissedData = playerMissed;
-          break;
-      }
-    }
-    const playerLabels = uiGameData.players.map((player) => player.name);
-    const chartData = {
-      profitFromVipTickets: uiGameData.players.map(
-        (player) =>
-          (simData[player._id]?.vipTicketsSold || 0) * VIP_TICKET_PRICE,
-      ),
-      profitFromReservedTickets: uiGameData.players.map(
-        (player) =>
-          (simData[player._id]?.reservedTicketsSold || 0) *
-          RESERVED_TICKET_PRICE,
-      ),
-      profitFromGeneralAdmissionTickets: uiGameData.players.map(
-        (player) =>
-          (simData[player._id]?.generalAdmissionTicketsSold || 0) *
-          GENERAL_ADMISSION_TICKET_PRICE,
-      ),
-      player1Data,
-      player1MissedData,
-      player2Data,
-      player2MissedData,
-      player3Data,
-      player3MissedData,
-      player4Data,
-      player4MissedData,
-      playerLabels,
-    };
-    setMyChartData(chartData);
-    setSimulationData({ ...simData });
-  }
-
   function GetChartFor(
     playerData: number[],
     playerMissedData: number[],
@@ -251,6 +176,7 @@ export function ResultComponent(props: {
   }
 
   React.useEffect(() => {
+    const simulationData: Record<string, ConcertTicketSalesSimulationData> = {};
     for (const player of props.uiGameData.players) {
       const psd = props.uiGameData.playersGameStateData[player._id];
       const vipTicketsUpForSale = psd[VIP_TICKET_PERCENT_KEY] || 0;
@@ -282,10 +208,79 @@ export function ResultComponent(props: {
         vipTicketsSold,
         totalProfit: total,
       };
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      simulationEnded(simData);
+      simulationData[player._id] = simData;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    let player1Data: number[] = [];
+    let player1MissedData: number[] = [];
+    let player2Data: number[] = [];
+    let player2MissedData: number[] = [];
+    let player3Data: number[] = [];
+    let player3MissedData: number[] = [];
+    let player4Data: number[] = [];
+    let player4MissedData: number[] = [];
+    for (let index = 0; index < uiGameData.players.length; index++) {
+      const player = uiGameData.players[index];
+      const playerMade = [
+        simulationData[player._id]?.vipTicketsSold,
+        simulationData[player._id]?.reservedTicketsSold,
+        simulationData[player._id]?.generalAdmissionTicketsSold,
+      ];
+      const playerMissed = [
+        simulationData[player._id]?.vipTicketsUpForSale -
+          simulationData[player._id]?.vipTicketsSold,
+        simulationData[player._id]?.reservedTicketsUpForSale -
+          simulationData[player._id]?.reservedTicketsSold,
+        simulationData[player._id]?.generalAdmissionTicketsUpForSale -
+          simulationData[player._id]?.generalAdmissionTicketsSold,
+      ];
+      switch (index) {
+        case 0:
+          player1Data = playerMade;
+          player1MissedData = playerMissed;
+          break;
+        case 1:
+          player2Data = playerMade;
+          player2MissedData = playerMissed;
+          break;
+        case 2:
+          player3Data = playerMade;
+          player3MissedData = playerMissed;
+          break;
+        case 3:
+          player4Data = playerMade;
+          player4MissedData = playerMissed;
+          break;
+      }
+    }
+    const playerLabels = uiGameData.players.map((player) => player.name);
+    const chartData = {
+      profitFromVipTickets: uiGameData.players.map(
+        (player) =>
+          (simulationData[player._id]?.vipTicketsSold || 0) * VIP_TICKET_PRICE,
+      ),
+      profitFromReservedTickets: uiGameData.players.map(
+        (player) =>
+          (simulationData[player._id]?.reservedTicketsSold || 0) *
+          RESERVED_TICKET_PRICE,
+      ),
+      profitFromGeneralAdmissionTickets: uiGameData.players.map(
+        (player) =>
+          (simulationData[player._id]?.generalAdmissionTicketsSold || 0) *
+          GENERAL_ADMISSION_TICKET_PRICE,
+      ),
+      player1Data,
+      player1MissedData,
+      player2Data,
+      player2MissedData,
+      player3Data,
+      player3MissedData,
+      player4Data,
+      player4MissedData,
+      playerLabels,
+    };
+    setMyChartData(chartData);
+    setSimulationData({ ...simulationData });
   }, [props.uiGameData.playersGameStateData, props.uiGameData.players]);
 
   return (
