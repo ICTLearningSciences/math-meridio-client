@@ -49,12 +49,12 @@ export function PlayerStrategy(props: {
     const simData: SocialMediaSimulationData = {
       player: props.player._id,
       playerAvatar: props.player,
-      danceShorts: techVideos,
-      danceShortsViewed: Math.round(techVideos * TECH_CONVERSION_RATE * 0.05),
+      danceShorts: danceShorts,
+      danceShortsViewed: Math.round(danceShorts * DANCE_CONVERSION_RATE * 0.05),
       musicVideos: musicVideos,
       musicVideosViewed: Math.round(musicVideos * MUSIC_CONVERSION_RATE * 0.05),
-      techVideos: danceShorts,
-      techVideosViewed: Math.round(danceShorts * DANCE_CONVERSION_RATE * 0.05),
+      techVideos: techVideos,
+      techVideosViewed: Math.round(techVideos * TECH_CONVERSION_RATE * 0.05),
       totalProfit: 0,
     };
     simData.totalProfit =

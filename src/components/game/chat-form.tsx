@@ -46,9 +46,13 @@ export default function ChatForm(props: {
   const { sendMessage, isMyTurn, isPaused } = props;
   const player = useAppSelector((state) => state.playerData.player);
 
-  if (listening) {
-    setInput(transcript);
-  }
+  React.useEffect(() => {
+    if (!listening) return;
+    if (transcript) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setInput(transcript);
+    }
+  }, [listening, transcript]);
 
   async function onSend(): Promise<void> {
     if (input.trim() === "" || input.length > MAX_MESSAGE_LENGTH || isSending) {
