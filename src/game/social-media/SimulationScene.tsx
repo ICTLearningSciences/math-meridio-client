@@ -390,10 +390,12 @@ export class SimulationScene extends GameScene {
   }
 
   playVideos() {
+    this.destroyScene();
     if (this.curVideo >= this.videos.length) {
+      EventSystem.emit("simulationEnded", this.simulation);
+      this.sound.pauseAll();
       return;
     }
-    this.destroyScene();
     const video = this.videos[this.curVideo];
     const bg = video.videoType === "dance_short" ? "bg_short" : "bg_video";
     this.bg = addBackground(this, bg);
@@ -458,13 +460,9 @@ export class SimulationScene extends GameScene {
       callbackScope: this,
     });
     this.addShortMessages(DANCE_MESSAGES, DANCE_PRICE, video.numViews);
-    if (this.curVideo === this.videos.length - 1) return;
     addTween(this, {
       targets: [this.bg, this.videoText, this.like],
-      y:
-        this.curVideo !== this.videos.length - 1
-          ? -this.bg.displayHeight
-          : undefined,
+      y: -this.bg.displayHeight,
       delay: 4000,
       duration: 300,
       onStart: () => {
@@ -552,13 +550,9 @@ export class SimulationScene extends GameScene {
       callbackScope: this,
     });
     this.addVideoMessages(MUSIC_MESSAGES, MUSIC_PRICE, video.numViews);
-    if (this.curVideo === this.videos.length - 1) return;
     addTween(this, {
       targets: [this.bg, this.videoBg, this.videoText, this.like, this.dislike],
-      y:
-        this.curVideo !== this.videos.length - 1
-          ? -this.bg.displayHeight
-          : undefined,
+      y: -this.bg.displayHeight,
       delay: 4000,
       duration: 300,
       onStart: () => {
@@ -661,13 +655,9 @@ export class SimulationScene extends GameScene {
       callbackScope: this,
     });
     this.addVideoMessages(TECH_MESSAGES, TECH_PRICE, video.numViews);
-    if (this.curVideo === this.videos.length - 1) return;
     addTween(this, {
       targets: [this.bg, this.videoBg, this.videoText, this.like, this.dislike],
-      y:
-        this.curVideo !== this.videos.length - 1
-          ? -this.bg.displayHeight
-          : undefined,
+      y: -this.bg.displayHeight,
       delay: 4000,
       duration: 300,
       onStart: () => {

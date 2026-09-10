@@ -193,6 +193,8 @@ export default function AvatarSprite(props: {
         position: "relative",
         height: 40,
         width: 40,
+        minWidth: 40,
+        minHeight: 40,
         borderRadius: 40,
         padding: 3,
         border: props.border ? "1px solid rgb(114, 20, 201)" : "none",

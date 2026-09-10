@@ -118,6 +118,7 @@ export default function GamePage(): React.ReactNode {
       className="root"
       style={{
         backgroundColor: "#cfdaf8",
+        overflow: "hidden",
       }}
     >
       <div style={{ width: "80%", padding: 20 }}>

@@ -164,15 +164,14 @@ export default function WaitingForPlayers(
               <AvatarSprite player={p} bgColor={"info.main"} border={false} />
               <Typography
                 key={`waiting-for-player-${p.name}-text`}
-                color={"black"}
+                style={{ color: "black" }}
               >
                 <b>{p.name}</b>
               </Typography>
             </RowDiv>
             {currentPlayerId === p._id ? (
               <Typography
-                color={"black"}
-                style={{ width: "100%", textAlign: "center" }}
+                style={{ width: "100%", textAlign: "center", color: "black" }}
               >
                 (You)
               </Typography>

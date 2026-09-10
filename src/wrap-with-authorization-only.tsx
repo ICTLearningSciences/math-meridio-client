@@ -6,7 +6,17 @@ The full terms of this copyright and license should always be found in the root 
 */
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { CircularProgress, IconButton } from "@mui/material";
+import ReactMarkdown from "react-markdown";
+import {
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  IconButton,
+} from "@mui/material";
 import { fetchAuthSession, signOut } from "aws-amplify/auth";
 import { Authenticator } from "@aws-amplify/ui-react";
 
@@ -14,6 +24,7 @@ import { useAppDispatch, useAppSelector } from "./store/hooks";
 import { logout } from "./store/slices/player";
 import { useWithLogin } from "./store/slices/player/use-with-login";
 import { Header } from "./components/header";
+import { PRIVACY_POLICY } from "./privacy-policy";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function Wrapper(props: { children: any }) {
@@ -59,6 +70,8 @@ function Wrapper(props: { children: any }) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function WithAuthorizationOnly(props: { children: any }) {
   const navigate = useNavigate();
+  const [privacyPolicyOpen, setPrivacyPolicyOpen] = React.useState(false);
+
   return (
     <div
       className="column center-div"
@@ -82,6 +95,35 @@ function WithAuthorizationOnly(props: { children: any }) {
                   </div>
                 </div>
               </header>
+            );
+          },
+          Footer: () => {
+            return (
+              <footer className="row center-div" style={{ marginTop: 10 }}>
+                <Button onClick={() => setPrivacyPolicyOpen(true)}>
+                  Privacy Policy
+                </Button>
+                {privacyPolicyOpen && (
+                  <Dialog
+                    open={privacyPolicyOpen}
+                    onClose={() => setPrivacyPolicyOpen(false)}
+                  >
+                    <DialogTitle style={{ textAlign: "center" }}>
+                      Privacy Policy
+                    </DialogTitle>
+                    <DialogContent>
+                      <DialogContentText>
+                        <ReactMarkdown>{PRIVACY_POLICY}</ReactMarkdown>
+                      </DialogContentText>
+                      <DialogActions>
+                        <Button onClick={() => setPrivacyPolicyOpen(false)}>
+                          Close
+                        </Button>
+                      </DialogActions>
+                    </DialogContent>
+                  </Dialog>
+                )}
+              </footer>
             );
           },
         }}
